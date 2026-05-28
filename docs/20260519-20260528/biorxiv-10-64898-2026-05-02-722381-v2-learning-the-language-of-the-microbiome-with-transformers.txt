@@ -1,0 +1,1282 @@
+Title: Learning the Language of the Microbiome with Transformers
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.05.02.722381v2.full.pdf
+
+Number of Pages: 29
+
+Markdown Content:
+# Learning the Language of the Microbiome with Transformers 
+
+Neythen J Treloar ∗
+
+, Saif Ur-Rehman & Jenny Yang Outpost Bio 
+
+Abstract 
+
+Self-supervised pretraining has become central to biological machine learning, yet microbiome data remains comparatively underexplored in terms of both modeling approaches and evaluation frameworks. To address this gap, we present Atlas, a pretraining dataset of over 539,000 microbiome datapoints from the MGnify database. Using Atlas, we train the Waypoint family of microbiome foundation models: a series of GPT-2 style causal language models ranging from 6M to 170M pa-rameters. We also introduce Compass, a curated benchmark of eight predictive tasks spanning biome classification, drug-microbiome inter-actions, drug degradation, and infant gut development. Using this benchmark, we compare the performance of Waypoint models against classical baselines and the existing MGM foundation model. Our results show that pretraining leads to consistent and significant improvements in downstream task performance, that both dataset scale and tokeniza-tion strategy impact model quality, and that pretraining is essential for achieving favorable scaling behavior. Furthermore, pretrained trans-former models begin to reliably outperform classical methods once training data exceeds roughly 10,000 examples - a threshold that is attainable for modern microbiome studies. Finally, we demonstrate that the Waypoint models achieve state-of-the-art performance among micro-biome foundation models. Overall, our work highlights the importance of large-scale self-supervised pretraining in this domain and establishes Atlas, Compass, and the Waypoint models as valuable resources for the research community in this emerging field. 
+
+> ∗
+
+Corresponding author: neythen@outpost.bio 
+
+1
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint
+
+## 1 Introduction 
+
+The human microbiome, the vast community of microorganisms inhabiting the gut and other body sites, has emerged as a powerful variable in human health, disease, and environmental biology. Advances in high-throughput sequencing have made it possible to profile microbial communities at scale, generating large repositories of compositional abundance data across diverse ecological contexts. Yet translating this wealth of data into actionable biological insight remains a significant challenge, owing to the high dimensionality, sparsity, and compositional nature of microbiome profiles, as well as the heterogeneity of downstream prediction tasks. Much recent progress in machine learning has been driven by the use of self-supervised pretraining to learn meaningful representations, especially in language modelling. These techniques have also been applied to biological data, giving rise to DNA language models [ 1 , 2, 3, 4, 5 ], protein language models [ 6, 7], and whole-genome models [ 8 , 9 ]. An emerging frontier is the application of these ideas to microbiomes [10, 11, 12]. This naturally raises the question of whether the architectures and training paradigms that succeed in natural language and molecular biology transfer effectively to microbiomes. It is becoming increasingly important to evaluate which language modelling techniques are truly applicable, and to establish benchmarks that can guide progress as this field develops. The foundation model paradigm is particularly attractive for microbiome research, where labelled datasets are typically small and task-specific, but large collections of unlabelled compositional profiles are publicly available. Several recent efforts have begun to treat taxonomic abundance profiles as sequences amenable to language model pretraining [ 10 , 11, 12]. However, these approaches differ in their tokenisation strategies, pretraining corpora, and architectural choices, and systematic evaluation of how these design decisions affect downstream performance has been limited. In particular, the effect of model scale on microbiome representation learning, a question extensively studied in language [ 13, 14] and protein [ 15 ] modelling, remains poorly understood. Equally, the field lacks standardised benchmarks for comparing models across the range of biologically meaningful prediction tasks that microbiome data can support. In this paper, we take first steps toward addressing these gaps. We assemble and release a large-scale pretraining corpus, named Atlas, of over 539,000 microbiome datapoints from the MGnify database [ 16 ], spanning amplicon, shotgun metagenomic, and metagenomic assembly modalities across a broad range of environments. We introduce a fallback tokenisation 2
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint
+
+strategy that preserves taxonomic information for samples where genus level assignments are unavailable, and show that this strategy, combined with a larger pretraining corpus, improves on the prior state-of-the-art. We also present Compass, a curated benchmark of eight predictive tasks spanning biome classification, drug-microbiome interactions, drug degradation, and infant gut development, designed to provide a comprehensive and reproducible evaluation framework for microbiome foundation models. Finally, we pretrain the Waypoint models, a series of GPT-2 [ 17 ] style causal language models ranging from 6M to 170M parameters, and evaluate each on Compass, alongside classical baselines and the existing MGM foundation model [ 10]. Our results show that pretraining delivers consistent and significant gains in downstream performance, that the scale of task specific data plays a critical role in determining model quality, that pretraining unlocks the effective use of larger models, and that the Waypoint models achieve state-of-the-art performance among microbiome foundation models. 
+
+## 2 Results 
+
+2.1 Atlas: the Microbiome Pretraining Dataset 
+
+We assembled a large-scale pretraining corpus by systematically scraping taxonomic abundance data from the MGnify database [ 16 ] across all available pipeline versions (v1.0–v5.0) and four sequencing modalities: amplicon 16S rRNA, whole-genome shotgun metagenomic, metagenomic assembly, and metatranscriptomic (see Methods for details). The resulting raw collection spans over 4,100 unique studies, representing one of the largest aggregations of publicly available microbiome data to date. Before tokenisation we quality filter the dataset, following the procedure in [ 10 ], by removing any taxa with relative abundance lower than 0.0001 and subsequently removing any samples with less than 10 taxa. Following quality filtering, the dataset comprises 539,308 microbiome datapoints drawn from a broad range of environments including marine, freshwater, terrestrial, host-associated, and engineered ecosystems, reflecting the ecological diversity of the underlying MGnify resource. Previous approaches have tokenised microbiomes at the genus level [ 10, 11], but other work has argued for the advantages of tokenising at the species level [ 12]. Tokenising at the species level can improve taxonomic precision; however, for many Amplicon sequence variants (ASVs) lower-level taxonomic assignments cannot be made, meaning these data must be discarded if tokenisation is restricted to the species level. This is particularly relevant for 3
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint
+
+amplicon sequencing, where the 16S rRNA marker often lacks the resolution needed to assign an ASV at the species level. To address this limitation, we introduce a fallback tokenization approach: a target level of taxonomic specificity is defined, and when that level cannot be assigned, the model instead uses the most specific available higher-rank classification. To decide on whether to tokenise at the genus or species level we analysed the dataset following both tokenisation strategies. We found minimal difference in the distribution of sequence lengths and the number of total tokens between the two approaches (Table 1, Supplementary Figure S2) and so we decided to move forward with genus level tokenisation with fallback. Table 1: Tokenised corpus statistics at genus and species resolution. Sequence length is measured as tokens per sample. Mean, Median, Min and Max refer to sequence length across the dataset. 
+
+Lowest Rank Total tokens Mean Median Min Max 
+
+Genus 56,263,516 104.3 76 6 780 Species 58,293,439 108.1 79 11 806 
+
+2.2 The Waypoint Series of Models: Scaling Microbiome Foundation Models 
+
+To investigate the effect of model scale on microbiome representation learning, we pretrained a series of GPT-2–style causal language models ranging from 6M to 170M parameters (not including token and positional embeddings) See Table 2 for architectural parameters and Methods for further details. Models were scaled by jointly increasing the hidden dimension and the number of transformer layers, while holding the per-head dimension fixed at 64 throughout (i.e. the number of attention heads grows in proportion to the hidden dimension). The resulting series spans roughly one order of magnitude in parameter count (6M-170M). We also included an alternate 6M model matching the MGM architecture [10] (6M-MGM) enabling us to understand the performance gain from using a larger pretraining dataset and fallback tokenisation, and a 85M-gpt2-small architecture corresponding to the GPT-2 small model [17]. All models share the same tokeniser, context length (512), and pretraining procedure, so that differences in downstream performance can be attributed to model capacity alone. 4
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint
+
+Table 2: Model configurations used in the scaling study. Layers denote the number of transformer blocks, hidden dimension the size of the model’s internal representations, and heads the number of attention heads per layer. 
+
+Model Layers Hidden dimension Number of Heads 
+
+6M-MGM 8 256 86M 8 256 410M 8 320 518M 10 384 629M 12 448 745M 14 512 879M 16 640 10 85M-gpt2-small 12 768 12 170M 24 768 12 
+
+2.3 Larger Scale Waypoint Models Show Improved Pretrain-ing Performance 
+
+We pretrained all models with an autoregressive next token prediction ob-jective (see Methods for details). Pretraining evaluation loss curves for all nine models are shown in Figure 1. All models converge from a shared initial loss of ∼5.0, with larger models achieving consistently lower evalu-ation loss throughout training. The two 6M-parameter models (6M and 6M-MGM) produce almost indistinguishable loss curves, demonstrating that the difference in attention head count between the two architectures has a minimal effect on pretraining performance. Scaling up model capacity yields consistent improvements, with eval loss decreasing monotonically with model size. Interestingly the 79m and 85m-gpt-small models show very similar loss curves, with the difference in final loss being primarily due to the 79m model hitting the early stopping condition early and exiting training, despite being slightly different in size and architecture. Larger models also converge in fewer steps, while smaller models continue to improve slowly, suggesting that the smaller models have not fully converged and further gains remain available with extended training. 
+
+2.4 Compass: The Microbiome Benchmark 
+
+To systematically evaluate these pretrained models we introduce Compass, a curated benchmark of eight predictive tasks spanning diverse gut and 5                   
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint 0.2M 0.4M 0.6M 0.8M 1M 1.2M 1.4M
+> 3.5
+> 4
+> 4.5
+> 5
+> 56789
+> 10 23456789
+> 100 2
+> 3.2
+> 3.4
+> 3.6
+> 3.8
+> 6m
+> 6m-mgm
+> 10m
+> 18m
+> 29m
+> 45m
+> 79m
+> 85m-gpt-small
+> 170m
+> Step Model size (parameters)
+> Eval Loss Min eval loss
+
+Figure 1: Top: pretraining evaluation loss curves for models with 6 - 170 million parameters. Larger models converge to lower evaluation loss. Some models exited training early because early stopping was used with a patience of 10. Bottom: the minimum evaluation loss decreases linearly with logarith-mic model size. environmental microbiome tasks (see Methods for details). The benchmark is designed to evaluate the ability of models to extract biologically meaningful information from compositional microbiome data. For now we focus primarily on gut microbiome problems, but this can be expanded upon in the future. The eight tasks are drawn from four independent datasets (Table 3). The MGnify dataset [ 16] contributes two biome classification tasks: task 1 requires predicting the environmental origin of a microbiome sample at up to five levels of a biological ontology hierarchy (e.g., Environmental → Aquatic 
+
+→ Marine), while task 2 restricts this to classification of data points from gut microbiomes. The Shi et al. dataset, derived from a 16S rRNA amplicon study of drug–microbiome interactions in stool derived communities [ 18], contributes three tasks: task 3 requires classifying the sample from which a drug perturbed community originated from; task 4 is a binary classification of whether a sample received a drug or was a control; and task 5 requires 6
+
+.CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint predicting the ATC drug class that was applied to a community from the resulting composition. The Mastrorilli et al. dataset [ 19] contributes task 6, a regression task predicting drug degradation rate from community composition and drug identity. Finally, the Roswall et al. infant microbiome dataset [ 20] contributes task 7, predicting the age of an infant from a gut microbiome sample, and task 8, predicting delivery mode (vaginal vs. cesarean section). Table 3: Compass task summary. Classification tasks (task 1-5 and 7-8) are scored by macro-averaged F 1; the regression task (task 6) by R2.
+
+Task Name Dataset Type Metric 
+
+1 Biome classification [16] Classification F1-macro 2 Gut biome classification [16] Classification F1-macro 3 SDC classification [18] Classification F1-macro 4 Drug vs. non-drug [18] Classification F1-macro 5 Drug class (ATC) [18] Classification F1-macro 6 Drug degradation rate [19] Regression R2
+
+7 Infant age classification [20] Classification F1-macro 8 Delivery mode classification [20] Classification F1-macro Tasks 1–5 and 7–8 are classification tasks scored by macro-averaged F1 across classes, averaged across target columns where multiple targets are present (tasks 1 and 2). This scoring scheme weights classes equally regardless of prevalence, reflecting the benchmark’s aim to assess generalisation across the full label space rather than rewarding majority-class prediction. Task 6 is a regression task scored by the coefficient of determination ( R2). 
+
+2.5 Pretrained transformers outperform non pretrained trans-formers and baseline models 
+
+We evaluated our pretrained Waypoint models against classical baselines and the current state of the art in microbiome foundation models. First, as classical baselines, we included logistic regression (classification), ridge regression (regression), and random forest models operating on bag-of-taxa abundance vectors. The sequencing data in each dataset used in the bench-mark was processed differently by different authors, meaning that coverage of downstream taxa by the pretraining vocabulary varied substantially across datasets (Table 4). This variation in vocabulary overlap directly motivated evaluating the classical baselines both with and without filtering of taxa absent from the pretraining vocabulary (the filtered versions denoted “no 7
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint
+
+unk”), where the latter removes all out-of-vocabulary taxa to enable a fairer comparison to the Waypoint models operating under a fixed token set. Sec-ond, we compared against MGM [ 10 ], an existing microbiome foundation model pretrained on 260K samples from MGnify using a causal language modelling objective. Our 6M-MGM model uses the same GPT-2 architecture as MGM and thus provides a direct assesment of the effect of our larger pretraining corpus and fallback tokenisation scheme with the prior state of the art. We also attempted to include comparisons with two additional microbiome foundation models [ 11, 12 ], but to our knowledge these models have not been made publically available. For each transformer architecture, we additionally evaluated non-pretrained variants by reinitialising weights prior to benchmarking. 
+
+Dataset Tasks Unique Token Coverage Total Token Coverage 
+
+MGnify-biomes 1–2 100% (complete) 100% (complete) Shi et al. 3–5 73.2% (139/190) 77.4% (53,884/69,659) Mastrorilli et al. 6 95.9% (231/241) 93.5% (1,576,034/1,686,268) Roswall et al. 7–8 60.5% (353/583) 59.8% (52,018/87,027) Table 4: Coverage of unique (the proportion of tokens in the vocabulary that are in the pretraining data) and total tokens (the proportion of total tokens across the dataset that are in the pretraining data) for benchmark datasets. Figure 2 shows mean score (macro-averaged F1 or R2) across all eight benchmark tasks for each model and baseline, with replicates shown as individual points. Pretraining consistently and substantially improves per-formance over both non-pretrained counterparts and the classical baselines, and all pretrained models outperform the original MGM model, which itself outperforms all non-pretrained transformers. Non-pretrained transformers exhibit substantially higher variance across replicates, indicating that these architectures are difficult to train from random initialisation on the relatively small per-task datasets. Additionally, the 6M-MGM architecture outperforms the original MGM despite sharing the same architecture, indicating that the larger pretraining dataset and the more informative input sequences enabled by fallback tokenisation contribute to improved performance. The effect of the improved tokenisation scheme is further supported by comparing the non-pretrained MGM and 6M-MGM models, where the only difference is the tokenisation scheme; the superior performance of 6M-MGM in this setting highlights the importance of tokenisation as a key modelling decision. The per-task breakdown (Figure 3) reveals that the benefit of pretrain-8       
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint 0.500 0.550 0.600 0.650 0.700 0.750
+> Linear (no unk)
+> Linear
+> 170M
+> 79M
+> MGM
+> 45M
+> 29M
+> 85M-gpt-small
+> 18M
+> 6M
+> RF (no unk)
+> 10M
+> 6M-MGM
+> RF
+> MGM
+> 6M-MGM
+> 29M
+> 10M
+> 85M-gpt-small
+> 6M
+> 18M
+> 79M
+> 170M
+> 45M
+> Pretrained Non-pretrained Baseline
+> Score (mean F1 / R²)
+
+Figure 2: Overall benchmark scores for all models, taken as the average of the scores across the 8 benchmark tasks, where classification tasks (1-5 and 7-8) are scored using macro averaged F1 and the regression task (6) is scored using 
+
+R2. Solid lines indicate mean score and the hollow circles individual replicates. Pretrained models consistently outperform non-pretrained models and the baselines. Because the benchmarking datasets contain taxonomic labels not seen during pretraining, some tokens are unknown to the transformer models. The baseline methods can use all tokens; when marked as (no unk), the unknown tokens are removed to match the transformer models’ vocabulary and enable direct comparison. ing is consistent across all tasks. To further illustrate the effectiveness of pretraining for every model we plot the difference in mean score between the pretrained and non-trained models for all tasks (Figure S1), for almost all models across almost all tasks we see that the performance of the pretrained model is superior. This demonstrates the effectiveness of self supervised pretraining to learn general representations of microbiomes that improve performance across a wide variety of downstream tasks. From the per task breakdown we also see that the "no unk" variants of the baseline models clearly outperform all transformers for task 4 and task 7, demonstrating that for some of the small per task datasets we see no clear advantage for using transformers over baseline models even when vocabulary is kept con-sistent. Supplementary figures provide additional complementary metrics for the classification tasks. One-vs-one macro ROC AUC (Figure S3), macro precision–recall (Figure S4) and balanced accuracy (Figure S5). 9
+
+.CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint 0.600 0.650 0.700 0.750 0.800 0.850                                            
+
+> Linear (no unk)
+> Linear
+> 170M
+> 79M
+> MGM
+> 45M
+> 29M
+> 85M-gpt-small
+> 18M
+> 6M
+> RF (no unk)
+> 10M
+> 6M-MGM
+> RF
+> MGM
+> 6M-MGM
+> 29M
+> 10M
+> 85M-gpt-small
+> 6M
+> 18M
+> 79M
+> 170M
+> 45M
+> 0.750 0.800 0.850 0.900 0.950
+> 0.700 0.750 0.800 0.850 0.900 0.950
+> Linear (no unk)
+> Linear
+> 170M
+> 79M
+> MGM
+> 45M
+> 29M
+> 85M-gpt-small
+> 18M
+> 6M
+> RF (no unk)
+> 10M
+> 6M-MGM
+> RF
+> MGM
+> 6M-MGM
+> 29M
+> 10M
+> 85M-gpt-small
+> 6M
+> 18M
+> 79M
+> 170M
+> 45M
+> 0.600 0.650 0.700 0.750 0.800 0.850
+> 0.0800 0.100 0.120 0.140 0.160 0.180 0.200 0.220 0.240
+> Linear (no unk)
+> Linear
+> 170M
+> 79M
+> MGM
+> 45M
+> 29M
+> 85M-gpt-small
+> 18M
+> 6M
+> RF (no unk)
+> 10M
+> 6M-MGM
+> RF
+> MGM
+> 6M-MGM
+> 29M
+> 10M
+> 85M-gpt-small
+> 6M
+> 18M
+> 79M
+> 170M
+> 45M
+> 0.00 0.100 0.200 0.300 0.400 0.500 0.600 0.700
+> 0.550 0.600 0.650 0.700 0.750 0.800
+> Linear (no unk)
+> Linear
+> 170M
+> 79M
+> MGM
+> 45M
+> 29M
+> 85M-gpt-small
+> 18M
+> 6M
+> RF (no unk)
+> 10M
+> 6M-MGM
+> RF
+> MGM
+> 6M-MGM
+> 29M
+> 10M
+> 85M-gpt-small
+> 6M
+> 18M
+> 79M
+> 170M
+> 45M
+> 0.640 0.660 0.680 0.700 0.720 0.740 0.760 0.780
+> Pretrained Non-pretrained Baseline
+
+F1 F1 F1 F1 F1 R² F1 F1 
+
+1. Biome 2. Gut biome 
+
+3. Original SDC 4. Drug vs non-drug 
+
+5. Drug class 6. Drug degradation 
+
+7. Infant age 8. Birth mode Figure 3: Score per task for all models, classification tasks (1-5 and 7-8) are scored using macro averaged F1 score and the regression task (7) is scored using R2. Solid lines indicate mean score and the hollow circles individual replicates. Pretrained models consistently outperform non-pretrained models, but for some tasks the RF baseline outperforms the transformer models. Because the benchmarking datasets contain taxonomic labels not seen during pretraining, some tokens are unknown to the transformer models. The baseline methods can use all tokens; when marked as (no unk), the unknown tokens are removed to match the transformer models’ vocabulary and enable direct comparison. 10 
+
+.CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint 2.6 Transformer models outperform baselines at obtainable dataset sizes 
+
+To understand how model performance scales with the amount of available task specific training data, we plot the difference in the benchmark score of the best performing Waypoint model (45M) compared to the RF (no unk) baseline against benchmark dataset size. Figure 4 shows the difference in mean score (averaged over the three independent runs) between Waypoint and the baseline as a function of training set size for each task. We see that Waypoint increasingly outperforms the baseline as the number of training examples grows. Notably, from approximately 10k training examples onwards, our Waypoint model consistently achieves higher mean scores than the baseline. Importantly, 10k examples falls within practically obtainable dataset sizes for microbiome applications. The pretrained model outperforms the non-pretrained model across the full range of dataset sizes examined, suggesting that pretraining provides a stable benefit within the range of dataset sizes in the benchmark. Notably, at small dataset sizes (below 1k examples), the Waypoint model underperforms the baseline, highlighting that a minimum quantity of training data is required before transformer-based approaches become competitive. These results suggest that pretrained transformers are a practical choice for the tasks studied here whenever training datasets of at least 10k examples can be assembled. 
+
+2.7 Pretraining enables model scaling 
+
+We next investigate how benchmark performance varies as a function of model size, and in particular whether pretraining alters scaling behavior. Figure 5 shows benchmark scores for the three replicates for both the pretrained and non-pretrained transformer models. A clear divergence emerges between pretrained and non-pretrained models as model size increases. Pretrained models exhibit a modest but consistent improvement in performance with increasing parameter count, as indicated by the positive slope of the fitted trend. In contrast, non-pretrained models show a degradation in performance as model size grows, with larger models failing to translate additional capacity into improved task performance. This difference suggests that pretraining is critical for effectively utilizing increased model capacity. Without pretraining, larger models appear harder to optimize and may overfit or fail to generalize, leading to negative scaling with increased size. Conversely, pretraining provides a strong initialization that allows larger models to leverage their additional representational capacity, 11             
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint 23456789
+> 10k 234
+> −0.1
+> −0.05
+> 0
+> 0.05
+> 0.1
+> 0.15
+> 0.2
+> Pretrained Non-pretrained Baseline
+> Log10(training dataset size)
+> Score − Baseline
+
+Figure 4: The difference in mean score of transformer models compared to the mean score of the random forest baseline, against the size of the training dataset for each task in the benchmark. Because the benchmarking datasets contain taxonomic labels not seen during pretraining, some tokens are unknown to the transformer models and here we use the random forest model with these tokens removed (the no unk variant). At 10k datapoints and above, all pretrained transformers are better than the baseline. Solid lines are ordinary least squares lines of best fit. resulting in steady performance gains. This finding has practical implications for model selection: investing in larger architectures is only justified when pretraining is also employed, as scaling a randomly initialised model yields may even be detrimental. Overall, these results demonstrate that pretraining fundamentally changes the scaling properties of transformer models, enabling positive performance scaling with model size and unlocking the benefits of increased capacity that are otherwise inaccessible. 12                 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint 5678910M 23456789100M 2
+> 0.66
+> 0.67
+> 0.68
+> 0.69
+> 0.7
+> 0.71
+> 0.72
+> 0.73
+> 0.74
+> Non-pretrained Pretrained
+> Model size (parameters)
+> Score (mean F1/R2)
+
+Figure 5: Benchmark performance as a function of model size for pretrained and non-pretrained transformer models. Each point represents the score from an individual training replicate, solid lines are ordinary least squares lines of best fit. Pretrained models show consistent improvements with increasing parameter count, while non-pretrained models exhibit a decline in performance at larger scales, highlighting the importance of pretraining for effective model scaling. 
+
+## 3 Discussion 
+
+In this work we introduced Atlas, Compass and the family of Waypoint models. Respectively, these represent the largest microbiome pretraining dataset, a curated benchmark of eight predictive tasks spanning gut and environmental microbiome applications, and the currents state of the art in microbiome foundation models. We systematically evaluate the performance of pretrained and non-pretrained GPT-2-style transformer models across a range of model and dataset sizes. Our results demonstrate three principal findings: that self-supervised pretraining on large-scale microbiome data consistently improves downstream task performance, that pretrained transformers outperform classical baselines at practically obtainable dataset sizes and that pretraining is a prerequisite for positive model scaling. Our results also demonstrate that the benefits of pretraining are robust across a wide range of biological tasks, including classification and regression problems derived from independent datasets, demonstrating that autoregres-sive pretraining on taxonomic abundance sequences is an effective strategy 13 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint
+
+for learning general microbiome representations. Across all eight bench-mark tasks, pretrained transformers consistently outperform non-pretrained counterparts. Notably, even relatively small pretrained models (e.g., 6M parameters) outperform larger non-pretrained transformers, reinforcing the value of learned representations over raw model capacity. Importantly, our 6M-MGM model, which shares the same architecture as the original MGM model [ 10], but was pretrained on our larger corpus with fallback tokenisation outperformed the original MGM on the benchmark. This demonstrates that dataset scale and tokenisation strategy are important drivers of foundation model quality. A practical concern for microbiome foundation models is whether the dataset sizes required to outperform classical baselines are realistically achiev-able in typical research settings. Our analysis demonstrates that pretrained transformers exceed the random forest baseline from approximately 10k training examples and above. 10k labelled samples is a threshold that falls within the range of many existing microbiome studies, and is likely to become increasingly attainable with advances in large-scale microbiome cohort stud-ies and in vitro microbiome screening. Notably, the dataset exploring how diverse microbiomes metabolize drugs, characterised by [ 19] (used for task 6 in our benchmark), contained 15419 samples, with 9282 used for training. This finding provides practical guidance for practitioners deciding whether to adopt transformer-based models for a given task. A central finding of this study is the importance of pretraining to unlock the benefits of model scaling. Without pretraining, increasing model size leads to degraded performance and higher variance across replicates. In contrast, pretrained models exhibit positive scaling behaviour, with larger models achieving better or comparable performance. This highlights that pretraining is necessary for effectively utilising increased model capacity in microbiome settings, meaning that investment in larger transformer architectures for microbiome tasks is only warranted when a sufficiently large pretraining corpus is available. The scaling behaviour observed among pretrained models, with the 45M parameter model achieving the highest mean benchmark score rather than the largest 170M model, warrants further investigation. One possible explanation is that the 170M model requires more task-specific data than is available in the benchmark tasks to fully utilise its capacity, and that its advantage would become apparent at larger dataset sizes. Given that the scores were relatively close, it is also possible that performance has plateaued at this scale, or that the observed differences are due to noise. Future work with larger fine-tuning datasets will be needed to distinguish between these possibilities. 14 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint
+
+Several limitations of this study should be acknowledged. First, Compass currently focuses exclusively on gut and environmental microbiome tasks; while the pretraining corpus is ecologically diverse, the benchmark itself does not yet reflect the full breadth of microbiome applications, including oral, skin, or respiratory microbiomes. Expanding the benchmark to cover a wider range of body sites and environments is an important direction for future work. Second, while our baseline comparisons focus on random forest and linear regression models, a broader set of comparators including gradient boosting methods, other classical approaches, or alternative neural architectures could be evaluated. However, exhaustively evaluating every possible method is not feasible, and our primary aim here is to characterise scaling trends in pretrained transformer models rather than to comprehensively survey the landscape of microbiome machine learning methods; the chosen baselines are representative and sufficient for this purpose. Third, we were unable to include comparisons with two recently published microbiome foundation models [ 11, 12 ] due to the absence of publicly available models, which limits the scope of our comparative analysis. We encourage the release of model weights alongside future publications to facilitate community benchmarking. Fourth, our models were pretrained with a fixed context length of 512 tokens; microbiome samples with high richness may be truncated, and future work should investigate whether longer context windows yield additional gains. Furthermore, previous papers have suggested the efficacy of more fine-grained treatment of relative abundance [ 12], although other work has suggested that rank ordering is just as effective [ 11]. Thus, future work should be done in further understanding the best way to represent relative abundance. Empirically, we observed minimal differences in sequence length distributions and total token counts between genus-level and species-level (with fallback) tokenisation strategies, and therefore proceeded at the genus-level. Nonetheless, this choice may limit taxonomic resolution, and the impact of more precise tokenisation schemes remains an open question. Additionally, a key limitation of the models trained here is the reliance on taxonomic labels for token identification. This means that downstream tasks can contain significant quantities of tokens that are not understood by a pretrained model. We see that this is an issue of varying magnitude with all of our benchmarking datasets (Table 4), likely limiting the efficacy of our models. This can be solved by reprocessing raw data with consistent bioinformatics pipelines. However, this can require significant expertise and compute, so future work to generalise tokenisation schemes to work across datasets should be done. Additional work should also explore a broader range of model architectures beyond GPT-2 to assess their suitability for microbiome modelling tasks. 15 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint
+
+Taken together, our results establish that self-supervised pretraining on large-scale microbiome sequence data is a powerful and practical strategy for improving performance across diverse downstream tasks, and the release of the Atlas dataset enables the community to pretrain their own models. The Compass benchmark provides a standardised and reproducible framework for evaluating future models, and we hope it will serve as a community resource for tracking progress in microbiome machine learning. We have also demonstrated that Waypoint models have achieved state-of-the-art performance and we are releasing the Waypoint-6M and Waypoint-45M foundation models to the community. As microbiome datasets continue to grow in scale and diversity, we anticipate that the benefits of foundation model pretraining will become increasingly pronounced, making this a productive direction for future research. 
+
+## 4 Methods 
+
+4.1 Pretraining Dataset 
+
+Data Acquisition Taxonomic abundance data were downloaded from the MGnify public database [ 16] across all available pipeline versions (v1.0–v5.0) and four sequencing modalities: amplicon 16S rRNA, whole-genome shotgun metagenomic, metagenomic assembly, and metatranscriptomic. Data were obtained in the form of per-study abundance matrices where each column is a sample run accession and each row is a taxon, with values representing relative abundances. All datasets were versioned with DVC to ensure reproducibility of all download and processing steps. Two quality filters were applied: (i) any taxon with relative abundance below 10 −4 was set to zero, and (ii) any sample with fewer than 10 taxa remaining after the abundance filter was removed. After filtering, the dataset comprised 539,308 datapoints. Prior to any tokenisation or model training, the filtered dataset was randomly partitioned into a pretraining set (90%) and a held-out bench-marking set (10%) using a fixed random seed ( s = 42 ). The benchmarking partition is used exclusively to supply labelled samples for tasks 1 and 2 of the benchmark, ensuring no overlap with pretraining data. 
+
+Taxonomic Tokenisation Each microbiome sample is represented as an ordered sequence of taxonomic strings. A custom TaxonomicTokenizer was built by extracting all genus-level names present in the pretraining data. Where a taxon lacked a genus-level classification, the tokeniser falls back to 16 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint
+
+the most specific available rank (family, order, and so on). The vocabulary comprises 14,389 taxonomic tokens plus five special tokens ( <bos> , <eos> ,
+
+<pad> , <unk> , <mask> ), for a total vocabulary size of 14,394. As in [ 10 ] within each sample, taxa are ordered by the z-scored relative abundance computed across the pretraining corpus: for each taxon, t, we compute the z-score of its observed relative abundance using the mean, μt,and standard deviation, σt, then sort tokens from highest to lowest z-score. The means and standard deviations of each token in the pretraining dataset are serialised with the tokeniser so the same normalisation can be used for downstream tasks. Sequences are truncated to a maximum length of 510 then flanked by <bos> and <eos> tokens. 
+
+4.2 Pretraining 
+
+We pretrain GPT-2-style causal language models with a next-token predic-tion objective. We explore model scales from 6M to 170M parameters by varying the number of layers and the embedding dimension. All models use HuggingFace transformers and were trained using the AdamW optimiser with a linear learning-rate warmup over the first 1,000 steps (learning rate 
+
+10 −3, weight decay 10 −3, batch size 32 per device). Training proceeded for up to 100 epochs with early stopping on validation loss (patience of 10 evaluations at ∼half-epoch intervals). A 10% random split of the pretraining set was held out as an in-training validation set for early stopping; this split is distinct from the held-out benchmarking partition. The GPU used and runtime of each pretraining run are shown in Table 5 Table 5: GPU and runtime for model pretraining 
+
+Model GPU Runtime 
+
+gpt2-6m-mgm NVIDIA L40S-48GB 2d 5h 20m gpt2-6m NVIDIA L40S-48GB 2d 1h 53m gpt2-10m NVIDIA L40S-48GB 2d 12h 20m gpt2-18m NVIDIA L40S-48GB 3d 22h 13m gpt2-29m NVIDIA L40S-48GB 5d 9h 43m gpt2-45m NVIDIA A100-40GB 5d 1h 31m gpt2-79m NVIDIA A100-40GB 3d 20h 55m gpt2-85m-gpt-small NVIDIA A100-40GB 6d 4h 42m gpt2-170m NVIDIA H100-80GB 3d 17h 48m 17 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint
+
+4.3 Benchmark Construction 
+
+Datasets. The benchmark draws on four publicly available microbiome datasets. The MGnify dataset [ 16] consists of metagenomically profiled sam-ples spanning environments including gut, skin, respiratory tract, oral cavity, marine, freshwater, soil, and engineered systems; biome labels were parsed from the hierarchical biome lineage metadata field (e.g., root: Host-associated: Human: Digestive system: Fecal ). The Shi et al. drug–microbiome dataset [ 18] comprises 16S rRNA amplicon profiles of stabilised gut microbial communities exposed to a panel of drugs or control conditions, with drug identity and ATC classification provided as metadata. The Mastrorilli et al. dataset [ 19 ] contains paired community composition and drug degradation rate measurements for human gut microbial communities incubated with a panel of compounds. The Roswall et al. infant dataset [ 20] contains longitu-dinal 16S rRNA profiles of infant gut communities with associated delivery mode and timepoint metadata. 
+
+Data processing. All datasets are processed to a common long format in which each row represents one datapoint, with two list fields storing taxonomic identifiers and corresponding relative abundances in descending order. Taxo-nomic strings are encoded with standard rank prefixes (e.g., k__Bacteria; p__Firmicutes; g__Lactobacillus ). ASV-level abundance tables were collapsed to genus level by summing relative abundances within each unique genus-level lineage per sample. For the Mastrorilli et al. dataset, single-rank taxon identifiers were first mapped to full NCBI-derived taxonomic strings prior to genus-level collapse. 
+
+Train/validation/test splits. Data are partitioned into train (80%), validation (10%), and test (10%) sets using a fixed random seed (42). Because the Mastrorilli dataset is nmicrobiomes ×ndrugs each microbiome appears many times in the dataset. To prevent the same microbiome appearing in train and testing data all observations for a given microbiome are grouped before splitting. The Mastrorilli et al. dataset uses a 60/20/20 split. All splits are pre-computed and stored with the processed data to ensure reproducibility across model evaluations. 
+
+Task definitions. Eight tasks are defined over the four datasets. Tasks 1 and 2 are multi-output classification tasks over the MGnify dataset [ 16]; task 1 predicts all five biome hierarchy levels simultaneously, while task 2 restricts to samples labeled as Digestive system at hierarchy level 3 and predicts only 18 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint
+
+the two finer-grained levels. For datapoints with only partial coverage of the biome levels, the levels that are missing are masked so that they do not contribute to the loss. Tasks 3–5 are single-output classification tasks over the Shi et al. dataset: task 3 predicts the sample from which a drug perturbed community originated from, task 4 predicts binary drug/control status, and task 5 predicts the first-level ATC drug class a microbiome was exposed to. Task 6 is a regression task predicting the rate of drug degradation from microbiome composition and a one-hot-encoded drug indicator. Tasks 7 and 8 are single-output classification tasks over the infant dataset, predicting the age of the baby the microbiome was taken from and the delivery mode respectively. 
+
+Evaluation metrics. We report macro F1 as the primary summary of performance for classification tasks. This metric computes the F1 score independently for each class and then averages them with equal weight, ensuring that the metric is not over sensitive to performance on majority labels. Supplementary figures report additional complementary metrics; one-vs-one macro ROC AUC (Figure S3) captures pairwise discriminability by averaging AUC values across all class pairs, macro precision–recall (Figure S4) summarizes the balance between precision and recall across classes without being dominated by label frequency, balanced accuracy (Figure S5) reports the unweighted mean of per-class recall, reflecting how well each class is recovered on average. For the regression task in the benchmark, performance is evaluated using the coefficient of determination ( R2). Because R2 can take negative values we clamp it to 0 to maintain consistency with other metrics reported on a [0, 1] scale. 
+
+4.4 Downstream Fine-tuning on the Benchmark 
+
+For each benchmark task, a lightweight task-specific head was appended to the GPT-2 backbone. A sequence-level representation was obtained by taking the hidden state of the last non-padding token (i.e. the <eos> position). For task 6 (drug degradation), which includes drug identity as a feature, a one-hot encoding of the drug compound was concatenated to this before the head. For classification tasks, one independent linear head per target was applied to produce class logits, with cross-entropy loss computed using class-frequency-based weighting to mitigate class imbalance. For the regression task (task 6), a single linear head per target was used and trained with mean-squared-error loss. All model weights (LLM backbone + head) were updated during fine-tuning. Models were trained with the AdamW optimiser 19 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint
+
+(learning rate 3 × 10 −5, weight decay 10 −3, batch size 64, linear warmup over 1,000 steps) for up to 300 epochs with early stopping on validation loss (patience of 5 evaluations every 400 steps). For the classification tasks class weights were computed on the training split using the balanced weighting scheme wc = N/ (K · nc), where N is the total number of training samples, K
+
+is the number of classes, and nc is the number of training samples belonging to class c. These weights were passed to the cross-entropy loss,weighting classes to counteract class inbalance. The best checkpoint (lowest validation loss) was reloaded before test-set evaluation. Benchmark samples were tokenised using the same TaxonomicTokenizer 
+
+and z-scored relative abundance ordering described above (Section 4.1), with token z-score statistics loaded from the file saved alongside each model checkpoint during pretraining. This ensures that the token ordering seen at fine-tuning time is consistent with that used during pretraining. For the MGM model the weights, tokeniser and token z-score statistics were taken from the repository provided in the paper [10] 
+
+Baselines Two non-neural baselines were included for comparison. For logistic regression (classification) and ridge regression (regression), a bag-of-taxa feature vector was constructed for each sample, where each dimension corresponds to a unique taxon observed in the training split and its value is the observed relative abundance (0 if absent). The regularisation strength 
+
+C was selected by grid search over {0.01 , 0.1, 1, 10 } on the validation set. For the random forest baseline, the same bag-of-taxa matrix was used with hyperparameter search over number of trees ( {100 , 200 , 300 , 500 }) and maximum depth ( {10 , 20 , unlimited }). Both baselines use class-balanced weighting when calculating loss for classification and, for tasks including drug identity, append a one-hot drug encoding to the feature vector. 
+
+## Code and Data Availability 
+
+The Waypoint model weights, the Atlas dataset and the Compass benchmark are available on Hugging Face at https://huggingface.co/outpost-bio/ ,and example pre-training and finetuning/benchmarking code is available on GitHub at https://github.com/Outpost-Bio/waypoint . All artifacts are released under the Apache License, Version 2.0. The Hugging Face repositories are gated; access is granted automatically upon request via the Hugging Face interface. 20 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint
+
+## References 
+
+[1] Yanrong Ji, Zhihan Zhou, Han Liu, and Ramana V Davuluri. Dnabert: pre-trained bidirectional encoder representations from transformers model for dna-language in genome. Bioinformatics , 37(15):2112–2120, 02 2021. ISSN 1367-4803. doi: 10.1093/bioinformatics/btab083. URL 
+
+https://doi.org/10.1093/bioinformatics/btab083 .[2] Eric Nguyen, Michael Poli, Marjan Faizi, Armin Thomas, Callum Birch-Sykes, Michael Wornow, Aman Patel, Clayton Rabideau, Stefano Mas-saroli, Yoshua Bengio, Stefano Ermon, Stephen A. Baccus, and Chris Ré. Hyenadna: Long-range genomic sequence modeling at single nucleotide resolution, 2023. URL https://arxiv.org/abs/2306.15794 .[3] Hugo Dalla-Torre, Liam Gonzalez, Javier Mendoza-Revilla, Nicolas Lopez Carranza, Adam Henryk Grzywaczewski, Francesco Oteri, Chris-tian Dallago, Evan Trop, Bernardo P. de Almeida, Hassan Sirelkhatim, Guillaume Richard, Marcin Skwark, Karim Beguir, Marie Lopez, and Thomas Pierrot. Nucleotide transformer: building and evaluating robust foundation models for human genomics. Nature Methods , 22(2):287–297, Feb 2025. ISSN 1548-7105. doi: 10.1038/s41592-024-02523-z. URL 
+
+https://doi.org/10.1038/s41592-024-02523-z .[4] Garyk Brixi, Matthew G. Durrant, Jerome Ku, Michael Poli, Greg Brockman, Daniel Chang, Gabriel A. Gonzalez, Samuel H. King, David B. Li, Aditi T. Merchant, Mohsen Naghipourfar, Eric Nguyen, Chiara Ricci-Tam, David W. Romero, Gwanggyu Sun, Ali Taghibak-shi, Anton Vorontsov, Brandon Yang, Myra Deng, Liv Gorton, Nam Nguyen, Nicholas K. Wang, Etowah Adams, Stephen A. Baccus, Steven Dillmann, Stefano Ermon, Daniel Guo, Rajesh Ilango, Ken Janik, Amy X. Lu, Reshma Mehta, Mohammad R.K. Mofrad, Made-lena Y. Ng, Jaspreet Pannu, Christopher Ré, Jonathan C. Schmok, John St. John, Jeremy Sullivan, Kevin Zhu, Greg Zynda, Daniel Bal-sam, Patrick Collison, Anthony B. Costa, Tina Hernandez-Boussard, Eric Ho, Ming-Yu Liu, Thomas McGrath, Kimberly Powell, Dave P. Burke, Hani Goodarzi, Patrick D. Hsu, and Brian L. Hie. Genome modeling and design across all domains of life with evo 2. bioRxiv ,2025. doi: 10.1101/2025.02.18.638918. URL https://www.biorxiv. org/content/early/2025/02/21/2025.02.18.638918 .[5] Geraldene Munsamy, Gavin Ayres, Carla Greco, Keith Kam, Gus Minto-Cowcher, John St John, Tanggis Bohnuud, Matthew Bakalar, William 21 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint
+
+Chow, Robert Pecoraro, Marcello der Torossian Torres, Aaron Kollasch, Marcus Leung, Hassan Sirelkhatim, Francesco Farina, Connor McGinnis, Srijani Sridhar, Daniel Anderson, Francesco Oteri, Ali Taghibakhshi, Jeremie Dona, Tyler Shimko, Cedric Stenbeeke, Alexandros Papadopou-los, Malcolm Krolick, Fabian Spoendlin, Purba Gupta, Sandeep Kumar, Anne Bara, Jared Wilbur, Noelia Ferruz, Timur Rvachov, Fangping Wang, Hanqun Cao, Hyun-Su Lee, Japan Mehta, Raphael Chaleil, Valerio Pereno, Sid Potti, Chris Emerson, Roy Tal Dew, Kevin K Yang, Eric Nguyen, Neha Tadimeti, Jillian F. Banfield, Alicia Frame, Emma Bolton, David Ruau, Rory Kelleher, Anthony Costa, Kimberley Powell, Cesar de la Fuente-Nunez, Glen-Oliver Gowers, Oliver Vince, Jonathan Finn, and Philipp Lorenz. Designing ai-programmable ther-apeutics with the eden family of foundation models. bioRxiv , 2026. doi: 10.64898/2026.01.12.699009. URL https://www.biorxiv.org/ content/early/2026/01/12/2026.01.12.699009 .[6] Thomas Hayes, Roshan Rao, Halil Akin, Nicholas J. Sofroniew, Deniz Oktay, Zeming Lin, Robert Verkuil, Vincent Q. Tran, Jonathan Deaton, Marius Wiggert, Rohil Badkundri, Irhum Shafkat, Jun Gong, Alexander Derry, Raul S. Molina, Neil Thomas, Yousuf A. Khan, Chetan Mishra, Carolyn Kim, Liam J. Bartie, Matthew Nemeth, Patrick D. Hsu, Tom Sercu, Salvatore Candido, and Alexander Rives. Simulating 500 million years of evolution with a language model. Science , 387(6736):850–858, 2025. doi: 10.1126/science.ads0018. URL https://www.science.org/ doi/abs/10.1126/science.ads0018 .[7] Hansol Lee, Songyeon Lee, Ingoo Lee, and Hojung Nam. Amp-bert: Prediction of antimicrobial peptide function based on a bert model. 
+
+Protein Science , 32(1):e4529, 2023. doi: https://doi.org/10.1002/pro. 4529. URL https://onlinelibrary.wiley.com/doi/abs/10.1002/ pro.4529 .[8] Maciej Wiatrak, Ramon Viñas Torné, Maria Ntemourtsidou, Adam Dinan, David C. Abelson, Divya Arora, Maria Brbić, Aaron Weimann, and R. Andres Floto. A contextualised protein language model reveals the functional syntax of bacterial evolution. bioRxiv , 2025. doi: 10.1101/ 2025.07.20.665723. URL https://www.biorxiv.org/content/early/ 2025/07/20/2025.07.20.665723 .[9] Žiga Avsec, Natasha Latysheva, Jun Cheng, Guido Novati, Kyle R. Taylor, Tom Ward, Clare Bycroft, Lauren Nicolaisen, Eirini Arvaniti, 22 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint
+
+Joshua Pan, Raina Thomas, Vincent Dutordoir, Matteo Perino, Soham De, Alexander Karollus, Adam Gayoso, Toby Sargeant, Anne Mottram, Lai Hong Wong, Pavol Drotár, Adam Kosiorek, Andrew Senior, Richard Tanburn, Taylor Applebaum, Souradeep Basu, Demis Hassabis, and Pushmeet Kohli. Advancing regulatory variant effect prediction with alphagenome. Nature , 649(8099):1206–1218, Jan 2026. ISSN 1476-4687. doi: 10.1038/s41586-025-10014-0. URL https://doi.org/10.1038/ s41586-025-10014-0 .[10] Haohong Zhang, Yuli Zhang, Zixin Kang, Jiayun Xiong, Ronghua Yang, and Kang Ning. Mgm as a large-scale pretrained founda-tion model for microbiome analyses in diverse contexts. Advanced Science , n/a(n/a):e13333, 2026. doi: https://doi.org/10.1002/advs. 202513333. URL https://advanced.onlinelibrary.wiley.com/doi/ abs/10.1002/advs.202513333 .[11] Quintin Pope, Rohan Varma, Christine Tataru, Maude M David, and Xiaoli Fern. Learning a deep language model for microbiomes: The power of large scale unlabeled microbiome data. PLOS Computational Biology , 21(5):1–24, 05 2025. doi: 10.1371/journal.pcbi.1011353. URL 
+
+https://doi.org/10.1371/journal.pcbi.1011353 .[12] Nicholas A. Medearis, Siyao Zhu, and Ali R. Zomorrodi. Biomegpt: A foundation model for the human gut microbiome. bioRxiv , 2026. doi: 10.64898/2026.01.05.697599. URL https://www.biorxiv.org/ content/early/2026/01/05/2026.01.05.697599 .[13] Jared Kaplan, Sam McCandlish, Tom Henighan, Tom B Brown, Ben-jamin Chess, Rewon Child, Scott Gray, Alec Radford, Jeffrey Wu, and Dario Amodei. Scaling laws for neural language models. arXiv preprint arXiv:2001.08361 , 2020. [14] Jordan Hoffmann, Sebastian Borgeaud, Arthur Mensch, Elena Buchatskaya, Trevor Cai, Eliza Rutherford, Diego de Las Casas, Lisa Anne Hendricks, Johannes Welbl, Aidan Clark, Tom Hennigan, Eric Noland, Katie Millican, George van den Driessche, Bogdan Damoc, Aurelia Guy, Simon Osindero, Karen Simonyan, Erich Elsen, Jack W. Rae, Oriol Vinyals, and Laurent Sifre. Training compute-optimal large language models, 2022. URL https://arxiv.org/abs/2203.15556 .[15] Xingyi Cheng, Bo Chen, Pan Li, Jing Gong, Jie Tang, and Le Song. 23 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint
+
+Training compute-optimal protein language models, 2024. URL https: //arxiv.org/abs/2411.02142 .[16] Lorna Richardson, Ben Allen, Germana Baldi, Martin Beracochea, Maxwell L Bileschi, Tony Burdett, Josephine Burgin, Juan Caballero-Pérez, Guy Cochrane, Lucy J Colwell, Tom Curtis, Alejandra Escobar-Zepeda, Tatiana A Gurbich, Varsha Kale, Anton Korobeynikov, Shriya Raj, Alexander B Rogers, Ekaterina Sakharova, Santiago Sanchez, Dar-ren J Wilkinson, and Robert D Finn. Mgnify: the microbiome sequence data analysis resource in 2023. Nucleic Acids Research , 51(D1):D753– D759, 12 2022. ISSN 0305-1048. doi: 10.1093/nar/gkac1080. URL 
+
+https://doi.org/10.1093/nar/gkac1080 .[17] Alec Radford, Jeffrey Wu, Rewon Child, David Luan, Dario Amodei, and Ilya Sutskever. Language models are unsupervised multitask learners. 
+
+OpenAI Blog , 1(8), 2019. [18] Handuo Shi, Daniel P Newton, Taylor H Nguyen, Sylvie Estrela, Juan Sanchez, Michael Tu, Po-Yi Ho, Qinglin Zeng, Brian DeFelice, Justin Sonnenburg, and Kerwyn Casey Huang. Nutrient competition predicts gut microbiome restructuring under drug perturbations. August 2024. [19] Eleonora Mastrorilli, Pamela Herd, Federico E. Rey, Andrew L. Good-man, and Michael Zimmermann. Linking interpersonal differences in gut microbiota composition and drug biotransformation activity. bioRxiv ,2026. doi: 10.64898/2026.01.21.700809. URL https://www.biorxiv. org/content/early/2026/01/21/2026.01.21.700809 .[20] Josefine Roswall, Lisa M Olsson, Petia Kovatcheva-Datchary, Staffan Nilsson, Valentina Tremaroli, Marie-Christine Simon, Pia Kiilerich, Rozita Akrami, Manuela Krämer, Mathias Uhlén, Anders Gummesson, Karsten Kristiansen, Jovanna Dahlgren, and Fredrik Bäckhed. Develop-mental trajectory of the healthy human gut microbiota during the first 5 years of life. Cell Host Microbe , 29(5):765–776.e3, May 2021. 
+
+## A Appendix 
+
+A.1 Supplementary Figures 
+
+24 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint
+
+0.00 0.0100 0.0200 0.0300 0.0400 0.0500 0.0600 0.0700 
+
+85M_gpt_small 
+
+79M 
+
+170M 
+
+18M 
+
+6M 
+
+29M 
+
+45M 
+
+MGM 
+
+10M 
+
+6M_MGM 
+
+0.00 0.0200 0.0400 0.0600 0.0800 0.100 0.120 
+
+45M 
+
+29M 
+
+170M 
+
+85M_gpt_small 
+
+18M 
+
+10M 
+
+79M 
+
+6M 
+
+6M_MGM 
+
+MGM 
+
+0.00 0.0100 0.0200 0.0300 0.0400 0.0500 0.0600 0.0700 
+
+170M 
+
+79M 
+
+45M 
+
+10M 
+
+29M 
+
+MGM 
+
+85M_gpt_small 
+
+6M_MGM 
+
+18M 
+
+6M 
+
+0.00 0.0200 0.0400 0.0600 0.0800 
+
+170M 
+
+79M 
+
+6M 
+
+10M 
+
+45M 
+
+29M 
+
+18M 
+
+MGM 
+
+6M_MGM 
+
+85M_gpt_small 
+
+0.00 0.0100 0.0200 0.0300 0.0400 0.0500 
+
+6M_MGM 
+
+18M 
+
+10M 
+
+170M 
+
+6M 
+
+MGM 
+
+85M_gpt_small 
+
+79M 
+
+45M 
+
+29M 
+
+0.00 0.0100 0.0200 0.0300 0.0400 
+
+29M 
+
+170M 
+
+45M 
+
+MGM 
+
+6M 
+
+10M 
+
+85M_gpt_small 
+
+79M 
+
+18M 
+
+6M_MGM 
+
+0.00 0.0200 0.0400 0.0600 0.0800 0.100 0.120 
+
+79M 
+
+85M_gpt_small 
+
+45M 
+
+170M 
+
+18M 
+
+29M 
+
+MGM 
+
+6M 
+
+10M 
+
+6M_MGM 
+
+−0.0100 0.00 0.0100 0.0200 0.0300 
+
+6M 
+
+6M_MGM 
+
+45M 
+
+79M 
+
+29M 
+
+170M 
+
+MGM 
+
+10M 
+
+18M 
+
+85M_gpt_small 
+
+Δ F1 Δ F1 Δ F1 Δ F1 Δ F1 Δ R² Δ F1 Δ F1 
+
+1. Biome 2. Gut biome 
+
+3. Original SDC 4. Drug vs non-drug 
+
+5. Drug class 6. Drug degradation 
+
+7. Infant age 8. Birth mode Figure S1: The change in benchmark score caused by pretraining for all tasks and models. Positive values indicate pretrained models perform better, negative values indicate non-pretrained models perform better. For almost all models and all tasks 25 
+
+.CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint 0 100 200 300 400 500 600 700         
+
+> 0
+> 20k
+> 40k
+> 60k
+> 80k
+> 0100 200 300 400 500 600 700 800
+> 0
+> 20k
+> 40k
+> 60k
+> 80k
+
+Sequence length (tokens) Sequence length (tokens) 
+
+> Count Count
+
+Sequence length distribution (genus) 
+
+Sequence length distribution (species) Figure S2: The distribution of sequence lengths when tokenising at the genus (top) and species (bottom) taxonomic levels. 26 
+
+.CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint 0.700 0.750 0.800 0.850 0.900 0.950 1.00 
+
+Linear 
+
+Linear (no unk) 
+
+RF (no unk) 
+
+RF 
+
+MGM 
+
+MGM 
+
+6M-MGM 
+
+170M 
+
+85M-gpt-small 
+
+29M 
+
+10M 
+
+6M 
+
+45M 
+
+18M 
+
+29M 
+
+79M 
+
+85M-gpt-small 
+
+6M 
+
+10M 
+
+45M 
+
+18M 
+
+170M 
+
+6M-MGM 
+
+79M 
+
+0.800 0.850 0.900 0.950 1.00 
+
+0.920 0.940 0.960 0.980 1.00 
+
+Linear 
+
+Linear (no unk) 
+
+RF (no unk) 
+
+RF 
+
+MGM 
+
+MGM 
+
+6M-MGM 
+
+170M 
+
+85M-gpt-small 
+
+29M 
+
+10M 
+
+6M 
+
+45M 
+
+18M 
+
+29M 
+
+79M 
+
+85M-gpt-small 
+
+6M 
+
+10M 
+
+45M 
+
+18M 
+
+170M 
+
+6M-MGM 
+
+79M 
+
+0.750 0.800 0.850 0.900 
+
+0.640 0.660 0.680 0.700 0.720 0.740 0.760 
+
+Linear 
+
+Linear (no unk) 
+
+RF (no unk) 
+
+RF 
+
+MGM 
+
+MGM 
+
+6M-MGM 
+
+170M 
+
+85M-gpt-small 
+
+29M 
+
+10M 
+
+6M 
+
+45M 
+
+18M 
+
+29M 
+
+79M 
+
+85M-gpt-small 
+
+6M 
+
+10M 
+
+45M 
+
+18M 
+
+170M 
+
+6M-MGM 
+
+79M 
+
+0.860 0.880 0.900 0.920 0.940 0.960 
+
+0.700 0.720 0.740 0.760 0.780 0.800 0.820 0.840 
+
+Linear 
+
+Linear (no unk) 
+
+RF (no unk) 
+
+RF 
+
+MGM 
+
+MGM 
+
+6M-MGM 
+
+170M 
+
+85M-gpt-small 
+
+29M 
+
+10M 
+
+6M 
+
+45M 
+
+18M 
+
+29M 
+
+79M 
+
+85M-gpt-small 
+
+6M 
+
+10M 
+
+45M 
+
+18M 
+
+170M 
+
+6M-MGM 
+
+79M 
+
+Pretrained Non-pretrained Baseline 
+
+ROC AUC ROC AUC ROC AUC ROC AUC ROC AUC ROC AUC ROC AUC 
+
+1. Biome 2. Gut biome 
+
+3. Original SDC 4. Drug vs non-drug 
+
+5. Drug class 7. Infant age 
+
+8. Birth mode Figure S3: ROC AUC per classification task for all models. Pretrained models consistently outperform non-pretrained models, but we see that for some tasks the RF baseline outperforms the transformer models. Because the benchmarking datasets contain taxonomic labels not seen during pretraining, some tokens are unknown to the transformer models. The baseline methods can use all tokens; when marked as (no unk), the unknown tokens are removed to match the transformer models’ vocabulary and enable direct comparison. 27 
+
+.CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint 0.300 0.400 0.500 0.600 0.700 0.800 0.900 
+
+Linear (no unk) 
+
+Linear 
+
+RF (no unk) 
+
+RF 
+
+MGM 
+
+29M 
+
+10M 
+
+170M 
+
+6M-MGM 
+
+85M-gpt-small 
+
+45M 
+
+18M 
+
+6M 
+
+MGM 
+
+79M 
+
+85M-gpt-small 
+
+29M 
+
+170M 
+
+6M-MGM 
+
+45M 
+
+10M 
+
+18M 
+
+6M 
+
+79M 
+
+0.750 0.800 0.850 0.900 0.950 1.00 
+
+0.700 0.750 0.800 0.850 0.900 0.950 1.00 
+
+Linear (no unk) 
+
+Linear 
+
+RF (no unk) 
+
+RF 
+
+MGM 
+
+29M 
+
+10M 
+
+170M 
+
+6M-MGM 
+
+85M-gpt-small 
+
+45M 
+
+18M 
+
+6M 
+
+MGM 
+
+79M 
+
+85M-gpt-small 
+
+29M 
+
+170M 
+
+6M-MGM 
+
+45M 
+
+10M 
+
+18M 
+
+6M 
+
+79M 
+
+0.400 0.500 0.600 0.700 0.800 
+
+0.200 0.250 0.300 0.350 
+
+Linear (no unk) 
+
+Linear 
+
+RF (no unk) 
+
+RF 
+
+MGM 
+
+29M 
+
+10M 
+
+170M 
+
+6M-MGM 
+
+85M-gpt-small 
+
+45M 
+
+18M 
+
+6M 
+
+MGM 
+
+79M 
+
+85M-gpt-small 
+
+29M 
+
+170M 
+
+6M-MGM 
+
+45M 
+
+10M 
+
+18M 
+
+6M 
+
+79M 
+
+0.600 0.650 0.700 0.750 0.800 0.850 
+
+0.760 0.780 0.800 0.820 0.840 0.860 0.880 0.900 
+
+Linear (no unk) 
+
+Linear 
+
+RF (no unk) 
+
+RF 
+
+MGM 
+
+29M 
+
+10M 
+
+170M 
+
+6M-MGM 
+
+85M-gpt-small 
+
+45M 
+
+18M 
+
+6M 
+
+MGM 
+
+79M 
+
+85M-gpt-small 
+
+29M 
+
+170M 
+
+6M-MGM 
+
+45M 
+
+10M 
+
+18M 
+
+6M 
+
+79M 
+
+Pretrained Non-pretrained Baseline 
+
+PR-AUC PR-AUC PR-AUC PR-AUC PR-AUC PR-AUC PR-AUC 
+
+1. Biome 2. Gut biome 
+
+3. Original SDC 4. Drug vs non-drug 
+
+5. Drug class 7. Infant age 
+
+8. Birth mode Figure S4: PR AUC per classification task for all models. Pretrained models consistently outperform non-pretrained models, but we see that for some tasks the RF baseline outperforms the transformer models. Because the benchmarking datasets contain taxonomic labels not seen during pretraining, some tokens are unknown to the transformer models. The baseline methods can use all tokens; when marked as (no unk), the unknown tokens are removed to match the transformer models’ vocabulary and enable direct comparison. 28 
+
+.CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint 0.550 0.600 0.650 0.700 0.750 0.800 0.850 0.900 
+
+Linear (no unk) 
+
+Linear 
+
+RF (no unk) 
+
+RF 
+
+MGM 
+
+45M 
+
+170M 
+
+6M 
+
+6M-MGM 
+
+85M-gpt-small 
+
+79M 
+
+18M 
+
+29M 
+
+10M 
+
+MGM 
+
+29M 
+
+85M-gpt-small 
+
+79M 
+
+6M-MGM 
+
+170M 
+
+6M 
+
+18M 
+
+10M 
+
+45M 
+
+0.750 0.800 0.850 0.900 0.950 
+
+0.800 0.850 0.900 0.950 1.00 
+
+Linear (no unk) 
+
+Linear 
+
+RF (no unk) 
+
+RF 
+
+MGM 
+
+45M 
+
+170M 
+
+6M 
+
+6M-MGM 
+
+85M-gpt-small 
+
+79M 
+
+18M 
+
+29M 
+
+10M 
+
+MGM 
+
+29M 
+
+85M-gpt-small 
+
+79M 
+
+6M-MGM 
+
+170M 
+
+6M 
+
+18M 
+
+10M 
+
+45M 
+
+0.700 0.750 0.800 0.850 
+
+0.140 0.160 0.180 0.200 0.220 0.240 0.260 0.280 
+
+Linear (no unk) 
+
+Linear 
+
+RF (no unk) 
+
+RF 
+
+MGM 
+
+45M 
+
+170M 
+
+6M 
+
+6M-MGM 
+
+85M-gpt-small 
+
+79M 
+
+18M 
+
+29M 
+
+10M 
+
+MGM 
+
+29M 
+
+85M-gpt-small 
+
+79M 
+
+6M-MGM 
+
+170M 
+
+6M 
+
+18M 
+
+10M 
+
+45M 
+
+0.600 0.650 0.700 0.750 0.800 
+
+0.640 0.660 0.680 0.700 0.720 0.740 0.760 0.780 
+
+Linear (no unk) 
+
+Linear 
+
+RF (no unk) 
+
+RF 
+
+MGM 
+
+45M 
+
+170M 
+
+6M 
+
+6M-MGM 
+
+85M-gpt-small 
+
+79M 
+
+18M 
+
+29M 
+
+10M 
+
+MGM 
+
+29M 
+
+85M-gpt-small 
+
+79M 
+
+6M-MGM 
+
+170M 
+
+6M 
+
+18M 
+
+10M 
+
+45M 
+
+Pretrained Non-pretrained Baseline 
+
+Balanced Accuracy (mean) Balanced Accuracy (mean) Balanced Accuracy (mean) Balanced Accuracy (mean) Balanced Accuracy (mean) Balanced Accuracy (mean) Balanced Accuracy (mean) 
+
+1. Biome 2. Gut biome 
+
+3. Original SDC 4. Drug vs non-drug 
+
+5. Drug class 7. Infant age 
+
+8. Birth mode Figure S5: Balanced accuracy per classification task for all models. Pretrained models consistently outperform non-pretrained models, but we see that for some tasks the RF baseline outperforms the transformer models. Because the benchmarking datasets contain taxonomic labels not seen during pretraining, some tokens are unknown to the transformer models. The baseline methods can use all tokens; when marked as (no unk), the unknown tokens are removed to match the transformer models’ vocabulary and enable direct comparison. 29 
+
+.CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.02.722381 doi: bioRxiv preprint

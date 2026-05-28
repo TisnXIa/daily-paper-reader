@@ -1,0 +1,1296 @@
+Title: A critical comparison of handling zeros in high-dimensional compositional count data
+
+URL Source: https://arxiv.org/pdf/2605.22181v1
+
+Published Time: Fri, 22 May 2026 01:02:39 GMT
+
+Number of Pages: 34
+
+Markdown Content:
+# A CRITICAL COMPARISON OF HANDLING ZEROS IN HIGH -DIMENSIONAL COMPOSITIONAL COUNT DATA ∗
+
+Wenqi Tang 
+
+Department of Mathematics and Statistics University of Jyväskylä Finland 
+
+wenqi.t.tang@jyu.fi 
+
+Kamila Faˇ cevicová 
+
+Department of Mathematical Analysis and Applications of Mathematics Palacký University Olomouc Czech Republic 
+
+kamila.facevicova@upol.cz 
+
+Klaus Nordhausen 
+
+Department of Mathematics and Statistics University of Helsinki Finland 
+
+klaus.nordhausen@helsinki.fi 
+
+Sara Taskinen 
+
+Department of Mathematics and Statistics University of Jyväskylä Finland 
+
+sara.l.taskinen@jyu.fi 
+
+## ABSTRACT 
+
+The growing use of high-throughput sequencing (HTS) has enabled the large-scale production of compositional count data, driving progress in microbiome research. However, such count data are often high-dimensional, over-dispersed, and heavily zero-inflated, and they conflict with the continuity assumptions underlying log-ratio–based compositional data analysis (CoDA), creating substantial methodological challenges. This review provides a overview of zero-handling strategies in compositional data, covering zero-tolerant transformations, imputation approaches for rounded zeros, and statistical models for essential zeros. We specifically highlight the problems that arise when applying the log-ratio framework to sequencing-derived compositional count data, where violations of continuity can induce numerical instabilities and biased statistical inferences. Motivated by these issues, we systematically examine how existing imputation strategies behave when adapted to discrete, zero-inflated count data, including an evaluation of how the discrete, lattice-valued nature of the data affects imputation performance. Overall, this review consolidates scattered methodological developments, clarifies appropriate use cases, and identifies open challenges that motivate future zero-handling frameworks capable of jointly accommodating compositional constraints, zero inflation, and the lattice nature of count data, while also providing a detailed discussion of the comparison results. 
+
+Keywords Compositional data analysis · Zeros · High-throughput sequencing (HTS) · Microbiome count data ·
+
+Imputation 
+
+## 1 Introduction 
+
+Recent advances in modern sampling and classification techniques, such as high-throughput sequencing (HTS) (Fer-nandes et al., 2013; Conesa et al., 2016; Pollock et al., 2018), which allow rapid and large-scale generation of DNA or RNA sequence data (Gloor et al., 2017), have greatly advanced microbiome research. The data obtained through these techniques typically consist of thousands to millions of sequencing reads per sample, representing multiple taxa within a microbial community. In large-scale studies, the total number of reads can reach hundreds of millions across all samples (Di Bella et al., 2013). These read count tables, which quantify the number of sequences assigned to microbial 
+
+> ∗
+
+Citation : Authors. Title. Pages.... DOI:000000/11111. 
+
+> arXiv:2605.22181v1 [stat.OT] 21 May 2026
+
+A critical comparison of handling zeros in high-dimensional compositional count data taxa or genes, form the basis for downstream analyses linking microbial composition to host phenotypes, environmental factors, and clinical outcomes. The sequencing approaches enable partitioning of HTS data into biologically meaningful units. In practical analyses, microbiome data are often represented as operational taxonomic units (OTUs) or amplicon sequence variants (ASVs), which consist of relative counts and exhibit unique statistical characteristics that pose significant analytical challenges. First, microbiome count data are typically high-dimensional, as the number of taxa or features can easily exceed thousands even for a modest number of samples. Second, the data are highly sparse, with many zero or near-zero values resulting from either limited sequencing depth or the true absence of taxa. Finally, sequencing data are inherently compositional because sequencing instruments have a fixed capacity: the total number of reads obtained from a sample is distributed among all observed sequences, meaning that only relative information is preserved (Gloor et al., 2017). As a result, microbiome count data are inherently compositional, high-dimensional, and sparse, further complicated by technical variation and sequencing depth differences. These features make standard statistical methods inappropriate when applied directly to raw sequencing data without suitable normalization or transformation. To address the relative nature of compositional data, Aitchison (1986) introduced a comprehensive log-ratio framework that focuses on ratios between components rather than their absolute values (see Sec. 2). However, when applied to microbiome count data, several additional challenges arise. The most fundamental issue is the prevalence of zeros: extreme sparsity—common in microbiome sequencing data and, in some cases, approaching 90% zeros (Gloor et al., 2017)— precludes the direct use of log-ratio transformations (see Sec. 2.2), which are otherwise essential for mapping simplex-constrained data into a Euclidean space suitable for conventional statistical analyses. Beyond zero inflation, the discrete and lattice-valued nature of count data violates the continuity assumptions underlying the log-ratio framework, introducing quantization effects that can strongly affect small values and distort analytical results (Lovell et al., 2020; Bacon-Shone, 2008). Although this review focuses primarily on addressing zeros, these discreteness-related considerations further underscore the need for caution when applying CoDA methods to count-based microbiome data. The layout of this article is as follows. Section 2 provides a brief introduction to the foundations of compositional data analysis (CoDA) and the role of log-ratio transformations. The main review is in Sec 3 and figure 1 presents an overview of the overall structure of the review. Before discussing strategies for handling zeros, we first introduce the different types of zeros, their underlying causes, and the principles that guide their appropriate treatment, emphasising the necessity of mechanism-based zero handling (Section 3.1). Section 3.2 focuses on strategies for handling rounded zeros—those arising from detection limits or insufficient sampling—and reviews a range of imputation methods developed for constructing strictly positive compositions. Section 3.3 then turns to essential zeros, providing an overview of modelling frameworks—such as mixture-based logistic-normal models, latent-Gaussian approaches, and Dirichlet-type formulations—that preserve the structural meaning of true absences rather than replacing them. Section 3.4 introduces zero-tolerant transformations, which depart from conventional log-ratio transformations and enable zeros to be incorporated directly into statistical analysis, including power-based and directional transformations. Given that our motivating datasets are high-dimensional, sparse, and derived from sequencing counts, Section 3.5 is dedicated to the specific challenges posed by discrete count compositional data. We discuss how the lattice-valued nature of sequencing counts violates the continuity assumptions underlying classical CoDA and review current strategies tailored to discrete compositions, including imputation approaches and probabilistic models such as Dirichlet–multinomial and zero-inflated formulations. Building on the theoretical considerations in Section 3.5, Section 4 presents a comparative evaluation of existing imputation methods using real high-dimensional count-based datasets. We first acknowledge the important benchmark provided by Lubbe et al. (2021), which compared classical and machine-learning zero-replacement techniques. Their study utilized real microbiome data but treated them as continuous compositions—interpreting sequencing-derived zeros as detection-limit issues and replacing them with a fixed value (set to 1), without explicitly accounting for their discrete, count-based origin. In stark contrast, our comparison explicitly addresses the specific constraints of count-based data, whose wide dynamic ranges, inherent discreteness, and heterogeneous sequencing depths fundamentally affect imputation behaviour. Since analysts often require a method compatible with a broad range of standard multivariate techniques (e.g., PCA, clustering), our primary goal is to evaluate how imputation methods restore completeness and covariance structure and support general downstream multivariate analyses in a model-agnostic manner. Consequently, we exclude methods typically embedded within specific modeling structures, as they require parameter optimization tied to particular statistical models. To achieve an objective assessment, we employ a fully observed sequencing-derived count dataset, the Rabbit dataset (Greenacre et al., 2021), which exhibits the typical characteristics of high-dimensional microbial compositions (discreteness, zero inflation, overdispersion, and strong imbalance). By introducing zeros under controlled conditions and comparing imputed values with known true counts, we obtain a direct and objective assessment of imputation accuracy. The experimental design consists of two parts that explicitly quantify the influence of both zero proportion and dimensionality, thereby providing a comprehensive evaluation across multiple sparsity and 2A critical comparison of handling zeros in high-dimensional compositional count data dimensionality regimes. An identical design is also applied to simulated data with matching compositional and discrete characteristics, as presented in Appendix A, further corroborating the robustness of our conclusions. Our review covers the key conceptual and methodological contributions of this work as follow. First, this review provides the first unified, mechanism-based framework for zero handling in compositional data, integrating replacement strategies, model-based approaches, and zero-tolerant transformations into a coherent structure. Second, it clarifies the fundamental mismatch between continuous CoDA theory and discrete count data, integrating theoretical insights and empirical evidence to show why HTS-derived compositions—with their inherent lattice structure and scale-dependent properties—require considerations beyond classical log-ratio methods. Third, the review uses a systematic comparative evaluation using real and simulated high-dimensional count datasets, offering evidence-based guidance for method selection under varying sparsity, dimensionality, and scale. The results of this comparative study simultaneously reveal where continuous-data imputation methods underperform due to numerical instabilities caused by discreteness, and where discrete-aware adjustments become beneficial. Collectively, these contributions establish a methodological foundation that exposes the gap between existing continuous-data approaches and the specific requirements of count-based applications, laying the groundwork for future developments that jointly respect zero inflation, compositional constraints, and the lattice-valued nature of sequencing-derived count data. 
+
+## 2 Compositional Data Analysis 
+
+Compositional data, or compositions, are vectors of non-negative values that describe the contribution of D parts constrained by a constant sum, typically 1 (for proportions) or 100 (for percentages). For a D-part composition 
+
+x = ( x1, . . . , x D )′ lies in a (D − 1) -dimensional simplex space SD :
+
+SD =
+
+(
+
+x = ( x1, . . . , x D )′ xi > 0,
+
+> D
+
+X
+
+> i=1
+
+xi = C
+
+)
+
+.
+
+The right panel of Fig 2 shows that when D = 3 , a composition resides in the continuous and infinitely dense simplex 
+
+S3, which is geometrically represented as a triangular plane containing arbitrarily many intermediate points Due to the constant-sum constraint, compositional components are inherently dependent—an increase in one part necessarily decreases others—making conventional statistical methods inappropriate. Such methods assume Euclidean geometry and overlook the relative nature and interdependence among parts, often leading to spurious correlations. To address these issues, Aitchison (1986) established the foundation of Aitchison geometry, which defines compositional data analysis (CoDA) through three fundamental principles: scale invariance, permutation invariance, and subcomposi-tional coherence. Scale invariance ensures that multiplying all parts of a composition by a positive constant does not change the information it conveys. Permutation invariance guarantees that results are unaffected by the ordering of components. Subcompositional coherence requires that analyses based on a subset of components yield conclusions consistent with those from the full composition. These principles form the theoretical basis for the log-ratio framework, the cornerstone of modern CoDA, providing a robust and interpretable foundation for analyzing compositional data. 
+
+2.1 Log-ratio framework 
+
+In practice, the requirement in the traditional definition that compositional parts must add up to a fixed constant sum C
+
+introduces several challenges. First, the presence of zeros is problematic: missing or unmeasured components may violate the sum constraint, and rounding errors can cause deviations from the prescribed total. Second, although many real-world datasets exhibit a compositional character, their total sum often depends on sample-specific technical factors rather than meaningful biological quantities. For example, in microbiome data, the total read count of each sample is determined largely by sequencing depth, which reflects technical variation. As emphasized by Gloor et al. (2017), sequencing count tables are compositional, but their total read counts have no biological interpretation and therefore cannot be used to compare samples on an absolute scale. Under the constant-sum constraint, the values of individual parts are inherently interdependent—an increase in one component necessarily affects the others. Therefore, CoDA focuses on analyzing ratios between components rather than their absolute values or total counts, as the ratios more accurately capture the relative structure of the data. Filzmoser et al. (2018) emphasized that compositional data describe relative information among components, and that proportions just represent only one possible expression of this information, not its defining characteristic. Under scale invariance, multiplying a composition x by any positive constant c > 0 alters the total sum but leaves all ratios xi/x j unchanged; hence x and cx convey the same relative information. It is worth noting that scale invariance fundamentally relies on the continuous nature of the simplex. However, when the data are discrete lattice-valued counts, this property breaks down: scaling produces non-integer values that, if we wish to preserve discreteness, must be mapped back onto the 3A critical comparison of handling zeros in high-dimensional compositional count data lattice through rounding, thereby introducing quantization error that distorts the original ratios. We return to this issue in detail in Sec. 3.5. Building on this idea, Aitchison (1986) developed the CoDA framework based on log-ratio methodology, which represents compositional data in terms of their relative structure rather than absolute magnitudes. For example, this framework defines a meaningful distance between two compositions x and y ∈ S D , known as the Aitchison distance: 
+
+dA(x, y) = 
+
+vuut 12D
+
+> D
+
+X
+
+> i=1
+> D
+
+X
+
+> j=1
+
+
+
+ln xi
+
+xj
+
+− ln yi
+
+yj
+
+2
+
+. (1) 
+
+2.2 Transformations in CoDA 
+
+As discussed above, compositional data, constrained to the Aitchison simplex space SD , exhibit several critical issues. First, the interdependence among parts induces spurious correlations. Second, for a composition with D parts, only 
+
+D − 1 parts are free to vary, as the last component is determined by the constant-sum constraint, effectively reducing the degrees of freedom. Finally, most classical statistical methods, including correlation and regression analysis, assume unconstrained data; applying them directly to compositional data can yield misleading or entirely incorrect results. To address these challenges, CoDA applies log-ratio transformations to map data from the constrained simplex space SD
+
+to an unconstrained Euclidean space. By focusing on ratios between components rather than their absolute values, these transformations eliminate distortions caused by the constant-sum constraint and enable the use of standard statistical techniques. Common implementations include the additive logratio (ALR), centered logratio (CLR), and isometric logratio (ILR) transformations. ALR facilitates pairwise comparisons by taking the logarithm of each component relative to a selected reference, CLR preserves symmetry by using the geometric mean of all components as the denominator, and ILR constructs orthogonal balances to maintain geometric properties for multivariate analyses. Each transformation serves a specific analytical purpose, with the choice depending on interpretability and study objectives (Filzmoser et al., 2018). However, because all rely on logarithmic operations, none can directly accommodate zero values—a central issue underlying the compositional zero problem. 
+
+2.2.1 Additive log-ratio transformation (ALR) 
+
+The ALR transformation maps a composition x = ( x1, . . . , x D )′ from the simplex space SD to RD−1 by selecting a reference component xj , as follows: 
+
+z = ALR j (x) = 
+
+
+
+ln x1
+
+xj
+
+, . . . , ln xj−1
+
+xj
+
+, ln xj+1 
+
+xj
+
+, . . . , ln xD
+
+xj
+
+′
+
+. (2) Here, xj is a pre-selected reference component. ALR-transformed data z directly reflect whether the remaining components increase or decrease relative to the reference component xj . For example, in biological applications, if a biologically stable and ubiquitous species (such as certain core microbiota in microbiome studies) is chosen as the reference, the results can have clear biological significance. Zhang et al. (2024) suggested that an ideal reference component should be interpretable, highly abundant, stable, prevalent across all samples (with few zeros), show no significant differences between groups (i.e., not itself a target of study), and exhibit minimal variance in relative abundance after log transformation. When a clear and stable reference is available, the ALR transformation is computationally simple and highly interpretable. It should be noted that the ALR transformation is not isometric, which means that dA(x, y)̸ = dE (ALR (x), ALR (y)) ,where dA denotes the Aitchison distance defined in Eq. 1 and dE the Euclidean distance (Aitchison, 1986). Consequently, to ensure consistent interpretation, statistical methods applied to ALR-transformed data should be invariant under any permutation of components. Due to the requirement of choosing a reference part, ALR coordinates provide relative information only with respect to that component, and outliers in the reference can propagate distortions across all ratios, potentially biasing results. Building on the ALR transformation, Aitchison (1986) introduced the additive logistic normal (ALN) distribution, which offers a probabilistic framework for modeling compositional data. Specifically, a composition x ∈ S D follows an ALN distribution if its ALR-transformed vector follows a multivariate normal distribution z ∼ N D−1(μ, Σ) or equivalently, x ∼ ALN D (μ, Σ), where μ and Σ denote the mean vector and covariance matrix in the ALR-transformed space. 4A critical comparison of handling zeros in high-dimensional compositional count data 
+
+2.2.2 Central log-ratio transformation (CLR) 
+
+The CLR transformation maps a composition x from the simplex space SD into a (D − 1) -dimensional hyperplane in 
+
+RD as follows: 
+
+z = CLR (x) = ( z1, . . . , z D )′ =
+
+ln x1
+
+> D
+
+qQDi=1 xi
+
+, . . . , ln xD
+
+> D
+
+qQDi=1 xi
+
+
+
+> ′
+
+.
+
+Here, the CLR transformation uses the geometric mean as the denominator. Compared with the ALR transformation, which requires a preselection of a reference component, CLR-transformed data are symmetric and unique, maximizing the preservation of relative information among components. Additionally, the CLR transformation is isometric, meaning that the geometric relationships (distances) between compositions in the original simplex are preserved in the transformed space. After the CLR transformation, the data are projected onto a hyperplane where the sum of all components is zero. This allows standard multivariate statistical methods based on Euclidean distance to be applied. However, it is important to note that the CLR-transformed variables sum to zero, which implies linear dependence among the D new variables. This leads to a singular covariance matrix, complicating the application of many multivariate statistical methods (such as those requiring matrix inversion) and potentially resulting in unreliable outcomes (Filzmoser et al., 2018). 
+
+2.2.3 Isometric log-ratio transformation (ILR) 
+
+The ILR transformation maps a composition x = ( x1, . . . , x D )′ from the simplex space SD to RD−1. It is derived from the CLR-transformed data by applying a given orthogonal matrix H, that is, 
+
+z = ILR (x) = H′ CLR (x),
+
+where H is a D × (D − 1) orthonormal contrast matrix, typically obtained as a submatrix of the Helmert matrix (van den Boogaart and Tolosana-Delgado, 2013). The resulting ILR coordinates strictly preserve distances and consist of D − 1 independent variables, thereby resolving the collinearity issue inherent in CLR-transformed data. Each ILR coordinate usually involves multiple compositional parts, making interpretation less straightforward (van den Boogaart and Tolosana-Delgado, 2013). To facilitate interpretability, a generalized system of pivot coordinates has been proposed (Filzmoser et al., 2018), in which D alternative ILR transformations are constructed such that, in each case, the first coordinate captures the relative information of a specific part by permuting it to the first position (Fišerová and Hron, 2011). To construct pivot coordinates, the l-th part of composition x is moved to the first position, 
+
+x(l) = ( xl, x 1, . . . , x l−1, x l+1 , . . . , x D )′.
+
+Applying the ILR transformation with a Helmert-based orthonormal basis yields 
+
+z(l) 
+
+> i
+
+=
+
+r D − iD − i + 1 ln x(l)
+
+> i
+
+QDj=i+1 x(l)
+
+> j
+
+1/(D−i) , i = 1 , . . . , D − 1.
+
+The key property is that the first coordinate z(l)1 contains all relative information about part xl with respect to the remaining parts, while the remaining coordinates z(l)2 , . . . , z (l) 
+
+> D−1
+
+describe the log-ratios among the other components (Fišerová and Hron, 2011). The ILR coordinates offer a robust and interpretable framework that preserves the geometric structure of the data, making them particularly useful for statistical modeling and inference in compositional data analysis (Filzmoser et al., 2018). However, the strong reliance on the logarithmic function across all standard log-ratio transformations (ALR, CLR, and ILR) necessitates that all components x be strictly positive. Consequently, these transformations cannot directly accommodate any zero values—a central issue underlying the compositional zero problem. In the subsequent Sec. 3, we briefly introduce the main existing strategies for handling zeros in compositional data. These approaches can be grouped into three major lines: (i) imputing the missing parts to obtain a full data matrix (Sec. 3.2); (ii) constructing statistical models that explicitly account for the meaning and mechanism of zeros (Sec. 3.3); and (iii) developing zero-tolerant transformations (Sec. 3.4), such as the α-transformation—which aim to achieve a practical balance between the strict geometric principles of Log-Ratio Analysis (LRA) and the simplicity of Raw Data Analysis (RDA), thereby enhancing feasibility for zero-inflated and high-dimensional sparse compositions. 5A critical comparison of handling zeros in high-dimensional compositional count data 
+
+## 3 Review of methods dealing with zeros in CoDA 
+
+Before reviewing methods for handling zeros in compositional data, we first categorize zeros into two main types. The structure of this section is summarized in Fig. 1. 
+
+Figure 1: Diagram outlining the structure of Sec. 3. This review covers the classification of zeros, the methods for handling zeros arising from different underlying mechanisms, zero-tolerant transformations, and a dedicated discussion of issues specific to discrete compositional count data. The diagram also indicates the corresponding section numbers associated with each component of the review. 
+
+3.1 Classification and interpretation of zero values 
+
+Distinguishing the nature of zero values is a prerequisite for selecting appropriate handling strategies in compositional data analysis. The first major category is rounded zeros, which arise when a true positive value falls below the detection limit of a measurement procedure and is therefore recorded as zero (Palarea-Albaladejo and Martín-Fernández, 2008). Such zeros may result from technical constraints (e.g., low sequencing depth, instrument sensitivity) or from limited observation windows, during which a present component is not detected (Pawlowsky-Glahn and Buccianti, 2011). For example, in household budget surveys, some families may report zero spending on alcohol because no expenditure occurred during the short recording period, even though they do consume alcohol occasionally. These zeros do not reflect true absence but rather under-detection, sampling limitation, or rounding effects (Fry and Chong, 2005). From a CoDA perspective, rounded zeros are treated as latent small positive values that require replacement before log-ratio transformations can be applied. As introduced in Sec. 3.2, zero-replacement (imputation) methods substitute zeros with small positive constants (or model-based estimates) to reconstruct a strictly positive dataset allowing log-ratio methods to be applied. A fundamentally different category is essential zeros (also called structural zeros) (Aitchison, 1986). These represent the true absence of a component and arise from inherent structural, biological, or chemical constraints—such as chemical incompatibility, biological impossibility, or deliberate exclusion during sampling. Unlike rounded zeros, essential zeros are meaningful: they express that the abundance of a component is genuinely zero. In the context of CoDA, the presence of essential zeros has profound implications. Since all information in compositions resides in ratios (Aitchison and Kay, 6A critical comparison of handling zeros in high-dimensional compositional count data 2003), a component with an essential zero does not contribute relative information to the composition. An observation containing an essential zero lies on the boundary of the simplex, reducing its effective dimensionality (Bear and Billheimer, 2016). Thus, essential zeros are not merely problematic for computation—they change the geometry of the space in which the data reside. Therefore, methods designed for rounded zeros are not applicable. Replacing essential zeros with small positive values, as done in imputation-based approaches, would artificially introduce information where none exists, distorting the statistical meaning of the composition and leading to misleading inference. At the same time, directly applying log-ratio transformations is infeasible, since logarithms of zero are undefined and replacement would violate the principles of logarithmic coherence and scale invariance (Filzmoser et al., 2018). For this reason, essential zeros require explicit statistical modeling, such as mixture models, latent variable approaches, or zero-adjusted distributions (see Sec. 3.3), rather than zero replacement. Next, we connect the classification of zeros in CoDA with missing-data mechanisms. From a statistical perspective, missingness is typically described by how it depends on the observed and unobserved parts of the data. Consider complete data X = ( Xobs , Xmis ), where Xobs contains the observed values and Xmis the unobserved ones. Missingness is said to be Missing Completely At Random (MCAR) when the chance that an entry is missing does not depend on either Xobs or Xmis . A weaker and more realistic assumption is Missing At Random (MAR), in which missingness may depend on the observed values Xobs but not on the unobserved part Xmis . From a practical standpoint, structural zeros can often be handled in analogy to MAR-type mechanisms, although their substantive interpretation differs substantially (van den Boogaart and Tolosana-Delgado, 2013). When the probability that an entry is missing depends on the unobserved values Xmis , the data fall under Missing Not At Random (MNAR). MNAR mechanisms are the most challenging to address because they require explicit knowledge of why the values are missing (van den Boogaart and Tolosana-Delgado, 2013). In compositional data analysis, rounded zeros provide a canonical example: they occur when the true value falls below the detection limit and is recorded as zero. Rounded zeros can therefore be viewed as left-censored observations with a known threshold and are typically treated as MNAR (van den Boogaart and Tolosana-Delgado, 2013). 
+
+3.2 Imputation methods of rounded zeros 
+
+Traditional general-purpose imputation methods—such as random forest-based imputation ( missForest ) (Stekhoven and Bühlmann, 2011), predictive mean matching ( mice ) (van Buuren and Groothuis-Oudshoorn, 2011), and k-nearest neighbor imputation ( VIM ) (Kowarik and Templ, 2016)—are not well suited for compositional data containing rounded zeros. These zeros are effectively left-censored values, yet such methods fail to simultaneously account for censoring and the geometric constraints inherent to compositional data (see Sec. 2). Through comparative analysis, Templ (2021) demonstrated that traditional imputation methods often struggle to handle such data effectively. In the following, we review specialized zero-replacement methods developed for rounded zeros, which incorporate detection-limit information and maintain the relative structure of compositions. 
+
+3.2.1 Multiplicative replacement 
+
+The multiplicative replacement approach handles zeros by first inserting a small positive value δ into every zero component and then rescaling the remaining non-zero components so that the composition remains closed. In other words, the procedure consists of two coordinated steps: (i) replace each zero xij = 0 with a small imputed value δij ,and (ii) proportionally adjust all non-zero parts to compensate for the added mass. This guarantees that the total remains unchanged and that the resulting composition is compatible with the algebra of the simplex (Martín-Fernandez et al., 2003). Formally, the replacement is defined by 
+
+rij =
+
+
+
+δij , if xij = 0 ,xij 
+
+
+
+1 − P   
+
+> k:xik =0
+> δik
+> Ci
+
+
+
+, if xij > 0, (3) where xij denotes the original composition, and rij the corresponding value after replacement in sample i and component j. The term δij is the small positive value inserted in place of the zero, and Ci = PDj=1 xij denotes the original sample total, ensuring that ri ∈ S D . This method provides a simple yet coherent way to handle zeros: it preserves closure and subcompositional coherence and remains fully compatible with Aitchison geometry on the simplex. The value δij can in principle be chosen in many ways. For example, one option is to draw nondetected values from a uniform distribution on [0 , DL j ] (Dorey et al., 1993), although this approach is not implemented in the R package 
+
+zCompositions (Palarea-Albaladejo and Martín-Fernández, 2015). In practice, the R package zCompositions 
+
+provides three specific multiplicative replacement strategies, which we describe below. 7A critical comparison of handling zeros in high-dimensional compositional count data A commonly recommended choice for δ is a constant fraction of the detection limit (DL), typically between 50% and 70% (Martín-Fernandez et al., 2003). It is important to note that, in practical applications, each part of the composition may have a different detection limit, and these limits can even vary across observations. When the proportion of non-detected components is small (e.g. < 10% ), δij = 0 .65 DL j has been suggested as an optimal value to minimize distortion in the covariance structure (Palarea-Albaladejo et al., 2014). The method is simple, computationally efficient, and applicable to high-dimensional data. However, using a component-specific fixed δij means that all zeros within the same column are replaced by the same value, introducing artificial similarity among samples for that component. Such artificial structure can affect covariance relationships and thereby distort multivariate analyses, particularly when zeros are frequent (Martín-Fernández et al., 2012). This approach is implemented in the zCompositions package as the function multRepl() .The zCompositions package also provides the function multLN() , which assumes that the complete data follow a lognormal distribution. The function offers two options: when random = FALSE , censored values are replaced by the expected value (geometric mean on the log scale) of the lognormal distribution truncated at DL j ; when random = TRUE , they are imputed by random draws below the detection limit, i.e., from the lognormal distribution truncated at DL j (Palarea-Albaladejo and Martín-Fernández, 2015).In this case, the imputed values δij are generated from the component-specific lognormal model truncated at the detection limit, i.e., 
+
+δij ∼ LogNormal j
+
+ ˆμLN ,j , ˆσ2LN ,j 
+
+ restricted to (0 , DL ij ).
+
+where ˆμLN ,j and ˆσ2LN ,j are the estimated parameters for component j, obtained in log-space using maximum likelihood estimation (Palarea-Albaladejo et al., 2014). The remaining non-zero components are then multiplicatively adjusted according to Equation (3) . This approach is technically sound, computationally efficient, and particularly suitable for right-skewed data. Palarea-Albaladejo et al. (2014) also introduced a multivariate extension of the lognormal multiplicative replacement, in which non-detected components are imputed using conditional distributions in the ALR space under an additive lognormal (ALN) model, thereby accounting for inter-component covariance rather than imputing components independently from univariate truncated lognormal models. A third multiplicative replacement strategy for determining δij is the Multiplicative Kaplan–Meier Smoothing Spline (KMSS) method, which is implemented in the function multKM() in the R package zCompositions . The KMSS approach combines the non-parametric Kaplan–Meier estimator with smoothing splines to model the distribution of left-censored values, allowing flexible handling of datasets with multiple detection limits or complex censoring structures. The method supports both single imputation, where censored observations are replaced using their geometric mean, and multiple imputation, achieved by specifying the number of simulated points ( n.points ) and performing repeated sampling runs (Palarea-Albaladejo and Martín-Fernández, 2015). After imputing left-censored entries, KMSS applies a multiplicative adjustment to all non-zero components, as required by Equation (3) , to preserve the compositional total. Owing to its reliance on non-parametric estimation and spline smoothing, KMSS is particularly well suited for sequencing-derived compositional data exhibiting multiple censoring thresholds, irregular left-censoring patterns, or heterogeneous detection limits. Although these three methods theoretically ensure that the imputed values δij remain positive and below their cor-responding detection limits ( 0 < δ ij < DL j ), the subsequent multiplicative closure step can occasionally produce numerical artifacts. Specifically, when a given sample xi contains a large proportion of censored components or exhibits extremely small observed parts, the rescaling required to restore closure may disproportionately down-weight the observed components. As a result, the adjustment term in Equation 3 can exceed the original magnitude of certain parts, leading to negative reconstructed values for all components in that sample. This phenomenon, though rare, has been noted in previous studies and reflects the instability of multiplicative adjustment under near-degenerate compositions (Palarea-Albaladejo et al., 2014). 
+
+3.2.2 Censored regression with Expectation-Maximisation (EM) algorithms 
+
+The second class of methods belongs to parametric approaches. The modified EM-ALR algorithm, first proposed by Palarea-Albaladejo et al. (2007); Palarea-Albaladejo and Martín-Fernández (2008) and later extended with the iterative regression procedure in Hron et al. (2010), assumes that the ALR-transformed data follow a multivariate normal distribution and performs censored regressions between components containing zeros and the remaining components. Let Ximp denote the compositional data matrix in which all zeros have been replaced by starting or previously imputed values, and let ZALR = ALR (Ximp ) be its ALR-transformed counterpart. For a column zALR ,j of ZALR containing censored values (corresponding to zeros in X), a regression model is built using the remaining columns ZALR ,−j as predictors: 
+
+zALR ,j = Z′ 
+
+> ALR ,−j
+
+β + ε. 
+
+8A critical comparison of handling zeros in high-dimensional compositional count data At the l-th iteration of the EM procedure, the unobserved values z(l)ALR ,ij are imputed by their conditional expectations under a truncated normal distribution that incorporates information from both the observed variables ZALR ,−j and the detection limits DL j :
+
+ˆz(l)ALR ,ij = Z(l)′ 
+
+> ALR ,i, −j
+
+ˆβ(l)LS − ˆσ(l)
+
+ϕ
+
+ ψij −Z(l)′ 
+
+> ALR ,i, −jˆβ(l)LS
+> ˆσ(l)
+
+
+
+Φ
+
+ ψij −Z(l)′ 
+
+> ALR ,i, −jˆβ(l)LS
+> ˆσ(l)
+
+ ,
+
+where ˆσ(l) is the estimated conditional standard deviation of z(l)ALR ,j , and ˆβ(l)LS is the least-squares regression coefficient vector. The term ψij = ln 
+
+ DL j
+
+> xref
+
+
+
+denotes the ALR-transformed detection limit. ϕ(·) and Φ( ·) are the standard normal density and cumulative functions. After convergence, the imputed ALR data ˆZALR are transformed back to the simplex space using the inverse ALR transformation. Compared with non-parametric multiplicative replacement, these modified EM approaches better preserve covariance structure and maintain simplex constraints inherent to log-ratio methodology (Palarea-Albaladejo et al., 2007). Moreover, by incorporating detection limits, they avoid potential failures of traditional EM algorithms under MNAR (Palarea-Albaladejo et al., 2007). Starting values for non-detects xij can be set to 65% of the detection limit (Palarea-Albaladejo et al., 2007; Palarea-Albaladejo and Martín-Fernández, 2008; Martín-Fernández et al., 2012) or obtained via k-nearest neighbor (KNN) imputation (Hron et al., 2010). Although the ALR transformation is not isometric, Palarea-Albaladejo and Martín-Fernández (2008) demonstrated that the EM algorithm with least-squares regression is invariant under permutations of the compositional parts. In practice, this means that changing the ALR reference component does not affect the resulting imputations. Building on the ALR-based EM algorithm described above, Martín-Fernández et al. (2012) proposed a robust extension that replaces least-squares regression with an affine–equivariant MM-estimator in order to improve stability under outliers and small values. For robust methods, which are affine equivariant and thus compatible with the ILR transformation, the ALR transformation is unsuitable because it is neither permutation-invariant nor isometric. Therefore, the ILR transformation ( ZILR = ILR (X)) is more appropriate for robustification and provides a more reasonable treatment of small values and outliers (Martín-Fernández et al., 2012). The regression coefficients at the l-th iteration can be obtained as 
+
+ˆβ(l)(MM ) = arg min 
+
+> β
+> n
+
+X
+
+> i=1
+
+ρ z(l)ILR ,ij − Z(l)′ 
+
+> ILR ,i, −j
+
+β
+
+ˆσ(l)
+
+!
+
+,
+
+and the update step as 
+
+ˆz(l)ILR ,ij = Z(l)′ 
+
+> ILR ,i, −j
+
+ˆβ(l)MM − ˆσ(l)
+
+ϕ
+
+ ψij −Z(l)′ 
+
+> ILR ,i, −jˆβ(l)MM
+> ˆσ(l)
+
+
+
+Φ
+
+ ψij −Z(l)′ 
+
+> ILR ,i, −jˆβ(l)MM
+> ˆσ(l)
+
+ .
+
+To address situations where the number of variables far exceeds the number of observations—rendering both least-squares and robust regression unstable— Templ et al. (2016) introduced a partial least squares (PLS)-based regression framework for imputing censored ILR coordinates, where 
+
+z(l)ILR ,j = Z(l) ′ 
+
+> ILR ,−j
+
+β + ε, Z(l)ILR ,−j = TP ′.
+
+Here, T represents the latent scores and P the loadings, with the optimal number of components k ≪ D selected by bootstrap. The ILR transformation is still applied in this case. Templ et al. (2016) also proposed using the variation matrix to identify components strongly associated with the target and construct reduced regression models: 
+
+tjk = var 
+
+
+
+ln 
+
+ xij 
+
+xik 
+
+ 
+
+, i = 1 , . . . , n, j, k = 1 , . . . , D. 
+
+Low tjk values indicate strong proportionality (Aitchison, 1986), so the components with the smallest tjk values relative to the target part are selected as predictors in the reduced model. Building on the PLS-based regression framework, Chen et al. (2018) further introduced a Q-mode clustering strategy in which the variation matrix is used as a dissimilarity measure to group components exhibiting similar log-ratio variability. PLS regression is then applied separately within 9A critical comparison of handling zeros in high-dimensional compositional count data each resulting subcomposition to impute the rounded zeros more efficiently and in a manner that better reflects local dependence structures. These three regression-based methods are implemented in the R package robCompositions (Templ et al., 2011) through the imputeBDLs() function with different method options. Finally, Hijazi (2011) proposed a related approach using beta regression under a Dirichlet-based modeling framework to handle rounded zeros in compositional data. 
+
+3.2.3 ALR-Data augmentation (ALR-DA) 
+
+The ALR-DA algorithm is a data augmentation (DA) approach (Tanner and Wong, 1987) based on the truncated ALN model, implemented within a Bayesian framework. The algorithm employs a Markov Chain Monte Carlo (MCMC) iterative simulation procedure to draw samples from the joint posterior distribution of the nondetected components and the ALN parameters. Specifically, at the l-th iteration, nondetects in the ALR-transformed space are imputed as 
+
+ˆz(l)ALR ,ij ∼ TruncNormal j
+
+
+
+z(l)′ 
+
+> ALR ,i, −j
+
+ˆβ(l) 
+
+> j
+
+, ˆσ2( l) 
+
+> j
+
+, z ALR ,ij < DL ij ˆμ(l), ˆΣ(l)
+
+. (4) Similar to the ALR-EM algorithm in Sec. 3.2.2, the ALN model representation corresponds to regression equations in the ALR space subject to DL constraints, with alternating updates of nondetects and parameters. Unlike ALR-EM, where nondetects and parameter estimates are updated deterministically, ALR-DA performs stochastic updates via simulation. Thus, it can be regarded as a Bayesian alternative to maximum-likelihood estimation for small datasets (Palarea-Albaladejo and Martín-Fernández, 2015), where parameter inference arises from the simulated draws, and covariance-matrix estimates from the imputed data can be computed directly without variance corrections (Palarea-Albaladejo et al., 2014). External information can be incorporated through prior specification to improve predictive performance (Palarea-Albaladejo and Martín-Fernández, 2015), although in practice the usual conjugate normal–inverse-Wishart family with noninformative priors is typically assumed. Convergence of the DA algorithm often requires additional diagnostic tools, but for the normal family it is generally accepted that approximately 1,500 iterations are sufficient to ensure convergence in most applications (Palarea-Albaladejo et al., 2014). Finally, the imputed compositions can be back-transformed into the original scale using the inverse ALR transformation, as implemented in the lrda() function of the zCompositions package (Palarea-Albaladejo and Martín-Fernández, 2015) in R.In addition, the lrda() function also provides a multiple-imputation (MI) scheme. The MI approach is particularly effective for multivariate data under the assumption of multivariate normality (Palarea-Albaladejo et al., 2007). For each missing value, MI generates multiple plausible values by employing MCMC algorithms to sample from the posterior predictive distribution. These individually imputed datasets are subsequently combined to obtain a single global estimate and its associated variance according to Rubin’s rules (Rubin, 2004). This strategy has been illustrated, for example, in Martín-Fernández et al. (2003), but it is not well suited to datasets with a large proportion of zeros. As an alternative to MI, Palarea-Albaladejo et al. (2014) introduced a bootstrap-based resampling method to propagate the uncertainty of imputation. Their work also details how to integrate censored-data treatment with a bootstrap inference procedure, thus offering a computationally convenient approach for variance estimation when standard MI becomes inefficient. 
+
+3.2.4 Log-ratio singular value decomposition (lrSVD) 
+
+Palarea-Albaladejo et al. (2022) proposed the lrSVD algorithm, a method designed for imputing missing values in compositional data. Its core idea is to extract the dominant underlying structure through low-rank matrix approximation in log-ratio space. Specifically, the algorithm employs singular value decomposition (SVD) to find a low-rank matrix R
+
+that best approximates the original data matrix X (which contains zeros or missing values) in the least-squares sense by minimizing the Frobenius norm: 
+
+min ∥X − R∥2 
+
+> F
+
+subject to rank (R) ≤ s, (5) where s denotes the target rank, that is, the number of dominant latent components retained in the approximation. When the data are complete, the optimal solution corresponds to the first s singular values of the SVD of X. However, for incomplete or censored data, the problem is solved iteratively through constrained optimization. To handle rounded zeros, general missing values, or a combination of both, lrSVD first replaces zeros via multiplicative simple replacement using 0.65 × DL to obtain an initial intermediate matrix M(0) . This matrix is then transformed into isometric log-ratio 10 A critical comparison of handling zeros in high-dimensional compositional count data (ILR) coordinates (note that this corresponds to the orthonormal log-ratio transformation used in the original paper) and subject to box constraints, leading to the following optimization problem: 
+
+min(1 − β)∥M − R∥2 
+
+> F
+
++ β∥M − X∥2 
+
+> FOBS
+
+, subject to rank (R) ≤ s, L ≤ M ≤ U, (6) where 0 < β < 1 is a weighting parameter, ∥ · ∥ F denotes the Frobenius norm, and ∥ · ∥ FOBS indicates that the norm is computed only over the observed entries of X, following Palarea-Albaladejo et al. (2022). Here, M satisfies the box constraints, while R provides the best rank-s approximation of M. The constraints L ≤ M ≤ U are applied element-wise; for rounded zeros, L = 0 and U = DL , whereas for general missing data, U is set to the column-wise maximum of the observed values. Since the entire procedure is conducted in ILR coordinates, the imputed data preserve essential compositional properties such as scale invariance and subcompositional coherence, without modifying the originally observed values. By properly defining L and U, the method can simultaneously accommodate rounded zeros, general missing values, and mixed missingness scenarios. The lrSVD algorithm is implemented in the R package 
+
+zCompositions via the function lrSVD() . However, as an SVD-based approach, lrSVD is sensitive to outliers and the choice of starting values. 
+
+3.2.5 EM-based artificial neural network methods (ANN) 
+
+The method proposed by (Templ, 2021) integrates a deep artificial neural network into an iterative EM framework for rounding-zero imputation. The main idea is to exploit the network’s ability to learn complex, non-linear dependencies among compositional parts, while ensuring that the imputed values remain strictly below the DL. As in standard EM procedures, the algorithm begins with an initialization step to obtain a complete data set. In the implementation of (Templ, 2021), this initialization is typically performed using a k-nearest-neighbour approach based on Aitchison distances and robust means (Hron et al., 2010). The E–M updates are then carried out in the ILR coordinate system, preserving the fundamental principles of compositional data analysis. Unlike parametric regression-based imputation schemes discussed before, the ANN component does not require specification of a model form. Instead, multiple hidden layers and nonlinear activation functions allow the network to automatically learn latent interactions and complex dependence structures among variables. A drawback of this approach is its substantial computational cost, as well as its sensitivity to outliers, which can limit robustness in practice. 
+
+3.3 Direct modeling techniques in essential zeros 
+
+A simple approach to handle essential zeros is amalgamation (Aitchison, 1986), which merges components containing essential zeros with related nonzero parts. For example, in household budget data, “alcohol” and “tobacco” may be combined into a single category. However, this comes at a cost: amalgamation sacrifices information about the original parts and is nonlinear in the simplex, limiting interpretability (Filzmoser et al., 2018). Since essential zeros carry meaningful structural information, an alternative strategy is to incorporate them directly into the modeling process rather than replace or aggregate them. This allows the intrinsic sparsity of the data to be preserved. Based on this idea, several statistical models have been proposed to handle essential zeros, including mixture-based logistic-normal models, latent Gaussian formulations, and Dirichlet-based approaches. Aitchison and Kay (2003) proposed an extension of the logistic normal distribution based on a mixture modeling framework, in which compositional data are partitioned into groups according to their zero patterns, and each group is modeled separately. This approach is particularly suited for continuous or percentage data in which zeros represent true absences. Building on this idea, Stewart and Field (2011) introduced a multiplicative logistic normal mixture model that separately models zero components and defines conditional distributions for the nonzero parts. When a component is nonzero, its log-ratio is assumed to follow a (potentially skewed) logistic normal distribution, increasing flexibility compared to symmetric models. This framework performs well in regression settings and reduces bias introduced by zeros; however, it cannot fully capture covariance among all compositional components, leaving some dependence structures only partially modeled. Bear and Billheimer (2016) further extended this class of models by projecting compositions into lower-dimensional subspaces according to zero patterns and fitting additive logistic normal mixtures with shared location and dispersion parameters across groups. While computationally convenient, this approach does not guarantee subcompositional coherence when zeros are present and assumes identical mean–covariance structures across patterns, which may not hold in heterogeneous datasets. Overall, mixture-based models for essential zeros follow a common principle: separating “zero” and “non-zero” cases, then modeling the positive components via (extensions of) the logistic normal distribution rather than replacing zeros, thus preserving their structural meaning. The second class of modeling strategies treats zeros as latent variables within a latent Gaussian framework. The basic idea is to first assume a Gaussian distribution in real space and then apply a suitable transformation to map it onto the simplex (Butler and Glasbey, 2008; Leininger et al., 2013; Tsagris, 2022). Butler and Glasbey (2008) introduced 11 A critical comparison of handling zeros in high-dimensional compositional count data Euclidean projections onto the simplex, modeling point probabilities on the boundaries through a latent multivariate normal distribution to accommodate zeros. However, their method is restricted to low-dimensional cases and does not preserve subcompositional ratios. Building on this idea, Tsagris (2022) proposed an alternative projection approach for modeling structural zeros based on the multivariate normal distribution, but the zero-censored version they described only allows for one zero per compositional vector, making it effective only when the zero structure is relatively simple. In the context of land use/land cover data, Leininger et al. (2013) advanced the latent variable framework by introducing a power scaling transformation, which maps compositional data into a latent Gaussian space while allowing a local point mass at zero. Within this latent space, spatial dependence can be incorporated via a hierarchical power model, making the approach suitable for higher-dimensional spatial compositional data with essential zeros comparing with Butler and Glasbey (2008). A key limitation of this approach, however, is that it requires at least one component to remain strictly positive across the spatial domain; otherwise, the transformation is not well-defined. The third type of model is derived from the Dirichlet distribution. Since compositional data are subject to a fixed sum constraint, the Dirichlet distribution can naturally model the proportions of components while ensuring that they sum to one. Tsagris and Stewart (2018) proposed a two-layer model called Zero-Adjusted Dirichlet Regression (ZADR). In this approach, observations are first grouped according to their “zero patterns,” and within each group, a truncated Dirichlet distribution is used to model the non-zero components. Dirichlet regression—especially ZADR—provides a natural modeling framework for zero values in compositional data. It requires that all zero patterns share the same set of parameters and is limited by negative correlations and geometric expressiveness. Compared to other methods, it is more practical, although not theoretically the most flexible. Tang et al. (2022) proposed a new stochastic representation and developed the Dirichlet Composition Distribution (DCD) as a generalization of the Dirichlet distribution. The DCD separates the modeling of the probability of zero components from the magnitude of nonzero components, effectively handling essential zeros in compositional data. A limitation of the model is that regression modeling with high-dimensional covariates remains challenging and needs further study. It is important to note that all of the above modeling approaches assume that compositional data are continuous and measured on a real scale. However, sequencing-based microbiome data are fundamentally different: they consist of discrete counts that lie on a lattice rather than a continuum. These discrete and sparse characteristics require specialized treatment beyond continuous CoDA models. Methods developed specifically for count-based compositional data are reviewed in detail in Sec. 3.5. 
+
+3.4 Transformations allowing zeros 
+
+In addition to the log-ratio transformations that are incompatible with zeros (see Sec. 2.2), several alternative transfor-mation approaches have been developed that can directly accommodate compositional data containing zero values. 
+
+3.4.1 Power-based transformations for compositional data 
+
+In compositional data analysis, two traditional approaches are commonly contrasted. One is the Log-Ratio Analysis (LRA), based on transformations such as CLR and ILR (see Section 2.2), rooted in Aitchison’s geometry (Aitchison, 1986; Filzmoser et al., 2018). The other is to treat the components as ordinary Euclidean variables, namely Raw Data Analysis (RDA). While RDA ignores the compositional constraint, it remains simple and widely used; LRA, by contrast, aligns with the CoDA axioms but cannot be applied directly when zeros are present. To address this issue, Tsagris et al. (2011) proposed the α-transformation based on a Box–Cox type power trans-formation, which unifies RDA and LRA within a parametric framework and provides a continuum between strictly Euclidean treatments and log-ratio geometry, offering a practical compromise that enhances feasibility for real-world data—particularly zero-inflated and high-dimensional sparse compositions—while relaxing some of the strict axioms of Aitchison geometry. The procedure consists of two steps. The first applies the α-power transformation to the compositional vector x followed by a closure operation: 
+
+uα(x) = xα
+
+> 1
+
+PDj=1 xαj
+
+, . . . , xαD
+
+PDj=1 xαj
+
+!
+
+, 0 ≤ α ≤ 1. (7) The second step linearly maps the closed vector into Euclidean space, typically by centering and projecting onto a 
+
+(D − 1) -dimensional subspace orthogonal to the unit vector. This ensures that the transformed data possess Euclidean geometry and can be analyzed using conventional statistical methods. It is evident that the α-transformation includes RDA and LRA as special cases: they represent the two endpoints of the parameter space. Adjusting α allows one to find compromises—or even superior alternatives—between them. When α = 1 , uα(x) reduces to a linear scaling of the original components, corresponding to RDA. When α → 0, the 12 A critical comparison of handling zeros in high-dimensional compositional count data transformation converges to 
+
+ln 
+
+ xi
+
+g(x)
+
+
+
+, g(x) = 
+
+
+
+> D
+
+Y
+
+> j=1
+
+xj
+
+
+
+> 1/D
+
+, (8) which is the CLR /ILR transformation, corresponding to LRA. For 0 < α < 1, the transformation yields a family of geometries lying between RDA and LRA. Tsagris et al. (2015) applied the α-transformation in discriminant analysis and showed that it is more robust than the direct log-ratio transformation in the presence of zeros or near-zero-boundary data. Dong et al. (2025) further introduced the α-transformation into the Lee Carter-CoDA (LC-CoDA) framework for mortality prediction, addressing the limitation that log-ratio analysis cannot be directly applied to zero counts. The 
+
+α-transformation has demonstrated strong robustness and tunability in supervised learning tasks, including classification and prediction. On the other hand, Greenacre (2024) proposed the ChiPower transformation, based on a Box–Cox power transformation combined with χ2 standardization. Like the α-transformation, it belongs to the family of power transformations, but its procedure differs: ChiPower introduces an additional χ2 standardization based on column means after the closed power transformation. In Greenacre (2024), the ChiPower transformation was shown to be particularly effective for unsupervised analyses, including correspondence analysis. However, while both transformations offer flexibility for zero-valued compositional data by operating between the extremes of ignoring the compositional constraint and enforcing a strict log-ratio approach, this flexibility comes at the cost of violating subcompositional coherence, and the analytical results can be sensitive to the choice of the transformation parameter. Specifically, the optimal transformation parameter does not have a fixed choice but is typically optimized in a data-driven manner—for instance, by maximizing model likelihood, minimizing cross-validation error, or selecting the value that yields the best model fit or predictive performance—depending on the analytical framework or model to be applied. 
+
+3.4.2 Hyperspherical (directional) transformations for compositional data 
+
+Scealy and Welsh (2011) and Schwob et al. (2025) proposed the use of a square-root transformation to map compositional data onto directional data lying on a (D − 1) -dimensional hypersphere, which can then be modeled using directional distributions such as the Kent distribution (Scealy and Welsh, 2011) or the elliptically symmetric angular Gaussian (ESAG) distribution (Schwob et al., 2025). These distributions possess flexible covariance structures, allowing for both positive and negative correlations between components, thereby overcoming the limitation of the Dirichlet model, which cannot directly model positive correlations. However, it should be noted that the square-root transformation does not preserve Aitchison geometry, as it fails to maintain the ratios of parts in subcompositions. Moreover, when components are close to zero, boundary issues arise in the fitted directional models (e.g., the Kent distribution), which may assign non-negligible probability mass outside the positive orthant (Schwob et al., 2025). 
+
+3.5 Count zeros 
+
+In the following sections, we will focus on methods for handling discrete compositional data. Among such data, those generated by high-throughput sequencing technologies (mentioned in Sec. 1) represent a typical example of discrete compositions, as they are expressed in the form of mRNA transcript counts, OTU counts, and other integer-valued measurements. Before proceeding, it is important to note that integer-valued count data naturally reside on a mathematical structure known as a lattice (Lovell et al., 2020). A D-dimensional natural-number lattice ND consists of all points of the form 
+
+(x1, . . . , x D ) with xi ∈ N, forming a discrete grid shown in left panel of Fig 2 rather than a continuous space. Count vectors generated by high-throughput sequencing—such as transcript counts or OTU counts—are therefore lattice-valued compositions. This lattice structure underlies many of the properties discussed below, including quantization effects, many-to-one closure mappings, and scale-dependent distortions. A detailed description of lattice-valued data and their geometric implications can be found in Lovell et al. (2020). In contrast to lattice-based count data, classical CoDA theory assumes that compositions are defined in a continuous and strictly positive real space. All possible compositions with D parts form the (D − 1) –dimensional simplex SD introduced in Sec. 2, which is a continuous and infinitely dense domain shown in right panel in Fig 2 in which any two compositions can be connected by infinitely many intermediate points. This idealized representation provides the mathematical foundation for log-ratio operations, distance measures, and other analytical tools in CoDA. By contrast, lattice-valued count compositions occupy only a discrete subset of this simplex after closure, and the resolution of these discrete points depends on the underlying sequencing depth. This mismatch in resolution between discrete count data and the continuous simplex lies at the heart of many of the quantization effects and scale-dependent instabilities discussed below. This contrast between lattice-valued count data and the continuous simplex is illustrated schematically in Figure 2, which juxtaposes the integer lattice with its continuous compositional counterpart. 13 A critical comparison of handling zeros in high-dimensional compositional count data 012345678910 y Î N0 1 2 3 4 5 6 7 8 9 10 x Î N
+
+Figure 2: Integer lattice N2 (left) and the continuous 3-part simplex S3 (right). Left panel: Shows all 11 × 11 = 121 
+
+possible integer pairs (x, y ) where x, y ∈ { 0, . . . , 10 }. Right panel: Displays N = 1000 simulated compositions generated from a symmetric Dirichlet distribution Dir (1 , 1, 1) , projected onto the 2-simplex. Count data from HTS technology are realized on a discrete lattice, whereas classical CoDA assumes that compositions lie in a continuous simplex that is infinitely dense. Having established the discrete lattice structure of count data, we now discuss the specific empirical properties of HTS-generated compositions. These datasets exhibit two characteristic features. First, zeros and low-abundance components are particularly prominent due to variability in sequence diversity and sampling depth across experimental conditions (Lovell et al., 2020). Second, while modern sequencing platforms can produce millions of nucleotide reads, the resulting data reflect not only the underlying biological composition but also substantial technical variation introduced by uneven sequencing depth and efficiency biases (Zhang et al., 2024). Third, The discrete nature of count data, with 1 as the smallest unit of resolution, further leads to extremely wide numerical ranges: low-abundance features are concentrated near very small values or zeros, whereas a small subset of highly abundant features may reach tens of thousands or more, inflating the overall mean. This phenomenon is especially evident in RNA-seq datasets (Zhang et al., 2024). Such discreteness and imbalance present challenges for ratio-based CoDA. While CoDA emphasizes relative rather than absolute information between components, the coexistence of many near-zero values, true zeros, and a few extremely large counts can substantially distort log-ratio relationships. Next, we introduce the problems caused by the discreteness of count data in CoDA and the current strategies to address count zeros. As noted earlier, zeros can be classified according to their origin into essential zeros and rounded zeros; in discrete data, essential zeros often reflect genuinely low or absent abundance of certain taxa, whereas rounded zeros more commonly arise from insufficient sequencing depth in individual samples (Filzmoser et al., 2018). Broadly, the handling of zeros in discrete data can be divided into two main approaches: one focuses on zero replacement (imputation of zeros in discrete data), while the other directly models the data including zeros, thereby retaining the information carried by the zeros themselves. In the following sections, we will discuss these two approaches and their applications in different analytical contexts. 
+
+3.5.1 CoDA in discrete data 
+
+The log-ratio framework of CoDA relies on expressing information through ratios between components, and the transformations introduced in Section 2.2 are all built upon this log-ratio formulation. Moreover, many core statistical quantities in CoDA—such as the variation matrix—are defined in terms of log-ratios (Aitchison, 1986). However, when compositional data appear as discrete counts, some foundational assumptions of CoDA are violated. As discussed earlier, the lattice-valued nature of count data Lovell et al. (2020) imposes a fixed numerical resolution and prevents the data from occupying the simplex SD in a continuous manner, thereby challenging the direct application 14 A critical comparison of handling zeros in high-dimensional compositional count data of CoDA to count-based compositions. As noted by Lovell et al. (2020), the discreteness of count data introduces quantization error and sampling variation, both of which can substantially affect the results obtained from LRA. The main issues associated with this discreteness can be summarized as follows. A first challenge concerns the closure operation. As previously noted for HTS data, technical limitations lead to substantial variation in sequencing depth across samples, resulting in total counts that differ markedly from one sample to another. To ensure comparability, CoDA typically applies closure, which rescales each composition by its total so that all samples share a common sum and scale invariance is preserved. However, because count data lie on a lattice, closure maps these integer-valued vectors onto only a finite-resolution subset of the simplex. When counts are large, the lattice points become much denser, and their projections onto the simplex more closely approximate the behavior of continuous compositions. In contrast, when counts are small, lattice points are highly sparse, and closure maps them to a coarse and uneven subset of the simplex, making the discreteness of the data particularly pronounced. This scale-dependent change in simplex resolution is illustrated in Fig. 3 (left), where shallow sequencing depths yield visibly coarse subsets of the simplex, whereas deeper sequencing produces a much denser and more continuous point cloud. This limited resolution directly contributes to quantization artifacts and instability in downstream log-ratio analyses (Lovell et al., 2020), as further reflected in the CLR coordinates in Fig. 3 (right), where low-depth data exhibit strong discretization and sampling noise. Depth = 10 Depth = 100 Depth = 1000 
+
+(a) Simplex projection illustrating discretization at different sequencing depths. -1.0 -0.5 0.0 0.5 1.0 1.5 -1.0 -0.5 0.0 0.5 1.0 1.5 clr(x)_1 clr(x)_2       
+
+> -2 -1 012-1 012clr(x)_1
+> -3 -2 -1 012-1 012clr(x)_1
+
+(b) CLR coordinates showing sampling noise and geometric distortion under low depth. 
+
+Figure 3: Comparison of compositional geometry across sequencing depths. We simulate a sample size of 500 three-part Dirichlet–multinomial compositions with parameters α = (4 , 2, 1) under sequencing depths {10 , 100 , 1000 }. Left (Fig. 3a): shows the resulting compositional points after applying closure and distributes onto the simplex. Right (Fig. 3b): illustrates the corresponding two components of the CLR-transformed composition. Overall, increasing sequencing depth systematically transitions the compositional data representation from a highly discrete and sparse lattice approximation to a dense, continuous-like geometric structure, which significantly enhances the fidelity and stability of log-ratio analysis. In addition to the geometric limitations imposed by the lattice structure and closure, discreteness also has direct statistical consequences for log-ratio analysis. The mathematical foundations of LRA are derived under the assumption of strictly positive continuous real numbers (Aitchison, 1986), whereas count data are inherently discrete lattice measurements generated through stochastic sampling processes such as multinomial or Poisson distributions (Lovell et al., 2020). Thus, observed counts represent noisy realizations of underlying biological proportions, and this discreteness becomes especially problematic under shallow sequencing depth. For example, in the same sample, two components with counts of 1 and 2 produce a log-ratio of log(2 /1) = 0 .69 , suggesting a twofold difference that largely reflects sampling noise rather than true biological variation. This phenomenon illustrates a broader issue: quantization error is scale dependent Lovell et al. (2020). When counts are small, the log-ratio is highly sensitive to single-unit changes, substantially amplifying noise; by contrast, high-count data more closely approximate continuous behavior, making LRA more reliable. As shown in Lovell et al. (2020), quantization noise in low-count settings can distort association estimates and obscure true proportional relationships. Consequently, applying LRA directly to low-count data often yields unstable or misleading results. A core assumption of CoDA is scale invariance: multiplying all components by a constant should not alter their relative structure. Count data violate this principle because their smallest possible increment is 1. When counts are globally scaled down, many distinct compositions collapse onto the same lattice points, creating quantization artifacts analogous to reducing the resolution of an image (Lovell et al., 2020). This collapsing of distinct configurations leads to information loss and violates the scale invariance assumption fundamental to CoDA. The resulting quantization error is particularly severe for low counts, where single-unit changes can substantially distort log-ratios. As shown in 15 A critical comparison of handling zeros in high-dimensional compositional count data Lovell et al. (2020), small counts can cause pairwise associations to fluctuate widely due to sampling noise, making log-ratio–based inference unreliable. To illustrate these effects, we follow an approach analogous to that of Lovell et al. (2020) and demonstrate the impact of quantization in Fig. 4 by generating three-part Dirichlet–multinomial counts with a sample size of 100, a sequencing depth of 1000, and α = (6 , 3, 1) , and then applying progressively stronger global scaling followed by ceiling quantization, thereby revealing how distinct lattice configurations merge and how the corresponding log-ratios deviate from their unquantized values. The simulated results in Fig. 4a illustrate this effect: global downscaling followed by ceiling quantization causes originally distinct Dirichlet–multinomial compositions to merge onto a limited set of lattice locations, demonstrating substantial information loss. The legend reports the mean log-ratio log 10 (x1/x 2) computed at each scale. As the scaling factor decreases, these mean log-ratios progressively drift away from the true underlying value of log 10 (2) ≈ 0.31 , reaching values as low as 0.28 , thereby quantifying the increasing distortion induced by aggressive downscaling and discretization. Fig. 4b shows that this quantization induces non-negligible shifts in sample-wise log-ratios. These deviations grow larger as the scaling factor decreases, confirming that low-count regimes are especially susceptible to quantization-driven distortion of relative information. 0200 400 600 800 0 250 500 750 x1 x2 scale ceil(0.001x) (0) ceil(0.01x) (0.279) ceil(0.1x) (0.31) ceil(1x) (0.314) 
+
+(a) Lattice-valued counts after scaling and ceiling quantization. -1.0 -0.5 0.0 0.5 0.001x 0.01x 0.1x 1x Scale  
+
+> Dlog  10  (x1  x2 )
+
+(b) Distribution of per-sample log-ratio shifts. 
+
+Figure 4: Effect of global scaling and ceiling quantization on Dirichlet–multinomial count data. Simulations are conducted using 100 samples from a three-part Dirichlet–multinomial model with sequencing depth 1000 and α =(6 , 3, 1) . (a): Scatterplots show the quantized lattice-valued pairs (x1, x 2) obtained after applying four global scaling factors s ∈ { 1, 0.1, 0.01 , 0.001 }. The dashed line indicates the reference proportionality x2 = 0 .5x1, which corresponds to the expected ratio E[x1/x 2] = 2 under the generative model. Legend entries report the mean log-ratio log 10 (x1/x 2)
+
+computed at each scale. (b): Boxplots show the distribution of per-sample log-ratio shifts ∆ log 10 (x1/x 2) induced by ceiling In real sequencing data, the distribution of count values is typically extremely wide. Low-abundance features often have only single-digit counts or even zeros, while a few high-abundance features may reach tens of thousands or more. This highly imbalanced distribution reflects both the intrinsic diversity of biological systems and introduces substantial scale differences among components. Therefore, appropriate scaling is often required before analyzing such count compositional data to mitigate the impact of wide-ranging count magnitudes. Zhang et al. (2024) focused on microbiome data as a representative example of count compositional data and emphasized that, due to uneven sequencing depth, samples are not directly comparable unless scaling is applied prior to log-ratio transformation. In the traditional CoDA framework, discrepancies in total counts across samples are addressed by the closure operation Aitchison (1986), which transforms absolute information into relative proportions by dividing each component by the sample total. This procedure is conceptually equivalent to the Total Sum Scaling (TSS) approach summarized in Zhang et al. (2024). While closure restores the compositional meaning of the data mathematically, it may discard biologically important absolute information, such as total species abundance or biomass. On the other hand, Zhang et al. (2024) introduced alternative scaling methods that preserve total-scale information (e.g., variance scaling or z-score 16 A critical comparison of handling zeros in high-dimensional compositional count data normalization). Although these methods can retain some aspects of absolute magnitude, they often distort the original proportional structure, causing the data to no longer satisfy the compositional constraint. 
+
+3.5.2 Probabilistic models for zero-inflated count compositional data 
+
+The Dirichlet-multinomial (DM) distribution provides a principled framework for modeling compositional count data due to its inherent ability to respect the simplex constraint. However, this model suffers from two key limitations: (1) its inability to handle zero-inflated data, and (2) its restriction to capturing only negative correlations between components. Modern high-throughput sequencing produces microbial abundance data that are both high-dimensionaland extremely sparse, prompting the development of DM extensions that explicitly model the excess zero structure and accommodate more general correlation patterns. A common feature of these extensions is the adoption of a zero-inflated framework, in which zeros are modeled through a two-component mixture consisting of a point mass at zero and a count distribution for the non-zero observations. The associated latent indicators naturally distinguish between structural zeros and rounding zeros, allowing the models to preserve the different meanings carried by zeros in count compositional data. Tang and Chen (2019) introduced the zero-inflated generalized Dirichlet–multinomial model by modifying the Beta stick-breaking representation of the generalized Dirichlet distribution. Zero inflation is incorporated through zero-inflated Beta variables, enabling more flexible correlation structures than the classical DM. Parameter estimation is performed via an EM algorithm. A limitation of the approach, however, is that it does not naturally extend to multivariate regression settings. Zeng et al. (2023) proposed the Zero-Inflated Probabilistic PCA Logistic-Normal Multinomial (ZIPPCA–LNM) model, which combines a low-rank logistic-normal multinomial formulation with an explicit zero-inflation component. This approach captures complex covariance patterns through a low-rank latent structure while leveraging the flexibility of the logistic-normal distribution. An iterative procedure integrating empirical Bayes estimation and variational approximation enables scalable computation in high-dimensional settings. More recently, Koslovsky (2023) introduced a Bayesian zero-inflated Dirichlet–multinomial (ZIDM) regression model that integrates zero inflation, compositional constraints, and variable selection in high dimensions. Zero inflation is modeled via a gamma reparameterization, while sparsity-inducing priors and a dimension-adaptive Metropolis–Hastings sampler improve inference stability and computational efficiency. Taken together, these developments reflect three broad directions in zero-inflated DM modeling: extending distributional flexibility, enriching dependence structures, and integrating zero inflation into high-dimensional regression frameworks. Despite this progress, challenges remain in scalability, interpretability of latent zero mechanisms, and jointly modeling zero inflation, overdispersion, and complex correlation patterns in large-scale microbiome count data. Beyond the DM framework, Jiang et al. (2021) proposed a Bayesian zero-inflated negative binomial (ZINB) regression model with spike-and-slab priors for differential abundance analysis. However, because the model does not incorporate compositional constraints or link covariates to the zero-inflation mechanism, its estimates may not adequately account for compositional effects when applied to compositional count data. In addition to the parametric methods mentioned above, Ren et al. (2017) proposed a more flexible nonparametric approach in model construction that does not require pre-setting a fixed number of parameters. This allows the model complexity to adaptively adjust based on the characteristics of the data, enabling it to capture complex patterns and inherent sparsity. The method employs a truncated dependent Dirichlet process (DDP) prior, which more naturally reflects the correlations between components and the sparsity in the data. Later, Ren et al. (2020) extended this approach to mixed-effects regression models to accommodate the needs of longitudinal data analysis. However, the method does not explicitly model zero-inflation indicators, preventing it from distinguishing between different types of zeros. Additionally, it is designed for small to medium-sized covariate spaces, relying on model comparison techniques for model selection. Some additional modeling strategies are also worth noting. Fernandes et al. (2013) proposed, within a Bayesian framework, an ANOVA-like analytical approach called ANOVA-Like Differential Expression (ALDEx). This method combines the Dirichlet-multinomial model with ILR-transformation to perform variability assessment and differential expression analysis on sparse compositional data. For compositional data, the counts reflect relative proportions rather than absolute abundances, and the total read count ni itself is random and provides limited biological information about the sample. Therefore, Fernandes et al. (2013) focused on inferring the species proportions pi. The approach starts directly from the counts ni, and employs a Bayesian method combining a multinomial likelihood with a Dirichlet prior distribution (with hyperparameter set to 0.5) to estimate the posterior distribution of pi. This ensures that even when the observed count for a species is zero, its estimated proportion will not be exactly zero, thus mitigating biases caused by sparsity. Subsequently, the proportions pi are transformed using the ILR transformation into linearly independent variables, enabling statistical analysis and variability exploration in Euclidean space. And Bacon-Shone (2008) proposed an approach based on the Poisson-log normal distribution, applicable when essential zeros appear in discrete compositions of count data. 17 A critical comparison of handling zeros in high-dimensional compositional count data 
+
+3.5.3 Bayesian–multiplicative imputation methods 
+
+For HTS-derived compositional data, limitations in sequencing depth often cause zero counts to arise simply from insufficient sampling. Increasing sequencing depth would, in many cases, convert these zeros into small nonzero counts. Therefore, for such sampling zeros, it is reasonable to apply imputation approaches designed for rounded zeros, as discussed in Section 3.2. However, most existing imputation methods assume a continuous data representation and operate within the LRA framework. This creates a mismatch with count-based compositional data, which are inherently discrete and lack scale invariance. Under small-count conditions, scaling operations and log-ratio transformations can introduce information loss and quantization error, distorting the underlying proportional relationships. Consequently, although rounded-zero imputation provides a practical strategy for addressing sampling zeros, the resulting imputed values are positive continuous numbers below the detection limit rather than integer counts, altering the discrete structure of the original data and requiring cautious interpretation. To address these issues, the following section introduces a Bayesian zero-replacement approach (Martín-Fernández et al., 2014; Daunis-i Estadella et al., 2008), which integrates Bayesian estimation with classical rounded-zero imputation ideas (Martín-Fernandez et al., 2003). This framework yields posterior predictive proportions that can be mapped back to counts while remaining coherent with the statistical principles of compositional data. The method provides a conceptual bridge between CoDA and discrete lattice-valued data and is implemented in the zCompositions package through the function cmult() .In the context of count compositional data, let c = ( c1, . . . , c k) denote the observed counts across k categories, with total N = P 
+
+> j
+
+cj . Assuming a multinomial model with parameters θ = ( θ1, . . . , θ k), the likelihood is 
+
+P (c | θ) = N !
+
+c1! · · · ck!
+
+> k
+
+Y
+
+> j=1
+
+θcj 
+
+> j
+
+.
+
+A Dirichlet prior with strength s and center t = ( t1, . . . , t k) is assigned to θ, i.e., 
+
+θ ∼ Dir (st), tj > 0, X
+
+> j
+
+tj = 1 .
+
+The posterior is then θ|p ∼ Dir (p + st), where p = c/N , and the posterior mean is 
+
+E(θj |p) = pj + st j
+
+N + s .
+
+When pj = 0 , the posterior estimate becomes st j  
+
+> N+s
+
+, yielding positive replacements even for zero counts. Table 1 summarizes commonly used Dirichlet priors and their corresponding posterior means. Table 1: Dirichlet priors and Bayesian posterior estimators. 
+
+Prior s Posterior mean 
+
+Haldane 0 pj
+
+> N
+
+Perks 1 pj +1 /k N +k/ 2
+
+Jeffreys k  
+
+> 2
+> pj+1 /2
+> N+k/ 2
+
+Bayes–Laplace k pj +1  
+
+> N+k
+
+To preserve ratios between non-zero parts, Bayesian–multiplicative (BM) methods combine the posterior estimator with multiplicative adjustment: 
+
+p∗ 
+
+> j
+
+=
+
+  
+
+> st j
+> N+s
+
+, if pj = 0 ,pj
+
+
+
+1 − sN +s
+
+P  
+
+> pk=0
+
+tk
+
+
+
+, if pj > 0.
+
+Although this approach provides coherent replacements for zeros, it lacks scale invariance because the outcome depends on N . Martín-Fernández et al. (2014) addressed this by introducing a scaled Dirichlet distribution (Pawlowsky-Glahn and Buccianti, 2011). 18 A critical comparison of handling zeros in high-dimensional compositional count data In addition, Lovell et al. (2020) proposed a preliminary conceptual framework for discrete replacement, in which zero values are substituted with small discrete positive numbers (e.g., 0.1, 0.2, . . . , 0.9) derived from the empirical distribution of non-zero observations. This approach aims to preserve the discrete nature of count data while maintaining approximate statistical consistency with the original dataset. 
+
+## 4 Comparison for imputation-based zero handling 
+
+In the preceding sections, we introduced several strategies for handling compositional datasets with zeros, such as transformations allowing zeros and statistical models that directly account for zero inflation. However, these approaches are typically model-dependent. For example, regression-based models are generally constructed around a response variable to capture relationships or make predictions, while zero-tolerant transformations (e.g., the Box–Cox family) require selecting parameters (such as α) that are determined within specific modeling frameworks or optimization criteria. In practical applications, however, one often does not know in advance which statistical methods will be used in downstream analysis. This motivates a separate investigation of imputation methods, whose goal is to complete the data matrix in a way that remains compatible with common downstream analyses—such as PCA, clustering, and regression—without committing to a specific modeling framework. The present study systematically compares multiple imputation methods using real count-based compositional data, i.e., the Rabbit data (Greenacre et al., 2021), with the goal of evaluating their ability to restore data completeness, preserve compositional structure, and remain numerically stable in high-dimensional sparse settings. These evaluations allow us to identify the conditions under which each imputation method is most appropriate and to assess whether the resulting completed data can reliably support downstream multivariate analyses. Such an empirical comparison is essential because count-based compositional data possess distinctive characteristics that challenge traditional imputation frameworks. The data are inherently discrete with a wide dynamic range—most features occur at very low counts or zeros, while a small number of highly abundant components may reach thousands. Moreover, these datasets are often high-dimensional, with the number of features far exceeding the number of samples. These properties introduce difficulties in numerical stability, statistical robustness, and computational efficiency. Motivated by these considerations, we designed real-data experiments to comprehensively evaluate the performance of existing imputation strategies for discrete compositional count data. To further substantiate our findings, we additionally conducted an identical set of experiments using simulation data exhibiting the same discrete and compositional properties as the Rabbit dataset. The corresponding results, provided in Appendix A, corroborate the patterns observed in the real-data analysis and strengthen the robustness of our conclusions. All code and materials used in this work are available at 
+
+https://github.com/tangwenq/Comparison-of-zero-handling-method-in-discrete-count .
+
+4.1 The rabbit dataset 
+
+Based on the motivations discussed above, we evaluate the performance of different imputation strategies using the rabbit dataset (Greenacre et al., 2021), a real compositional count dataset. This dataset consists of counts of D = 3937 
+
+microbial genes measured across n = 89 rabbit samples, forming an 89 × 3937 matrix. The rabbit data display key characteristics typical of high-throughput sequencing outputs: wide dynamic range, strong heterogeneity across features, and clear over-dispersion. As shown in Figure 5a, the log–log mean–variance relationship increases monotonically with the mean, indicating substantial over-dispersion. The heatmap in Figure 5b, ordered by column means, further illustrates the broad numerical range of counts— from single-digit values in low-abundance features to counts in the tens of thousands for highly abundant ones. For visual clarity, low-, medium-, and high-abundance categories in the heatmap are defined by tertiles of the column means. The dataset is fully observed and contains no zeros, which allows us to introduce zeros at controlled proportions and evaluate imputation performance against known true values. These properties make the rabbit dataset a realistic and suitable benchmark for assessing the stability, robustness, and scale sensitivity of imputation methods for discrete compositional data. 
+
+4.2 Experiment design 
+
+In our comparison study, we designed two sets of experiments to systematically examine how both the proportion of zeros and the dimensionality of the data influence the performance of imputation methods. The first experiment examines how imputation accuracy varies with increasing zero proportions under different dimensional settings. For each chosen dimensionality level ( m = 50 , 500 , 1000 ), we randomly sampled m columns from the Rabbit dataset and introduced rounded zeros by replacing all values below a column-specific quantile threshold Qp(x·j ) with zero, where 
+
+p denotes the p-th quantile level. In our experiments, p varied from 0.05 to 0.8. Zeros were inserted into every second 19 A critical comparison of handling zeros in high-dimensional compositional count data 1e+03 1e+05 1e+07        
+
+> 10 100 1000 10000
+> Mean abundance
+> Variance of abundance
+> Abundance group High Low Medium
+> (a) Mean–variance relationship of counts (log–log scale). (b) Heatmap of count values.
+
+Figure 5: (a) shows the log–log mean–variance relationship across species, illustrating the over-dispersion typical of count-based compositional data. (b) displays the distribution of counts across samples, highlighting the wide dynamic range and considerable inter-feature heterogeneity. Low-, medium-, and high-abundance categories were defined by tertiles of the column means. column. This procedure produced controlled zero proportions. Each configuration was replicated 500 times. At higher dimensions, however, computational cost and occasional convergence failures of certain imputation algorithms made very large-scale replications infeasible. The second experiment examined the effect of dimensionality by fixing the zero proportions at p = 0 .2 and p = 0 .5 and varying the number of selected columns from m = 50 up to m = 1400 , with 500 replications performed for each setting. All imputed matrices were obtained using the methods summarized in Table 2. Because most imputation methods are formulated for continuous data, their outputs are continuous as well. To better adapt these methods to count-valued compositional data and preserve the lattice structure inherent to sequencing counts, we additionally applied an upward rounding step to convert imputed values into integers. This allows us to evaluate whether restoring discreteness affects the performance and numerical stability of each method. 
+
+4.3 Distortion assessment 
+
+We use two commonly adopted evaluation metrics in the imputation literature—the Average Difference in Covariance Structure (ADCS) and the Compositional Error Deviation (CED)—to assess how well each method preserves the statistical structure of the data (Martín-Fernandez et al., 2003; Palarea-Albaladejo and Martín-Fernández, 2015; Templ et al., 2011). These metrics quantify, respectively, the change in covariance structure and the deviation in compositional geometry by comparing the imputed matrix with the original complete dataset. Let S = [ sij ] denote the sample covariance matrix computed from the original data in ILR coordinates, and let 
+
+S′ = [ s′ 
+
+> ij
+
+] denote the corresponding covariance matrix computed after imputation. The ADCS is defined as 
+
+ADCS = 1
+
+D − 1 ∥S − S′∥F , (9) where D − 1 is the dimensionality of the ILR-transformed space, and ∥ · ∥ F denotes the Frobenius norm. A value of 
+
+ADCS = 0 indicates perfect preservation of the covariance matrix after imputation. Let nM be the number of compositions xm containing at least one artificially introduced zero, and M the corresponding index set. Let ˜xm denote the imputed version of xm. Let X−M denote the subset of fully observed compositions obtained by removing all rows indexed by M . The compositional error deviation (CED) is defined as 
+
+CED = 1
+
+nM
+
+X
+
+> m∈M
+
+dA(xm, ˜xm)max   
+
+> xi,xj∈X−M
+
+dA(xi, xj ) , (10) where dA(·, ·) denotes the Aitchison distance defined in Eq. 1. 20 A critical comparison of handling zeros in high-dimensional compositional count data Table 2: Overview of imputation methods for left-censored compositional data 
+
+Method (abbr.) Function Description mult_repl multRepl() Multiplicative replacement using a fixed fraction (0.65) of the DL, i.e., Qp(x·j ).
+
+mult_lognorm multLN() Lognormal-based replacement using a truncated lognormal model below DL. 
+
+mult_KMSS multKM() Multiplicative replacement using a KMSS estimate below DL. 
+
+lr_da lrDA() Log-ratio data augmentation procedure using iterative simulation. 
+
+lr_em lrEM() EM-based parametric replacement using least-squares regression. 
+
+lr_SVD lrSVD() Low-rank log-ratio imputation using singular value decomposi-tion. 
+
+GBM cmult() Bayesian multiplicative method based on a Dirichlet–multinomial formulation. 
+
+lmrob imputeBDLs(..., method="lmrob") 
+
+EM-based parametric replacement using robust MM regression. 
+
+PLS imputeBDLs(..., method="PLS") 
+
+EM-based parametric replacement using pls regression. 
+
+dl_unif runif(0.1 * DL, DL) 
+
+Random draws from a uniform distribution between 0.1 · DL and 
+
+DL .
+
+add1 – Fixed-value replacement where all zeros are set to 1. The denominator in Equation (10) normalizes the deviation by the maximum observed Aitchison distance between fully observed compositions in the dataset X. This normalization ensures that CED is a relative measure of distortion, accounting for the overall compositional variability of the data. This criterion is a generalization of the measures proposed by Filzmoser et al. (2018). Both ADCS and CED provide quantitative insights into the extent to which imputation methods preserve essential compositional characteristics and covariance structures of the original data. 
+
+4.4 Results 
+
+From a technical perspective, the results revealed considerable limitations in several methods. For instance, lmrob 
+
+did not produce valid outcomes in practice. The lr_da method was only applicable in low-dimensional cases (e.g., 
+
+m = 50 ), and even under this setting, the invalid proportion of simulations increased sharply with the proportion of zeros—from 0.28 at p = 0 .05 up to 0.912 at p = 0 .8—indicating low feasibility and a high failure rate. Similarly, the mult_KMSS method also showed increasing failure rates with higher dimensionality: while the mean missing rate across all p at fixed m was only 0.056 for m = 50 , it rose to 0.59 for m = 1000 .Figures 6–8 summarize performance under combinations of dimensionality and zero proportion. Boxplots were constructed using zero proportions 0.05, 0.4, 0.6, and 0.8 for each dimension, and the average metric values across these levels were used to generate the trend plots in Figs. 7. These figures illustrate how imputation accuracy changes with increasing missingness across different dimensional settings. In the plots, “raw” denotes the imputed matrices in their original unprocessed (continuous) form, whereas “ceil” indicates that a ceiling operation was applied to the imputed matrices, converting continuous values into integers to better approximate discrete count data. At the low-dimensional level ( m = 50 ), the ceiling operation substantially improved the performance of PLS and 
+
+lr_da (Fig. 6), leading to reduced ADCS and CED values while leaving other methods largely unchanged, with the improvement becoming more pronounced as the zero proportion increased. GBM , add1 , and PLS exhibited higher CED and ADCS, whereas lr_SVD , lr_em , and dl_unif maintained the lowest deviations. The three multiplicative approaches— mult_repl , mult_lognorm , and mult_KMSS —showed moderate, similar growth across zero levels and were mostly unaffected by rounding. 21 A critical comparison of handling zeros in high-dimensional compositional count data 0.05 0.4 0.6 0.8 
+
+> M=50  M=500  M=1000
+> mult_lognorm mult_repl mult_KMSS lr_da lr_em PLS lr_SVD dl_unif GBM add1
+> mult_lognorm mult_repl mult_KMSS lr_da lr_em PLS lr_SVD dl_unif GBM add1
+> mult_lognorm mult_repl mult_KMSS lr_da lr_em PLS lr_SVD dl_unif GBM add1
+> mult_lognorm mult_repl mult_KMSS lr_da lr_em PLS lr_SVD dl_unif GBM add1
+
+0.1 1.0 10.0 
+
+0.1 0.3 1.0 
+
+0.03 0.10 0.30 
+
+> Error (log10 scale)
+
+ceil raw 
+
+(a) CED 0.05 0.4 0.6 0.8 
+
+> M=50  M=500  M=1000
+> mult_lognorm mult_repl mult_KMSS lr_da lr_em PLS lr_SVD dl_unif GBM add1
+> mult_lognorm mult_repl mult_KMSS lr_da lr_em PLS lr_SVD dl_unif GBM add1
+> mult_lognorm mult_repl mult_KMSS lr_da lr_em PLS lr_SVD dl_unif GBM add1
+> mult_lognorm mult_repl mult_KMSS lr_da lr_em PLS lr_SVD dl_unif GBM add1
+
+1e−02 1e+00 1e+02 
+
+0.01 0.10 1.00 10.00 
+
+0.01 0.10 1.00 
+
+> Error (log10 scale)
+
+ceil raw 
+
+(b) ADCS 
+
+Figure 6: Comparison of imputation methods in terms of CED (top) and ADCS (bottom) metrics under varying dimensionality ( m = 50 , 500 , 1000 ) and missingness probabilities. 22 A critical comparison of handling zeros in high-dimensional compositional count data Ceil Raw 
+
+> 50  500  1000
+> 0.2 0.4 0.6 0.8
+> 0.2 0.4 0.6 0.8
+
+0.1 0.3 1.0 3.0 
+
+0.1 0.3 1.0 
+
+0.05 0.10 0.30 0.50 
+
+CED: Proportion of Missingness  
+
+> Mean Value (log10)
+> Ceil Raw
+> 50  500  1000
+> 0.2 0.4 0.6 0.8
+> 0.2 0.4 0.6 0.8
+
+0.01 0.10 1.00 10.00 
+
+0.01 0.10 1.00 
+
+0.01 0.10 1.00 
+
+ADCS: Proportion of Missingness 
+
+> Mean Value (log10)
+
+add1 
+
+dl_unif 
+
+GBM 
+
+lr_em 
+
+lr_SVD 
+
+mult_KMSS 
+
+mult_lognorm 
+
+mult_repl 
+
+PLS 
+
+Figure 7: Comparison of imputation methods in terms of CED and ADCS metrics under varying dimensionality and missingness probabilities. Ceil Raw 
+
+> 0.2  0.5
+> 0500 1000 1500
+> 0500 1000 1500
+
+0.03 0.10 0.30 1.00 
+
+0.03 0.10 0.30 1.00 3.00 
+
+CED: dimension m  
+
+> Mean Value (log10)
+> Ceil Raw
+> 0.2  0.5
+> 0500 1000 1500
+> 0500 1000 1500
+
+0.03 0.10 0.30 1.00 
+
+0.1 1.0 10.0 
+
+ADCS: dimension m 
+
+> Mean Value (log10)
+
+PLS 
+
+mult_lognorm 
+
+mult_repl 
+
+mult_KMSS 
+
+lr_SVD 
+
+add1 
+
+dl_unif 
+
+GBM 
+
+Figure 8: Comparison of CED and ADCS metrics (Raw and Ceil) across varying dimensions m under fixed missingness probabilities p = 0 .2 and p = 0 .5.23 A critical comparison of handling zeros in high-dimensional compositional count data 1e−01 1e+01 1e+03 1e+05 
+
+> 250 500 750 1000
+> Dimension (m)
+> Mean Runtime (seconds, log10)
+> 1100 10000
+> 0.2 0.4 0.6 0.8
+> Proportion of Missingness
+> Mean Runtime (seconds, log10)
+> GBM
+> lr_SVD
+> mult_KMSS
+> mult_lognorm
+> mult_repl
+> PLS
+> PLS
+> mult_lognorm
+> mult_repl
+> mult_KMSS
+> lr_SVD
+> GBM
+
+Figure 9: Trends of computational runtime under different settings. The upper panel shows the change of mean runtime with increasing dimension ( m) at fixed missingness probability ( p = 0 .5), while the lower panel illustrates the runtime variation with different missingness probabilities ( p) at a fixed dimension ( m = 200 ). At the moderate-dimensional level ( m = 500 ), rounding further enhanced PLS performance, particularly at moderate and high missingness levels (Figs. 7). mult_repl and mult_lognorm displayed greater variability and occasional instability, while GBM and add1 remained less effective. lr_SVD again showed consistently low errors across all levels of missingness. Overall, the ceiling operation reduced ADCS fluctuations and improved the stability of methods with initially larger deviations. At higher dimensionality (e.g., m = 1000 ), lr_em and lr_da no longer produced valid results, reflecting their limited applicability in large-scale settings. At the high-dimensional level ( m = 1000 ), PLS failed due to computational constraints, while mult_repl ,
+
+mult_lognorm , and mult_KMSS exhibited similar increasing patterns in both metrics (Figs. 7). Among these, 
+
+mult_repl performed best, achieving the lowest CED at low missingness levels. lr_SVD and dl_unif remained the most robust, maintaining stable, low errors even under high zero proportions. The ceiling operation had little additional benefit at this scale. Figs. 8 further fix the missingness proportions at p = 0 .2 and p = 0 .5 to explore how dimensionality affects performance. The trends are largely consistent with previous findings: the upward rounding (ceiling) substantially improves PLS 
+
+performance, especially at moderate-to-high zero levels; the three multiplicative imputation methods perform well in CED when the proportion of zeros is low—indicating better preservation of the original compositional geometry—but perform poorly in ADCS due to induced artificial correlations. lr_SVD and dl_unif again demonstrate stable behavior across dimensions. Figure 9 presents the computational runtime comparison, showing that PLS is the most time-consuming method among all. The computations were performed using the Puhti supercomputer provided by CSC – IT Center for Science, Finland. To further explain the substantial improvement observed for the PLS method after applying the ceiling operation, we conducted a localized, fine-grained analysis under different combinations of dimensionality and zero proportions. Although each simulation setting was repeated 500 times before, the purpose of this part is to examine the detailed imputation behavior, which can already be clearly illustrated by inspecting a single replicate. Therefore, for illustrative 24 A critical comparison of handling zeros in high-dimensional compositional count data and explanatory purposes, we present one representative replicate ( rep = 1 ) under a moderate-dimensional setting (m = 200 ) and a zero proportion of p = 0 .2. This focused examination enables us to visualize the underlying mechanics of the methods without loss of generality. For interpretability, six representative columns were selected—two each from the low-, medium-, and high-abundance groups. Boxplots of imputed values were produced for all methods, and scatter plots comparing true ( x) and imputed ( y) values were generated for PLS and lr_SVD (Fig. 10). As shown in the scatter plots, although the overall evaluation metrics indicate weaker performance for PLS (raw) ,see Fig. 6, most imputed values lie close to the reference line y = x, indicating that the majority of estimates are near their true counterparts. One entire column of imputed values exhibited extremely small magnitudes, with mg820 
+
+clearly identifiable as the variable responsible for this outlier pattern in this replicate. After applying the ceiling operation, these very small continuous values were converted into integers, leading to a substantial reduction in both CED and ADCS.This example illustrates the mechanism behind the metric degradation using a single replicate and six representative columns; similar outlier behavior may also occur in the remaining unshown columns or other repetitions. In addition, due to the wide dynamic range of the rabbit dataset—spanning several orders of magnitude—the multi-plicative methods ( mult_repl , mult_lognorm , and mult_KMSS ) occasionally produced rows (samples) containing all-negative imputed values. 
+
+4.5 Discussion and recommendations 
+
+In summary, since many imputation methods were originally developed for continuous compositional data, applying them directly to discrete count data requires caution due to their sensitivity to sparsity, scale differences, and rounding. Future work should focus on developing methods that explicitly account for the discrete-based nature of the data, providing a more practical and reliable bridge between log-ratio theory and real high-dimensional sequencing count data. The observed patterns highlight several important methodological considerations for applying imputation algorithms to compositional count data. Log-ratio–based methods such as lr_SVD and lr_em consistently demonstrated strong robustness across dimensionalities and zero proportions. The multiplicative replacement approaches ( mult_repl ,
+
+mult_lognorm , and mult_KMSS ), while computationally fast and still performing reasonably when the zero proportion is low, showed clear instability under high sparsity or heterogeneous count scales. In particular, the occasional occurrence of all-negative rows generated by these methods can be attributed to numerical instabilities that arise when log-ratio transformations interact with the large dynamic range and left-censored components of the Rabbit dataset—a limitation noted earlier when these methods were introduced. The localized example further illustrates the mechanism underlying the weaker aggregated performance of PLS in its raw form. Although the global evaluation metrics (CED and ADCS) suggest reduced accuracy, most imputed values from 
+
+PLS (raw) align closely with the reference line y = x, indicating strong preservation of proportional relationships. The degradation was instead driven by rare but extremely small imputed values—such as those observed for variable mg820 
+
+in Figure10—which produced entire columns of near-zero estimates in specific replicates. Because CED and ADCS operate within the log-ratio form, these tiny positive values are disproportionately amplified, inflating the error scores. Applying a ceiling operation corrects these values by converting them to integers, effectively mitigating logarithmic amplification, consistent with the earlier discussion that quantization error has the strongest impact on extremely small values—particularly those below 1—where values far less than 1 are rounded up to 1 and thus the extreme distortions in the log-ratio computations are greatly alleviated. This reduction in error therefore reflects decreased metric sensitivity rather than an inherent improvement in the underlying predictive accuracy. Similar rare-value effects may occur in the remaining variables or across different repetitions, even though they are not all shown here. A supplementary comparison study based on simulated count data is provided in Appendix A, further confirming that the observed behavior of PLS is not specific to the Rabbit dataset but reflects a more general mechanism. Additional examples illustrating how such rare small-value artifacts arise under other dimensionalities and zero proportions are included in Appendix B. Building on these observations, a broader methodological implication emerges. Our results indicate that directly applying continuous CoDA frameworks to discrete count data can introduce systematic bias arising from quantization error and scale disparity, particularly under low-count or highly heterogeneous conditions. Moreover, because the log-ratio framework inherently assumes strictly positive and continuous inputs, its use on discrete counts further amplifies distortions through discretization noise and altered correlation structures. These issues become especially pronounced when extremely small values are present, as discussed earlier. Consequently, when employing log-ratio–based evaluation metrics such as CED or ADCS on count-valued compositional data, particular caution is warranted, and the potential effects of data discreteness should be explicitly accounted for during interpretation. In addition, our experiments show 25 A critical comparison of handling zeros in high-dimensional compositional count data that applying a ceiling operation to the raw imputed values—thereby restoring the discrete nature of the data—can mitigate some of these distortions and improve the effectiveness and stability of certain methods. From a practical perspective, method selection must balance accuracy, robustness, and computational cost. Multiplicative replacement methods may be adequate when zero proportions are small and scale variation is moderate, but their instability in heterogeneous environments limits their reliability. lr_SVD consistently delivered stable performance across all tested dimensions and sparsity levels, making it a dependable default choice. Although PLS is computationally expensive, it retains high predictive fidelity in most settings and remains valuable when computational resources permit. In practice, however, its raw outputs should be inspected for rare small-value artifacts, and rounding should be applied when necessary to ensure numerical stability. The dl_unif method often achieves favorable aggregated metric scores but offers limited interpretability due to its stochastic nature, suggesting its use primarily as a baseline or supplementary approach. More generally, modestly preserving the discrete nature of the data—for example, via rounding or integer mapping—can improve both stability and interpretability in downstream analyses. In summary, while continuous CoDA methods form the basis of most existing imputation algorithms, their direct application to sparse or high-dimensional count data requires careful consideration of scale heterogeneity, zero inflation, and rounding effects. Future work should focus on developing imputation frameworks that explicitly incorporate the discrete and lattice-valued nature of count data, thereby providing a more coherent bridge between log-ratio methodology and the unique structure of sequencing-based compositional data. Such approaches hold promise for improving both theoretical soundness and practical performance in high-dimensional compositional count settings. MG3926 (nComp=2) MG650 (nComp=6) MG820 (nComp=2)               
+
+> 1e+01 1e+03 1e+05
+> 1e−01 1e+02 1e+05
+> 110 100 1000 10000
+> 1e+01 1e+03 1e+05
+> MG177 (nComp=5) MG1773 (nComp=1) MG2467 (nComp=3)
+> add1 dl_unif GBM lr_SVD mult_KMSS mult_lognorm mult_repl PLS
+> add1 dl_unif GBM lr_SVD mult_KMSS mult_lognorm mult_repl PLS
+> add1 dl_unif GBM lr_SVD mult_KMSS mult_lognorm mult_repl PLS
+> 1100 10000
+> 0.1 1.0 10.0 100.0
+> Method
+> Imputed Value (log10)
+> method
+> add1
+> dl_unif
+> GBM
+> lr_SVD
+> mult_KMSS
+> mult_lognorm
+> mult_repl
+> PLS
+> MG3926 (nComp=2)
+> 3510
+> 710 20
+> Imputed Value (log10)
+> MG177 (nComp=5)
+> 5710
+> 5710
+> MG1773 (nComp=1)
+> 30 50 100
+> 60 70 100
+> MG2467 (nComp=3)
+> 100 200 300
+> 100 200 300
+> True Value (log10)
+> Imputed Value (log10)
+> MG650 (nComp=6)
+> 500 700 1000
+> 1600 1700 1800 19002000
+> True Value (log10)
+> MG820 (nComp=2)
+> 1e−02 1e+00 1e+02
+> 2000 2250 2500 2750 3000
+> True Value (log10)
+> method lr_SVD PLS
+
+Figure 10: Local inspection of imputation behavior under m = 200 , p = 0 .2, and rep = 1 . The left portion of the figure shows the distribution of imputed values across different imputation methods for six representative variables (two from each abundance level: low, medium, and high), with the corresponding number of PLS components ( ncomp )annotated in each facet. The right portion displays scatter plots comparing true versus imputed values (with y = x as a reference line) for the PLS and lr_SVD methods. While most PLS imputations closely follow the identity line, certain variables (e.g., mg820 ) show pronounced deviations, which in turn lead to inflated log-ratio–based error measures such as CED and ADCS in global evaluations. 
+
+## 5 Conclusion 
+
+In this review, we examined the challenge of zero values in compositional data, motivated in particular by high-dimensional and extremely sparse sequencing-based microbiome datasets. As sequencing technologies continue to advance, such data have become increasingly common, yet conventional log-ratio–based compositional data analysis 26 A critical comparison of handling zeros in high-dimensional compositional count data remains fundamentally incompatible with zeros. The problem becomes even more complex in sequencing count data, where measurements are discrete and lattice-valued rather than continuous, violating key assumptions underlying classical CoDA. We began by revisiting the geometric foundations of compositional data and emphasized the importance of distinguishing between rounded zeros and essential zeros, as they arise from different mechanisms and demand different treatments. Building on this distinction, we summarized three major methodological directions: zero-tolerant transformations, zero-replacement strategies that construct strictly positive compositions, and model-based approaches that retain zeros as statistically meaningful quantities. We further reviewed extensions specifically developed for count-based compositional data, elaborating on why their discrete nature is fundamentally incompatible with classical continuous CoDA, and summarising current strategies tailored to sparse count compositions, including probabilistic modelling frameworks such as Dirichlet–multinomial and zero-inflated formulations, as well as imputation methods designed for discrete data. Nonetheless, while we recognise the theoretical value of probabilistic modelling frameworks—such as Dirich-let–multinomial formulations—and the usefulness of zero-tolerant transformations, the primary aim of this study was different. Our goal was to systematically evaluate the practical performance and general applicability of existing mainstream matrix-based imputation strategies—most of which were originally designed under the log-ratio frame-work—when applied to high-dimensional, sparse HTS count data, without presupposing any specific statistical model or probabilistic structure. By focusing on methods that operate directly on the data matrix, we aim to provide HTS researchers with a pragmatic and model-agnostic guide for tool selection, emphasising numerical accuracy and structural fidelity rather than the fit of any particular statistical model. Based on these premises, we sought to assess how well current imputation methods can accommodate the distinctive properties of sequencing-derived count compositions, and to offer practical guidance for researchers analysing such data. To this end, we conducted comparative experiments on both real high-dimensional datasets and simulated data generated from real microbial compositions. The results show that while some methods—particularly log-ratio–based approaches such as lrSVD and lrEM —exhibit strong robustness, most existing imputation strategies are designed for continuous data and fail to respect the discrete nature of sequencing counts. Recovering a count-like structure typically requires an additional ceiling step, and our results show that this post-processing can substantially improve performance for certain methods, especially PLS , whose raw outputs may contain extremely small values that become highly distorted in log-ratio space. In our comparison, we therefore applied ceiling adjustments to obtain discrete outputs, suggesting that future research could further explore which post-processing strategies are most effective in stabilizing imputations for sparse count compositions. Nonetheless, our matrix-level evaluation—based on both global covariance-based metrics and feature-wise comparisons—demonstrates that it remains difficult to achieve imputations that are simultaneously close to the true values and structurally faithful to the original count matrix. Methods that perform well on average may still break down on individual components, and no existing approach consistently dominates across numerical accuracy and overall evaluation criteria. This reveals a central gap in current research: existing zero-handling strategies either rely on continuity assumptions or inadvertently break the lattice structure of count data, often requiring post-processing. There is a clear need for new methodological development that jointly addresses zero inflation, compositional constraints, and discreteness within a coherent statistical framework. Looking ahead, promising directions include unified frameworks that bridge imputation with count-based probabilistic models, ensuring that methods respect the discrete nature of sequencing data. At the same time, log-ratio analysis itself may require refinement when applied to count data—for example, by incorporating safeguards for extremely small values or adapting interpretation strategies depending on count scale. Finally, progress will also depend on the development of standardized benchmarks, reproducible workflows, and accessible software implementations. By organizing the scattered literature and clarifying the statistical nature of zeros, this review establishes a more coherent conceptual framework for zero handling in compositional settings. This perspective helps connect the well-established log-ratio methodology with the growing need to analyze discrete, sequencing-based count data, where zeros are frequent. We believe this work provides a solid basis for future advances, including methods explicitly designed for high-dimensional compositional count data. 
+
+## Acknowledgments 
+
+This work was supported by the European Commission grant no. CZ.02.01.01/00/23_025/008686,and by the Finnish Doctoral Program Network in Artificial Intelligence (AI-DOC; decision no. VN/3137/2024-OKM-6). We also acknowledge CSC – IT Center for Science, Finland, for providing computational resources. 27 A critical comparison of handling zeros in high-dimensional compositional count data 
+
+## Declaration of generative AI and AI-assisted technologies in the manuscript preparation process 
+
+During the preparation of this work, the author(s) used AI tools to improving the clarity and readability of the manuscript. After using this tool, the author(s) reviewed, edited, and verified the content as needed, and take full responsibility for the content of the published article. 
+
+## A Simulation design for zero-imputation comparison 
+
+In this appendix, we present the results of applying the imputation methods listed in Table2 to a simulation dataset. 
+
+A.1 Construction of zero-free simulation dataset 
+
+We begin with a real microbiome count matrix Y, taken from the gllvm example dataset. The data consist of normalized read counts of 985 bacterial species sampled from 56 soil sites across three distinct climatic regions: Ny-Ålesund (high Arctic), Kilpisjärvi (low Arctic), and Mayrhofen (European Alps) Kumar et al. (2017). Species were identified based on 16S rRNA similarity and clustered into OTUs. The dataset exhibits 63.3% sparsity (zeros). Following the procedure in Fernandes et al. (2013), we construct a corresponding zero-free dataset using a Bayesian smoothing step. For each sample i with observed count vector ni, we place a symmetric Dirichlet prior with parameter 12 and draw from the posterior: 
+
+pi | ni ∼ Dirichlet  ni + 12
+
+ .
+
+Collecting all samples yields a strictly positive compositional matrix: 
+
+Ppost = {pi}ni=1 .
+
+This assigns strictly positive mass to all taxa, including those originally observed as zero. To obtain a count matrix analogous to sequencing output, we scale the posterior compositions by a fixed sequencing depth that was manually increased to ensure that rounding would not introduce zeros: 
+
+Ynozero ,ij = Round  Ppost ,ij · depth full 
+
+.
+
+This yields a fully positive integer count matrix of dimension 56 × 985 that contains no zeros, preserves key character-istics typical of high–throughput sequencing data—such as a wide dynamic range—similar to those observed in the Rabbit dataset, and retains its inherent compositional nature, making it suitable for log–ratio–based evaluation. This Dirichlet-based construction followed by scaling is consistent with simulation strategies used in microbiome studies, including Chen and Li (2013). The zero-insertion and imputation experiments follow the design in Section 4.2, using m = 50 and m = 200 with 
+
+p = 0 .2, due to computational constraints. We note this briefly here, as the experimental logic otherwise remains unchanged. 
+
+A.2 Result 
+
+Across all simulation scenarios, the results consistently show that the behavior of PLS after applying the ceiling operation closely parallels the patterns observed in the main experiment. As shown in Figures 11–13, the ceiling adjustment substantially reduces the CED and ADCS values, resulting in lower and more stable metric outputs. Because the Rabbit dataset is representative of HTS-derived count data—with discrete support, heterogeneous scales, and a wide dynamic range—the simulation data were constructed to share these structural characteristics. The consistent improvement of PLS after rounding across both real and simulated datasets indicates that this behavior reflects a general pattern in count-valued compositional settings, rather than an effect specific to any particular dataset. 
+
+## B Additional diagnostic figures 
+
+To complement the localized example discussed in the main text, this appendix provides additional local diagnostic plots that follow the same experimental design as in the main body, with the same data-generating mechanism and evaluation procedure, but using different combinations of dimensionality ( m) and zero proportion ( p). These plots 28 A critical comparison of handling zeros in high-dimensional compositional count data Ceil Raw 
+
+> 50  200
+> 0.2 0.4 0.6 0.8
+> 0.2 0.4 0.6 0.8
+
+0.3 0.5 1.0 
+
+0.3 0.5 1.0 
+
+CED: Proportion of Missingness  
+
+> Mean Value (log10)
+> Ceil Raw
+> 50  200
+> 0.2 0.4 0.6 0.8
+> 0.2 0.4 0.6 0.8
+
+0.01 0.10 1.00 
+
+0.01 0.10 1.00 
+
+ADCS: Proportion of Missingness 
+
+> Mean Value (log10)
+
+add1 
+
+dl_unif 
+
+GBM 
+
+lr_em 
+
+lr_SVD 
+
+mult_KMSS 
+
+mult_lognorm 
+
+mult_repl 
+
+PLS 
+
+Figure 11: Comparison of imputation methods in terms of CED and ADCS metrics under varying dimensionality and missingness probabilities with simulation dataset. Ceil Raw 
+
+> 0.2
+> 100 200 300 400 500
+> 100 200 300 400 500
+
+0.3 0.5 1.0 
+
+CED: dimension m  
+
+> Mean Value (log10)
+> Ceil Raw
+> 0.2
+> 100 200 300 400 500
+> 100 200 300 400 500
+
+0.05 0.10 0.30 0.50 
+
+ADCS: dimension m 
+
+> Mean Value (log10)
+
+PLS 
+
+mult_lognorm 
+
+mult_repl 
+
+mult_KMSS 
+
+lr_SVD 
+
+add1 
+
+dl_unif 
+
+GBM 
+
+Figure 12: Comparison of CED and ADCS metrics ( Raw and Ceil ) across different dimensions m under a fixed missingness probability of p = 0 .2 under simulation dataset. 29 A critical comparison of handling zeros in high-dimensional compositional count data 0.05 0.4 0.6 0.8 
+
+> M=50  M=200
+> mult_lognorm mult_repl mult_KMSS lr_da lr_em PLS lr_SVD dl_unif GBM add1
+> mult_lognorm mult_repl mult_KMSS lr_da lr_em PLS lr_SVD dl_unif GBM add1
+> mult_lognorm mult_repl mult_KMSS lr_da lr_em PLS lr_SVD dl_unif GBM add1
+> mult_lognorm mult_repl mult_KMSS lr_da lr_em PLS lr_SVD dl_unif GBM add1
+
+0.1 1.0 10.0 
+
+0.1 0.3 1.0 3.0 
+
+> Error (log10 scale)
+
+ceil raw 
+
+(a) CED 0.05 0.4 0.6 0.8 
+
+> M=50  M=200
+> mult_lognorm mult_repl mult_KMSS lr_da lr_em PLS lr_SVD dl_unif GBM add1
+> mult_lognorm mult_repl mult_KMSS lr_da lr_em PLS lr_SVD dl_unif GBM add1
+> mult_lognorm mult_repl mult_KMSS lr_da lr_em PLS lr_SVD dl_unif GBM add1
+> mult_lognorm mult_repl mult_KMSS lr_da lr_em PLS lr_SVD dl_unif GBM add1
+
+1e−03 1e−01 1e+01 1e+03 
+
+1e−03 1e−02 1e−01 1e+00 1e+01 
+
+> Error (log10 scale)
+
+ceil raw 
+
+(b) ADCS 
+
+Figure 13: Simulation-based comparison of imputation methods in terms of CED (top) and ADCS (bottom) metrics across dimensionality ( m = 50 , 200 ) and missingness probabilities. 30 A critical comparison of handling zeros in high-dimensional compositional count data illustrate how rare but extremely small imputed values can arise under various settings, even when only m and p are altered. These examples serve two purposes. First, they demonstrate that the appearance of near-zero imputation artifacts generated by PLS is not limited to the specific case highlighted in the main manuscript (e.g., variable mg820 ), but also occurs across a broader range of simulation settings. Second, they show that the presence of such extremely small values can affect the stability of log-ratio–based evaluation metrics, suggesting that this issue deserves further attention when log-ratio methods are applied to count data. This phenomenon may arise more broadly in count-based compositional settings and does not depend on the particular variable or dimensional configuration involved. Figures 14a and 14b present two representative instances showing that, under different dimensionalities and zero-proportion settings, a single variable can again produce extremely small raw imputations under PLS , resulting in entire columns of near-zero values. 
+
+## References 
+
+Aitchison, J. (1986). The Statistical Analysis of Compositional Data . Chapman and Hall, London. Aitchison, J. and Kay, J. (2003). Possible solution of some essential zero problems in compositional data. In Thió-Henestrosa, S. and Martín-Fernández, J., editors, Proceedings of CoDaWork’03, The 1st Compositional Data Analysis Workshop , Girona, Spain. University of Girona. Bacon-Shone, J. (2008). Discrete and continuous compositions. In i Estadella, J. D. and Martín-Fernández, J., editors, 
+
+Proceedings of CoDaWork’08, The 3rd Compositional Data Analysis Workshop , page 11, Girona, Spain. University of Girona. Bear, J. and Billheimer, D. (2016). A logistic normal mixture model for compositional data allowing essential zeros. 
+
+Austrian Journal of Statistics , 45(4):3–23. Butler, A. and Glasbey, C. (2008). A latent Gaussian model for compositional data with zeros. Journal of the Royal Statistical Society. Series C (Applied Statistics) , 57(5):505–520. Chen, J. and Li, H. (2013). Variable selection for sparse Dirichlet-multinomial regression with an application to microbiome data analysis. The Annals of Applied Statistics , 7(1):418–442. Chen, J., Zhang, X., Hron, K., Templ, M., and Li, S. (2018). Regression imputation with Q-mode clustering for rounded zero replacement in high-dimensional compositional data. Journal of Applied Statistics , 45(11):2067–2080. Conesa, A., Madrigal, P., Tarazona, S., Gomez-Cabrero, D., Cervera, A., McPherson, A., Szczesniak, M. W., Gaffney, D. J., Elo, L. L., Zhang, X., and Mortazavi, A. (2016). A survey of best practices for RNA-seq data analysis. Genome Biology , 17:13. Daunis-i Estadella, P., Martín-Fernández, J., and Palarea-Albaladejo, J. (2008). Bayesian tools for zero counts in compositional data. Proceedings of CODAWORK’08, the 3rd Compositional Data Analysis .Di Bella, J. M., Bao, Y., Gloor, G. B., Burton, J. P., and Reid, G. (2013). High throughput sequencing methods and analysis for microbiome research. Journal of Microbiological Methods , 95(3):401–414. Dong, Z. M., Shang, H. L., Hui, F., and Bruhn, A. (2025). A compositional approach to modeling cause-specific mortality with zero counts. Annals of Actuarial Science , pages 1–26. Dorey, F. J., Little, R. J., and Schenker, N. (1993). Multiple imputation for threshold-crossing data with interval censoring. Statistics in Medicine , 12(17):1589–1603. Fernandes, A. D., Macklaim, J. M., Linn, T. G., Reid, G., and Gloor, G. B. (2013). ANOVA-like differential expression (ALDEx) analysis for mixed population RNA-seq. PLoS One , 8(7):e67019. Filzmoser, P., Hron, K., and Templ, M. (2018). Applied Compositional Data Analysis: With Worked Examples in R .Springer. Fišerová, E. and Hron, K. (2011). On the interpretation of orthonormal coordinates for compositional data. Mathematical Geosciences , 43(4):455–468. Fry, T. R. L. and Chong, D. (2005). A tale of two logits, compositional data analysis and zero observations. In Mateu-Figueras, G. and Barceló-Vidal, C., editors, Proceedings of CoDaWork’05, The 2nd Compositional Data Analysis Workshop , Girona, Spain. University of Girona. Gloor, G. B., Macklaim, J. M., Pawlowsky-Glahn, V., and Egozcue, J. J. (2017). Microbiome datasets are compositional: And this is not optional. Frontiers in Microbiology , 8:2224. 31 A critical comparison of handling zeros in high-dimensional compositional count data MG3926 (nComp=2) MG650 (nComp=3) MG820 (nComp=3) 
+
+110 100 1000 10000 
+
+1e−08 1e−04 1e+00 1e+04 
+
+110 100 1000 
+
+1e+01 1e+03 1e+05 
+
+MG177 (nComp=5) MG1773 (nComp=1) MG2467 (nComp=1) 
+
+> add1 dl_unif GBM lr_SVD mult_KMSS mult_lognorm mult_repl PLS
+> add1 dl_unif GBM lr_SVD mult_KMSS mult_lognorm mult_repl PLS
+> add1 dl_unif GBM lr_SVD mult_KMSS mult_lognorm mult_repl PLS
+
+1e−01 1e+00 1e+01 1e+02 1e+03 
+
+110 100 
+
+Method 
+
+> Imputed Value (log10)
+
+method 
+
+add1 
+
+dl_unif 
+
+GBM 
+
+lr_SVD 
+
+mult_KMSS 
+
+mult_lognorm 
+
+mult_repl 
+
+PLS 
+
+MG3926 (nComp=2) 
+
+3510 
+
+7 10 20 
+
+> Imputed Value (log10)
+
+MG177 (nComp=5) 
+
+3510 
+
+5 7 10 
+
+MG1773 (nComp=1) 
+
+30 50 100 
+
+60 70 100 
+
+MG2467 (nComp=1) 
+
+100 200 300 
+
+100 200 300 
+
+True Value (log10) 
+
+> Imputed Value (log10)
+
+MG650 (nComp=3) 
+
+500 700 1000 
+
+1600 1700 180019002000 
+
+True Value (log10) 
+
+MG820 (nComp=3) 
+
+1e−08 1e−04 1e+00 1e+04 
+
+2000 2250 2500 27503000 
+
+True Value (log10) 
+
+method lr_SVD PLS 
+
+(a) m = 100 , p = 0 .20 , Abnormal variable MG820 .MG3926 (nComp=3) MG650 (nComp=2) MG820 (nComp=2) 
+
+110 100 1000 10000 
+
+1e+01 1e+03 1e+05 
+
+110 100 1000 10000 
+
+1e−02 1e+01 1e+04 
+
+MG177 (nComp=13) MG1773 (nComp=3) MG2467 (nComp=4) 
+
+> add1 dl_unif GBM lr_SVD mult_KMSS mult_lognorm mult_repl PLS
+> add1 dl_unif GBM lr_SVD mult_KMSS mult_lognorm mult_repl PLS
+> add1 dl_unif GBM lr_SVD mult_KMSS mult_lognorm mult_repl PLS
+
+1e−01 1e+00 1e+01 1e+02 1e+03 
+
+1e−01 1e+00 1e+01 1e+02 1e+03 
+
+Method 
+
+> Imputed Value (log10)
+
+method 
+
+add1 
+
+dl_unif 
+
+GBM 
+
+lr_SVD 
+
+mult_KMSS 
+
+mult_lognorm 
+
+mult_repl 
+
+PLS 
+
+MG3926 (nComp=3) 
+
+510 20 
+
+7 10 20 
+
+> Imputed Value (log10)
+
+MG177 (nComp=13) 
+
+3510 
+
+5 10 20 
+
+MG1773 (nComp=3) 
+
+30 50 100 
+
+60 70 100 
+
+MG2467 (nComp=4) 
+
+100 200 300 
+
+100 200 300 
+
+True Value (log10) 
+
+> Imputed Value (log10)
+
+MG650 (nComp=2) 
+
+1e−03 1e−01 1e+01 1e+03 
+
+1600 1800 2000 2200 
+
+True Value (log10) 
+
+MG820 (nComp=2) 
+
+700 1000 2000 
+
+2000 2500 3000 
+
+True Value (log10) 
+
+method lr_SVD PLS 
+
+(b) m = 500 , p = 0 .30 , Abnormal variable MG650 .
+
+Figure 14: (a) corresponds to m = 100 , p = 0 .20 with abnormal variable MG820 , and (b) corresponds to m = 500 ,
+
+p = 0 .30 with abnormal variable MG650 . Each panel summarizes the distribution of imputed values across methods together with true–imputed comparisons for representative variables. 32 A critical comparison of handling zeros in high-dimensional compositional count data Greenacre, M. (2024). The chipower transformation: a valid alternative to logratio transformations in compositional data analysis. Advances in Data Analysis and Classification , 18:769–796. Greenacre, M., Martínez-Álvaro, M., and Blasco, A. (2021). Compositional data analysis of microbiome and any-omics datasets: a validation of the additive logratio transformation. Frontiers in Microbiology , 12:2625. Hijazi, R. (2011). An EM-Algorithm Based Method to Deal with Rounded Zeros in Compositional Data under Dirichlet Models. In Proceedings of the 4th International Workshop on Compositional Data Analysis .Hron, K., Templ, M., and Filzmoser, P. (2010). Imputation of missing values for compositional data using classical and robust methods. Computational Statistics & Data Analysis , 54(12):3095–3107. Jiang, S., Xiao, G., Koh, A. Y., Kim, J., Li, Q., and Zhan, X. (2021). A Bayesian zero-inflated negative binomial regression model for the integrative analysis of microbiome data. Biostatistics , 22(3):522–540. Koslovsky, M. (2023). A Bayesian zero-inflated Dirichlet-multinomial regression model for multivariate compositional count data. Biometrics , 79. Kowarik, A. and Templ, M. (2016). Imputation with the R package VIM. Journal of Statistical Software , 74(7):1–16. Kumar, M., Brader, G., Sessitsch, A., Mäki, M., van Elsas, J. D., and Nissinen, R. (2017). Plants assemble species-specific bacterial communities from common core taxa in three arcto-alpine climate zones. Frontiers in Microbiology ,8:12. Leininger, T. J., Gelfand, A. E., Allen, J. M., et al. (2013). Spatial regression modeling for compositional data with many zeros. Journal of Agricultural, Biological, and Environmental Statistics , 18:314–334. Lovell, D. R., Chua, X.-Y., and McGrath, A. (2020). Counts: an outstanding challenge for log-ratio analysis of compositional data in the molecular biosciences. NAR Genomics and Bioinformatics , 2(2):lqaa040. Lubbe, S., Filzmoser, P., and Templ, M. (2021). Comparison of zero replacement strategies for compositional data with large numbers of zeros. Chemometrics and Intelligent Laboratory Systems , 210:104248. Martín-Fernández, J. A., Palarea-Albaladejo, J., and Gómez García, J. (2003). Markov Chain Monte Carlo method applied to rounding zeros of compositional data: First approach. In Proceedings of CODAWORK’03 – The 1st Compositional Data Analysis Workshop , Girona, Spain. Martín-Fernandez, J. A., Vidal, C. B., and Pawlowsky-Glahn, V. (2003). Dealing with zeros and missing values in compositional data sets using nonparametric imputation. Mathematical Geology , 35(3):253–278. Martín-Fernández, J., Hron, K., Templ, M., Filzmoser, P., and Palarea-Albaladejo, J. (2012). Model-based replacement of rounded zeros in compositional data: Classical and robust approaches. Computational Statistics & Data Analysis ,56(9):2688–2704. Martín-Fernández, J., Hron, K., Templ, M., Filzmoser, P., and Palarea-Albaladejo, J. (2014). Bayesian-multiplicative treatment of count zeros in compositional data sets. Statistical Modelling , 15. Palarea-Albaladejo, J., Martín-Fernández, J. A., and Gómez-García, J. (2007). A parametric approach for dealing with compositional rounded zeros. Mathematical Geology , 39:625–645. Palarea-Albaladejo, J., Martín-Fernández, J. A., and Olea, R. A. (2014). A bootstrap estimation scheme for chemical compositional data with nondetects. Journal of Chemometrics , 28(7):585–599. Palarea-Albaladejo, J. and Martín-Fernández, J. (2008). A modified em alr-algorithm for replacing rounded zeros in compositional data sets. Computers & Geosciences , 34(8):902–917. Palarea-Albaladejo, J. and Martín-Fernández, J. A. (2015). zcompositions — R package for multivariate imputation of left-censored data under a compositional approach. Chemometrics and Intelligent Laboratory Systems , 143:85–96. Palarea-Albaladejo, J., Martín-Fernández, J. A., Ruiz-Gazen, A., and Thomas-Agnan, C. (2022). lrsvd: An efficient imputation algorithm for incomplete high-throughput compositional data. Journal of Chemometrics , 36(12):e3459. Pawlowsky-Glahn, V. and Buccianti, A., editors (2011). Compositional Data Analysis: Theory and Applications . John Wiley & Sons, Ltd, Chichester, UK. Pollock, J., Glendinning, L., Wisedchanwet, T., and Watson, M. (2018). The madness of microbiome: attempting to find consensus “best practice” for 16S microbiome studies. Nature Reviews Microbiology , 16:567–578. Ren, B., Bacallado, S., Favaro, S., Holmes, S., and Trippa, L. (2017). Bayesian nonparametric ordination for the analysis of microbial communities. Journal of the American Statistical Association , 112(520):1430–1442. Ren, B., Bacallado, S., Favaro, S., Vatanen, T., Huttenhower, C., and Trippa, L. (2020). Bayesian mixed effects models for zero-inflated compositions in microbiome data analysis. The Annals of Applied Statistics , 14(1):494–517. Rubin, D. B. (2004). Multiple Imputation for Nonresponse in Surveys . John Wiley & Sons, Hoboken, NJ. 33 A critical comparison of handling zeros in high-dimensional compositional count data Scealy, J. L. and Welsh, A. H. (2011). Regression for compositional data by using distributions defined on the hypersphere. Journal of the Royal Statistical Society Series B: Statistical Methodology , 73(3):351–375. Schwob, M. R., Hooten, M. B., and Calzada, N. M. (2025). Spatial hyperspheric models for compositional data. Annals of Applied Statistics , 19(4). Stekhoven, D. J. and Bühlmann, P. (2011). MissForest—non-parametric missing value imputation for mixed-type data. 
+
+Bioinformatics , 28(1):112–118. Stewart, C. and Field, C. (2011). Managing the essential zeros in quantitative fatty acid signature analysis. Journal of Agricultural, Biological, and Environmental Statistics , 16:45–69. Tang, M.-L., Wu, Q., Yang, S., and Tian, G.-L. (2022). Dirichlet composition distribution for compositional data with zero components: An application to fluorescence in situ hybridization (FISH) detection of chromosome. Biometrical Journal , 64(4):714–732. Tang, Z. and Chen, G. (2019). Zero-inflated generalized Dirichlet multinomial regression model for microbiome compositional data analysis. Biostatistics , 20(4):698–713. Tanner, M. A. and Wong, W. H. (1987). The calculation of posterior distributions by data augmentation. Journal of the American Statistical Association , 82(398):528–540. Templ, M. (2021). Artificial neural networks to impute rounded zeros in compositional data. In Filzmoser, P., Hron, K., Martín-Fernández, J. A., and Palarea-Albaladejo, J., editors, Advances in Compositional Data Analysis: Festschrift in Honour of Vera Pawlowsky-Glahn , pages 163–187. Springer, Cham. Templ, M., Hron, K., and Filzmoser, P. (2011). robcompositions: An r-package for robust statistical analysis of compositional data. In Pawlowsky-Glahn, V. and Buccianti, A., editors, Compositional Data Analysis: Theory and Applications , pages 341–355. John Wiley & Sons. Templ, M., Hron, K., Filzmoser, P., and Gardlo, A. (2016). Imputation of rounded zeros for high-dimensional compositional data. Chemometrics and Intelligent Laboratory Systems , 155:183–190. Tsagris, M. (2022). Modelling structural zeros in compositional data via a zero-censored multivariate normal model. 
+
+arXiv preprint arXiv:2208.13073 .Tsagris, M., Preston, S., and Wood, A. (2011). A data-based power transformation for compositional data. Proceedings of the 4th international workshop on Compositional Data Analysis, Girona, Spain, May 2011 .Tsagris, M., Preston, S., and Wood, A. (2015). Improved classification for compositional data using the α-transformation. 
+
+Journal of Classification , 33. Tsagris, M. and Stewart, C. (2018). A Dirichlet regression model for compositional data with zeros. Lobachevskii Journal of Mathematics .van Buuren, S. and Groothuis-Oudshoorn, K. (2011). mice: Multivariate imputation by chained equations in R. Journal of Statistical Software , 45(3):1–67. van den Boogaart, K. G. and Tolosana-Delgado, R. (2013). Analyzing Compositional Data with R . Springer. Zeng, Y., Pang, D., Zhao, H., and Wang, T. (2023). A zero-inflated logistic normal multinomial model for extracting microbial compositions. Journal of the American Statistical Association , 118(544):2356–2369. Zhang, Y., Schluter, J., Zhang, L., Cao, X., Jenq, R. R., Feng, H., Haines, J., and Zhang, L. (2024). Review and revamp of compositional data transformation: A new framework combining proportion conversion and contrast transformation. Computational and Structural Biotechnology Journal , 23:4088–4107. 34

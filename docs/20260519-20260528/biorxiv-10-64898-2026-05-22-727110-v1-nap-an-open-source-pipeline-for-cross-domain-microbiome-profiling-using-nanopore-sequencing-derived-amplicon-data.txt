@@ -1,0 +1,490 @@
+Title: NAP: an open-source pipeline for cross-domain microbiome profiling using Nanopore sequencing-derived amplicon data
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.05.22.727110v1.full.pdf
+
+Number of Pages: 30
+
+Markdown Content:
+1
+
+NAP: an open-source pipeline for cross-domain microbiome profiling using Nanopore 1
+
+sequencing-derived amplicon data 2
+
+Luke B. Jones 1, Stefan Bagby 1* 
+
+3
+
+1 Department of Life Sciences, University of Bath, Bath, United Kingdom 4
+
+* Corresponding author email address: bsssb@bath.ac.uk (ORCID 0000-0003-2302-9511) 5
+
+Abstract 6
+
+Background 7Nanopore sequencing offers a cost-effective and portable platform for microbiome analysis, but amplicon-8based approaches remain limited by higher sequencing error rates and a lack of workflows tailored to 9mixed domain ribosomal RNA profiling. While short-read technologies dominate microbial community 10 analysis, their portability and flexibility are constrained. There is therefore a need for robust pipelines 11 designed specifically for cross-domain Nanopore amplicon data. 12 
+
+Results 13 We introduce the Nanopore sequencing-based Amplicon Pipeline (NAP; https://github.com/Luke-B-14 Jones/NAP), an open-source workflow optimised for flexible mixed domain primer sets such as 15 515Y/926R. NAP performs adaptive quality filtering, chimera removal, centroid generation, BLAST-16 based taxonomic classification, hierarchical consensus correction, and domain-aware post-processing, 17 outputting decontaminated abundance tables suitable for downstream analysis. Initial validation against 18 two complementary commercial mock communities showed that NAP achieved strong genus-level 19 performance across both low complexity logarithmic and more compositionally complex gut mock 20 communities. Detection was most reliable above ca. 1% relative abundance, and replicate outputs showed 21 strong agreement with expected composition under Bray–Curtis, Jaccard, agreement-plot, and Bland– 22 Altman analyses. Benchmarking of NAP’s internal filtering modes showed that the default adaptive 23 setting provided the most robust balance of read quality, retained depth, and downstream taxonomic 24 fidelity across heterogeneous inputs. Direct comparison against QIIME2 and Kraken2/Bracken further 25 showed that NAP most accurately preserved expected community structure, with markedly fewer false 26 positive assignments at genus level and substantially stronger species-level behaviour under the tested 27 conditions. Species-level assignments were informative for some taxa, but remained less robust than 28 genus-level outputs with the default V4–V5 amplicon. 29 
+
+Conclusions 30 NAP provides a robust and flexible workflow for cross-domain Nanopore amplicon profiling, with 31 strongest performance at genus level and competitive species-level behaviour for well resolved taxa. 32 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+2
+
+Although analysis of field-derived data was not assessed here, NAP compatibility with portable Nanopore 33 sequencing supports accurate mixed domain microbiome profiling under the tested conditions. 34 35 
+
+Keywords 36 
+
+Amplicon sequencing, Microbiome, Nanopore sequencing, Ribosomal RNA, Taxonomic classification 37 38 
+
+Background 39 Microbiomes are increasingly studied from a cross-domain perspective, capturing interactions among 40 bacteria, archaea, and eukaryotes across diverse environmental and host-associated contexts. While 41 microbiome research has historically focused on bacteria, recent work highlights that inter-domain 42 interactions are central to understanding community structure and function, and health-related outcomes. 43 In clinical settings, bacterial–fungal interactions have physical, metabolic, and immune implications in 44 disease (Arvanitis and Mylonakis, 2015). Inter-kingdom microbial networks are now recognized as 45 potential drivers of complex pathologies and may offer novel diagnostic and therapeutic targets (Li et al. ,46 2018; Wang et al ., 2023). Beyond medicine, these interactions shape ecological dynamics, influence food 47 microbiology, and affect agricultural productivity (Frey-Klett et al ., 2011). As such, accurate and domain-48 inclusive profiling of microbial communities is essential for advancing microbiome science across 49 multiple disciplines. 50 While shotgun and whole genome sequencing approaches offer high taxonomic resolution and low 51 taxonomic bias, they remain costly and computationally intensive. For studies focused primarily on 52 community composition, amplicon sequencing provides a faster and more cost-effective alternative. 53 Traditionally, however, amplicon-based profiling has been restricted to bacteria using 16S rRNA primers, 54 or has relied on separate 16S and 18S reactions to study bacterial and eukaryotic components 55 independently. Because these are amplified and sequenced in isolation, their abundance outputs are not 56 directly comparable, limiting cross-domain integration. 57 Recent advances in primer design have addressed this issue by enabling the amplification of bacterial, 58 archaeal, and eukaryotic small subunit rRNA from a single reaction using universal primer sets. Illumina-59 based workflows offer high base accuracy and are compatible with such primers, but remain limited by 60 short read lengths. Moreover, while mature and user-friendly pipelines exist for Illumina data, these often 61 require programming expertise and lack tools for domain-aware normalisation or bias correction. 62 Nanopore sequencing, in contrast, supports real-time, full length amplicon sequencing with much lower 63 capital outlay and greater portability (Lao et al ., 2021; Charalampous et al ., 2019). These features make it 64 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+3
+
+an appealing choice for field-based or resource-limited settings. However, existing Nanopore amplicon 65 tools are largely limited to bacterial 16S pipelines (e.g., EPI2ME) or require researchers to build bespoke 66 workflows from scratch, rendering them inaccessible to most potential users, particularly those aiming to 67 study mixed domain microbial communities. 68 We present here the Nanopore sequencing-based Amplicon Pipeline (NAP), a lightweight, open-source 69 pipeline purpose built to transform Nanopore amplicon sequencing data into high quality, taxonomically 70 normalised microbiome profiles. To our knowledge, no other end-to-end pipeline currently exists for the 71 analysis of cross-domain ribosomal RNA amplicon data generated using Nanopore sequencing. NAP 72 addresses this gap by integrating established sequence processing tools with custom algorithmic 73 components into a single workflow that can accommodate cross-domain rRNA primer sets (such as the 74 default set, 515Y/926R), supporting simultaneous bacterial, archaeal, and eukaryotic profiling from a 75 single amplicon pool. 76 77 
+
+78 
+
+Implementation 79 
+
+NAP is implemented as an end-to-end command line workflow in Bash and Python for Unix/Linux-based 80 execution, with Docker support to simplify installation and improve reproducibility across systems. 81 Established third party tools are used for core sequence processing steps, whilst custom Bash wrappers 82 and Python modules handle workflow orchestration, taxonomy parsing, consensus calling, abundance 83 processing, decontamination, and output summarisation (Figure 1). This structure was adopted to preserve 84 a simple user interface whilst retaining modularity at code level, allowing individual components to be 85 updated or replaced without altering the overall workflow. 86 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+4
+
+Figure 1: Core pipeline workflow. (A) Dorado output is the input to the pipeline, and is fed into the wrapper nap.sh 87 
+
+which passes variables along with the config to pipe.sh, initiating the pipeline. (B) Quality control stages shown in 88 
+
+light blue. (C) ‘RAW’ data are clustered and the output centroids (‘CNT’ dataset) are then taxonomically classified. 89 
+
+Resulting taxonomic classification data from CNT are synthesised into a ‘higher accuracy consensus’ (HAC) 90 
+
+dataset, against which raw data are then BLASTed, applying an abundance dimension to HAC taxonomy. (D) Final 91 
+
+BLAST outputs are simplified to genus and species level, collapsing taxonomy, and combining abundances 92 
+
+accordingly. This dataset is then normalised using total sum scaling (TSS) normalisation. If blanks are set up 93 
+
+correctly (using ‘nap decon’), Decontamination.py then removes organisms based on blank content, outputting 94 
+
+Microbiome.tsv. Tools used: NanoFilt (v2.8.0; De Coster et al., 2018), SeqTK (v1.4; Li, 2026), VSEARCH 95 
+
+(v2.28.1; Rognes et al ., 2016), BLAST (v2.16.0; Camacho et al ., 2009), and CD-HIT (4.8.1; Li and Godzik, 2006). 96 97 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+5
+
+SILVA rRNA reference databases are first refined to remove ambiguous, taxonomically unresolved, off-98 target, and redundant entries, and in the default ‘mammalian_microbiome_inclusive’ mode, contaminant 99 and organellar records such as plant mitochondrial rRNA are also removed. Alternative filtering modes 100 can also be defined by the user. The curated reference is then divided into 16S and 18S subsets so that 101 primer mapping and amplicon extraction can be performed within the expected domain-specific sequence 102 space, accounting for the different amplicon structures generated by mixed domain primer sets. Primer 103 sequences are mapped to each retained entry using ungapped local alignment, and the longest predicted 104 amplicon region is extracted where possible; untrimmed entries are retained only where strict trimming 105 would result in unnecessary loss of reference coverage. These primer-aware, domain-specific reference 106 sets are then indexed for BLAST-based classification. This design reduces redundant high-scoring 107 matches, limits ambiguous search space, and decreases processing time without requiring users to 108 manually construct primer-specific databases for each assay. 109 NAP processes demultiplexed amplicon reads (FASTQ) through a centroid-first workflow optimised for 110 mixed domain Nanopore microbiome profiling. Reads are first subjected to adaptive quality control using 111 an input depth-dependent filtering scheme. Samples are assigned to preset read depth bins according to the 112 initial number of input reads, with each bin linked, via the NAP configuration file, to a corresponding read 113 level Phred threshold and base masking stringency. Under the validation conditions used here, these 114 settings were empirically calibrated to favour the highest average read quality whilst retaining ≥100,000 115 reads where possible. Firstly, base qualities are tallied across the dataset, and a masking cutoff is selected 116 such that only a defined high quality proportion of bases remains unmasked; bases below this cutoff are 117 converted to ‘ N’ rather than causing the entire read to be discarded in downstream mean Phred filtering. 118 Following this, the associated Phred is applied. This design allows higher depth datasets to be filtered 119 more stringently while preserving usable sequence in lower depth samples. The exact default bin 120 definitions used here are listed in Supplementary Table 1. Users can modify these thresholds to better suit 121 alternative datasets. Once filtering has been completed, very deep samples are capped by default at 122 225,000 reads to prevent unnecessary computational overhead during downstream clustering and 123 classification. Chimeric reads are then removed with VSEARCH, and the filtered read set (‘RAW’) is 124 clustered with CD-HIT to generate representative centroids (‘CNT’). These centroid sequences are 125 classified against the primer-trimmed SILVA database using BLAST+, with alignment settings tuned 126 separately for centroid-to-reference classification and subsequent RAW-to-centroid reassignment, 127 reflecting the distinct alignment objectives of these stages. Taxonomic consensus is then derived from the 128 retained BLAST hits using a hierarchical frequency-weighted procedure. Briefly, the dominant taxonomic 129 structure across the top matches is identified, and the best supported representative assignment is then 130 selected using percent identity, bit score, and e-value. The annotated centroid set (‘HAC’) is subsequently 131 converted into an internal high confidence database against which all RAW reads are re-aligned, 132 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+6
+
+preserving abundance information whilst reducing sensitivity to noisy single read classifications and 133 limiting overall runtime. 134 Post-processing is performed automatically on the resulting abundance tables. Taxonomic assignments can 135 be collapsed to genus and species level, normalised using total sum scaling (TSS), and filtered to remove 136 low confidence taxa below the reporting threshold. For the bundled 515Y/926R configuration, NAP 137 applies a default 16S/18S correction factor of 0.4 to account for the reduced amplification efficiency of 138 co-amplified 18S templates relative to 16S targets. When matched blank controls are supplied, and 139 decontamination is activated in the configuration, blank-informed decontamination is performed by 140 temporarily denormalising and harmonising sample and blank abundance profiles across taxonomic levels, 141 before evaluating taxa using configurable prevalence- and abundance-based rules. Taxa supported 142 primarily by blank signal are then removed or penalised adaptively before final re-normalisation. NAP 143 does not currently apply taxon-specific SSU copy number correction, and output abundances should 144 therefore be interpreted as relative amplicon abundances rather than direct estimates of cellular 145 abundance. 146 Global run behaviour is controlled through a main configuration file, whilst primer-specific defaults are 147 defined in modular sub-configurations containing the expected amplicon structure, reference resources, 148 alignment thresholds, and any domain-specific abundance adjustments. This enables users to adapt the 149 workflow to alternative rRNA primer sets without modifying the core code. Input can be supplied either as 150 a single explicitly pathed read file with a user-defined sample name, or as a tabular manifest for batch 151 execution. For manifest-based execution, output locations are user-defined, allowing runs to be initiated 152 from any working directory. Final outputs include genus- and species-level abundance tables (.tsv), 153 pipeline logs (.txt), intermediate classification files, and quality summaries intended to support 154 troubleshooting and user confidence, whilst also allowing users to interrogate full taxonomic paths and, if 155 desired, make manual taxonomic consensus assessments. 156 157 
+
+Methods 158 
+
+Mock community preparation 159 
+
+Two commercially available mock microbiome communities were used to evaluate the pipeline: 160 ZymoBIOMICS Microbial Community Standard II (Log Distribution), and ZymoBIOMICS Gut 161 Microbiome Standard (both Cambridge Biosciences); henceforth, these are referred to as log mock (L1, 162 L2, and L3) community and gut mock (M1, M2, and M3) community, respectively. These two standards 163 were selected because they impose complementary validation challenges relevant to mixed domain 164 Nanopore amplicon profiling. The ZymoBIOMICS Microbial Community Standard II (Log Distribution) 165 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+7
+
+provides a low complexity community with an extreme abundance gradient, spanning ca . 89.1% to 166 0.089% relative abundance, and is therefore well suited for assessing abundance-dependent detection, 167 dropout, and quantitative recovery across a wide dynamic range. In contrast, the ZymoBIOMICS Gut 168 Microbiome Standard provides a more compositionally complex community, comprising 14 taxa 169 distributed between 14% and 0.1% relative abundance, with broader phylogenetic and microbiological 170 diversity, including taxa expected to cover varied taxonomic separability within the V4–V5 region. 171 Together, the two standards include bacterial, eukaryotic, and archaeal targets, encompass both Gram-172 positive and Gram-negative organisms, and represent taxa expected to vary in extractability, amplification 173 behaviour, and taxonomic separability within the V4–V5 region. As such, they were chosen to test the 174 principal analytical challenges addressed by NAP: cross-domain recovery, abundance fidelity, taxonomic 175 assignment, and reproducibility across distinct community structures. 176 In addition to mock communities, environmental blanks were made by exposing sterile 0.9% saline to the 177 laboratory environment. DNA was extracted from these samples using ZymoBIOMICS DNA/RNA 178 miniprep kit according to the manufacturer’s recommendations (“ZymoBIOMICS DNA/RNA Miniprep 179 Kit,” 2025). Homogenisation was performed according to a custom protocol, with six cycles of 30 seconds 180 at 9,000 rpm using a Bertin Precellys Evolution bead beater, increasing the yield of harder to lyse 181 organisms (Zhang et al ., 2020). DNA was quantified using a Qubit fluorometer (Thermo Fisher 182 Scientific). Isolates were then amplified using Phusion™ Plus PCR Master Mixes (Thermo Fisher 183 Scientific), using an annealing temperature of 50 °C and ca. 100ng of template DNA per reaction, along 184 with the recommended guidelines for 50 μL single reaction protocol outlined by the supplier, and custom 185 oligonucleotide primers (Eurofins) (515Y, 5′-GTGYCAGCMGCCGCGGTAA , 926R, 5′-186 
+
+CCGYCAATTYMTTTRAGTTT; McNichol et al. , 2021). All amplifications were validated using gel 187 electrophoresis by identifying 16S and 18S bands at ca. 300-500 and ca. 700 bases, respectively. This 188 resulted in six amplicon pools, three replicates per mock community. Amplicon pools were then 189 sequenced using one MinION R10.4.1 flow cell according to the Native Barcoding Protocol (SQK-190 NBD114.24), and then basecalled and demultiplexed using Dorado (v0.9.0; “nanoporetech/dorado,” 2025; 191 super accuracy model v5.0.0). 192 
+
+193 
+
+Benchmarking 194 
+
+To assess the suitability of NAP’s default adaptive filtering mode, alternative fixed-Q20 and fixed-Q30 195 filtering regimes together with modified base masking settings were benchmarked, and downstream 196 performance was compared using Bray–Curtis and Jaccard dissimilarity, precision, recall, and F1-score at 197 both genus and species levels. 198 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+8
+
+As no end-to-end workflow specifically designed for Nanopore-derived cross-domain 515Y/926R 199 amplicon data was identified, benchmarking was performed against two widely used and broadly 200 applicable taxonomic profiling frameworks: QIIME2 (qiime2-amplicon-2026.1) (Bolyen et al. , 2019) and 201 Kraken2 (v2.1.3) (Wood, Lu and Langmead, 2019; Lu et al. , 2022) with Bracken (v3.0.1) (Lu et al. ,202 2017). In each case, benchmarking was performed using recommended standard analytical pathways and 203 default settings wherever possible, without parameter tuning intended to favour performance on the 204 present dataset. SILVA 138.2 SSURef NR99-based reference resources appropriate to each framework 205 were used for taxonomic classification. The same demultiplexed and primer/adaptor-trimmed sample set 206 was used for all workflow comparisons. 207 For QIIME2, reads were imported as single-end FASTQ files via a manifest and processed through the 208 recommended amplicon workflow stages for quality filtering, dereplication, chimera screening, and 209 taxonomic classification, excluding denoising steps designed for short-read Illumina datasets. Taxonomic 210 assignments were generated using the classify-sklearn naive Bayes approach, and resulting feature tables 211 were collapsed to genus and species level for downstream comparison. For Kraken2/Bracken, each sample 212 was classified using Kraken2, and genus- and species-level abundance estimates were subsequently 213 generated from Kraken2 reports using Bracken. Resulting abundance tables were exported on a per 214 sample basis for downstream comparison, and a minimum abundance threshold of 0.05% was enforced as 215 with NAP. 216 217 
+
+In silico primer bias assessment 218 To aid interpretation of abundance distortions potentially attributable to primer–template mismatch, the 219 default 515Y/926R primer set was evaluated in silico using TestPrime against the SILVA SSU RefNR 220 138.2 database after redundancy pruning. Up to three mismatches were permitted, with no enforced zero 221 mismatch zone at the 3′ end. For taxa represented in the mock communities, we summarised perfect match 222 frequency, mean pair coverage, and the proportion of reference matches containing at least one 3′ 223 mismatch in the forward and reverse primers. These results were used descriptively to contextualise 224 observed under-representation and were not incorporated into taxonomic assignment or abundance 225 correction. 226 227 
+
+Statistical analysis 228 Statistical analysis was performed using a custom Python script to evaluate the accuracy, reproducibility, 229 and community structure fidelity of the pipeline’s outputs relative to the known composition of two 230 commercially available mock communities. Genus- and species-level taxonomic tables were generated 231 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+9
+
+from each sample. To enable comprehensive sensitivity profiling, taxa absent across all replicates were 232 assigned zero counts. 233 Detection accuracy was quantified by calculating precision, recall, and F1-scores for each replicate at a 234 fixed detection threshold (τ = 0.001) at both genus and species level, using the expected mock 235 composition at the corresponding taxonomic rank as the reference set. To evaluate quantitative agreement 236 between observed and expected taxon abundances, linear regression and Lin’s concordance correlation 237 coefficient ( ρc) were used. This enabled both proportional and absolute agreement to be assessed. 238 Agreement plots compared mean observed abundances across replicates against their expected values, 239 while Bland–Altman plots quantified systematic bias and calculated limits of agreement using ±1.96 240 standard deviations from the mean difference. Together, these analyses assessed not only detection but 241 also abundance accuracy and consistency. This was restricted to taxa which were expected, meaning false 242 positives were not included in this part of the analysis. 243 Community-level similarity and sample structure were explored using β-diversity metrics. Pairwise 244 dissimilarities were calculated using both Jaccard distance (based on presence/absence data) and Bray– 245 Curtis dissimilarity (based on relative abundances). These dissimilarity matrices were visualised using 246 principal coordinate analysis (PCoA) to identify clustering of replicates around their respective mock 247 community centroids. A replicate was defined as a success if it was closer in β-diversity space to its own 248 mock profile than to that of the alternate mock group. Statistical significance of replicate fidelity was 249 assessed using one-sided binomial tests for each group, with groupwise p-values aggregated via Fisher’s 250 method to test for global consistency. To investigate taxon-level variability, bar plots were generated 251 showing the expected genus abundances overlaid with individual replicate values. For each genus, the 252 coefficient of variation (CV) across replicates was annotated, with values exceeding 0.5 highlighted to 253 indicate high within-group variability. Detection sensitivity was further examined by plotting, at both 254 genus and species level, the proportion of replicates in which each expected taxon was detected against its 255 expected relative abundance. These analyses included all observed taxa, including false positives. 256 Development-stage optimisation analyses used to select the final NAP configuration, referred to as the 257 default here, are summarised in the Supplementary material. 258 
+
+259 
+
+Results 260 
+
+Read filtering and quality control benchmarking 261 To assess whether NAP’s default adaptive filtering represented an appropriate general use operating mode, 262 we benchmarked it against fixed, non-adaptive Phred filtering (Q20 and Q30), together with modified 263 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+10 
+
+base masking regimes (mute lowest 0%, 5% and 10% Phred bases), and evaluated downstream taxonomic 264 fidelity using Bray–Curtis and Jaccard dissimilarity, precision, recall, and F1-score at both genus and 265 species levels (Figure 2). The default configuration (Default mute / Dynamic Phred) remained among the 266 strongest performing settings across both taxonomic ranks, yielding mean genus-level Bray–Curtis and 267 Jaccard dissimilarities of 0.20 and 0.31, respectively, and mean species-level values of 0.25 and 0.40. 268 Although it was not the single numerical best performer for every summary metric, it consistently 269 occupied the near-optimal range across abundance-sensitive, presence/absence, and classification-270 accuracy measures, whilst avoiding the marked degradations observed under overly stringent or 271 aggressively masked alternatives. 272 The adaptive nature of this behaviour is evident from the sample-specific Phred thresholds selected by the 273 default workflow, which ranged from Q23 to Q35 across the six replicates (Figure 2B). High input 274 samples (929,330–2,828,709 raw reads) were filtered at Q30–32 and retained 144,628–868,391 reads, 275 whereas the low input replicate M1 (69,141 raw reads) was relaxed to Q23, and retained 24,699 reads, 276 demonstrating that the default dynamic filtering strategy balanced higher read quality against retention of 277 ≥100,000 reads wherever this was feasible (Figure 2D). In this edge case, adaptive relaxation was clearly 278 beneficial: fixed Q30 retained only 6,603 reads for M1 and produced poorer community fidelity at both 279 genus level (Bray–Curtis 0.37 vs. 0.42; Jaccard 0.29 vs. 0.53) and species level (Bray–Curtis 0.50 vs. 280 0.54; Jaccard 0.45 vs. 0.60). Across all six replicates, fixed Q30 also increased mean Jaccard dissimilarity 281 at both genus level (0.31 vs. 0.38) and species level (0.40 vs. 0.46), indicating reduced taxonomic 282 recovery under an overly stringent global threshold. A fixed Q20 threshold increased retention in M1 to 283 36,715 reads, but did not provide a uniformly superior outcome. For this sample, genus-level Bray–Curtis 284 improved (0.32 vs. 0.37) and genus-level Jaccard remained unchanged (0.29), whilst species-level Bray– 285 Curtis also improved (0.45 vs. 0.50) but species-level Jaccard increased slightly (0.48 vs. 0.45), indicating 286 a mixed effect of greater retained depth and reduced read quality. The same pattern was evident across the 287 full dataset. Although fixed Q20 increased mean retained depth more than threefold relative to the default 288 (1,094,461 vs. 326,701 reads), it did so only by uniformly lowering all samples to Q20, and did not 289 improve overall β-diversity fidelity relative to the adaptive default (mean genus Bray–Curtis/Jaccard 290 0.20/0.33 vs. 0.20/0.31; mean species Bray–Curtis/Jaccard 0.26/0.41 vs. 0.25/0.40) and therefore 291 represented a permissive sensitivity-maximising regime rather than the most robust general use default. 292 More aggressive masking was also clearly detrimental, with the ‘10% mute, Dynamic Phred’ mode 293 producing the highest mean genus- and species-level Jaccard dissimilarities (0.39 and 0.48, respectively; 294 Figure 2A,C). Classification rates were consistently high across all filtering strategies, typically exceeding 295 99.6% across samples, with only minor reductions observed in lower-depth datasets and under more 296 aggressive filtering regimes. Under the default configuration, classification ranged from 98.53% to 297 99.88% in >Q30 samples and reached 94.68% in Q20 samples, indicating stable taxonomic assignment 298 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+11 
+
+across variable input conditions. Taken together, these results show that although the default dynamic 299 filtering mode is not the single numerical optimum for every benchmark endpoint, it provides the most 300 robust balance of read quality, retained depth, and downstream taxonomic fidelity across heterogeneous 301 inputs, and is therefore the most defensible general use setting for automated mixed domain microbiome 302 profiling. Dataset-specific optimisation of these filtering thresholds may allow users to increase output 303 accuracy, and is encouraged. 304 
+
+Figure 2: Benchmarking of NAP filtering strategies and default setting selection. (A) Genus-level β-diversity 305 
+
+dissimilarity of benchmarked filtering modes relative to expected mock community composition. (B) Heatmap 306 
+
+showing the Phred threshold applied to each sample under each filtering mode. (C) Species-level β-diversity 307 
+
+dissimilarity of benchmarked filtering modes relative to expected mock community composition. (D) Reads 308 
+
+retained after filtering plotted against raw input read count, illustrating the relationship between input depth and 309 
+
+retained read depth under the benchmarked settings. Colours identify individual samples (L1–L3 and M1–M3), and 310 
+
+shapes indicate the filtering mode applied. 311 312 
+
+Benchmarking against existing pipelines 313 
+
+Benchmarking NAP against QIIME2 and Kraken2/Bracken showed that all three workflows broadly 314 recovered the expected genera, with strongest agreement in the lower complexity logarithmic mock and 315 weaker agreement in the more compositionally complex gut mock (Figure 4A). At genus level, 316 concordance with expected taxa was high for NAP and Kraken2 in the logarithmic mock ( ρc = 0.99 and 317 0.96, respectively), but lower for QIIME2 ( ρc = 0.54); the same pattern was retained in the gut mock, 318 although with reduced concordance overall (NAP ρc = 0.46, Kraken2 ρc = 0.43, QIIME2 ρc = 0.18). When 319 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+12 
+
+restricted to expected taxa, F1-scores were therefore broadly comparable across tools, ranging from 0.76 320 to 0.91 with the logarithmic mock and from 0.85 to 0.94 with the gut mock. Inclusion of all detected 321 genera, however, clearly differentiated the workflows: NAP retained high all taxa F1-scores with both the 322 logarithmic and gut mocks (0.76 and 0.87, respectively), whereas QIIME2 declined to 0.34 and 0.41, and 323 Kraken2 to 0.32 with both communities. This difference was driven primarily by false positive detection: 324 across all genus-level outputs, NAP yielded 0–3 unexpected genera per replicate, compared with 11–32 325 for QIIME2 and 19–49 for Kraken2. Thus, although genus-level recovery of expected taxa was 326 directionally similar across tools, NAP was substantially more conservative in its handling of unexpected 327 classifications. 328 This contrast became much more pronounced at species level. For the logarithmic mock, NAP retained 329 near perfect concordance with the expected species composition ( ρc = 0.99 for both expected only and all 330 taxa analyses), whereas QIIME2 fell to 0.00 for expected taxa and –0.12 when all taxa were included, and 331 Kraken2 returned 0.00 in both analyses. The same trend was observed in the gut mock, where NAP 332 remained quantitatively informative ( ρc = 0.35 for expected taxa; 0.38 for all taxa), whilst QIIME2 again 333 declined to 0.00 and –0.16, and Kraken2 remained at 0.00. F1-scores showed the same pattern: NAP 334 degraded least from genus to species level, retaining F1 values of 0.76 and 0.73 with the logarithmic 335 mock, and 0.89 and 0.77 with the gut mock, for expected only and all taxa analyses, respectively. In 336 contrast, QIIME2 species-level performance collapsed to 0.00 with the logarithmic mock and remained 337 low with the gut mock (0.21 expected taxa; 0.19 all taxa), whilst Kraken2 yielded 0.00 throughout. 338 Inspection of the species-level outputs indicated that QIIME2 produced only sparse species assignments, 339 often to unexpected species within otherwise expected genera, whereas Kraken2 failed to recover 340 meaningful species-level profiles under the tested conditions. Although NAP also produced a small 341 number of unexpected species-level assignments, these remained limited relative to the comparator 342 workflows and were largely attributable to artefactual splitting of expected taxa or low level 343 contamination, as discussed below. 344 Global β-diversity analyses supported the same interpretation (Figure 5). At genus level, NAP outputs 345 clustered closest to the expected mock centroids under both Bray–Curtis and Jaccard dissimilarity 346 (logarithmic mock: Bray-Curtis 0.01-0.13, Jaccard 0.33-0.50; gut mock: Bray-Curtis 0.32-0.39, Jaccard 347 0.19-0.29) with Kraken2 representing the nearest alternative (logarithmic mock: Bray-Curtis 0.02-0.23, 348 Jaccard 0.80-0.83; gut mock: Bray-Curtis 0.39, Jaccard 0.80-0.84) and QIIME2 consistently the most 349 displaced (Bray-Curtis 0.59-0.67, Jaccard 0.78-0.89; across both communities). At species level, this 350 relationship became more extreme: QIIME2 and Kraken2 approached near-universal dissimilarity from 351 the expected profiles (Jaccard 0.88–1.00; Bray–Curtis 0.94–1.00), whereas NAP remained substantially 352 closer to the expected community structure (logarithmic mock: Bray–Curtis 0.01–0.13, Jaccard 0.33–0.50; 353 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+13 
+
+gut mock: Bray–Curtis 0.42–0.50, Jaccard 0.33–0.45). Taken together, these benchmarks indicate that, 354 under the tested conditions, NAP most accurately preserved both taxonomic composition and abundance 355 structure, with the clearest advantages arising from reduced false positive detection at genus level and 356 substantially improved species-level behaviour relative to the more general purpose comparator pipelines. 357 
+
+Figure 4: Observed taxonomic abundances across mock communities at genus and species levels. (A) Genus level 358 
+
+results. (B) Species level results. Subpanels (1) show the gut microbiome mock (M1–M3) and subpanels (2) show 359 
+
+the logarithmic mock (L1–L3). Grey bars represent expected abundances, while coloured points indicate observed 360 
+
+abundances per replicate. Coefficient of variation for expected taxa across repeats is annotated above bars; values 361 
+
+>0.5 are coloured red. Above each bar plot, summary metrics are provided for each workflow. The first line is 362 
+
+calculated using expected taxa only, whereas the second includes all detected taxa and therefore incorporates 363 
+
+contaminants and false positives. Lin’s concordance correlation coefficient ( ρc) and F1-score are shown in both 364 
+
+cases, and the second line additionally reports the range of false positive taxa identified per replicate. 365 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+14 
+
+Figure 5: Principal coordinate analysis of samples per benchmarking tool. (A) Genus level results. (B) Species 366 
+
+level results. Rows (1) and (2) shows Bray-Curtis and Jaccard metrics accordingly. 367 368 
+
+NAP-based taxonomic classification 369 
+
+All expected bacterial and eukaryotic genera were detected across both mock communities, with only 370 
+
+Saccharomyces exhibiting high replicate variability (coefficient of variation > 0.5; Figure 4A). The only 371 archaeal genus ( Methanobrevibacter ) was detected below the pipeline’s 0.05% relative abundance filtering 372 threshold. Similarly, Salmonella was detected but also fell below the applied filtering threshold. Only four 373 genera were identified as false positives at the genus level: Shigella , likely reflecting misclassification due 374 to the presence of multiple Escherichia strains and their known sequence similarity within the V4–V5 375 small subunit ribosomal RNA regions; and Bysmatrum , Pasteurellaceae , and Streptococcus , which 376 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+15 
+
+displayed sporadic, highly variable abundances and were also present in blank controls, suggesting 377 contamination beyond the detection limits of the current decontamination method. This interpretation is 378 supported by previous reports identifying Lactobacillus, Saccharomyces, and Streptococcus as common 379 laboratory- or human-associated contaminants (Glassing et al ., 2016; Salter et al ., 2014). 380 Taxonomic accuracy was mostly preserved at the species level. However, Veillonella rogosae was not 381 detected in any gut mock replicates; instead, artefactual misattribution led to identification of V. dispar and 382 
+
+V. parvus . A similar but less pronounced pattern was observed for Lactobacillus fermentum , which showed 383 inflated abundance as L. acidophilus , a known and present contaminant, was identified as Lactobacillus 384 
+
+fermentum . These cases are consistent with the high sequence similarity of the V4–V5 region among 385 closely related taxa (Janda and Abbott, 2007). For both Veillonella and Lactobacillus , minor Nanopore 386 sequencing errors likely contributed to taxonomic divergence during species level classification. 387 At both genus and species levels, replicate profiles showed statistically significant fidelity to the expected 388 mock community composition ( p < 0.05; Figure 4), indicating high reproducibility and classification 389 accuracy. Most expected taxa were successfully identified with low inter-replicate variability (e.g., CV < 390 0.4 in most cases, often reaching < 0.15). Contaminants were identified based on prevalence in blank 391 controls, high blank-to-sample abundance ratios, and exclusion from expected taxa lists. On average, the 392 decontamination process removed 7.00 ± 2.68 species level hits per replicate, all of which were present in 393 blank samples and judged to be contaminants following manual review. An additional 9.83 ± 6.49 species 394 
+
+per replicate exhibited altered abundances after decontamination without being fully removed. For several 395 high abundance taxa (such as Faecalibacterium prausnitzii, Listeria monocytogenes , and Pseudomonas 396 
+
+aeruginosa), these adjustments moved observed abundances closer to expected values and reduced 397 variability across replicates (Figure 4). Together, these findings indicate that, although the current 398 decontamination strategy is relatively simple and does not fully resolve artefactual misclassification, it 399 effectively identifies common contaminants and improves taxonomic accuracy. Classification 400 performance is highly reliable at the genus level, and with improved primer design or longer read lengths, 401 species level accuracy could be enhanced. 402 403 
+
+NAP-based taxon abundance accuracy 404 
+
+The pipeline’s default primers, 515Y/926R, target the V4–V5 region of the small subunit (SSU) rRNA and 405 offer broad cross-domain coverage, amplifying ca. 96% of known rRNA sequences across bacteria, 406 archaea, and eukaryotes. Although these primers improve upon earlier cross-domain designs, they still 407 introduce bias through differential binding site specificity and annealing efficiency, which can skew taxon 408 representation (Parada et al ., 2016; McNichol et al ., 2021). Such effects are further compounded by wet 409 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+16 
+
+lab variables, particularly DNA extraction efficiency, and SSU copy number variation. To mitigate these 410 biases, we implemented prolonged bead beating cycles (Detailed in ‘Mock community preparation’) to 411 balance DNA recovery from both easily lysed Gram-negative bacteria and more resilient taxa, including 412 Gram-positive bacteria, spore formers, and eukaryotes (Zhang et al ., 2020). 413 We assessed the accuracy of relative abundance estimates by comparing observed taxon abundances 414 against expected values from mock community profiles using agreement plots and Bland–Altman analysis 415 at genus level (Figure 6). The logarithmic mock community showed excellent concordance, with minimal 416 Bland–Altman bias (21.2 units) and strong statistical agreement across replicates ( r = 1, p = 1.5e -5 , pc = 1). 417 In contrast, the gut mock community showed lower correlation ( r = 0.68, p = 2.5e -3 , pc = 0.53) and a 418 substantial negative bias (–5876.6), suggesting systematic underrepresentation of several expected taxa. 419 However, intra-taxon variability remained low (Figure 4A), indicating that discrepancies were driven by 420 consistent biases, potentially due to primer mismatch or extraction inefficiencies, rather than random noise 421 or computational error. To further validate the pipeline’s reliability, we repeated the agreement and Bland– 422 Altman analyses at species level (Figure 7). Results remained statistically robust, with only marginal 423 reductions in correlation (e.g., gut mock: r = 0.68 genus vs. 0.66 species; p = 2.5×10⁻³ vs. 1.7×10⁻³; ρCCC =424 0.53 vs. 0.56) and reduced Bland–Altman bias in both mock communities (e.g., log mock: 21.2 genus vs. 425 17.7 species). These patterns suggest that, in well characterised taxa, species level profiles produced by 426 the pipeline remain quantitatively trustworthy. Nonetheless, while species level abundances appear 427 numerically more concordant, taxonomic resolution is often compromised by limitations of the V4–V5 428 region, which can fragment expected taxa into multiple spurious species (e.g., Veillonella being 429 misassigned to two absent species). As such, genus level assignments remain more biologically reliable 430 than species level, and are therefore preferred for robust interpretation under the pipeline’s default 431 settings. 432 While 515Y/926R taxonomic bias has not been well explored, there is evidence that the observed 433 abundance discrepancies are more consistent with combined wet lab and marker-specific bias than with 434 classification failure alone. The phylum Pseudomonadota (formerly Proteobacteria ) was well represented, 435 with Pseudomonas showing expected abundances, as observed in other studies (Klindworth et al ., 2013). 436 Conversely, as expected, Actinobacteriota was underrepresented, with Bifidobacterium displaying 437 particularly low abundance. Amplicon bias is known in this phylum, and is potentially compounded here 438 by the Gram-positive cell wall structure (Parada et al. , 2016). Bacillota (previously Firmicutes) were 439 moderately underrepresented overall, while Bacteroidetes were more substantially affected, a pattern of 440 particular interest given the clinical relevance of the ‘Firmicutes:Bacteroidetes’ ratio (Palkova et al ., 441 2021). Within these phyla, Faecalibacterium , Lactobacillus, Listeria , and Veillonella showed good or 442 mildly reduced recovery, while Bacteroides and Prevotella were more strongly underrepresented. This 443 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+17 
+
+skew was less pronounced than in some prior studies, possibly due to differential lysis efficiency: Gram-444 positive Bacillota may be more effectively extracted than Gram-negative Bacteroidetes under prolonged 445 bead beating conditions (Parada et al. , 2016; Zhao et al ., 2023). 446 
+
+Bacillus detection was inconsistent across replicates. In two gut mock community samples, it was present 447 below the reporting threshold; in a third, it appeared overrepresented. As a spore forming, Gram-positive 448 taxon, Bacillus is known to be sensitive to extraction and amplification biases. Additionally, Table 1 449 supports the possibility of mismatch-based primer bias, a key factor in under-amplification of rRNA. 450 Furthermore, its presence in extraction blanks suggests potential cross-contamination, meaning its 451 abundances are further reduced. Misalignment may also explain the inflated abundance in one replicate, 452 given the high sequence similarity between Bacillus strains, where a single significant contamination 453 event may have reinforced the taxon’s apparent presence. A comparable pattern was seen with Shigella ,454 which was not present in the mock community but appeared alongside Escherichia , likely due to shared 455 rRNA sequence regions and minor contamination (Zhao et al ., 2023). 456 Other taxa have poorly characterised biases for primer set 515Y/926R, limiting interpretation. Here, for 457 example, Methanobrevibacter smithii and Salmonella enterica were both detected below the pipeline’s 458 filtering threshold (0.05% relative abundance filtration threshold; 0.2% and 0.089% expected relative 459 abundance for M. smithii and S. enterica , respectively), suggesting mild underrepresentation, with only 460 
+
+Salmonella enterica showing potential for primer mismatches (Table 1). Similarly , Akkermansia 461 
+
+muciniphila showed no primer mismatches and underrepresentation, with bias uncharacterised in the 462 literature. For Methanobrevibacter smithii , the difficulty of archaeon lysis is a strong candidate 463 contributor, but other factors can lead to related archaea being underrepresented (Youngblut et al., 2021; 464 Zhao et al. , 2023). Akkermansia muciniphila and Salmonella enterica are easy to lyse Gram-negative, 465 non-spore forming bacteria, suggesting excessive bead beating may have led to a slight 466 underrepresentation bias, but this is likely compounded by other PCR-related biases, considering 467 mismatches are not the only known factor in primer-induced bias (Qin et al. , 2023; Silverman et al ., 468 2021). 469 Finally, as the 515Y/926R primers also capture eukaryotic 18S rRNA, a domain correction factor is 470 required to adjust for lower 18S amplification efficiency. The pipeline applies a default correction factor 471 of 0.4, based on empirical estimates ranging from 0.3–0.5 (Yeh et al ., 2021). This correction was validated 472 in our results: Candida albicans and Saccharomyces cerevisiae were detected at or near to the expected 473 abundances relative to co-occurring 16S taxa. 474 Taken together, replicate abundances were highly consistent, demonstrating strong technical 475 reproducibility. Deviations from expected values were largely attributable to primer mismatch, variability 476 in lysis efficiency, or low input abundance (rather than stochastic or computational error). The pipeline’s 477 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+18 
+
+default 16S/18S correction proved effective, and the bead beating protocol did not seem to induce a 478 systematic skew between Gram-positive and Gram-negative bacterial taxa. These findings support the 479 pipeline’s capacity to generate biologically representative taxonomic profiles under the tested conditions. 480 481 
+
+Figure 6: Agreement and error in taxonomic quantification across mock communities at genus level. 482 
+
+(A) Gut mock community (M1–M3). (B) Logarithmic mock community (L1–L3). Left-hand plots show agreement 483 
+
+between expected and observed per taxon genus level abundances. Agreement plots are annotated with Pearson 484 
+
+correlation coefficient ( r), p-value ( p), and Lin’s concordance correlation coefficient ( ρc). Right-hand plots show 485 
+
+Bland–Altman analysis, revealing mean bias and spread of differences across replicates, with bias annotated. This 486 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+19 
+
+analysis (both agreement and Bland-Altman) only includes taxa present in the expected profile and their 487 
+
+corresponding observed abundances; false positives are excluded. 488 
+
+Figure 7: Agreement and error in taxonomic quantification across mock communities at species level. 489 
+
+(A) Gut mock community (M1–M3). (B) Logarithmic mock community (L1–L3). Left-hand plots show agreement 490 
+
+between expected and observed per -taxon species level abundances. Agreement plots are annotated with Pearson 491 
+
+correlation coefficient ( r), p-value ( p), and Lin’s concordance correlation coefficient ( ρc). Right-hand plots show 492 
+
+Bland–Altman analysis, revealing mean bias and spread of differences across replicates, with bias annotated. This 493 
+
+analysis (both agreement and Bland-Altman) only includes taxa present in the expected profile and their 494 
+
+corresponding observed abundances; false positives are excluded. 495 
+
+496 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+20 
+
+Table 1: In silico TestPrime summary of 515Y/926R primer compatibility for taxa represented in the mock 497 
+
+communities. Analysis used SILVA SSU RefNR 138.2 with up to three mismatches and no enforced zero mismatch 498 
+
+zone at the 3′ end. “Perfect Match” indicates the percentage of unambiguous primer–reference matches with zero 499 
+
+mismatches; “Mean Pair Coverage” indicates overall primer-to-template coverage across best unambiguous 500 
+
+matches; “3′-end MM Forward” and “3′-end MM Reverse” indicate the percentage of matches containing at least 501 
+
+one 3′-end mismatch in the respective primer. 502 
+
+Species Perfect Match 
+
+(%) 
+
+Mean Pair Coverage (%) 3’-end MM Forward (%) 3’-end MM Reverse 
+
+(%) 
+
+Akkermansia 
+
+muciniphila 
+
+100.0 100.0 0.0 0.0 
+
+Bacillus subtilis 94.2 99.7 2.4 1.9 
+
+Bacteroides fragilis 100.0 100.0 0.0 0.0 
+
+Bifidobacterium 
+
+adolescentis 
+
+100.0 100.0 0.0 0.0 
+
+Candida albicans 92.9 99.6 2.9 0.0 
+
+Clostridioides difficile 99.6 100.0 0.4 0.0 
+
+Escherichia coli 99.7 100.0 0.1 0.1 
+
+Faecalibacterium 
+
+prausnitzii 
+
+100.0 100.0 0.0 0.0 
+
+Fusobacterium 
+
+nucleatum 
+
+97.8 99.9 0.7 0.7 
+
+Lactobacillus 
+
+fermentum 
+
+95.4 99.8 3.4 0.6 
+
+Listeria monocytogenes 99.3 100.0 0.4 0.1 
+
+Methanobrevibacter 
+
+smithii 
+
+100.0 100.0 0.0 0.0 
+
+Prevotella corporis 100.0 100.0 0.0 0.0 
+
+Pseudomonas 
+
+aeruginosa 
+
+95.7 99.8 1.7 1.5 
+
+Roseburia hominis 100.0 100.0 0.0 0.0 
+
+Saccharomyces 
+
+cerevisiae 
+
+91.4 99.3 2.9 0.0 
+
+Salmonella enterica 99.7 100.0 0.1 0.1 
+
+Veillonella rogosae 100.0 100.0 0.0 0.0 
+
+503 
+
+Quantitative performance metrics 504 
+
+Detection sensitivity and classification accuracy were assessed across the logarithmic and gut mock 505 communities at both genus and species levels (Figure 8). For NAP, expected taxa above ca. 1% relative 506 abundance were generally detected consistently across replicates, whereas recovery below this level 507 became progressively less stable. At genus level, all expected taxa at 8.9% and 89.1% in the logarithmic 508 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+21 
+
+mock were recovered in all replicates, while the lower abundance taxa at 0.89% and 0.089% showed 509 variable or absent recovery. In the gut mock, most expected taxa at ≥1.5% were detected in all three 510 replicates, with the main exceptions being Candida and Roseburia (both 2/3 replicates) and 511 
+
+Methanobrevibacter , which was not recovered above filtering threshold (0.05%). Species-level detection 512 showed the same overall trend, although recovery of some closely related taxa became less stable, most 513 notably Veillonella rogosae , which was not recovered above threshold despite an expected abundance of 514 14%. 515 Precision–recall analysis showed that NAP retained strong classification performance across both 516 taxonomic ranks. At genus level, precision ranged from 0.80 to 1.00 and recall from 0.50 to 0.93 across 517 the six replicates, corresponding to mean precision, recall, and F1-score values of 0.93, 0.75, and 0.81, 518 respectively. Species-level performance declined only modestly, with precision ranging from 0.65 to 1.00 519 and recall from 0.50 to 0.86, yielding mean values of 0.83, 0.71, and 0.75. Relative to the benchmarked 520 alternatives, NAP also retained substantially stronger precision at genus level and was the only workflow 521 to preserve meaningful species-level precision–recall behaviour under the applied threshold. QIIME2 522 showed reduced genus-level precision due to numerous unexpected taxa and markedly weaker species-523 level performance (mean precision 0.22, recall 0.06, F1-score 0.19), whilst Kraken2 did not recover 524 species-level true positives above threshold. 525 Taken together, these results indicate that NAP provides strong classification accuracy and consistent 526 detection sensitivity across replicate samples, particularly at genus level. Recovery was most reliable 527 above ca. 1% relative abundance, with increasingly stochastic detection below this level, especially in the 528 logarithmic mock. Under the applied threshold, the lowest abundance taxon recovered in the logarithmic 529 mock was detected at 0.089% in one of three replicates, whereas the lowest abundance taxon recovered 530 consistently in the gut mock was present at 1.5%. These data therefore place the practical detection range 531 for the present assay between ca. 0.1% and 1% relative abundance, although it cannot be defined more 532 precisely from the available mock communities. In the context of the direct benchmark, NAP also 533 maintained substantially stronger genus-level precision than QIIME2 and Kraken2 using the same data, 534 and remained the only workflow to preserve meaningful species-level sensitivity and F1 performance, 535 together with precision and recall consistently in line with established performance expectations for 536 amplicon-based microbiome profiling (Poncheewin et al ., 2020). Moreover, the observed precision and 537 recall values compare favourably with Illumina-based profiling, using workflows such as NG-Tax and 538 QIIME2 (Poncheewin et al ., 2020), highlighting the pipeline’s reliability. These findings support the 539 utility of NAP for accurate, reproducible, and domain-inclusive microbiome profiling under the tested 540 conditions. 541 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+22 
+
+Figure 8: Detection sensitivity and precision–recall performance across benchmarked workflows. (A) Genus-level 542 
+
+and (B) species-level resolution shown, with logarithmic and gut mock community results combined. Left: detection 543 
+
+sensitivity across expected taxa, where each point represents a taxon plotted by its expected relative abundance (%) 544 
+
+and the fraction of replicates in which it was detected. Right: per -replicate precision–recall values calculated at 545 
+
+threshold τ ≥ 0.001. Point shape indicates workflow and colour indicates sample identity. 546 547 
+
+Discussion 548 
+
+Under the conditions tested here, NAP recovered the expected structure of two complementary mock 549 communities with good reproducibility and strong genus-level fidelity, while also comparing favourably 550 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+23 
+
+with QIIME2 and Kraken2/Bracken on the same input data. The clearest differences emerged in false 551 positive behaviour and in the stability of species-level outputs. At genus level, the clearest advantage of 552 NAP was the marked reduction in unexpected assignments relative to QIIME2 and Kraken2/Bracken. This 553 behaviour is consistent with the centroid-first and consensus-based design of NAP, which likely limits 554 propagation of Nanopore read errors into downstream taxonomic classification by reducing reliance on 555 noisy single-read assignments. At species level, this difference became more pronounced, with NAP 556 retaining informative output where the comparator workflows deteriorated sharply under the present 557 conditions. Taken together, these results support NAP as a practical workflow for cross-domain Nanopore 558 amplicon profiling, with its strongest performance currently at genus level. 559 The two mock communities used here were chosen to test different aspects of performance rather than to 560 represent the full diversity of natural microbiomes. The logarithmic mock provided an extreme abundance 561 gradient and therefore challenged abundance-dependent detection, whereas the gut mock imposed greater 562 compositional complexity and included taxa expected to vary in extractability, amplification behaviour, 563 and separability within the V4–V5 region. Together they provided bacterial, archaeal, and eukaryotic 564 targets and allowed assessment of cross-domain recovery, abundance fidelity, and reproducibility under 565 controlled conditions. They do not, however, capture the full taxonomic and compositional diversity of 566 environmental or host-associated samples, and the present validation should therefore be interpreted as 567 establishing core performance rather than universal applicability across all microbiome types. 568 Several features of NAP likely contributed to the behaviour observed here, including reduced taxonomic 569 artefacts and improved contamination handling ( via reduction in false positives), greater stability across 570 variable read inputs, and more accurate preservation of expected community structure. The workflow 571 combines primer-aware database refinement, centroid-based sequence compression, BLAST-based 572 taxonomic assignment, hierarchical consensus correction, and RAW-read reassignment to an internal high 573 confidence reference set. In practice, this appears to reduce the impact of noisy single read classifications 574 while preserving abundance information and limiting false positive inflation. This interpretation is 575 consistent with the direct benchmark: the principal advantage of NAP was not simply higher recovery of 576 expected taxa, but cleaner preservation of expected community structure once unexpected detections were 577 taken into account. In that sense, the workflow’s contribution is primarily one of integration and control of 578 error propagation across an end-to-end analysis path for a data type (Nanopore sequencing) that currently 579 lacks a well established cross-domain solution. 580 NAP also demonstrated robust performance across variable sequencing conditions. The adaptive filtering 581 benchmark showed that the default filtering configuration was not the single numerical optimum for every 582 summary metric, but it was the most reliable compromise across mixed read depths and qualities. Fixed 583 Q30 filtering was clearly too stringent, particularly for low input samples, whereas aggressive masking 584 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+24 
+
+degraded downstream taxonomic fidelity. Fixed Q20 modes improved some sensitivity-oriented 585 endpoints, but only by applying the same permissive threshold to all samples and abandoning sample-586 specific adaptation. The default dynamic strategy therefore appears to function as intended, preserving 587 sufficient depth for lower input samples while maintaining stricter filtering where depth permits. This is 588 reflected in the classification metrics: across the six NAP replicates, mean genus-level precision, recall, 589 and F1-score were 0.93, 0.75, and 0.81, respectively, declining only modestly at species level to 0.83, 590 0.71, and 0.75. These metrics were accompanied by consistently high read classification rates, typically 591 exceeding 99.6%, with only modest reductions observed in lower depth datasets. Overall, this level of 592 performance is comparable to that reported for established Illumina-based amplicon pipelines, such as 593 NG-Tax (Ramiro-Garcia et al ., 2018). Detection was most reliable above approximately 1% relative 594 abundance, with increasingly unstable recovery below this level; with the present assay, the practical 595 detection range therefore appears to lie somewhere between ca . 0.1% and 1% relative abundance. These 596 values are comparable to those reported for established Illumina-based amplicon workflows, which 597 similarly balance precision and recall in mock community benchmarking (Poncheewin et al ., 2020). 598 Consistent with this, genus-level Bray–Curtis dissimilarities were low in the logarithmic mock community 599 (0.01–0.13), within the range of technical variation reported for mock community sequencing (Yeh et al ., 600 2017), and remained moderate in the more complex gut mock community (0.32–0.39). Overall, this level 601 of variation is within the 0.2–0.5 range observed across state-of-the-art pipelines in inter-laboratory 602 benchmarking studies, where differences in analytical approach alone can influence both taxon detection 603 and relative abundance estimates (as a proxy for the variance expected within a single pipeline’s outputs; 604 O’Sullivan et al ., 2021). 605 A second important finding is that the remaining disagreement between observed and expected 606 abundances appears to arise largely from assay-level limitations rather than computational instability. This 607 was most evident in the gut mock, where several expected taxa were consistently underrepresented despite 608 relatively low within-group variability. Such behaviour is more consistent with systematic bias than with 609 erratic classification. The taxa affected, and the directions of bias observed, also fit with known issues in 610 amplicon profiling, including primer-template mismatch, differences in lysis efficiency, contamination, 611 and limited taxonomic separability within short ribosomal regions (Parada et al ., 2016; Janda and Abbott, 612 2007; Silverman et al ., 2021). The Escherichia–Shigella and Veillonella examples illustrate this clearly: 613 abundance may still be recovered in approximately the right part of taxonomic space, but fine-scale 614 assignment can fragment across closely related alternatives. The fact that broad abundance distortions 615 were also visible in the comparator workflows supports the view that these discrepancies are not unique to 616 NAP, but reflect constraints of the assay and marker region itself. 617 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+25 
+
+The same reasoning helps explain why genus-level interpretation is currently the strongest use case for the 618 workflow. Across the present data, genus-level profiles were reproducible and closely matched expected 619 community structure, whereas species-level results were more conditional. Some taxa remained well 620 resolved at species level, but others did not, even where abundance concordance appeared numerically 621 acceptable. For the default 515Y/926R amplicon, species-level outputs should therefore be treated as 622 informative where supported, rather than assumed to be uniformly reliable. The decontamination step 623 improved several profiles and reduced the impact of likely contaminants, but it did not fully resolve all 624 artefactual assignments, particularly where contamination and limited marker resolution interacted. 625 There are several further limitations that should be made explicit. First, validation was limited to two 626 mock community systems and did not include field-derived or clinical samples. Second, the practical limit 627 of detection in this assay appears to lie somewhere between approximately 0.1% and 1% relative 628 abundance, with reliable recovery becoming much less stable below the upper end of that range. Third, 629 NAP does not currently apply taxon-specific SSU copy number correction. In a cross-domain context, 630 robust copy number adjustment remains difficult because curated information is incomplete and uneven 631 across bacteria, archaea, and eukaryotes. Output abundances should therefore be interpreted primarily as 632 relative amplicon abundances rather than direct estimates of cellular abundance. Finally, although the 633 workflow was benchmarked here against QIIME2 and Kraken2/Bracken, broader comparison across 634 additional datasets and primer systems would be valuable in defining where the present approach 635 functions well and where further tuning is required. 636 In conclusion, NAP provides an accurate, reproducible, and open source workflow for long-read, cross-637 domain microbiome profiling under the tested conditions. Its strongest performance is at genus level, 638 where it combined good taxonomic fidelity with substantially lower false positive detection than the 639 benchmarked alternatives, whilst maintaining mean precision, recall, and F1-score values of 0.93, 0.75, 640 and 0.81 across the six replicates. Species-level outputs remained informative for some well resolved taxa, 641 but were less robust overall and should be interpreted cautiously under the default V4–V5 assay. NAP 642 does not remove the known constraints of amplicon profiling, including primer bias, extraction bias, copy 643 number effects, and limited low abundance sensitivity, but it does provide a practical end-to-end workflow 644 that preserves expected community structure well and supports mixed domain analysis from a single 645 Nanopore amplicon dataset. On that basis, NAP appears well suited to studies seeking Nanopore-646 sequencing-compatible, domain-inclusive ribosomal profiling, provided that abundances are interpreted as 647 relative amplicon abundances and that species-level conclusions are drawn with appropriate caution. 648 649 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+26 
+
+List of abbreviations 650 
+
+ASV: amplicon sequence variant 651 bp: base pair 652 BLAST: basic local alignment search tool 653 CD-HIT: cluster database at high identity with tolerance 654 CNT: Centroid dataset 655 CV: coefficient of variation 656 DNA: deoxyribonucleic acid 657 HAC: High accuracy consensus 658 PCoA: principal coordinate analysis 659 PCR: polymerase chain reaction 660 Q-score (Phred score): quality score representing probability of error in base calling 661 rRNA: ribosomal ribonucleic acid 662 SSU: small subunit (of rRNA) 663 TSS: total sum scaling 664 TSV: tab-separated values 665 ρc (ρCCC): Lin’s concordance correlation coefficient, β-diversity: beta diversity 666 
+
+667 
+
+Declarations 668 
+
+Availability of data and materials 669 
+
+The datasets and code supporting the conclusions of this article are available as follows: 670 Project name: NAP 671 Project home page: https://github.com/Luke-B-Jones/NAP 672 Archived version: A permanently archived release is available via Zenodo along with early stage 673 development outputs at DOI:10.5281/zenodo.19671570 674 Operating system(s): Platform-independent (tested on Linux) 675 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+27 
+
+Programming language: Python (≥3.9) and Bash 676 Other requirements: Docker, or a Standard UNIX environment 677 License: MIT license (open-source; free for academic and commercial use) 678 Restrictions to use by non-academics: None. 679 The raw Nanopore amplicon sequencing data generated during this study are available in the NCBI 680 Sequence Read Archive (SRA) under BioProject accession PRJNA1367045. 681 
+
+Competing interests 682 
+
+Luke Jones’s Ph.D. studentship is partly funded by Oxford Nanopore Technologies plc., which had no role 683 in study design, data analysis, or manuscript preparation. 684 
+
+Funding 685 
+
+Work funded by the University of Bath and Oxford Nanopore Technologies plc. 686 
+
+Authors' contributions 687 
+
+LJ designed the study and implemented the pipeline, and carried out analyses. SB acquired funding and 688 supervised the project. LJ and SB contributed to manuscript preparation. Both authors read and approved 689 the final manuscript. 690 
+
+691 
+
+Acknowledgements 692 
+
+We thank Adrien Leger, Oxford Nanopore Technologies Ltd, for critical reading of the manuscript. We 693 thank Josephine Ilott and Morgan Cockrill, Department of Life Sciences, University of Bath, for their 694 contributions to the NAP pipeline: development of the decontamination module and improvement of the 695 pipeline’s error reporting and overall robustness, respectively. Both contributions have been documented 696 in the project repository. 697 
+
+References 698 
+
+Arvanitis, M. and Mylonakis, E. (2015) “Fungal–bacterial interactions and their relevance in health,” 
+
+Cellular Microbiology , 17(10), pp. 1442–1446. Available at: https://doi.org/10.1111/cmi.12493. Bolyen, E. et al. (2019) “Reproducible, interactive, scalable and extensible microbiome data science using QIIME 2,” Nature Biotechnology , 37(8), pp. 852–857. Available at: https://doi.org/10.1038/s41587-019-0209-9. Camacho, C. et al. (2009) “BLAST+: architecture and applications,” BMC Bioinformatics , 10(1), p. 421. Available at: https://doi.org/10.1186/1471-2105-10-421. 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+28 
+
+Charalampous, T. et al. (2019) “Nanopore metagenomics enables rapid clinical diagnosis of bacterial lower respiratory infection,” Nature Biotechnology , 37(7), pp. 783–792. Available at: https://doi.org/10.1038/s41587-019-0156-5. De Coster, W. et al. (2018) “NanoPack: visualizing and processing long-read sequencing data,” 
+
+Bioinformatics , 34(15), pp. 2666–2669. Available at: https://doi.org/10.1093/bioinformatics/bty149. Frey-Klett, P. et al. (2011) “Bacterial-Fungal Interactions: Hyphens between Agricultural, Clinical, Environmental, and Food Microbiologists,” Microbiology and Molecular Biology Reviews , 75(4), pp. 583–609. Available at: https://doi.org/10.1128/mmbr.00020-11. Glassing, A. et al. (2016) “Inherent bacterial DNA contamination of extraction and sequencing reagents may affect interpretation of microbiota in low bacterial biomass samples,” Gut Pathogens , 8(1), p. 24. Available at: https://doi.org/10.1186/s13099-016-0103-7. Janda, J.M. and Abbott, S.L. (2007) “16S rRNA Gene Sequencing for Bacterial Identification in the Diagnostic Laboratory: Pluses, Perils, and Pitfalls,” Journal of Clinical Microbiology , 45(9), pp. 2761– 2764. Available at: https://doi.org/10.1128/JCM.01228-07. Klindworth, A. et al. (2013) “Evaluation of general 16S ribosomal RNA gene PCR primers for classical and next-generation sequencing-based diversity studies,” Nucleic Acids Research , 41(1), p. e1. Available at: https://doi.org/10.1093/nar/gks808. Lao, H.-Y. et al. (2021) “The clinical utility of two high-throughput 16S rRNA gene sequencing workflows for taxonomic assignment of unidentifiable bacterial pathogens in MALDI-TOF MS.” bioRxiv, p. 2021.08.16.456588. Available at: https://doi.org/10.1101/2021.08.16.456588. Li, E. et al. (2018) “Benefits of antifungal therapy in asthma patients with airway mycosis: A retrospective cohort analysis,” Immunity, Inflammation and Disease , 6(2), pp. 264–275. Available at: https://doi.org/10.1002/iid3.215. Li, H. (2026) “lh3/seqtk.” Available at: https://github.com/lh3/seqtk (Accessed: April 15, 2026). Li, W. and Godzik, A. (2006) “Cd-hit: a fast program for clustering and comparing large sets of protein or nucleotide sequences,” Bioinformatics , 22(13), pp. 1658–1659. Available at: https://doi.org/10.1093/bioinformatics/btl158. Lu, J. et al. (2017) “Bracken: estimating species abundance in metagenomics data,” PeerJ Computer Science , 3, p. e104. Available at: https://doi.org/10.7717/peerj-cs.104. Lu, J. et al. (2022) “Metagenome analysis using the Kraken software suite,” Nature Protocols , 17(12), pp. 2815–2839. Available at: https://doi.org/10.1038/s41596-022-00738-y. McNichol, J. et al. (2021) “Evaluating and Improving Small Subunit rRNA PCR Primer Coverage for Bacteria, Archaea, and Eukaryotes Using Metagenomes from Global Ocean Surveys,” mSystems , 6(3), pp. e00565-21. Available at: https://doi.org/10.1128/mSystems.00565-21. “nanoporetech/dorado” (2025). Oxford Nanopore Technologies. Available at: https://github.com/nanoporetech/dorado (Accessed: April 24, 2025). O’Sullivan, D.M. et al. (2021) “An inter-laboratory study to investigate the impact of the bioinformatics component on microbiome analysis using mock communities,” Scientific Reports , 11(1), p. 10590. Available at: https://doi.org/10.1038/s41598-021-89881-2. 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+29 
+
+Palkova, L. et al. (2021) “Evaluation of 16S rRNA primer sets for characterisation of microbiota in paediatric patients with autism spectrum disorder,” Scientific Reports, 11, p. 6781. Available at: https://doi.org/10.1038/s41598-021-86378-w. Parada, A.E., Needham, D.M. and Fuhrman, J.A. (2016) “Every base matters: assessing small subunit rRNA primers for marine microbiomes with mock communities, time series and global field samples,” 
+
+Environmental Microbiology , 18(5), pp. 1403–1414. Available at: https://doi.org/10.1111/1462-2920.13023. Poncheewin, W. et al. (2020) “NG-Tax 2.0: A Semantic Framework for High-Throughput Amplicon Analysis,” Frontiers in Genetics , 10. Available at: https://doi.org/10.3389/fgene.2019.01366. Qin, Y. et al. (2023) “Effects of error, chimera, bias, and GC content on the accuracy of amplicon sequencing,” mSystems , 8(6), pp. e01025-23. Available at: https://doi.org/10.1128/msystems.01025-23. Ramiro-Garcia, J. et al. (2018) “NG-Tax, a highly accurate and validated pipeline for analysis of 16S rRNA amplicons from complex biomes.” F1000Research. Available at: https://doi.org/10.12688/f1000research.9227.2. Rognes, T. et al. (2016) “VSEARCH: a versatile open source tool for metagenomics,” PeerJ , 4, p. e2584. Available at: https://doi.org/10.7717/peerj.2584. Salter, S.J. et al. (2014) “Reagent and laboratory contamination can critically impact sequence-based microbiome analyses,” BMC Biology , 12(1), p. 87. Available at: https://doi.org/10.1186/s12915-014-0087-z. Silverman, J.D. et al. (2021) “Measuring and mitigating PCR bias in microbiota datasets,” PLOS Computational Biology , 17(7), p. e1009113. Available at: https://doi.org/10.1371/journal.pcbi.1009113. Wang, H. et al. (2023) “Intestinal fungi and systemic autoimmune diseases,” Autoimmunity Reviews ,22(2), p. 103234. Available at: https://doi.org/10.1016/j.autrev.2022.103234. Wood, D.E., Lu, J. and Langmead, B. (2019) “Improved metagenomic analysis with Kraken 2,” Genome Biology , 20(1), p. 257. Available at: https://doi.org/10.1186/s13059-019-1891-0. Yeh, Y.-C. et al. (2017) “Taxon disappearance from microbiome analysis indicates need for mock communities as a standard in every sequencing run.” bioRxiv, p. 206219. Available at: https://doi.org/10.1101/206219. Yeh, Y.-C. et al. (2021) “Comprehensive single-PCR 16S and 18S rRNA community analysis validated with mock communities, and estimation of sequencing bias against 18S,” Environmental Microbiology ,23(6), pp. 3240–3250. Available at: https://doi.org/10.1111/1462-2920.15553. Youngblut, N.D. et al. (2021) “Vertebrate host phylogeny influences gut archaeal diversity,” Nature Microbiology , 6(11), pp. 1443–1454. Available at: https://doi.org/10.1038/s41564-021-00980-2. Zhang, B. et al. (2020) “Impact of bead-beating intensity on microbiome recovery in mouse and human stool: Optimization of DNA extraction.” bioRxiv, p. 2020.06.15.151753. Available at: https://doi.org/10.1101/2020.06.15.151753. Zhao, J., Rodriguez, J. and Martens-Habbena, W. (2023) “Fine-scale evaluation of two standard 16S rRNA gene amplicon primer pairs for analysis of total prokaryotes and archaeal nitrifiers in differently managed soils,” Frontiers in Microbiology , 14. Available at: https://doi.org/10.3389/fmicb.2023.1140487. 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint
+
+30 
+
+ZymoBIOMICS DNA/RNA Miniprep Kit (2025) Zymo Research International . Available at: https://zymoresearch.eu/products/zymobiomics-dna-rna-miniprep-kit (Accessed: April 24, 2025). 
+
+(which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted May 26, 2026. ;https://doi.org/10.64898/2026.05.22.727110 doi: bioRxiv preprint

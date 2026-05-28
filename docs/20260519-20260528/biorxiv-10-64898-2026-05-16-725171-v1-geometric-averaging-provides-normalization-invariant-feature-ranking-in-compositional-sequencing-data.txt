@@ -1,0 +1,2928 @@
+Title: 60838309
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.05.16.725171v1.full.pdf
+
+Number of Pages: 29
+
+Markdown Content:
+# Geometric averaging provides 1
+
+# normalization-invariant feature ranking in 2
+
+# compositional sequencing data 3
+
+Emilia Nunzi, 1∗ Luigina Romani 14
+
+1Department of Medicine and Surgery, University of Perugia, Perugia, Italy 5
+
+*Address correspondence to Emilia Nunzi, emilia.nunzi@unipg.it. 6Emilia Nunzi and Luigina Romani contributed equally to this work and are co-senior 7authors. 8
+
+ABSTRACT 9In compositional next-generation sequencing (NGS) analyses (including microbiome 10 studies, RNA-seq and metagenomics) the arithmetic mean (AM) of relative proportions is 11 the default operator for summarizing feature abundances. We show that this default 12 produces unstable rankings in real compositional data. Across 102 prevalent genera in the 13 dietswap dataset (n=38 baseline samples), 23 genera (22.5%), including members of 14 
+
+Bacteroides , Eubacterium and Bilophila , yielded opposite group-level conclusions under AM 15 and the geometric mean (GM). 16 This pattern reflects two formal properties of compositional aggregation. First, 17 AM-based rankings change with the within-sample normalization domain, whereas 18 GM-based rankings are invariant under the multiplicative structure of compositional data. 19 Second, the centered log-ratio (CLR) transformation absorbs geometric averaging into the 20 data representation, so that arithmetic averaging on CLR-space recovers the GM ranking 21 
+
+> 1
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint
+
+exactly. Both properties were verified numerically on the dietswap dataset, where the 22 Spearman correlation between GM- and CLR-based rankings was 1.000 in both groups. 23 The operator-choice problem propagates to between-group differential inference: 24 under AM, log 2 fold-changes vary across normalizations and the relative ranking of 25 features by effect size is not preserved; under GM and CLR, the ranking is preserved. We 26 recommend GM-based summaries for feature ranking and CLR-transformed abundances 27 for cross-sample comparisons. This change requires no new computational tools and is 28 fully compatible with existing differential-abundance pipelines, but eliminates an 29 under-recognized source of irreproducibility in biomarker discovery across microbiome 30 studies, transcriptomics, metagenomics, and mass-spectrometry-based metabolomics, in 31 all settings where features are quantified relative to a sample total. 32 
+
+IMPORTANCE 33 Studies of the gut microbiome routinely identify which bacterial groups are more or less 34 abundant in patients versus healthy controls, in different diets, or before and after a 35 treatment. The same kind of comparison underlies sequencing-based analyses across 36 biology, from gene expression to metagenomics. To do this, researchers must average the 37 abundance of each measured entity across many samples, and the standard choice is the 38 simple arithmetic average. We show that this choice can be misleading for any data where 39 each measurement is expressed relative to a sample total, as is typical of sequencing-based 40 assays, and that in real data it can flip the answer to which group is more enriched. 41 Analyzing a published dietary intervention study, we found that one in five gut bacteria 42 (including Bacteroides and Eubacterium ) gave opposite results depending on which average 43 was used. Switching to the geometric average resolves this inconsistency and makes 44 biomarker discovery more reproducible. This change is immediate to implement (it does 45 not require new software or specialized training) and applies not only to microbiome 46 studies, but to any biological measurement where what is detected, whether a gene 47 transcript, a microbial taxon, or a metabolite, is quantified relative to a sample total: 48 gene-expression analysis, metagenomics, and metabolomics among others. 49 
+
+> 2
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint
+
+INTRODUCTION 50 Across biology, quantitative profiling technologies share a fundamental constraint: the 51 count or intensity of each feature (a microbial taxon, a gene transcript, a metabolic 52 pathway, or a metabolite), whether produced by 16S rRNA amplicon sequencing, 53 RNA-seq, shotgun metagenomics, single-cell transcriptomics, or 54 mass-spectrometry-based metabolomics, is meaningful only relative to the sample total, 55 since that total is fixed by sequencing depth or extraction yield rather than by the 56 underlying biological load. Data with this property are called compositional [6, 2, 21]. 57 Within-sample (WS) normalization is therefore necessary to render abundances 58 comparable, and the choice of normalization (to total reads, to a reference feature, to a 59 spike-in standard) influences which features appear enriched and which depleted 60 [22, 3, 5, 11, 12]. 61 Beyond WS normalization, a second choice shapes the analysis: how to summarize 62 feature abundances across the samples of a group, for example when identifying which 63 microbial taxa are most enriched in a diseased cohort, which gene transcripts characterize 64 a treatment condition, or which metabolites distinguish two dietary groups. 65 Across-sample (AS) summarization typically defaults to the AM of relative abundance or 66 ratios. The AM, however, is sensitive to the total number of counts in each sample: 67 high-depth samples carry more weight in the group average, even for features whose 68 relative abundance is the same across all samples, thus introducing instability in the 69 feature ranking. The GM, by contrast, operates in log space, preserves multiplicative 70 relationships, and is invariant to within-sample rescaling [15]: a feature’s GM-based 71 group summary depends only on its relative abundance in each sample, and is unaffected 72 by differences in sequencing depth across samples. 73 The choice of averaging operator at this aggregation step is logically prior to 74 differential-abundance testing: any procedure that relies on AM-based summaries of raw 75 proportions or counts inherits their normalization dependence. Despite this, AM-based 76 summaries remain the default in much of the applied microbiome literature, and the 77 practical consequences of this default for biomarker discovery have not been 78 
+
+> 3
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint
+
+characterized on real data. A natural solution is to work in log space, where arithmetic 79 averaging recovers the geometric mean on the original scale. This is precisely what the 80 CLR transformation [ 6] achieves: by expressing each feature relative to the WS-GM before 81 averaging, CLR-based summaries are normalization-invariant by construction. 82 Established differential-abundance methods such as ANCOM-BC [10] and LinDA [23] 83 implicitly adopt this approach, operating on CLR-transformed abundances rather than 84 raw proportions. 85 In this work, we (i) formalize the conditions under which AM- and GM-based 86 aggregation produce different feature rankings on compositional data (Text S1); (ii) 87 illustrate the resulting normalization dependence on minimal worked examples; and (iii) 88 quantify the empirical extent of AM/GM discordance on a publicly available dietary 89 intervention dataset (dietswap, 102 prevalent gut microbial genera [24]), showing that 90 22.5% of these genera yield opposite group-level conclusions under AM and GM, and that 91 GM-based rankings coincide exactly with arithmetic averaging on CLR-transformed data. 92 While our empirical demonstration uses 16S microbiome data, the framework applies to 93 any compositional NGS measurement and, more broadly, to any assay producing relative 94 abundance vectors, including metabolomics. Throughout, our focus is on feature ranking 95 under compositional constraints, not on differential abundance inference, and we treat 96 zero handling as a separate concern that can be addressed by sparsity-aware methods 97 downstream. 98 
+
+RESULTS 99 
+
+Geometric mean provides normalization-invariant feature ranking in compositional 100 
+
+data 101 In comparative microbiome and genomic analyses, identifying which features are 102 consistently more or less abundant across sample groups is a prerequisite for defining 103 microbial or genetic signatures. Because NGS data are compositional, feature abundances 104 acquire biological meaning only after normalization to a sample-specific reference (total 105 reads, a target feature, the WS-GM, ...), and the choice of reference directly shapes 106 
+
+> 4
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint
+
+downstream comparisons.Here we examine how the choice of summary operator (AM vs. 107 GM) on sample groups interacts with the choice of per-sample normalization for the 108 purpose of AS feature classification. Two formal properties underlie the analyses that 109 follow (Text S1): (i) AM-based rankings change with the WS-normalization domain, 110 whereas GM-based rankings are invariant by the multiplicative property 111 GM( a/b) = GM( a)/GM( b); (ii) CLR transformation absorbs geometric averaging into the 112 data representation, so that arithmetic averaging across samples on CLR space recovers 113 the GM ranking exactly. We illustrate both properties on minimal worked examples 114 (Figure 1–Figure 2) before validating them on real microbiome data in the next sections. 115 
+
+Two-sample illustration of normalization dependence. Figure 1 considers three 116 features (F1–F3) measured in two samples (S1, S2) under four equivalent representations: 117 raw counts (panel A), proportions (panel B), and ratios to F1 or F2 (panels C–D). The 118 feature composition shifts markedly between samples: F3 dominates S1 (40 counts, 57%) 119 while F2 dominates S2 (80 counts, 57%), with F1 intermediate in both (20–40 counts, 120 
+
+∼29%). No feature is consistently enriched across the two samples; rather, the differences 121 reflect a redistribution of relative abundances driven by sample-specific compositional 122 shifts. 123 Despite these large changes in relative composition, AS-GM values are essentially 124 identical for the three features and remain stable across all four normalizations 125 (AS-GM ≈ 28 on counts; ≈ 0.29 on proportions; 1.00 on F1-ratios; 1.00 on F2-ratios), 126 reflecting the multiplicative property GM( a/b) = GM( a)/GM( b). In contrast, AS-AM 127 yields different feature rankings under each normalization. In panel D (ratios to F2), the 128 AM-based summaries imply that F1 is approximately 25% more abundant than F2 129 (AS-AM = 1.25) and that F3 is more than twice as abundant as F2 (AS-AM = 2.12), even 130 though the underlying counts of F2 (total = 90) exceed those of F1 (60) and F3 (60). The 131 same caveat applies to the total sum, which is directly proportional to AM 132 (TotalSum = N·AM) and therefore equally sensitive to depth-driven distortions. The 133 GM-based summary, by contrast, returns 1.00 for all three features, correctly reflecting 134 that no feature is consistently enriched relative to F2 across the two samples. The 135 
+
+> 5
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint
+
+AM-based conclusion therefore depends on which feature is chosen as the reference, 136 whereas the GM-based conclusion does not. 137 A Relative counts 
+
+Feature 
+
+> F1
+
+S1 
+
+> F2
+
+S2 
+
+> F3
+> 20
+> 10
+> 40
+> 40
+> 80
+> 20
+
+Feature table 
+
+Feature 
+
+> F1
+
+TotalSum 
+
+> F2
+
+AM 
+
+> F3
+
+GM 
+
+> 60
+> 90
+> 60
+> 30
+> 45
+> 30
+> 28
+> 28
+> 28
+
+AS marginal stats 
+
+Sample 
+
+> S1
+
+TotalSum 
+
+> S2
+
+AM 
+
+> 70
+
+GM 
+
+> 140
+> 23
+> 47
+> 20
+> 40
+
+WS marginal stats             
+
+> 025 50 75
+> F1 F2 F3
+> Counts
+> S1 S2
+> #2 #1 #1 #1 #2 #1
+> 025 50 75 100
+> TotalSum AM GM
+> Statistic
+> F1 F2 F3
+> 040 80 120 160
+> TotalSum AM GM
+> Statistic
+> S1 S2
+
+B Proportions (TotalSum−Norm) 
+
+Feature 
+
+> F1
+
+S1 
+
+> F2
+
+S2 
+
+> F3
+> 0.29
+> 0.14
+> 0.57
+> 0.29
+> 0.57
+> 0.14
+
+Feature table 
+
+Feature 
+
+> F1
+
+TotalSum 
+
+> F2
+
+AM 
+
+> F3
+
+GM 
+
+> 0.57
+> 0.71
+> 0.71
+> 0.29
+> 0.36
+> 0.36
+> 0.29
+> 0.29
+> 0.29
+
+AS marginal stats 
+
+Sample 
+
+> S1
+
+TotalSum 
+
+> S2
+
+AM 
+
+> 1.00
+
+GM 
+
+> 1.00
+> 0.33
+> 0.33
+> 0.29
+> 0.29
+
+WS marginal stats            
+
+> 0.0 0.2 0.4 0.6
+> F1 F2 F3
+> Proportions
+> S1 S2
+> #3 #1 #1 #1 #1 #1
+> 0.0 0.2 0.4 0.6 0.8
+> TotalSum AM GM
+> Statistic
+> F1 F2 F3
+> 0.0 0.3 0.6 0.9
+> TotalSum AM GM
+> Statistic
+> S1 S2
+
+C Fold−change vs F1 (F1−Norm) 
+
+Feature 
+
+> F1
+
+S1 
+
+> F2
+
+S2 
+
+> F3
+> 1.00
+> 0.50
+> 2.00
+> 1.00
+> 2.00
+> 0.50
+
+Feature table 
+
+Feature 
+
+> F1
+
+TotalSum 
+
+> F2
+
+AM 
+
+> F3
+
+GM 
+
+> 2.00
+> 2.50
+> 2.50
+> 1.00
+> 1.25
+> 1.25
+> 1.00
+> 1.00
+> 1.00
+
+AS marginal stats 
+
+Sample 
+
+> S1
+
+TotalSum 
+
+> S2
+
+AM 
+
+> 3.50
+
+GM 
+
+> 3.50
+> 1.17
+> 1.17
+> 1.00
+> 1.00
+
+WS marginal stats            
+
+> 0.0 0.5 1.0 1.5 2.0
+> F1 F2 F3
+> Fold−change vs F1
+> S1 S2
+> #3 #1 #1 #1 #1 #1
+> 0123
+> TotalSum AM GM
+> Statistic
+> F1 F2 F3
+> 01234
+> TotalSum AM GM
+> Statistic
+> S1 S2
+
+D Fold−change vs F2 (F2−Norm) 
+
+Feature 
+
+> F1
+
+S1 
+
+> F2
+
+S2 
+
+> F3
+> 2.00
+> 1.00
+> 4.00
+> 0.50
+> 1.00
+> 0.25
+
+Feature table 
+
+Feature 
+
+> F1
+
+TotalSum 
+
+> F2
+
+AM 
+
+> F3
+
+GM 
+
+> 2.50
+> 2.00
+> 4.25
+> 1.25
+> 1.00
+> 2.12
+> 1.00
+> 1.00
+> 1.00
+
+AS marginal stats 
+
+Sample 
+
+> S1
+
+TotalSum 
+
+> S2
+
+AM 
+
+> 7.00
+
+GM 
+
+> 1.75
+> 2.33
+> 0.58
+> 2.00
+> 0.50
+
+WS marginal stats            
+
+> 01234
+> F1 F2 F3
+> Fold−change vs F2
+> S1 S2
+> #2 #1 #3 #1 #1 #1
+> 012345
+> TotalSum AM GM
+> Statistic
+> F1 F2 F3
+> 02468
+> TotalSum AM GM
+> Statistic
+> S1 S2
+
+138 
+
+FIG 1 Two-sample illustration of normalization-dependent feature ranking under arithmetic versus geometric mean aggregation. Three features (F1–F3) measured in two samples (S1, S2). Each panel shows the feature table (yellow = raw counts in panel A; light blue = within-sample (WS) normalized values in panels B–D) with the corresponding across-sample (AS) and within-sample marginal statistics (light gray): total sum (Sum), arithmetic mean (AM), and geometric mean (GM). Bar charts plot the values from the corresponding table above. Panel A: relative counts. Panel B: proportions (counts normalized to the WS total). Panel C: ratios to F1 (fold-changes relative to F1). Panel D: ratios to F2 (fold-changes relative to F2). Rank labels (#1, #2, #3) above the AM and GM bars in the AS-marginal-stats charts indicate the feature ordering induced by each operator; AS-AM rankings change with the normalization (compare #1, #2, #3 across panels) whereas AS-GM rankings remain identical (all three features tied 
+
+6
+
+.CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint at #1 across panels B–D). Formal statement and proof sketch are provided in Text S1. 
+
+Robustness to sequencing-depth heterogeneity. Figure 2 extends the same 139 construction to five samples with strongly uneven sequencing depths (S2 = 223 reads to 140 S4 = 138,976 reads), a regime more representative of real NGS datasets. The compositional 141 structure is non-trivial: when expressed as proportions, F1 dominates in S1 (52.5%), F3 142 dominates in S4 (47.5%), while F2 shows moderate variation across samples (24–43%). On 143 raw counts (panel A), AS-AM ranks F3 highest (13,341 reads), driven almost entirely by 144 S4; AS-GM, by contrast, ranks F1 > F2 ≈ F3 (587, 503, 498), a ranking preserved when the 145 data are expressed as proportions (panel B; AS-GM: F1 = 35.1%, F2 = 30.0%, F3 = 29.8%, 146 versus AS-AM: F1 = 37.6%, F2 = 30.8%, F3 = 31.7%, with the F2/F3 ordering flipped under 147 AM relative to GM), as F1-ratios (panel C), or as F2-ratios (panel D). The AM ranking 148 instead changes with the normalization, and AM-based fold-change estimates are 149 inconsistent under reference change: F2 appears 2% more abundant than F1 when 150 normalizing to F1, but F1 appears 32% more abundant than F2 when normalizing to F2, a 151 pair of estimates that cannot both be correct. The same caveat applies to the total sum, 152 which is directly proportional to AM and therefore equally sensitive to depth-driven 153 distortions. GM-based fold-changes are mutually consistent by construction 154 (GM(F1/F2) = 1/GM(F2/F1); see Text S1 and Table S1 for the full set of pairwise 155 comparisons). Together, panels A–D show that AS-GM provides a depth-agnostic estimate 156 of typical relative abundance, while AS-AM is dominated by samples with extreme depth. 157 The multiplicative property of the GM provides a direct numerical verification: 158 GM(F1/F2) computed on raw counts equals GM(F1)/GM(F2) = 586.79/503.13 = 1.17, 159 identical to the GM computed directly on the F1/F2 ratios across samples (panel D). The 160 same property gives the reciprocal identity 1.17 = 1/0.86, confirming that 161 GM(F1/F2) = 1/GM(F2/F1) (Proposition 3, Text S1). AM does not satisfy either property. 162 
+
+> 7
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint
+
+A Relative counts 
+
+Feature 
+
+F1 
+
+S1 
+
+F2 
+
+S2 
+
+F3 
+
+S3 
+
+417 
+
+S4 
+
+244 
+
+S5 
+
+134 
+
+83 
+
+70 
+
+70 
+
+66 
+
+153 
+
+135 
+
+39,449 
+
+33,527 
+
+66,000 
+
+772 
+
+368 
+
+369 
+
+Feature table 
+
+Feature 
+
+F1 
+
+TotalSum 
+
+F2 
+
+AM 
+
+F3 
+
+GM 
+
+40,787 
+
+34,362 
+
+66,708 
+
+8,157 
+
+6,872 
+
+13,342 
+
+587 
+
+503 
+
+499 
+
+AS marginal stats Sample 
+
+S1 
+
+TotalSum 
+
+S2 
+
+AM 
+
+S3 
+
+GM 
+
+S4 
+
+S5 
+
+795 
+
+223 
+
+354 
+
+138,976 
+
+1,509 
+
+265 
+
+74 
+
+118 
+
+46,325 
+
+503 
+
+239 
+
+74 
+
+111 
+
+44,360 
+
+472 
+
+WS marginal stats 
+
+100 1,000 10,000 100,000 
+
+F1 F2 F3 
+
+> Counts
+
+S1 S2 S3 S4 S5 
+
+> #2 #1 #3 #2 #1 #3
+
+100 1,000 10,000 100,000 
+
+TotalSum AM GM 
+
+> Statistic
+
+F1 F2 F3 
+
+100 1,000 10,000 100,000 
+
+TotalSum AM GM 
+
+> Statistic
+
+S1 S2 S3 S4 S5 
+
+B Proportions (TotalSum−Norm) 
+
+Feature 
+
+F1 
+
+S1 
+
+F2 
+
+S2 
+
+F3 
+
+S3 
+
+0.52 
+
+S4 
+
+0.31 
+
+S5 
+
+0.17 
+
+0.37 
+
+0.31 
+
+0.31 
+
+0.19 
+
+0.43 
+
+0.38 
+
+0.28 
+
+0.24 
+
+0.47 
+
+0.51 
+
+0.24 
+
+0.24 
+
+Feature table 
+
+Feature 
+
+F1 
+
+TotalSum 
+
+F2 
+
+AM 
+
+F3 
+
+GM 
+
+1.88 
+
+1.54 
+
+1.58 
+
+0.38 
+
+0.31 
+
+0.32 
+
+0.35 
+
+0.30 
+
+0.30 
+
+AS marginal stats Sample 
+
+S1 
+
+TotalSum 
+
+S2 
+
+AM 
+
+S3 
+
+GM 
+
+S4 
+
+S5 
+
+1.00 
+
+1.00 
+
+1.00 
+
+1.00 
+
+1.00 
+
+0.33 
+
+0.33 
+
+0.33 
+
+0.33 
+
+0.33 
+
+0.30 
+
+0.33 
+
+0.31 
+
+0.32 
+
+0.31 
+
+WS marginal stats 
+
+0.0 0.2 0.4 0.6 
+
+F1 F2 F3 
+
+> Proportions
+
+S1 S2 S3 S4 S5    
+
+> #1 #1 #3 #2 #2 #3
+
+0.0 0.5 1.0 1.5 2.0 
+
+TotalSum AM GM 
+
+> Statistic
+
+F1 F2 F3 
+
+0.0 0.3 0.6 0.9 
+
+TotalSum AM GM 
+
+> Statistic
+
+S1 S2 S3 S4 S5 
+
+C Fold−change vs F1 (F1−Norm) 
+
+Feature 
+
+F1 
+
+S1 
+
+F2 
+
+S2 
+
+F3 
+
+S3 
+
+1.00 
+
+S4 
+
+0.59 
+
+S5 
+
+0.32 
+
+1.00 
+
+0.84 
+
+0.84 
+
+1.00 
+
+2.32 
+
+2.05 
+
+1.00 
+
+0.85 
+
+1.67 
+
+1.00 
+
+0.48 
+
+0.48 
+
+Feature table 
+
+Feature 
+
+F1 
+
+TotalSum 
+
+F2 
+
+AM 
+
+F3 
+
+GM 
+
+5.00 
+
+5.07 
+
+5.36 
+
+1.00 
+
+1.01 
+
+1.07 
+
+1.00 
+
+0.86 
+
+0.85 
+
+AS marginal stats Sample 
+
+S1 
+
+TotalSum 
+
+S2 
+
+AM 
+
+S3 
+
+GM 
+
+S4 
+
+S5 
+
+1.91 
+
+2.69 
+
+5.36 
+
+3.52 
+
+1.95 
+
+0.64 
+
+0.90 
+
+1.79 
+
+1.17 
+
+0.65 
+
+0.57 
+
+0.89 
+
+1.68 
+
+1.12 
+
+0.61 
+
+WS marginal stats 
+
+0.5 12510 
+
+F1 F2 F3 
+
+> Fold−change vs F1
+
+S1 S2 S3 S4 S5  
+
+> #3 #1 #2 #2 #1 #3
+
+0.5 12510 
+
+TotalSum AM GM 
+
+> Statistic
+
+F1 F2 F3 
+
+0.5 12510 
+
+TotalSum AM GM 
+
+> Statistic
+
+S1 S2 S3 S4 S5 
+
+D Fold−change vs F2 (F2−Norm) 
+
+Feature 
+
+F1 
+
+S1 
+
+F2 
+
+S2 
+
+F3 
+
+S3 
+
+1.71 
+
+S4 
+
+1.00 
+
+S5 
+
+0.55 
+
+1.19 
+
+1.00 
+
+1.00 
+
+0.43 
+
+1.00 
+
+0.88 
+
+1.18 
+
+1.00 
+
+1.97 
+
+2.10 
+
+1.00 
+
+1.00 
+
+Feature table 
+
+Feature 
+
+F1 
+
+TotalSum 
+
+F2 
+
+AM 
+
+F3 
+
+GM 
+
+6.60 
+
+5.00 
+
+5.40 
+
+1.32 
+
+1.00 
+
+1.08 
+
+1.17 
+
+1.00 
+
+0.99 
+
+AS marginal stats Sample 
+
+S1 
+
+TotalSum 
+
+S2 
+
+AM 
+
+S3 
+
+GM 
+
+S4 
+
+S5 
+
+3.26 
+
+3.19 
+
+2.31 
+
+4.15 
+
+4.10 
+
+1.09 
+
+1.06 
+
+0.77 
+
+1.38 
+
+1.37 
+
+0.98 
+
+1.06 
+
+0.72 
+
+1.32 
+
+1.28 
+
+WS marginal stats 
+
+0.5 12510 
+
+F1 F2 F3 
+
+> Fold−change vs F2
+
+S1 S2 S3 S4 S5   
+
+> #1 #1 #3 #2 #2 #3
+
+0.5 12510 
+
+TotalSum AM GM 
+
+> Statistic
+
+F1 F2 F3 
+
+0.5 12510 
+
+TotalSum AM GM 
+
+> Statistic
+
+S1 S2 S3 S4 S5 
+
+E CLR (GM−Norm) − AS−AM only 
+
+Feature 
+
+F1 
+
+S1 
+
+F2 
+
+S2 
+
+F3 
+
+S3 
+
+0.56 
+
+S4 
+
+0.02 
+
+S5 
+
+−0.58 
+
+0.11 
+
+−0.06 
+
+−0.06 
+
+−0.52 
+
+0.32 
+
+0.20 
+
+−0.12 
+
+−0.28 
+
+0.40 
+
+0.49 
+
+−0.25 
+
+−0.25 
+
+Feature table (CLR) 
+
+Feature 
+
+F1 
+
+AM 
+
+F2 
+
+F3 
+
+0.106 
+
+0.106 
+
+0.106 
+
+AS marginal stats (AM only) 
+
+−0.4 0.0 0.4 
+
+S1 S2 S3 S4 S5 
+
+> CLR
+
+F1 F2 F3 
+
+#1 
+
+#2 #3 
+
+−0.05 0.00 0.05 0.10 0.15 
+
+F1 F2 F3 
+
+> AS−AM(CLR)
+
+163 
+
+FIG 2 Robustness of geometric-mean-based ranking under highly uneven sequencing depths, including CLR transformation. Five samples (S1–S5) with sequencing depths spanning three orders of magnitude (S2 = 223 reads to S4 = 138,976 reads) and three features (F1–F3). Panels A–D each show the feature table (yellow = raw counts in panel A; light blue = WS-normalized values in panels B–D) with the corresponding marginal (AS, WS) statistics (light gray): total sum, AM, and GM. Bar charts plot the values from the corresponding table above. Panel A: relative counts. Panel B: proportions (counts normalized to the WS total). Panel C: ratios to F1 (fold-changes relative to F1). Panel D: ratios to F2 
+
+8
+
+.CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint (fold-changes relative to F2). Rank labels (#1, #2, #3) above the AM and GM bars in the AS-marginal-stats charts indicate the feature ordering induced by each operator. AS-GM yields a stable feature ranking F1 > F2 ≈ F3 across all four normalizations (rank labels remain identical across panels), whereas AS-AM-based rankings change with the choice of reference and are dominated by the high-depth sample S4. Pairwise ratio comparisons are detailed in Table S1. Panel E: centered log-ratio (CLR) transformation of the same dataset, CLR (xi) = log (xi/GM (x)) . The left part shows the per-sample CLR feature table and the corresponding bar chart (each sample’s CLR values sum to zero by construction); the right part shows the across-sample arithmetic mean AS-AM(CLR) per feature with rank labels. The AS-AM(CLR) ranking F1 > F2 ≈ F3 reproduces the AS-GM ranking of panels B–D, illustrating Proposition 2 of Text S1: across-sample arithmetic means of CLR values are equivalent (up to an additive sample-wide constant) to logarithms of AS-GM(proportions). 
+
+CLR transformation absorbs geometric averaging. Applying the CLR transformation, 164 CLR (xi) = log (xi/GM (x)) , to the same dataset (panel E of Figure 2) produces 165 per-sample, scale-invariant abundances centered on the WS-GM. Across-sample 166 arithmetic means of CLR values are F1 = 0.10, F2 = −0.05, F3 = −0.06, ranking the three 167 features in the same order as AS-GM on raw counts or proportions. This is not a 168 coincidence: AS-AM on CLR-transformed values equals log (AS-GM ) up to a 169 group-specific additive constant, so CLR-based and GM-based rankings coincide exactly 170 (formal statement in Text S1). CLR therefore provides the natural arithmetic space for 171 compositional data: arithmetic averaging in CLR space is mathematically equivalent to 172 geometric averaging in the original space, and differences of CLR values correspond to 173 log fold-changes between features (CLR (xi) − CLR (xj) = log (xi/xj)), enabling 174 interpretable cross-sample comparisons. 175 
+
+Arithmetic operators are interpretable only on raw counts. On raw count data, the 176 total sum has a clear biological meaning: it reflects sequencing depth (or extraction yield 177 in metabolomics), and the AM is simply this total divided by the number of features. 178 Once the data are normalized, however, the total sum becomes either a trivial constant (1 179 for proportions) or a quantity tied to the chosen reference feature (for ratios), and the AM 180 
+
+> 9
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint
+
+loses any direct interpretation. The GM, by contrast, retains the same meaning across all 181 representations: a central tendency of the multiplicative structure of the data, invariant to 182 within-sample rescaling (Text S1). 183 
+
+Empirical extent of AM/GM discordance in the gut microbiome 184 To establish whether the AM/GM discordance illustrated by the worked examples of 185 generalizes to real data, we systematically computed AM- and GM-based rankings on 186 relative proportions for all 102 prevalent genera in the dietswap baseline (Figure 3). 187 Within each dietary group, the overall agreement between AM- and GM-based rankings 188 was high (Spearman ρ = 0.972 in AFR and 0.974 in AAM, panel A), yet this aggregate 189 correlation conceals substantial local disagreement: 20 genera in AFR and 24 in AAM 190 showed rank differences exceeding five positions between the two operators, with seven 191 genera per group exceeding ten positions (panel B). 192 
+
+> 10
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint
+
+A Rank discordance: AM vs GM 
+
+> Enterobacter aerogenes et rel. Escherichia coli et rel. Klebisiella pneumoniae et rel. Megasphaera elsdenii et rel. Lactobacillus salivarius et rel.
+
+ρ = 0.972 
+
+> Dialister Lactobacillus salivarius et rel. Uncultured Mollicutes Mitsuokella multiacida et rel. Phascolarctobacterium faecium et rel.
+
+ρ = 0.974 
+
+AFR AAM          
+
+> 025 50 75 100 025 50 75 100
+> 025 50 75 100
+
+Rank by AM 
+
+> Rank by GM
+
+B Distribution of |rank_AM − rank_GM| 
+
+> 5: 20 taxa > 10: 7 taxa 
+
+> 5: 24 taxa > 10: 7 taxa 
+
+AFR AAM          
+
+> 010 20 30 40 010 20 30 40
+> 0510 15 20 25
+
+|rank_AM − rank_GM| 
+
+> Number of taxa
+
+C Directional conflict (23 / 102 taxa, 22.5%)       
+
+> Eubacterium biforme et rel. Bilophila et rel. Coprobacillus catenaformis et rel. Lactobacillus gasseri et rel. Clostridium ramosum et rel. Eubacterium cylindroides et rel. Propionibacterium Megamonas hypermegale et rel. Eubacterium limosum et rel. Helicobacter
+> −4 −2 02
+> −2.5 0.0 2.5 5.0
+
+log 2(AM(AAM)/AM(AFR)) 
+
+> log  2(GM(AAM)/GM(AFR))
+
+AM vs GM 
+
+Consistent 
+
+Conflicting 193 
+
+FIG 3 Empirical extent of AM/GM discordance across the gut microbiome on relative proportions. dietswap baseline, 102 prevalent genera; AM and GM computed across samples within each group on relative proportions, i.e. on counts normalized to the within-sample total. Panel A — scatter of GM-based rank (y-axis) versus AM-based rank (x-axis) for each genus, faceted by dietary group; the dashed diagonal corresponds to perfect concordance, and the inset reports the Spearman correlation between the two rankings. The five most discordant genera in each group are labelled. Panel B — distribution of 
+
+|rank_AM − rank_GM | across genera, faceted by group; dashed vertical lines mark the discordance thresholds 5 and 10. Panel C — directional conflict between groups: each point is a genus plotted by log 2(AM(AAM)/AM(AFR)) on the x-axis and log 2(GM(AAM)/GM(AFR)) on the y-axis. The shaded second and 
+
+11 
+
+.CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint fourth quadrants identify the 23 genera (22.5% of the panel) where AM and GM disagree on the direction of group-level enrichment; representative conflicting taxa are labelled. More consequentially, 23 of the 102 genera (22.5%) exhibited directional conflict 194 between groups: AM and GM disagreed on which dietary group displayed higher relative 195 abundance (panel C, shaded quadrants). Conflicting taxa include genera of established 196 biological relevance in diet–microbiome studies, such as Bacteroides , Eubacterium and 197 
+
+Bilophila , whose group-level enrichment, and therefore their candidacy as dietary 198 biomarkers, depends on the choice of averaging operator. The complete list of conflicting 199 genera with operator-specific log 2 fold-changes is provided in Table S2. This pattern is not 200 an artefact of pseudocount handling: restricting the analysis to the 98 of 102 genera with 201 non-zero counts in every baseline sample (where the pseudocount choice has no effect by 202 construction) yielded a Spearman correlation ρ ≥ 0.9997 between AM- and GM-based 203 rankings computed with and without pseudocount, and a directional-conflict percentage 204 of 21.4% (with pseudocount) or 20.4% (without), within one percentage point of the 205 full-panel result (Table S3). 206 In contrast, the Spearman correlation between GM-based and CLR-based rankings 207 was numerically equal to 1.000 in both groups (Table S3), providing direct empirical 208 confirmation of Proposition 2 (Text S1): AS-AM on CLR-space preserves the AS-GM 209 ordering exactly. Together, these observations indicate that AM/GM discordance affects a 210 substantial fraction of prevalent gut microbial genera: roughly one in five yields opposite 211 group-level conclusions depending on whether arithmetic or geometric averaging is used 212 to summarize relative abundances. 213 
+
+Operator choice propagates from feature ranking to between-group differential 214 
+
+inference 215 The analysis so far focused on feature ranking: we showed (Fig. 3) that AM- and 216 GM-based summaries disagree on the direction of group-level enrichment for one in five 217 prevalent genera. The same operator choice, however, also affects between-group 218 
+
+> 12
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint
+
+differential inference, where log 2 fold-changes and statistical tests are computed. To 219 illustrate this propagation on real data, we selected three biologically relevant gut taxa 220 from the same dietswap panel of 102 prevalent genera: F1 = Bacteroides vulgatus et rel. ,221 F2 = Clostridium cellulosi et rel. , and F3 = Sporobacter termitidis et rel. . These taxa have mean 222 proportions between 1.3% and 16% across groups ( nAFR = 17, nAAM = 21), and were 223 analyzed under the same four normalizations of Figure 1 (Figure 4 and Figure 5). These 224 three taxa were chosen automatically as the triple that maximizes ranking instability 225 under AM across the four normalizations (selection procedure detailed in Methods); the 226 goal is not to claim a specific biomarker, but to demonstrate concretely how the AM/GM 227 divergence seen at the panel-wide level affects effect-size estimates and p-values for a 228 representative case. The two dietary groups play the role of the two samples in the toy 229 example: each table cell reports the AS-AM and AS-GM of per-sample values across all 230 samples in the corresponding group. 231 
+
+Normalization dependence on real microbiome features. Already on raw counts 232 (Figure 4, panel A), AM and GM yield different rankings: AM is inflated by samples with 233 extreme sequencing depth, whereas AS-GM provides a depth-robust estimate of typical 234 abundance, mirroring the illustrative example of Figure 2. The discrepancy widens after 235 WS normalization: in panel B (proportions), AM ranks the three features differently 236 between AFR and AAM, and the AM-based ranking changes again when proportions are 237 replaced by fold-changes relative to F1 (panel C) or to F2 (panel D). The AS-GM column, 238 by contrast, gives the same ordering of F1, F2, F3 across all four normalizations and in 239 both groups, as guaranteed by Proposition 1 (Text S1). The practical consequence is that, 240 given identical sequencing data, the AM-based identification of the most enriched taxon 241 between AFR and AAM is reference-dependent, whereas the GM-based identification is 242 not. 243 
+
+> 13
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint
+
+A Relative counts 
+
+Feature 
+
+> F1
+
+AFR (TS) 
+
+> F2
+
+AFR (AM) 
+
+> F3
+
+AFR (GM) 
+
+> 141,683
+
+AAM (TS) 
+
+> 18,119
+
+AAM (AM) 
+
+> 10,575
+
+AAM (GM)              
+
+> 8,334
+> 1,066
+> 622
+> 5,987
+> 590
+> 451
+> 49,987
+> 24,450
+> 8,693
+> 2,380
+> 1,164
+> 414
+> 308
+> 742
+> 282
+> #1 #1 #2 #2 #3 #3
+> #1 #2 #2 #1 #3 #3
+> AFR AAM
+> TotalSum AM GM TotalSum AM GM
+> 110 100 1,000 10,000 100,000
+> Counts
+> F1 F2 F3
+
+B Proportions (TotalSum−Norm) 
+
+Feature 
+
+> F1
+
+AFR (TS) 
+
+> F2
+
+AFR (AM) 
+
+> F3
+
+AFR (GM) 
+
+> 9.1956
+
+AAM (TS) 
+
+> 1.2108
+
+AAM (AM) 
+
+> 0.7350
+
+AAM (GM)              
+
+> 0.5409
+> 0.0712
+> 0.0432
+> 0.4633
+> 0.0457
+> 0.0349
+> 3.4010
+> 2.0632
+> 0.7946
+> 0.1620
+> 0.0982
+> 0.0378
+> 0.0263
+> 0.0634
+> 0.0241
+> #1 #1 #2 #2 #3 #3
+> #1 #2 #2 #1 #3 #3
+> AFR AAM
+> TotalSum AM GM TotalSum AM GM
+> 0.001 0.01 0.1 110
+> Proportion
+> F1 F2 F3
+
+C Fold−change vs F1 
+
+Feature 
+
+> F1
+
+AFR (TS) 
+
+> F2
+
+AFR (AM) 
+
+> F3
+
+AFR (GM) 
+
+> 17.000
+
+AAM (TS) 
+
+> 10.996
+
+AAM (AM) 
+
+> 3.606
+
+AAM (GM)           
+
+> 1.000
+> 0.647
+> 0.212
+> 1.000
+> 0.099
+> 0.075
+> 21.000
+> 438.783
+> 144.905
+> 1.000
+> 20.894
+> 6.900
+> 1.000
+> 2.410
+> 0.915
+> #1 #1 #2 #2 #3 #3
+> #3 #2 #1 #1 #2 #3
+> AFR AAM
+> TotalSum AM GM TotalSum AM GM
+> 0.01 0.10 1.00 10.00 100.00
+> Fold−change vs F1
+> F1 F2 F3
+
+D Fold−change vs F2 
+
+Feature 
+
+> F1
+
+AFR (TS) 
+
+> F2
+
+AFR (AM) 
+
+> F3
+
+AFR (GM) 
+
+> 385.822
+
+AAM (TS) 
+
+> 17.000
+
+AAM (AM) 
+
+> 24.695
+
+AAM (GM)           
+
+> 22.695
+> 1.000
+> 1.453
+> 10.141
+> 1.000
+> 0.764
+> 194.388
+> 21.000
+> 19.027
+> 9.257
+> 1.000
+> 0.906
+> 0.415
+> 1.000
+> 0.380
+> #1 #1 #3 #2 #2 #3
+> #1 #2 #2 #1 #3 #3
+> AFR AAM
+> TotalSum AM GM TotalSum AM GM
+> 0.01 0.10 1.00 10.00 100.00
+> Fold−change vs F2
+> F1 F2 F3
+> F1 = Prevotella melaninogenica et rel. | F2 = Oscillospira guillermondii et rel. | F3 = Faecalibacterium prausnitzii et rel. | AFR n=17, AAM n=21
+
+244 
+
+FIG 4 Empirical analog of Figure 1 on the dietswap dataset (baseline timepoint, n=38). Three taxa F1= Bacteroides vulgatus et rel. , F2= Clostridium cellulosi et rel. , F3= Sporobacter termitidis et rel. are summarized within each dietary group (AFR, AAM) under four within-sample normalizations. Panel A — relative counts. Panel B — proportions (TotalSum-Norm). Panel C — fold-change vs F1 (F1-Norm). Panel D — fold-change vs F2 (F2-Norm). Within each panel, the table reports the across-samples TotalSum, AM and GM per feature and group; the bar chart displays the same statistics on a log 10 y-axis (linear-data, log-scale display). Bars are colored by feature using the Dark2 palette. Across panels, AM-based feature rankings change with the normalization choice (Proposition 1), whereas GM-based rankings remain invariant by the multiplicative property GM( a/b)=GM( a)/GM( b). 
+
+CLR-space inference and operator-dependent fold-changes. The CLR-transformed 245 values for the same three taxa (Figure 5, panel A) confirm Proposition 2: within each 246 group, AS-AM on CLR values preserves the AS-GM ranking of proportions, with 247 
+
+14 
+
+.CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint group-specific offsets reported as a panel footnote. This is consistent with the exact 248 identity ρ(rank_GM, rank_CLR ) = 1.000 documented above for both groups across all 249 102 genera. CLR therefore absorbs the geometric-mean aggregation into the data 250 transformation itself, leaving arithmetic averaging on CLR-space as the operator of choice. 251 A CLR (GM−Norm) − AS−AM only 
+
+Feature 
+
+F1 
+
+AFR (AS−AM) 
+
+F2 
+
+AAM (AS−AM) 
+
+F3 
+
+6.017 
+
+3.700 
+
+3.432 
+
+2.944 
+
+3.823 
+
+2.856 
+
+#1 
+
+#2 #3 #2 
+
+#1 
+
+#3 
+
+AFR AAM 
+
+F1 F2 F3 F1 F2 F3 
+
+0246
+
+> AS−AM(CLR)
+
+Rank labels match the AS−GM column in Figure 4, panel B (Proposition 2: AS−AM(CLR) = log(AS−GM(prop)) + group constant; AFR offset = 6.786, AAM offset = 6.582). 
+
+B Ranking trajectories and differential abundance 
+
+AFR AAM 
+
+> AM GM
+
+TotalSum Proportions Ratio/F1 Ratio/F2 CLR 
+
+TotalSum Proportions Ratio/F1 Ratio/F2 CLR 
+
+1st 2nd 3rd 
+
+1st 2nd 3rd 
+
+> Rank
+
+F1 F2 F3 
+
+Bump chart − feature rank across normalizations. AM rows show ranking changes (Prop. 1); GM rows are flat. CLR (AM only) preserves GM ranking (Prop. 2).   
+
+> *** ** ns ** ns ** ns
+> *** ** ns ** ns ** ns
+> *** ns ns
+
+AM GM CLR 
+
+Proportions Ratio/F1 Ratio/F2 
+
+Proportions Ratio/F1 Ratio/F2 
+
+CLR 
+
+−6 −3 036
+
+> log 2 (AAM / AFR)
+
+Differential abundance trajectory − log.(AAM/AFR) across normalizations. AM: lines cross (effect−size ranking unstable). GM: lines never cross (translation by a group−constant; ranking preserved). CLR: single v 
+
+F1 = Prevotella melaninogenica et rel. | F2 = Oscillospira guillermondii et rel. | F3 = Faecalibacterium prausnitzii et rel. | AFR n=17, AAM n=21 
+
+252 
+
+15 
+
+.CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint FIG 5 CLR representation, ranking trajectories, and operator-dependent differential inference for the three taxa of Figure 4. Panel A — AS-AM(CLR) per feature and group. Rank labels (#1, #2, #3) match the AS-GM column in Figure 4, panel B, since AS-AM(CLR)=log(AS-GM(prop))+ cg (group offsets reported as a panel footnote). Panel B (top) — bump chart of feature rank across normalizations (TotalSum, Proportions, Ratio/F1, Ratio/F2, CLR), faceted by Statistic (rows: AM, GM) and Group (columns: AFR, AAM). AM rows show crossing lines, indicating ranking instability; GM rows show flat, non-crossing lines, illustrating Proposition 1 in visual form. The Spearman correlation between GM- and CLR-based rankings across all 102 prevalent genera equals 1.000 in both groups (Table S3), providing direct empirical confirmation of Proposition 2 of Text S1. Panel B (bottom) — log 2 fold-change AAM/AFR across normalizations, faceted by operator (AM, GM, CLR). Under AM, log 2FC values vary in unstructured ways and feature lines cross. Under GM, log 2FC values vary by a group-constant translation and feature lines never cross, preserving the relative ordering of effects. CLR yields a single value per feature, anchored to the GM ranking. Asterisks denote Wilcoxon rank-sum significance (raw p-values: ∗ p < 0.05, ∗∗ p < 0.01, ∗ ∗ ∗ p < 0.001, ns = not significant). p-values depend on the data transformation (proportions, ratio, CLR) but not on the AM versus GM choice on the same data. The bump chart in panel B (top) summarizes the within-group ranking pattern: in the 253 AM facets the lines connecting features across normalizations cross repeatedly, indicating 254 ranking instability; in the GM facets the lines are flat and parallel, and the CLR column 255 attached to the AM facets sits at the same rank values as the GM column. The 256 log 2-fold-change trajectory (panel B, bottom) extends the same logic to between-group 257 comparison. Under AM, log 2FC values vary in unstructured ways across normalizations 258 and feature lines cross; under GM, log 2FC values shift by a group-specific constant under 259 reference change (a direct consequence of GM( a/b) = GM( a)/GM( b), Proposition 3 of 260 Text S1), so feature lines never cross and the relative ordering of effects is preserved. CLR 261 returns a single, reference-free value per feature, equivalent in ranking to GM. Wilcoxon 262 rank-sum p-values, being rank-based, are identical for AM and GM under the same data 263 transformation; they vary between proportions, ratios and CLR because the test is 264 
+
+> 16
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint
+
+sensitive to the shape of the cross-sample distribution, not to the choice of summary 265 operator. 266 These observations show that AM-based between-group inference is unstable in three 267 respects simultaneously (effect magnitude, ranking of features by effect size, and 268 statistical significance through the chosen transformation), whereas GM- and CLR-based 269 inference is stable in the relevant sense. Consistent with the framing of the Introduction, 270 this illustration is not a proposal for a new differential abundance test, but a 271 demonstration that any downstream inferential procedure inherits the instability of its 272 input summary; GM- or CLR-based summaries provide the only internally consistent 273 foundation for such procedures. 274 
+
+DISCUSSION 275 In gut microbiome and broader compositional NGS analyses, the choice of summary 276 operator used to rank features within a group of samples is typically left implicit and 277 defaults to the arithmetic mean. We have shown that this default has consequences. 278 Theoretically, AM-based rankings change with the within-sample normalization domain 279 (Proposition 1, Text S1), so that the same dataset can yield different feature hierarchies 280 depending on whether one summarizes raw counts, proportions, or ratios to a reference 281 feature. Empirically, this instability translates into directional disagreement on real 282 microbiome data: in the dietswap baseline, 23 of 102 prevalent genera (22.5%) yielded 283 opposite group-level conclusions under AM and GM (Figure 3), and the conflict involves 284 taxa of established biological relevance for diet–microbiome interactions, including 285 
+
+Bacteroides , Eubacterium and Bilophila . The geometric mean, by construction, is invariant to 286 within-sample normalization (Proposition 1), satisfies an exact reciprocal identity under 287 reference change (Proposition 3), and produces feature rankings that coincide exactly with 288 those obtained by arithmetic averaging on CLR-transformed data (Proposition 2; 289 Spearman ρ = 1.000 on all 102 genera in both groups). 290 These observations clarify the relationship between feature ranking and downstream 291 differential abundance (DA) testing. Established DA methods such as ANCOM-BC [10] 292 
+
+> 17
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint
+
+and LinDA [ 23] operate on geometric-mean or log-ratio reference structures and address 293 the inferential question of whether feature abundances differ significantly between 294 groups. The problem analyzed here is logically prior: ensuring that the aggregation 295 operator used to summarize feature abundances within a group is itself consistent with 296 the compositional nature of NGS data. AM-based summaries violate this consistency, and 297 any inferential procedure that ingests an AM-based feature ranking inherits its instability. 298 The three-taxa illustration in Figure 5 makes this propagation explicit: under AM, log 2299 fold-changes vary with the chosen reference and the relative ordering of features by effect 300 size is not preserved; under GM, fold-changes shift by a group-constant translation under 301 reference change and their relative ordering is preserved; under CLR, a single 302 reference-free value per feature returns the same ranking as GM. 303 The practical implication for microbiome and genomics research is that biomarker 304 rankings, signatures, and effect-size comparisons should be derived from GM-based 305 summaries on raw counts or proportions, or equivalently from arithmetic averaging on 306 CLR-transformed data. This recommendation requires no additional modeling 307 assumptions and no new computational tools, and is fully compatible with existing DA 308 pipelines, which already adopt log-ratio or geometric-mean reference frames internally. 309 By removing operator-induced instability at the summarization stage, GM- and 310 CLR-based pipelines provide a reproducible foundation for cross-study comparisons and 311 meta-analyses, including the kind of microbial signature analyses we have previously 312 reported in clinical microbiome contexts [16, 17, 18]. 313 The framework developed here applies to the strictly positive subset of compositional 314 data, the regime where AM and GM aggregation differ. NGS datasets typically contain 315 structural and sampling zeros, and zero-handling strategies (pseudocounts, zero-inflated 316 models, non-parametric estimators) remain orthogonal to the operator-choice problem 317 analyzed here. The arithmetic sum on raw counts retains its biological meaning as an 318 estimate of total sequencing signal allocated to a feature, but loses this interpretation once 319 the data are normalized (Section S1.5 of Text S1). Future work integrating the GM/CLR 320 framework with sparsity-aware models would extend its applicability without altering its 321 core compositional logic. 322 
+
+> 18
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint
+
+MATERIALS AND METHODS 323 
+
+Worked-example datasets 324 The illustrative datasets used in Figure 1 and Figure 2 are synthetic compositional 325 matrices adapted from the worked examples in (author?) [15], constructed to expose the 326 compositional properties analyzed in this work, and do not represent any real biological 327 measurement. Figure 1 uses three features (F1–F3) measured in two samples (S1, S2), with 328 integer counts chosen so that AM-based rankings of feature ratios change across 329 normalizations whereas AS-GM rankings remain invariant. Figure 2 extends the 330 construction to five samples with sequencing depths spanning three orders of magnitude 331 (S2 = 223 reads, S4 = 138,976 reads), demonstrating the same properties under extreme 332 depth heterogeneity. Panel E of Figure 2 additionally applies the centered log-ratio 333 transformation to that same dataset. 334 
+
+Empirical dataset and preprocessing 335 To validate the theoretical framework on real compositional data, we analyzed the 336 publicly available dietswap dataset [24], accessible via the microbiome R package 337 (v. 1.32.0). The dataset comprises 16S rRNA amplicon sequencing data from 222 fecal 338 samples collected from rural African (AFR) and African-American (AAM) individuals 339 undergoing a two-week dietary exchange. Analysis was restricted to the baseline 340 timepoint (n = 38 samples; AFR n = 17, AAM n = 21) to avoid within-subject correlation 341 across timepoints. Taxa with prevalence below 50% in at least one group were excluded, 342 retaining 102 genera for compositional analysis. A unit pseudocount (+1) was added to all 343 retained counts to ensure strict positivity prior to log-based transformations. The choice 344 of pseudocount = 1 is principled rather than arbitrary on count-based NGS data: it equals 345 the smallest count observable on a discrete sequencing platform, and avoids introducing 346 any a priori assumption about the relative abundance of features absent in a given sample, 347 an assumption that in practice cannot be informed from the data itself. Pseudocount 348 values smaller or larger than 1 implicitly carry such priors and are therefore not pursued. 349 To verify that the AM/GM discordance pattern is not an artefact of pseudocount 350 
+
+> 19
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint
+
+handling, all ranking and conflict statistics were recomputed on the subset of 98 genera 351 with non-zero counts in every baseline sample (where pseudocount handling is 352 mathematically irrelevant); the results, reported in Table S3, agree with the full-panel 353 analysis to within one percentage point. Relative proportions were obtained by 354 sample-wise normalization to the total counts. 355 
+
+Compositional aggregation and CLR transformation 356 For each feature i across n samples within a group, the across-sample arithmetic and 357 geometric means were computed as AS-AM (xi) = ( 1/ n) ∑k xi,k and 358 AS-GM (xi) = ( ∏k xi,k)1/ n, respectively. Within-sample normalizations applied to the 359 empirical and worked-example datasets included: (i) raw counts; (ii) proportions, 360 obtained by dividing each count by its within-sample total; and (iii) ratios to a chosen 361 reference feature (F1 or F2 in the worked examples; the corresponding genera in the 362 three-taxa empirical illustration). The centered log-ratio transformation was computed 363 sample-wise as CLR (xi,k) = log (xi,k/WS-GM (x·,k)) , where WS-GM (x·,k) is the geometric 364 mean over all features in sample k. Formal statements and proof sketches of the 365 underlying invariance properties are provided in Text S1. 366 
+
+Empirical validation procedures 367 The empirical validation comprised two complementary analyses. First, a systematic 368 comparison of AM- and GM-based rankings was performed on all 102 prevalent genera 369 within each dietary group, computing (i) Spearman correlation between AM and GM 370 rankings on relative proportions; (ii) the distribution of |rank_AM − rank_GM | across 371 genera; (iii) cross-group directional conflict, defined as the disagreement between AM and 372 GM on which group exhibits higher relative abundance. The same pipeline was repeated 373 for GM-based versus CLR-based rankings. The complete list of conflicting genera is 374 provided in Table S2. 375 Second, three taxa were selected from the pool of features with mean proportion ≥ 1% 376 in both dietary groups, choosing the triple that maximized the number of distinct 377 
+
+> 20
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint
+
+AM-based feature rankings across the four within-sample normalizations (raw counts, 378 proportions, ratio to F1, ratio to F2) within each group. This selection criterion identifies 379 the most illustrative case of normalization dependence under AM; it does not affect 380 GM-based rankings, which are guaranteed invariant by Proposition 1 (Text S1) and were 381 verified numerically. For the differential illustration in Figure 5, log 2 fold-changes 382 (AAM/AFR) were computed under each operator × normalization combination, and 383 Wilcoxon rank-sum tests were performed on the corresponding per-sample values. 384 
+
+Software and reproducibility 385 All analyses were performed in R (v. 4.5.0) using the phyloseq, microbiome, dplyr and 386 ggplot2 packages. The R scripts used to generate all Figures are provided as File S1. 387 
+
+ACKNOWLEDGMENTS 388 The authors thank the developers of the microbiome R package and the authors of the 389 dietswap dataset for making the data publicly available. 390 
+
+DATA AVAILABILITY STATEMENT 391 This study analyzed the publicly available dietswap dataset [24], accessible through 392 the microbiome R package (v. 1.32.0; Bioconductor). No new sequencing data were 393 generated. R analysis scripts and the filtered proportion matrix are provided as File S1. 394 Tables S1, S2 and S3 are provided as supplementary materials accompanying this article. 395 
+
+FUNDING 396 This work was supported by the HDM-FUN Research Project under the European 397 Union’s Horizon 2020 research and innovation program (grant agreement No. 847507 to 398 L.R.). 399 
+
+> 21
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint
+
+CONFLICTS OF INTEREST 400 The authors declare no conflict of interest. 401 
+
+DECLARATION OF GENERATIVE AI USE IN THE WRITING PROCESS 402 During the preparation of this work, the authors used ChatGPT (OpenAI) and Claude 403 (Anthropic) for language editing, grammar correction, and improvement of readability. 404 After using these tools, the authors reviewed and edited the content as needed and take 405 full responsibility for the content of the publication. No AI tools were used to generate or 406 manipulate research data, results, or figures. 407 
+
+REFERENCES 408 
+
+References 409 [1] Gloor, G. ALDEx2: ANOV A-Like Differential Expression tool for compositional data .410 ALDEX Manual Modular, 20, 1–11 (2015). 411 [2] Gloor, G. B., Macklaim, J. M., Pawlowsky-Glahn, V., & Egozcue, J. J. Microbiome 412 
+
+datasets are compositional: and this is not optional . Frontiers in Microbiology, 8, 2224 413 (2017). 414 [3] Patrick D Schloss. Rarefaction is currently the best approach to control for uneven 415 sequencing effort in amplicon sequence analyses. Msphere , pages e00354–23, 2024. 416 [4] Patrick D Schloss. Waste not, want not: revisiting the analysis that called into 417 question the practice of rarefaction. Msphere , 9(1):e00355–23, 2024. 418 [5] Michael Greenacre, Eric Grunsky, John Bacon-Shone, Ionas Erb, and Thomas Quinn. 419 Aitchison’s compositional data analysis 40 years on: A reappraisal. Statistical Science ,420 38(3):386–410, 2023. 421 [6] John Aitchison. The statistical analysis of compositional data. Journal of the Royal 422 
+
+Statistical Society: Series B (Methodological) , 44(2):139–160, 1982. 423 
+
+> 22
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint
+
+[7] Beibei Wang, Fengzhu Sun, and Yihui Luan. Comparison of the effectiveness of 424 different normalization methods for metagenomic cross-study phenotype prediction 425 under heterogeneity. Scientific Reports , 14(1):7024, 2024. 426 [8] M Luz Calle, Meritxell Pujolassos, and Antoni Susin. coda4microbiome: 427 compositional data analysis for microbiome cross-sectional and longitudinal studies. 428 
+
+BMC bioinformatics , 24(1):82, 2023. 429 [9] Huang Lin and Shyamal Das Peddada. Multigroup analysis of compositions of 430 microbiomes with covariate adjustments and repeated measures. Nature Methods ,431 21(1):83–91, 2024. 432 [10] Huang Lin and Shyamal Das Peddada. Analysis of compositions of microbiomes 433 with bias correction. Nature communications , 11(1):3514, 2020. 434 [11] Huang Lin and Shyamal Das Peddada. Analysis of microbial compositions: a review 435 of normalization and differential abundance analysis. NPJ biofilms and microbiomes ,436 6(1):1–13, 2020. 437 [12] Dionne Swift, Kellen Cresswell, Robert Johnson, Spiro Stilianoudakis, and Xingtao 438 Wei. A review of normalization and differential abundance methods for microbiome 439 counts data. Wiley Interdisciplinary Reviews: Computational Statistics , 15(1):e1586, 2023. 440 [13] James T Morton, Clarisse Marotz, Alex Washburne, Justin Silverman, Livia S 441 Zaramela, Anna Edlund, Karsten Zengler, and Rob Knight. Establishing microbial 442 composition measurement standards with reference frames. Nature communications ,443 10(1):1–11, 2019. 444 [14] Yingtian Hu, Glen A Satten, and Yi-Juan Hu. Locom: A logistic regression model for 445 testing differential abundance in compositional microbiome data with false discovery 446 rate control. Proceedings of the National Academy of Sciences , 119(30):e2122788119, 2022. 447 [15] Philip J Fleming and John J Wallace. How not to lie with statistics: the correct way to 448 summarize benchmark results. Communications of the ACM , 29(3):218–221, 1986. 449 [16] Giorgia Renga, Emilia Nunzi, Claudia Stincardini, Marilena Pariano, Matteo Puccetti, 450 Giuseppe Pieraccini, Claudia Di Serio, Maurizio Fraziano, Noemi Poerio, Vasileios 451 
+
+> 23
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint
+
+Oikonomou, et al. Cpx-351 exploits the gut microbiota to promote mucosal barrier 452 function, colonization resistance, and immune homeostasis. Blood , 143(16):1628–1645, 453 2024. 454 [17] Claudio Costantini, Emilia Nunzi, Angelica Spolzino, Melissa Palmieri, Giorgia 455 Renga, Teresa Zelante, Lukas Englmaier, Katerina Coufalikova, Zdenˇ ek Spáˇ cil, 456 Monica Borghi, et al. Pharyngeal microbial signatures are predictive of the risk of 457 fungal pneumonia in hematologic patients. Infection and immunity , 89(8), 2021. 458 [18] Giorgia Renga, Fiorella D’Onofrio, Marilena Pariano, Roberta Galarini, Carolina 459 Barola, Claudia Stincardini, Marina M Bellet, Helmut Ellemunter, Cornelia Lass-Flörl, 460 Claudio Costantini, et al. Bridging of host-microbiota tryptophan partitioning by the 461 serotonin pathway in fungal pneumonia. Nature Communications , 14(1):5753, 2023. 462 [19] M Luz Calle. Statistical analysis of metagenomics data. Genomics & informatics , 17(1), 463 2019. 464 [20] M Luz Calle and Antoni Susin. coda4microbiome: compositional data analysis for 465 microbiome studies. bioRxiv , 2022. 466 [21] Thomas P Quinn, Ionas Erb, Mark F Richardson, and Tamsyn M Crowley. 467 Understanding sequencing data as compositions: an outlook and review. 468 
+
+Bioinformatics , 34(16):2870–2878, 2018. 469 [22] Paul J McMurdie and Susan Holmes. Waste not, want not: why rarefying 470 microbiome data is inadmissible. PLoS Computational Biology , 10(4):e1003531, 2014. 471 [23] Huijuan Zhou, Kejun He, Jun Chen, and Xianyang Zhang. LinDA: linear models for 472 differential abundance analysis of microbiome compositional data. Genome Biology ,473 23(1):95, 2022. 474 [24] S. J. D. O’Keefe, J. V. Li, L. Lahti, J. Ou, F. Carbonero, K. Mohammed, J. M. Posma, J. 475 Kinross, E. Wahl, E. Ruder, et al., Fat, fibre and cancer risk in African Americans and 476 rural African. Nature Communications , vol. 6, no. 1, p. 6342, 2015. 477 
+
+> 24
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint
+
+A Relative counts Feature 
+
+F1 
+
+S1 
+
+F2 
+
+S2 
+
+F3 
+
+20 
+
+10 
+
+40 
+
+40 
+
+80 
+
+20 
+
+Feature table 
+
+Feature 
+
+F1 
+
+TotalSum 
+
+F2 
+
+AM 
+
+F3 
+
+GM 
+
+60 
+
+90 
+
+60 
+
+30 
+
+45 
+
+30 
+
+28 
+
+28 
+
+28 
+
+AS marginal stats 
+
+Sample 
+
+S1 
+
+TotalSum 
+
+S2 
+
+AM 
+
+70 
+
+GM 
+
+140 
+
+23 
+
+47 
+
+20 
+
+40 
+
+WS marginal stats 
+
+025 50 75 F1 F2 F3 Counts S1 S2   
+
+> #2 #1 #1 #1 #2 #1
+
+025 50 75 100 TotalSum AM GM Statistic F1 F2 F3 040 80 120 160 TotalSum AM GM Statistic S1 S2 
+
+B Proportions (TotalSum−Norm) Feature 
+
+F1 
+
+S1 
+
+F2 
+
+S2 
+
+F3 
+
+0.29 
+
+0.14 
+
+0.57 
+
+0.29 
+
+0.57 
+
+0.14 
+
+Feature table 
+
+Feature 
+
+F1 
+
+TotalSum 
+
+F2 
+
+AM 
+
+F3 
+
+GM 
+
+0.57 
+
+0.71 
+
+0.71 
+
+0.29 
+
+0.36 
+
+0.36 
+
+0.29 
+
+0.29 
+
+0.29 
+
+AS marginal stats 
+
+Sample 
+
+S1 
+
+TotalSum 
+
+S2 
+
+AM 
+
+1.00 
+
+GM 
+
+1.00 
+
+0.33 
+
+0.33 
+
+0.29 
+
+0.29 
+
+WS marginal stats 
+
+0.0 0.2 0.4 0.6 F1 F2 F3 Proportions S1 S2  
+
+> #3 #1 #1 #1 #1 #1
+
+0.0 0.2 0.4 0.6 0.8 TotalSum AM GM Statistic F1 F2 F3 0.0 0.3 0.6 0.9 TotalSum AM GM Statistic S1 S2 
+
+C Fold−change vs F1 (F1−Norm) Feature 
+
+F1 
+
+S1 
+
+F2 
+
+S2 
+
+F3 
+
+1.00 
+
+0.50 
+
+2.00 
+
+1.00 
+
+2.00 
+
+0.50 
+
+Feature table 
+
+Feature 
+
+F1 
+
+TotalSum 
+
+F2 
+
+AM 
+
+F3 
+
+GM 
+
+2.00 
+
+2.50 
+
+2.50 
+
+1.00 
+
+1.25 
+
+1.25 
+
+1.00 
+
+1.00 
+
+1.00 
+
+AS marginal stats 
+
+Sample 
+
+S1 
+
+TotalSum 
+
+S2 
+
+AM 
+
+3.50 
+
+GM 
+
+3.50 
+
+1.17 
+
+1.17 
+
+1.00 
+
+1.00 
+
+WS marginal stats 
+
+0.0 0.5 1.0 1.5 2.0 F1 F2 F3 Fold−change vs F1 S1 S2  
+
+> #3 #1 #1 #1 #1 #1
+
+0123TotalSum AM GM Statistic F1 F2 F3 01234TotalSum AM GM Statistic S1 S2 
+
+D Fold−change vs F2 (F2−Norm) Feature 
+
+F1 
+
+S1 
+
+F2 
+
+S2 
+
+F3 
+
+2.00 
+
+1.00 
+
+4.00 
+
+0.50 
+
+1.00 
+
+0.25 
+
+Feature table 
+
+Feature 
+
+F1 
+
+TotalSum 
+
+F2 
+
+AM 
+
+F3 
+
+GM 
+
+2.50 
+
+2.00 
+
+4.25 
+
+1.25 
+
+1.00 
+
+2.12 
+
+1.00 
+
+1.00 
+
+1.00 
+
+AS marginal stats 
+
+Sample 
+
+S1 
+
+TotalSum 
+
+S2 
+
+AM 
+
+7.00 
+
+GM 
+
+1.75 
+
+2.33 
+
+0.58 
+
+2.00 
+
+0.50 
+
+WS marginal stats 
+
+01234F1 F2 F3 Fold−change vs F2 S1 S2  
+
+> #2 #1 #3 #1 #1 #1
+
+012345TotalSum AM GM Statistic F1 F2 F3 02468TotalSum AM GM Statistic S1 S2 A Relative counts Feature 
+
+F1 
+
+S1 
+
+F2 
+
+S2 
+
+F3 
+
+S3 
+
+417 
+
+S4 
+
+244 
+
+S5 
+
+134 
+
+83 
+
+70 
+
+70 
+
+66 
+
+153 
+
+135 
+
+39,449 
+
+33,527 
+
+66,000 
+
+772 
+
+368 
+
+369 
+
+Feature table 
+
+Feature 
+
+F1 
+
+TotalSum 
+
+F2 
+
+AM 
+
+F3 
+
+GM 
+
+40,787 
+
+34,362 
+
+66,708 
+
+8,157 
+
+6,872 
+
+13,342 
+
+587 
+
+503 
+
+499 
+
+AS marginal stats Sample 
+
+S1 
+
+TotalSum 
+
+S2 
+
+AM 
+
+S3 
+
+GM 
+
+S4 
+
+S5 
+
+795 
+
+223 
+
+354 
+
+138,976 
+
+1,509 
+
+265 
+
+74 
+
+118 
+
+46,325 
+
+503 
+
+239 
+
+74 
+
+111 
+
+44,360 
+
+472 
+
+WS marginal stats 
+
+100 1,000 10,000 100,000 F1 F2 F3 Counts S1 S2 S3 S4 S5 
+
+> #2 #1 #3 #2 #1 #3
+
+100 1,000 10,000 100,000 TotalSum AM GM Statistic F1 F2 F3 100 1,000 10,000 100,000 TotalSum AM GM Statistic S1 S2 S3 S4 S5 
+
+B Proportions (TotalSum−Norm) Feature 
+
+F1 
+
+S1 
+
+F2 
+
+S2 
+
+F3 
+
+S3 
+
+0.52 
+
+S4 
+
+0.31 
+
+S5 
+
+0.17 
+
+0.37 
+
+0.31 
+
+0.31 
+
+0.19 
+
+0.43 
+
+0.38 
+
+0.28 
+
+0.24 
+
+0.47 
+
+0.51 
+
+0.24 
+
+0.24 
+
+Feature table 
+
+Feature 
+
+F1 
+
+TotalSum 
+
+F2 
+
+AM 
+
+F3 
+
+GM 
+
+1.88 
+
+1.54 
+
+1.58 
+
+0.38 
+
+0.31 
+
+0.32 
+
+0.35 
+
+0.30 
+
+0.30 
+
+AS marginal stats Sample 
+
+S1 
+
+TotalSum 
+
+S2 
+
+AM 
+
+S3 
+
+GM 
+
+S4 
+
+S5 
+
+1.00 
+
+1.00 
+
+1.00 
+
+1.00 
+
+1.00 
+
+0.33 
+
+0.33 
+
+0.33 
+
+0.33 
+
+0.33 
+
+0.30 
+
+0.33 
+
+0.31 
+
+0.32 
+
+0.31 
+
+WS marginal stats 
+
+0.0 0.2 0.4 0.6 F1 F2 F3 Proportions S1 S2 S3 S4 S5    
+
+> #1 #1 #3 #2 #2 #3
+
+0.0 0.5 1.0 1.5 2.0 TotalSum AM GM Statistic F1 F2 F3 0.0 0.3 0.6 0.9 TotalSum AM GM Statistic S1 S2 S3 S4 S5 
+
+C Fold−change vs F1 (F1−Norm) Feature 
+
+F1 
+
+S1 
+
+F2 
+
+S2 
+
+F3 
+
+S3 
+
+1.00 
+
+S4 
+
+0.59 
+
+S5 
+
+0.32 
+
+1.00 
+
+0.84 
+
+0.84 
+
+1.00 
+
+2.32 
+
+2.05 
+
+1.00 
+
+0.85 
+
+1.67 
+
+1.00 
+
+0.48 
+
+0.48 
+
+Feature table 
+
+Feature 
+
+F1 
+
+TotalSum 
+
+F2 
+
+AM 
+
+F3 
+
+GM 
+
+5.00 
+
+5.07 
+
+5.36 
+
+1.00 
+
+1.01 
+
+1.07 
+
+1.00 
+
+0.86 
+
+0.85 
+
+AS marginal stats Sample 
+
+S1 
+
+TotalSum 
+
+S2 
+
+AM 
+
+S3 
+
+GM 
+
+S4 
+
+S5 
+
+1.91 
+
+2.69 
+
+5.36 
+
+3.52 
+
+1.95 
+
+0.64 
+
+0.90 
+
+1.79 
+
+1.17 
+
+0.65 
+
+0.57 
+
+0.89 
+
+1.68 
+
+1.12 
+
+0.61 
+
+WS marginal stats 
+
+0.5 12510 F1 F2 F3 Fold−change vs F1 S1 S2 S3 S4 S5  
+
+> #3 #1 #2 #2 #1 #3
+
+0.5 12510 TotalSum AM GM Statistic F1 F2 F3 0.5 12510 TotalSum AM GM Statistic S1 S2 S3 S4 S5 
+
+D Fold−change vs F2 (F2−Norm) Feature 
+
+F1 
+
+S1 
+
+F2 
+
+S2 
+
+F3 
+
+S3 
+
+1.71 
+
+S4 
+
+1.00 
+
+S5 
+
+0.55 
+
+1.19 
+
+1.00 
+
+1.00 
+
+0.43 
+
+1.00 
+
+0.88 
+
+1.18 
+
+1.00 
+
+1.97 
+
+2.10 
+
+1.00 
+
+1.00 
+
+Feature table 
+
+Feature 
+
+F1 
+
+TotalSum 
+
+F2 
+
+AM 
+
+F3 
+
+GM 
+
+6.60 
+
+5.00 
+
+5.40 
+
+1.32 
+
+1.00 
+
+1.08 
+
+1.17 
+
+1.00 
+
+0.99 
+
+AS marginal stats Sample 
+
+S1 
+
+TotalSum 
+
+S2 
+
+AM 
+
+S3 
+
+GM 
+
+S4 
+
+S5 
+
+3.26 
+
+3.19 
+
+2.31 
+
+4.15 
+
+4.10 
+
+1.09 
+
+1.06 
+
+0.77 
+
+1.38 
+
+1.37 
+
+0.98 
+
+1.06 
+
+0.72 
+
+1.32 
+
+1.28 
+
+WS marginal stats 
+
+0.5 12510 F1 F2 F3 Fold−change vs F2 S1 S2 S3 S4 S5   
+
+> #1 #1 #3 #2 #2 #3
+
+0.5 12510 TotalSum AM GM Statistic F1 F2 F3 0.5 12510 TotalSum AM GM Statistic S1 S2 S3 S4 S5 
+
+E CLR (GM−Norm) − AS−AM only Feature 
+
+F1 
+
+S1 
+
+F2 
+
+S2 
+
+F3 
+
+S3 
+
+0.56 
+
+S4 
+
+0.02 
+
+S5 
+
+−0.58 
+
+0.11 
+
+−0.06 
+
+−0.06 
+
+−0.52 
+
+0.32 
+
+0.20 
+
+−0.12 
+
+−0.28 
+
+0.40 
+
+0.49 
+
+−0.25 
+
+−0.25 
+
+Feature table (CLR) 
+
+Feature 
+
+F1 
+
+AM 
+
+F2 
+
+F3 
+
+0.106 
+
+0.106 
+
+0.106 
+
+AS marginal stats (AM only) 
+
+−0.4 0.0 0.4 S1 S2 S3 S4 S5 CLR F1 F2 F3 #1 #2 #3 −0.05 0.00 0.05 0.10 0.15 F1 F2 F3 AS−AM(CLR) 
+
+.CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.16.725171 doi: bioRxiv preprint A Rank discordance: AM vs GM 
+
+Enterobacter aerogenes et rel. Escherichia coli et rel. Klebisiella pneumoniae et rel. Megasphaera elsdenii et rel. Lactobacillus salivarius et rel. 
+
+ρ = 0.972 
+
+Dialister Lactobacillus salivarius et rel. Uncultured Mollicutes Mitsuokella multiacida et rel. Phascolarctobacterium faecium et rel. 
+
+ρ = 0.974 
+
+AFR AAM 
+
+0 25 50 75 100 0 25 50 75 100 025 50 75 100 Rank by AM Rank by GM 
+
+B Distribution of |rank_AM − rank_GM| 
+
+> 5: 20 taxa > 10: 7 taxa 
+
+> 5: 24 taxa > 10: 7 taxa 
+
+AFR AAM 
+
+0 10 20 30 40 0 10 20 30 40 0510 15 20 25 |rank_AM − rank_GM| Number of taxa 
+
+C Directional conflict (23 / 102 taxa, 22.5%) 
+
+Eubacterium biforme et rel. Bilophila et rel. Coprobacillus catenaformis et rel. Lactobacillus gasseri et rel. Clostridium ramosum et rel. Eubacterium cylindroides et rel. Propionibacterium Megamonas hypermegale et rel. Eubacterium limosum et rel. Helicobacter 
+
+−4 −2 02−2.5 0.0 2.5 5.0 log 2(AM(AAM)/AM(AFR)) log  2(GM(AAM)/GM(AFR)) AM vs GM Consistent Conflicting A Relative counts Feature 
+
+F1 
+
+AFR (TS) 
+
+F2 
+
+AFR (AM) 
+
+F3 
+
+AFR (GM) 
+
+141,683 
+
+AAM (TS) 
+
+18,119 
+
+AAM (AM) 
+
+10,575 
+
+AAM (GM) 
+
+8,334 
+
+1,066 
+
+622 
+
+5,987 
+
+590 
+
+451 
+
+49,987 
+
+24,450 
+
+8,693 
+
+2,380 
+
+1,164 
+
+414 
+
+308 
+
+742 
+
+282      
+
+> #1 #1 #2 #2 #3 #3 #1 #2 #2 #1 #3 #3
+
+AFR AAM 
+
+TotalSum AM GM TotalSum AM GM 110 100 1,000 10,000 100,000 Counts F1 F2 F3 
+
+B Proportions (TotalSum−Norm) Feature 
+
+F1 
+
+AFR (TS) 
+
+F2 
+
+AFR (AM) 
+
+F3 
+
+AFR (GM) 
+
+9.1956 
+
+AAM (TS) 
+
+1.2108 
+
+AAM (AM) 
+
+0.7350 
+
+AAM (GM) 
+
+0.5409 
+
+0.0712 
+
+0.0432 
+
+0.4633 
+
+0.0457 
+
+0.0349 
+
+3.4010 
+
+2.0632 
+
+0.7946 
+
+0.1620 
+
+0.0982 
+
+0.0378 
+
+0.0263 
+
+0.0634 
+
+0.0241      
+
+> #1 #1 #2 #2 #3 #3 #1 #2 #2 #1 #3 #3
+
+AFR AAM 
+
+TotalSum AM GM TotalSum AM GM 0.001 0.01 0.1 110 Proportion F1 F2 F3 
+
+C Fold−change vs F1 Feature 
+
+F1 
+
+AFR (TS) 
+
+F2 
+
+AFR (AM) 
+
+F3 
+
+AFR (GM) 
+
+17.000 
+
+AAM (TS) 
+
+10.996 
+
+AAM (AM) 
+
+3.606 
+
+AAM (GM) 
+
+1.000 
+
+0.647 
+
+0.212 
+
+1.000 
+
+0.099 
+
+0.075 
+
+21.000 
+
+438.783 
+
+144.905 
+
+1.000 
+
+20.894 
+
+6.900 
+
+1.000 
+
+2.410 
+
+0.915   
+
+> #1 #1 #2 #2 #3 #3 #3 #2 #1 #1 #2 #3
+
+AFR AAM 
+
+TotalSum AM GM TotalSum AM GM 0.01 0.10 1.00 10.00 100.00 Fold−change vs F1 F1 F2 F3 
+
+D Fold−change vs F2 Feature 
+
+F1 
+
+AFR (TS) 
+
+F2 
+
+AFR (AM) 
+
+F3 
+
+AFR (GM) 
+
+385.822 
+
+AAM (TS) 
+
+17.000 
+
+AAM (AM) 
+
+24.695 
+
+AAM (GM) 
+
+22.695 
+
+1.000 
+
+1.453 
+
+10.141 
+
+1.000 
+
+0.764 
+
+194.388 
+
+21.000 
+
+19.027 
+
+9.257 
+
+1.000 
+
+0.906 
+
+0.415 
+
+1.000 
+
+0.380   
+
+> #1 #1 #3 #2 #2 #3 #1 #2 #2 #1 #3 #3
+
+AFR AAM 
+
+TotalSum AM GM TotalSum AM GM 0.01 0.10 1.00 10.00 100.00 Fold−change vs F2 F1 F2 F3 
+
+F1 = Prevotella melaninogenica et rel. | F2 = Oscillospira guillermondii et rel. | F3 = Faecalibacterium prausnitzii et rel. | AFR n=17, AAM n=21 A CLR (GM−Norm) − AS−AM only Feature 
+
+F1 
+
+AFR (AS−AM) 
+
+F2 
+
+AAM (AS−AM) 
+
+F3 
+
+6.017 
+
+3.700 
+
+3.432 
+
+2.944 
+
+3.823 
+
+2.856 
+
+#1 
+
+#2 #3 #2 
+
+#1 
+
+#3 
+
+AFR AAM 
+
+F1 F2 F3 F1 F2 F3 0246AS−AM(CLR) 
+
+Rank labels match the AS−GM column in Figure 4, panel B (Proposition 2: AS−AM(CLR) = log(AS−GM(prop)) + group constant; AFR offset = 6.786, AAM offset = 6.582). 
+
+B Ranking trajectories and differential abundance AFR AAM AM GM 
+
+TotalSum Proportions Ratio/F1 Ratio/F2 CLR TotalSum Proportions Ratio/F1 Ratio/F2 CLR 1st 2nd 3rd 1st 2nd 3rd Rank F1 F2 F3 
+
+Bump chart − feature rank across normalizations. AM rows show ranking changes (Prop. 1); GM rows are flat. CLR (AM only) preserves GM ranking (Prop. 2).   
+
+> *** ** ns ** ns ** ns
+> *** ** ns ** ns ** ns
+> *** ns ns
+
+AM GM CLR 
+
+Proportions Ratio/F1 Ratio/F2 Proportions Ratio/F1 Ratio/F2 CLR −6 −3 036log 2 (AAM / AFR) 
+
+Differential abundance trajectory − log.(AAM/AFR) across normalizations. AM: lines cross (effect−size ranking unstable). GM: lines never cross (translation by a group−constant; rank F1 = Prevotella melaninogenica et rel. | F2 = Oscillospira guillermondii et rel. | F3 = Faecalibacterium prausnitzii et rel. | AFR n=17, AAM n=21

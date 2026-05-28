@@ -1,0 +1,1824 @@
+Title: Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.05.19.726160v1.full.pdf
+
+Number of Pages: 32
+
+Markdown Content:
+> Company Limited by Guarantee l Registered in England No. 1039582 l Registered Office Charles Darwin House, 12 Roger Street, WC1N 2JU, UK Registered as a Charity: 264017 (England & Wales); SC039250 (Scotland) BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx
+
+## Benchmarking strain-level profiling of Escherichia coli in 1
+
+## short-read gut metagenomes 2
+
+3
+
+1.1 Author names 4
+
+Matthew Galbraith 1, 2* , David Williams 2, 3 , Liam P. Shaw 2, 4 ‡, Samuel Lipworth 1, 2, 5 ‡,5
+
+Nicole Stoesser 1, 2, 5, 6 ‡.6
+
+*Author for correspondence. 7
+
+> ‡
+
+These authors contributed equally. 8
+
+9
+
+10 
+
+1.2 Affiliations 11 
+
+1Modernising Medical Microbiology Unit, Nuffield Department of Medicine, University 12 
+
+of Oxford, Oxford, UK 13 
+
+2NIHR Health Protection Research Unit in Healthcare-associated Infection and 14 
+
+Antimicrobial Resistance, Nuffield Department of Medicine, University of Oxford, 15 
+
+Oxford, UK 16 
+
+3AMR & HCAI Division, Epidemic and Emerging Infections, Chief Medical Advisor 17 
+
+Group, UK Health Security Agency, 61 Colindale Drive, London, UK 18 
+
+4School of Cellular and Molecular Medicine & Biochemistry, University of Bristol, 19 
+
+Bristol, UK 20 
+
+5Oxford University Hospitals NHS Foundation Trust, Oxford, UK 21 
+
+6NIHR Oxford Biomedical Research Centre, Oxford, UK 22 
+
+23 
+
+1.3 Corresponding author and email address 24 
+
+Matthew Galbraith (matthew.galbraith@ndm.ox.ac.uk) 25 
+
+26 
+
+1.4 Keywords 27 
+
+Short-read metagenomics, strain-level profiling, Escherichia coli 28 
+
+29 
+
+30 
+
+.CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint Page 2 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx 
+
+2. Abstract 31 
+
+Metagenomes offer the potential to characterise Escherichia coli strain-level diversity 32 
+
+within the human gut microbiome, informing our understanding of colonisation diversity 33 
+
+and the genetic features distinguishing infection from carriage. Among numerous 34 
+
+reference-based tools for short-read metagenomic strain-level profiling, the best 35 
+
+approach remains unclear. Here, we benchmarked six published tools—PanTax, 36 
+
+PathoScope, StrainGE, Strainify, StrainR2 and StrainScan—for their ability to detect 37 
+
+co-existing strains of E. coli and estimate their relative abundance across real and 38 
+
+simulated metagenomes of increasing complexity with varying reference database 39 
+
+composition. In the ZymoBIOMICS ® D6331 dataset, only PanTax achieved zero error 40 
+
+when predicting the equal abundance of five E. coli strains. In a differentially abundant 41 
+
+four-strain mock community dataset (SRR13355226), StrainScan had the lowest 42 
+
+mean absolute proportional error (0.89), driven by reduced sensitivity (0.5), followed 43 
+
+by PathoScope (4.08). Across simulated metagenomes reflecting the healthy adult gut 44 
+
+microbiome, all tools demonstrated high sensitivity (≥0.833), but specificity, precision 45 
+
+and F1 score were selectively improved in some tools through detection thresholds to 46 
+
+remove low abundance false positives. Outright, StrainGE achieved the highest F1 47 
+
+score (0.978). Predicted relative abundances of the E. coli K12-MG1655 (phylogroup 48 
+
+A) and O157:H7 Sakai (phylogroup E) strains spiked into simulated metagenomes 49 
+
+across varying abundance ratios were generally accurate, with PanTax and StrainR2 50 
+
+showing the lowest mean absolute proportional error (0.06). When truly present strains 51 
+
+were removed from the reference database, out-of-phylogroup assignments were 52 
+
+observed for some tools. Collectively, our results demonstrate that published 53 
+
+metagenomic strain-level profiling tools vary in their ability to profile E. coli strains, 54 
+
+indicating that method selection should be guided by intended application. These 55 
+
+findings will facilitate characterisation of E. coli strain-level diversity within short-read 56 
+
+gut metagenomes with greater accuracy than previously possible. 57 
+
+58 
+
+59 
+
+3. Impact statement 60 
+
+Strain-level diversity within the human gut microbiome can be important for human 61 
+
+health, with species such as Escherichia coli existing as both commensal and 62 
+
+pathogenic strains. Most existing gut microbiome datasets are from short-read i.e. ,63 
+
+Illumina, sequencing, and numerous bioinformatic tools have been developed to 64 
+
+profile strain-level variation from these data. However, the existing literature is often 65 
+
+difficult to navigate given that the available tools have been benchmarked in various 66 
+
+ways and are subject to author bias. This is, to our knowledge, the first independent 67 
+
+benchmarking of six published tools for profiling E. coli at strain-level resolution from 68 
+
+short-read metagenomes. Using both real and simulated datasets of increasing 69 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint Page 3 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx
+
+complexity, we demonstrate substantial variation in tool performance in terms of strain 70 
+
+detection and relative abundance estimation, highlighting that tool choice should be 71 
+
+guided by the specific research question, as no single method performs optimally 72 
+
+across all scenarios. This work provides an unbiased framework for tool selection and 73 
+
+will support more accurate and reproducible E. coli strain-level analyses in gut 74 
+
+microbiome research from short-metagenomic data. 75 
+
+76 
+
+77 
+
+4. Data summary 78 
+
+The authors confirm all supporting data, code and protocols have been provided within 79 
+
+the article or through supplementary data files. Supplementary methods, six 80 
+
+supplementary tables and four supplementary figures are available in the online 81 
+
+Supplementary Material. Code for simulating metagenomes using InSilicoSeq, 82 
+
+SLURM job scripts for the simulated metagenomes dataset and R visualization and 83 
+
+statistical analysis scripts are available within a dedicated public GitHub repository 84 
+
+(https://github.com/mattgal11/benchmarking_short_read_strain_profilers). The 85 
+
+following supplementary data are available on FigShare 86 
+
+(https://doi.org/10.6084/m9.figshare.32125474): 87 
+
+§ Normalised per-contig relative abundances for 98 species assemblies used to 88 
+
+construct the baseline gut microbiome profile for InSilicoSeq metagenome 89 
+
+simulation 90 
+
+(Normalised_relative_abundance_for_InSilicoSeq_simulated_metagenomes_ 91 
+
+gut_microbiome_profile.csv) 92 
+
+§ ZymoBIOMICS® D6331 gut microbiome standard dataset predicted relative 93 
+
+abundance data (Zymobiomics_D6331_raw_predicted_abundance.csv) 94 
+
+§ SRR13355226 mock community (99% human reads; 1% E. coli reads) paired-95 
+
+end reads with human reads depleted (SRR13355226_depleted_R1.fastq.gz 96 
+
+& SRR13355226_depleted_R2.fastq.gz) 97 
+
+§ SRR13355226 mock community dataset raw predicted abundance data, with 98 
+
+and without human read removal 99 
+
+(SRR13355226_raw_predicted_abundance_with_and_without_human_read_r 100 
+
+emoval.csv) 101 
+
+§ Simulated metagenomes dataset raw call types and detection metric values 102 
+
+with increasing detection thresholds 103 
+
+(Simulated_metagenomes_raw_call_type_assingments_and_detection_thres 104 
+
+holds.csv) 105 
+
+§ Simulated metagenomes dataset (all references) predicted relative 106 
+
+abundance data 107 
+
+(Simulated_metagenomes_all_references_raw_predicted_abundances.csv) 108 
+
+§ Simulated metagenomes dataset (all references) mapped reads for 109 
+
+PathoScope and Strainify (all_refs_pathoscope_reads_mapped.csv & 110 
+
+all_refs_strainify_reads_mapped.csv) 111 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint Page 4 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx
+
+§ Simulated metagenomes dataset (reduced reference database) predicted 112 
+
+relative abundance data 113 
+
+(Simulated_metagenomes_K12_and_Sakai_removed_from_reference_datab 114 
+
+ase_raw_predicted_abundance.csv) 115 
+
+116 
+
+117 
+
+5. Introduction 118 
+
+The human gut microbiome is a highly diverse community of microorganisms 119 
+
+comprising >270 species[1], with substantial inter-individual variation that has been 120 
+
+identified as a critical determinant of human health[2]. However, gut microbiome 121 
+
+variation extends beyond species to the strain-level, with strains of the same species 122 
+
+exhibiting genotypic and phenotypic heterogeneity[3, 4]. A prominent example is 123 
+
+Escherichia coli , which shows substantial strain-level diversity in the human gut, with 124 
+
+recent studies reporting an average of 2.5 unique strains per individual and dynamic 125 
+
+strain turnover over time[5-8]. While commensal E. coli strains contribute to gut 126 
+
+homeostasis[9, 10], other strains have acquired virulence genes from the vast 127 
+
+accessory genome present within the gut reservoir, resulting in pathogenicity[11, 12]. 128 
+
+Extraintestinal pathogenic E. coli strains exemplify this process and are the major 129 
+
+cause of Gram-negative bloodstream infections worldwide[13-16]. Accurately 130 
+
+characterising E. coli colonisation diversity in the gut microbiome would facilitate an 131 
+
+improved understanding of the differences between commensal and disease-132 
+
+associated strains, with a view to developing targeted interventions such as vaccines 133 
+
+and therapeutics. 134 
+
+Metagenomic sequencing has become the dominant method for gut microbiome 135 
+
+analyses as it enables characterisation of all DNA within a sample[17]. However, 136 
+
+analysing E. coli strain-level diversity within available gut metagenomes remains 137 
+
+challenging due to the low relative abundance of E. coli in healthy individuals (typically 138 
+
+~0.1–1.2%)[7, 18], and the historic predominance of short-read Illumina sequencing, 139 
+
+which is limited in resolving closely related strains across repetitive genomic regions 140 
+
+and consequently constrains the resolution of commonly used taxonomic 141 
+
+classifiers[19]. For example, Kraken2 relies on shared k-mer matches and lowest 142 
+
+common ancestor assignment, such that reads mapping to multiple closely related 143 
+
+reference genomes are often classified at higher taxonomic levels[20, 21]. Similarly, 144 
+
+E. coli –specific metagenomic typing approaches such as metaMLST infer sequence 145 
+
+types using multilocus sequence typing, but resolve each locus in a sample to a single 146 
+
+best-supported allele[22]. This can limit the ability to capture within-sample allelic 147 
+
+diversity and restricts inference to dominant strains, as was seen in a recent 148 
+
+metaMLST-centred strain-level analysis of E. coli in 5,128 healthy adult gut 149 
+
+metagenomes[23]. 150 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint Page 5 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx
+
+To address these limitations, numerous strain-level profiling tools have been 151 
+
+developed, employing several methodologies to estimate the relative abundance and 152 
+
+number of strains for a given species within short-read metagenomes. However, this 153 
+
+is a rapidly evolving field, and the existing literature is often difficult to navigate given 154 
+
+that the available tools have been benchmarked in various ways. Here, we survey 155 
+
+existing tools, selecting six for further investigation using pre-defined criteria. We then 156 
+
+benchmark their ability to profile E. coli strains across real and simulated 157 
+
+metagenomes of increasing complexity, allowing us to provide recommendations for 158 
+
+tool selection depending on the biological question. 159 
+
+160 
+
+161 
+
+6. Methods 162 
+
+Selection of strain-level profiling tools 163 
+
+Candidate strain-level profiling tools were identified through literature searches in 164 
+
+PubMed (https://pubmed.ncbi.nlm.nih.gov) and by examining references and citation 165 
+
+networks of relevant tool publications. Tools were included in the benchmark if they (i) 166 
+
+supported multi-strain-level resolution from short-read metagenomic sequencing data, 167 
+
+(ii) reported strain-level relative abundances, (iii) accepted a user-customisable 168 
+
+reference database, and (iv) were actively maintained in an open-source repository 169 
+
+e.g. , GitHub. Tools which were identified but did not satisfy these requirements are 170 
+
+listed in Table S1, alongside reasons for exclusion. Strain-level profiling tools included 171 
+
+in this benchmark are presented in Table 1. The final versions of the six tools used 172 
+
+were StrainScan[24] v1.0.14, Strainify[25] v1.1.0, StrainR2[26] v2.3.0, 173 
+
+PathoScope[27] v2.0.7, PanTax[28] v2.0.2 and StrainGE[29] v1.3.9. 174 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint Company Limited by Guarantee l Registered in England No. 1039582 l Registered Office Charles Darwin House, 12 Roger Street, WC1N 2JU, UK Registered as a Charity: 264017 (England & Wales); SC039250 (Scotland) BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx
+
+Table 1. Reference-based, short-read metagenome strain-level profiling tools benchmarked in this study 175 
+
+*Most recent version as of 15/05/2026. ‡Pre-built databases for Akkermansia muciniphila, Cutibacterium acnes, Prevotella copri, Escherichia 176 
+
+coli, Mycobacterium tuberculosis, Staphylococcus epidermidis, Staphylococcus aureus and Lactobacillus crispatus 177 
+
+178 Tool [reference] 
+
+Primary approach 
+
+Input data Reference database 
+
+Workflow/Configuration Strain-level profiling output 
+
+resolution 
+
+Installation Version used 
+
+Latest version* (last 
+
+commit) 
+
+StrainScan 
+
+[24] 
+
+k-mer-based strain profiling using 
+
+hierarchical tree-based indexing 
+
+Uncompressed/ compressed 
+
+FASTQ files (metagenomic or 
+
+isolate WGS) 
+
+Custom user-provided or pre-built ‡
+
+reference genome library (FASTA format) 
+
+Command-line interface with separate preprocessing (StrainScan_build) and analysis (StrainScan) modules. Can also be run in a low depth (-l 1) or super low depth mode (-l 2) if strains are suspected to be of sequencing depths <5x and <1x, respectively. 
+
+Estimated relative strain-level abundances 
+
+Bioconda/ Anaconda; GitHub repository 
+
+v1.0.14 v1.0.14 (08/04/2024) 
+
+Strainify 
+
+[25] 
+
+SNV-based maximum-likelihood inference using core-genome alignments 
+
+Uncompressed FASTQ files 
+
+Custom user-provided reference genome library (FASTA format) 
+
+Command-line Snakemake workflow with user-configurable .yaml file for submission. 
+
+Estimated relative strain-level abundances 
+
+Bioconda/ GitHub repository 
+
+v1.1.0 v.1.2.0 (16/04/2026) 
+
+StrainR2 
+
+[26] 
+
+Read-mapping-based strain 
+
+abundance estimation with 
+
+k-mer-normalised counts 
+
+Uncompressed/ compressed 
+
+FASTQ files 
+
+Custom user-provided reference genome library (FASTA format) 
+
+Command-line interface with separate preprocessing (PreProcessR) and analysis (StrainR) modules. 
+
+Estimated relative strain-level abundances (FUKM metric; visualisation provided) 
+
+Bioconda (recommen ded); Docker; GitHub repository 
+
+v2.3.0 v2.3.0 (26/02/2026) Page 7 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx 
+
+PathoScope 
+
+[27] 
+
+Bayesian read mapping-based alignment reassignment to reference genomes 
+
+Uncompressed/ compressed 
+
+FASTQ files 
+
+Custom user-provided reference genome library (target(s) and optional filter; FASTA format) 
+
+Command-line interface with six modules (PathoDB; PathoLib; PathoMap; PathoID; PathoReport; PathoQC). 
+
+Estimated relative strain-level abundances 
+
+Bioconda (recommen ded); Python 
+
+v2.0.7 v2.0.7 (23/05/2019) 
+
+PanTax 
+
+[28] 
+
+Pangenome variation graph-based taxonomic classification 
+
+Uncompressed/ compressed FASTQ files 
+
+Custom user-provided reference genome library (FASTA format) with associated NCBI taxonomic information 
+
+Command-line interface with distinct database-building and sample-query steps, invoked via the same executable (pantax) using different flags. Also works on long-read sequencing data. Requires an integer linear programming solver (Gurobi suggested). 
+
+Estimated relative species and strain-level abundances 
+
+Bioconda; GitHub repository; Docker 
+
+v2.0.2 v2.1.0 (26/03/2026) 
+
+StrainGE 
+
+[29] 
+
+k-mer–based strain deconvolution 
+
+followed by alignment-based variant refinement 
+
+Uncompressed/ compressed FASTQ files 
+
+Custom user-provided reference genome library (FASTA format) 
+
+Command-line interface comprising two complementary tools: StrainGST (Strain Genome Search Tool), for k-mer– based identification of closely related reference genomes; and StrainGR (Strain Genome Recovery), for alignment-based, strain-aware variant analyses. 
+
+Estimated relative strain-level abundance (relative to the whole metagenome )
+
+Python package index; Bioconda; GitHub repository 
+
+v1.3.9 v1.3.9 (21/10/2024) 
+
+179 Company Limited by Guarantee l Registered in England No. 1039582 l Registered Office Charles Darwin House, 12 Roger Street, WC1N 2JU, UK Registered as a Charity: 264017 (England & Wales); SC039250 (Scotland) BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx 
+
+Computational environments 180 
+
+Strain-level profiling tools and their required dependencies were installed in dedicated 181 
+
+conda environments using the bioconda and conda-forge channels, except for 182 
+
+Strainify v1.1.0 which was manually installed by cloning the Git repository 183 
+
+(https://github.com/treangenlab/Strainify). StrainR2 required BBMap[30] v39.26 184 
+
+instead of v39.52 due to a bug affecting compatibility. Tools were executed using the 185 
+
+command-line interface as stated in the respective documentation, unless otherwise 186 
+
+specified. Example commands used to run each tool are available (see online 187 
+
+Supplementary Methods; S1). SLURM-scheduled wrapper scripts were used to 188 
+
+automate benchmarking runs where applicable (see Data Summary). 189 
+
+190 
+
+Benchmarking datasets 191 
+
+Across benchmarking datasets, the default outputs for predicted relative abundance 192 
+
+were taken per tool, unless otherwise stated. StrainGE was an exception, where 193 
+
+estimated strain-level abundances from the StrainGST module ( rapct ; reported relative 194 
+
+to the entire metagenome) were normalised (rapct /total_ rapct ) to enable direct 195 
+
+comparison across tools. 196 
+
+Benchmarking datasets were designed to differentially test tools by evaluating: (i) 197 
+
+different E. coli strains present at equal abundance in a low-complexity polymicrobial 198 
+
+background (ZymoBIOMICS® D6331 gut microbiome standard), (ii) the impact of 199 
+
+human read removal and differential abundance on E. coli strain profiling 200 
+
+(SRR13355226 mock community), and (iii) different E. coli strains present at 201 
+
+differential abundances in a high-complexity polymicrobial background (simulated 202 
+
+metagenomes), with the latter anticipated to be most like a ‘real-life’ human gut 203 
+
+microbiome. 204 
+
+(i) ZymoBIOMICS® D6331 gut microbiome standard 205 
+
+The ZymoBIOMICS® D6331 gut microbiome standard (Zymo Research, USA) 206 
+
+contains 21 microbial strains, including 5 E. coli strains (JM109, B-3008, B2207, B-207 
+
+766, B-1109) present at equal relative abundance (2.8%; Table S2). Genome 208 
+
+assemblies were obtained from Zymo Research (https://s3.amazonaws.com/zymo-209 
+
+files/BioPool/D6331.refseq.zip). Phylogroup assignment and sequence typing were 210 
+
+performed using EzClermont[31] v0.6.3 and mlst v2.23.0[32] with the Achtman E. coli 211 
+
+PubMLST scheme[33], respectively (Table S2). A previously generated simulated 212 
+
+paired-end 150 bp short-read dataset (sample name ShortPE_mock ; SRR25211204) 213 
+
+was downloaded from the NCBI Sequence Read Archive; this was generated from the 214 
+
+original long-read (PacBio) sequencing dataset of the D6331 standard (sample name 215 
+
+Zymo_D6331 ; SRS7763867). SRR25211204 was provided as FASTQ input for all 216 
+
+tools, alongside a reference genome database of the five E. coli strains also included 217 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint Page 9 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx
+
+in the D6331 standard (Table S2). For PathoScope, initial relative abundance 218 
+
+estimates were used instead of Bayesian-redistributed final guess estimates, as the 219 
+
+latter assume unequal genome abundances, inconsistent with the dataset. 220 
+
+(ii) SRR13355226 mock community with and without human read removal 221 
+
+SRR13355226 is a paired-end Illumina sequencing run (total sequencing output = 6.48 222 
+
+Gb) derived from a mock community consisting of 99% human DNA and 1% E. coli 223 
+
+DNA (w/w) (Table S3), originally described in the StrainGE paper[29]. The 1% E. coli 224 
+
+DNA comprises four strains at differing relative abundances: H10407 (0.8), UTI89 225 
+
+(0.15), O157:H7 str. Sakai (0.049), and O139:H28 str. E24377A (0.001). The estimated 226 
+
+sequencing depth for each strain was calculated (Table S3). SRR13355226 had 227 
+
+human reads removed using Deacon[34] v0.13.2 with the 3 GB human pangenome 228 
+
+index and default settings, generating paired-end FASTQ files 229 
+
+(SRR13355226_depleted; see Data summary). SRR13355226 and 230 
+
+SRR13355226_depleted were used as input to all tools, alongside a reference 231 
+
+genome database comprising the four E. coli strains included in the SRR13355226 232 
+
+mock community (Table S3). For this and all subsequent analyses, PathoScope final 233 
+
+guess relative abundance estimates were used, whilst StrainScan was also run in 234 
+
+super low depth mode (-l 2) with probabilistic strain detection enabled (-b 1). 235 
+
+(iii) Simulated metagenomes 236 
+
+We simulated gut metagenomes to reflect a realistic healthy adult gut microbiome, 237 
+
+informed by GutFeelingKB; a publicly available reference microbiome and relative 238 
+
+species-level abundance profile[35]. E. coli relative abundances in GutFeelingKB were 239 
+
+aggregated into a single species entry by summing the abundances of the O104:H4 240 
+
+(0.0004) and O83:H1 (0.0006) strains with the dominant E. coli species entry (0.0187). 241 
+
+The remaining 107 species were cross-referenced against the NCBI Genome 242 
+
+database (https://www.ncbi.nlm.nih.gov/datasets/genome/) to identify available whole-243 
+
+genome assemblies, prioritising RefSeq and single-contig assemblies. We excluded 244 
+
+nine species due to the absence of complete genome assemblies ( Ruminococcus 245 
+
+champanellensis, Coprococcus catus , Gordonibacter pamelaeae , butyrate-producing 246 
+
+bacterium SM4/1, butyrate-producing bacterium SS3/4, Streptococcus sp. I-P16, 247 
+
+Fermentimonas caenicola , Ruminococcus bromii , and Faecalitalea cylindroides ), 248 
+
+leaving 98 assemblies. Relative abundances were normalised, with abundances 249 
+
+distributed across contigs in proportion to contig length for multi-contig assemblies 250 
+
+(see Data Summary). The final E. coli relative abundance (0.0196) was split between 251 
+
+two strain-level NCBI reference genome assemblies (K-12 substr. MG1655, 252 
+
+GCF_000005845.2; O157:H7 str. Sakai, GCF_000008865.2) across a range of 253 
+
+abundance ratios (0.50:0.50, 0.75:0.25, 0.90:0.10, 0.95:0.05, 0.99:0.01). For the 254 
+
+negative control (0.00:0.00), E. coli was removed and relative abundances 255 
+
+renormalised across the remaining 97 species. All abundance .txt files describing per-256 
+
+contig, per-species relative abundances are provided (see Data Summary). These 257 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint Page 10 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx
+
+files, together with the identified genome assemblies, were used as input for 258 
+
+metagenome simulation using InSilicoSeq[36] v2.0.1. A total of 54 metagenomes with 259 
+
+differential E. coli strain-level abundance were simulated using the HiSeq Illumina 260 
+
+150bp paired-end error model across sequencing efforts of 20, 50, and 100 million 261 
+
+paired-end reads, and in fixed-seed triplicates (--seed 1/2/3) (Table S4; see Data 262 
+
+Summary for simulation script and simulated metagenome files). 263 
+
+To evaluate the impact of a more diverse reference database on tool performance, a 264 
+
+24-strain E. coli reference database was constructed by selecting three representative 265 
+
+genomes per E. coli phylogroup, including K-12 substr. MG1655 (GCF_000005845.2) 266 
+
+and O157:H7 str. Sakai (GCF_000008865.2) (Table S5). Phylogroups were confirmed 267 
+
+using EzClermont[31] v0.6.3, except for phylogroup C which were based on previously 268 
+
+defined genome-wide Mash clustering[37]. Pairwise average nucleotide identities 269 
+
+were calculated using FastANI[38] v1.34, comparing K-12 substr. MG1655 and 270 
+
+O157:H7 str. Sakai against all other reference genomes (Table S6). The 24 E. coli 271 
+
+strain reference genome database and simulated metagenomes were used as input 272 
+
+for all strain-level profiling tools. Finally, to assess the impact of not including the 273 
+
+strains present in the metagenome in the reference database, analyses were repeated 274 
+
+using a reduced reference database excluding E. coli K-12 substr. MG1655 and 275 
+
+O157:H7 str. Sakai, leaving 22 strains. Outputs were averaged across triplicates for 276 
+
+both experiments. 277 
+
+278 
+
+Performance metrics 279 
+
+Across all datasets, estimation metrics were calculated from predicted relative 280 
+
+abundances using error, absolute error, absolute proportional error, mean error, mean 281 
+
+absolute error and mean absolute proportional error, as appropriate. Detection metrics 282 
+
+of sensitivity, specificity, precision and F1 score were calculated based on raw call-283 
+
+type counts (true positives, false positives, false negatives, and true negatives) for the 284 
+
+simulated metagenomes dataset. Full equations are available in the online 285 
+
+Supplementary Methods (S2: Eqs. S2.1–S2.10). Detection thresholds were applied at 286 
+
+relative abundance cut-offs of 0.0001, 0.0005, 0.001, and 0.005. Predicted relative 287 
+
+abundances below each threshold were set to zero, and presence/absence calls were 288 
+
+redefined accordingly for recalculation of sensitivity, specificity, precision, and F1 score 289 
+
+(see Data Summary). 290 
+
+291 
+
+Statistical analysis and visualisations 292 
+
+Statistical analysis and visualisations were performed using R[39] v4.5.1 and the 293 
+
+readxl[40] v1.4.5, ggplot2[41] v4.0.0, cowplot[42] v1.2.0, dplyr[43] v1.1.4, stringr[44] 294 
+
+v1.6.0, tidyr[45] v1.3.1, forcats[46] v1.0.1, scales[47] v1.4.0, binom[48] v1.1.1.1 and 295 
+
+purr[49] v1.1.0 packages. For the SRR13355226 dataset, differences in prediction 296 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint Page 11 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx
+
+error between conditions (with versus without human read removal) were assessed 297 
+
+using paired Wilcoxon signed-rank tests on absolute error, performed per tool to 298 
+
+account for the paired structure of observations, with a significance threshold of p <299 
+
+0.05. Absolute error was used over absolute proportional error to provide a stable 300 
+
+statistical inference of paired differences, as absolute proportional error is biased by 301 
+
+low-abundance strains. 302 
+
+303 
+
+304 
+
+7. Results 305 
+
+Strain-level profiling error varies across tools despite equal abundance of five 306 
+
+E. coli strains 307 
+
+We selected the ZymoBIOMICS® D6331 gut microbiome standard as a low-308 
+
+complexity benchmarking dataset. This standard comprises 21 strains representative 309 
+
+of the human gut microbiome, including five E. coli strains present at equal ground 310 
+
+truth relative abundance (0.2; Table S2). For this experiment, these five strains were 311 
+
+also included in the tool-profiling reference database. 312 
+
+All tools predicted differing estimates of relative abundance per strain, except for 313 
+
+identical predictions of B2207 from StrainScan and Strainify (0.165; Fig.1a). The 314 
+
+B1109 and B3008 strains were consistently overestimated (error range: 0.009–0.034 315 
+
+and 0.001–0.094, respectively; Fig.S1a), while B766, the only strain not within 316 
+
+phylogroup A (B1; Table S2), was consistently underestimated by all tools (error range: 317 
+
+−0.008 to −0.088; Fig.S1a). PanTax predicted identical relative abundances (0.2) for 318 
+
+all strains (Fig. 1a), resulting in zero error (Fig.S1a). Consequently, PanTax achieved 319 
+
+the lowest mean absolute error across strains (0; Fig.1b), outperforming all other tools. 320 
+
+StrainGE exhibited the highest mean absolute error (0.065). PathoScope, StrainScan, 321 
+
+Strainify and StrainR2, and StrainScan showed intermediate performance, with mean 322 
+
+absolute errors of 0.006, 0.018, 0.02 and 0.022, respectively (Fig. 1b). 323 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint
+
+Page 12 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx 
+
+Fig. 1. Predicted relative abundance and mean absolute error per strain-level profiling 324 
+
+tool for five equally abundant E. coli strains in the ZymoBIOMICS® D6331 gut 325 
+
+microbiome standard. (a) Predicted relative abundances are shown as stacked bars for 326 
+
+each tool. The ground truth relative abundance (0.2 for all strains) is shown on the far left 327 
+
+bar. (b) Mean absolute error across all strains ( n = 5), with error bars +/- standard deviation. 328      
+
+> 00.006 0.065 0.022 0.018 0.02
+> 0.000 0.025 0.050 0.075 0.100 PanTax PathoScope StrainGE Strainify StrainR2 StrainScan
+
+Strain −level profiling tool Mean absolute error         
+
+> 0.21 0.20 0.24 0.19 0.16 0.22 0.21 0.21 0.19 0.17 0.22 0.19 0.23 0.19 0.17 0.21 0.20 0.20 0.19 0.20 0.23 0.24 0.29 0.11 0.13 0.20 0.20 0.20 0.20 0.20 0.20 0.20 0.20 0.20 0.20
+> 0.00 0.25 0.50 0.75 1.00 Ground truth PanTax PathoScope StrainGE Strainify StrainR2 StrainScan Strain −level profiling tool Predicted relative abundance
+> E . col i strain B1109 B2207 B3008 B766 JM109
+
+(a) 
+
+(b) 
+
+.CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint Page 13 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx 
+
+Absolute proportional error in relative abundance predictions increases with 329 
+
+decreasing sequencing depth 330 
+
+We analysed the SRR13355226 mock community (99% human, 1% E. coli reads; 331 
+
+Table S3), comprising four E. coli strains (H10407, UTI89, O157:H7 Sakai, O139:H28 332 
+
+E24377A; all included in the profilers’ reference database) at differential relative 333 
+
+abundances (0.8, 0.15, 0.049, 0.001), to assess strain-level profiling across 334 
+
+decreasing estimated sequencing depths (9.79x, 1.91x, 0.57x, 0.012x) alongside the 335 
+
+impact of human read removal. 336 
+
+Human read removal drastically reduced the file size (1.8/1.9 Gb versus 32/33 Mb for 337 
+
+paired-end SRR13355226 and SRR13355226_depleted files, respectively; see Data 338 
+
+Summary) but had a negligible impact on strain-level abundance accuracy (paired 339 
+
+Wilcoxon signed rank on absolute error p > 0.05; Fig.S2a). 340 
+
+All tools except StrainScan detected all four strains across conditions (Fig.2a), 341 
+
+achieving perfect sensitivity (Fig.S2b). StrainScan run using standard settings failed 342 
+
+to detect O157:H7 str. Sakai (0.57×) and O139:H28 str. E24377A (0.012×) (sensitivity: 343 
+
+0.50; Fig.S2b). StrainScan run in ‘super low depth’ mode detected all strains, although 344 
+
+the predicted relative abundances deviated substantially from the ground truth 345 
+
+(Fig.2a), indicating a trade-off between sensitivity and accuracy. Whilst all remaining 346 
+
+tools preserved the correct ranking of strains by relative abundance, all predictions 347 
+
+deviated from the ground truth relative abundance (Fig.2a). An exception was PanTax, 348 
+
+which assigned identical relative abundances (0.102) to the two lowest-abundance 349 
+
+strains (Fig.2a). 350 
+
+Estimation accuracy was assessed using absolute proportional error (APE) to 351 
+
+compare across strains with differing ground truth abundances. Across tools, APE 352 
+
+increased as sequencing depth decreased, with exceptions including StrainGE for 353 
+
+UTI89 (0.05) and PathoScope for O157:H7 str. Sakai (0.46; Fig.S2c). For detected 354 
+
+strains, APE ranged from 0.19–0.48 (H10407) 0.05–1.38 (UTI89), 0.46–2.99 355 
+
+(O157:H7 str. Sakai), and 14.92–164.15 (O139:H28 str. E24377A) (Fig.S2c). For 356 
+
+O139:H28 E24377A, the lowest abundance strain, APE was subjectively influenced 357 
+
+by both missed detections (APE = 1; StrainScan) and large overestimations by other 358 
+
+tools which were heavily penalised (see Methods). This drove large variation per tool 359 
+
+when taking mean APE (Fig.2b). Across all strains, StrainScan had the lowest mean 360 
+
+APE of 0.89 (Fig. 2b), driven by its reduced sensitivity (Fig. S2b). Among the remaining 361 
+
+tools, PathoScope was the most accurate (4.08), whilst StrainScan super low depth 362 
+
+provided the least accurate relative abundance predictions (42.02). 363 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint
+
+Page 14 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx 
+
+Fig. 2. Predicted relative abundance and mean absolute proportional error of four 364 
+
+differentially abundant E. coli strains in a mock community across strain-level profiling 365 
+
+tools. All tools were run on datasets with (SRR13355226_depleted) and without 366 
+
+(SRR13355226) human read removal and collapsed by base tool as no significant differences 367 
+
+were observed between human read removal (Deacon) conditions (Fig.S2a). (a) Raw 368 
+
+predicted relative abundances by tool. Values are shown relative to the ground truth (far left). 369 
+
+An asterisk (*) indicates that a strain was not detected by the corresponding tool. (b) Mean 370 
+
+absolute proportional error (± SD) per base tool across all four strains and both conditions ( n371 
+
+= 8). An asterisk (*) indicates that StrainScan failed to detect O157:H7 str. Sakai (0.57×) and 372 
+
+O139:H28 str. E24377A (0.012×) across conditions; these observations were assigned an 373 
+
+APE of 1 (see Methods). 374 
+
+> 0.800 0.150 0.049 0.001 0.491 0.305 0.102 0.102 0.650 0.263 0.071 0.016 0.642 0.158 0.114 0.086 0.498 0.316 0.121 0.065 0.643 0.357 0.000 0.000 0.418 0.221 0.196 0.165 0.457 0.331 0.108 0.104
+
+* *   
+
+> 0.00 0.25 0.50 0.75 Ground truth PanTax PathoScope StrainGE Strainify StrainR2 StrainScan StrainScan super low depth Strain −level profiling tool Predicted relative abundance
+> E . col i strain (sequencing depth (x), ground truth) H10407 (9.79x) UTI89 (1.91x) O157:H7 str. Sakai (0.57x) O139:H28 str. E24377A (0.012x)
+
+(b) 
+
+(a) 
+
+25.81 4.08 21.75 16.67 0.89 42.02 26.48 
+
+*
+
+> 025 50 75 100 125 PanTax PathoScope StrainGE Strainify StrainR2 StrainScan StrainScan super low depth
+
+Strain −level profiling tool Mean Absolute Proportional Error (± SD) 
+
+.CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint Page 15 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx 
+
+Detection thresholds selectively improve strain-level detection 375 
+
+To increase benchmarking complexity, we simulated metagenomes reflecting a376 
+
+realistic healthy adult gut microbiome. The baseline relative abundance of E. coli 377 
+
+(1.96%) was differentially split between two strains (K12-MG1655 and O157:H7 Sakai) 378 
+
+across a range of abundance ratios and sequencing efforts (Table S4). To reflect a 379 
+
+more real-life scenario of profiling an unknown diversity of colonising E. coli strains in 380 
+
+a metagenome we also increased the complexity of the reference database to 24 E. 381 
+
+coli strains representing diversity within and across the major phylogroups (Table S5). 382 
+
+Summary detection metrics showed that strains that were genuinely present (true 383 
+
+positives) were rarely, if ever, missed, with all tools exhibiting high sensitivity ranging 384 
+
+from 0.833 (StrainScan) to 1.000 (PathoScope, Strainify, and StrainR2) (Fig.3a; Table 385 
+
+S8). This was true even at low sequencing depth of O157:H7 str. Sakai (≥0.210×; Table 386 
+
+S4). However, the reported detection of absent strains (false positives) was a problem 387 
+
+for some tools, with PathoScope (0.014; 0.070), Strainify (0.072; 0.074), and StrainR2 388 
+
+(0.596; 0.160) exhibiting lower specificity and precision (Fig.3a; Table S8). For 389 
+
+example, PathoScope and Strainify produced 1189 and 1119 false positive detections, 390 
+
+respectively, out of 1296 possible calls (see Data summary). In contrast, other tools 391 
+
+exhibited high specificity and precision, including PanTax (0.996; 0.944), StrainGE 392 
+
+(0.998; 0.967), StrainScan (1.000; 1.000), and StrainScan super low depth mode 393 
+
+(1.000; 1.000) (Fig.3a; Table S8), indicating low false positive detection rates and high 394 
+
+positive predictive values. 395 
+
+The F1 score, defined as the harmonic mean of sensitivity and precision, provides a 396 
+
+balanced summary of detection performance. Here, StrainGE achieved the highest F1 397 
+
+score (0.978), followed by StrainScan super low depth (0.947), PanTax (0.939) and 398 
+
+StrainScan (0.909) (Fig.3a; Table S8). The remaining tools showed much lower F1 399 
+
+scores (StrainR2, 0.270; Strainify, 0.139; PathoScope, 0.131). 400 
+
+Applying increasing detection thresholds (0.0001–0.005) led to increases in specificity, 401 
+
+precision, and F1 score for PathoScope, Strainify, and StrainR2 (Fig.3b). F1 scores 402 
+
+increased to 0.733 (PathoScope), 0.476 (Strainify), and 0.952 (StrainR2) at the 0.005 403 
+
+detection threshold, with the latter exceeding PanTax and both StrainScan modes 404 
+
+original F1 score (Fig.3b). As sensitivity remained unchanged, we interpret these 405 
+
+increases as being driven by the reassignment of numerous low-abundance false 406 
+
+positive detections from the 24-strain E. coli reference database. In contrast, PanTax, 407 
+
+StrainGE, StrainScan, and StrainScan super low depth mode were unaffected by the 408 
+
+detection thresholds applied here (Fig.3b). 409 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint
+
+Page 16 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx 
+
+Fig. 3. Detection metrics (sensitivity, specificity, precision, and F1 score) per tool are 410 
+
+differentially affected by increasing detection thresholds. (a) Detection metrics 411 
+
+summarised as radar plots for each tool across all simulated metagenomes ( n = 54). Metrics 412 
+
+were computed from raw true positive, false positive, true negative, and false negative call-413 
+
+type counts ( n = 9,072; see Data Summary). All metrics are scaled between 0–1. (b) Detection 414 
+
+metric scores across increasing detection thresholds. Thresholds (0.0001–0.005; discrete x415 
+
+axis shown) were applied to raw call-type counts for all tools, and call types were reassigned 416 
+
+accordingly (see Data Summary). Error bars indicate 95% confidence intervals (Wilson 417 
+
+intervals for sensitivity, specificity, and precision; bootstrap intervals for F1 scores). 418 
+
+(b) 
+
+(a)            
+
+> 00.25 0.50 0.75 1.00 sensitivity precision F1
+> PanTax
+> specificity
+> 00.25 0.50 0.75 1.00 sensitivity precision F1
+> PathoScope
+> specificity
+> 00.25 0.50 0.75 1.00 sensitivity precision F1
+> StrainGE
+> specificity
+> 00.25 0.50 0.75 1.00 sensitivity precision F1
+> Strainify
+> specificity
+> 00.25 0.50 0.75 1.00 sensitivity precision F1
+> StrainR2
+> specificity
+> 00.25 0.50 0.75 1.00 sensitivity precision F1
+> StrainScan
+> specificity
+> 00.25 0.50 0.75 1.00 sensitivity precision F1
+> StrainScan (low depth mode)
+> specificity
+> Precision F1 score
+> Sensitivity Specificity
+> 00.0001 0.0005 0.001 0.005 00.0001 0.0005 0.001 0.005
+> 0.00 0.25 0.50 0.75 1.00 0.00 0.25 0.50 0.75 1.00
+
+Detection threshold (relative abundance cutoff) Detection metric score  Strain −level profiling tool PanTax PathoScope StrainGE Strainify StrainR2 StrainScan StrainScan (super low depth) 
+
+.CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint Page 17 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx 
+
+Predicted relative abundances in a two-strain scenario are generally accurate 419 
+
+We compared predicted relative abundances for K12-MG1655 and O157:H7 str. Sakai 420 
+
+across our defined ground truth differential abundance ratios in our simulated 421 
+
+metagenomes (Fig.4). PathoScope and Strainify were the only tools to report predicted 422 
+
+relative abundance for the negative control sample (both strains at zero abundance), 423 
+
+with assignments predominantly to the “Other” strain category, representative of the 424 
+
+22 false-positive E. coli strains within the reference database (Fig. 4a; Table S5). 425 
+
+However, these alignment-based tools exhibited substantially lower proportions of 426 
+
+mapped reads in the negative control compared to all other samples: PathoScope 427 
+
+assigned 0.04% of reads in the negative control, compared to 1.02% across the 428 
+
+remaining samples, while Strainify assigned 0.02% versus 1.61–1.76%, respectively 429 
+
+(Fig.S3a). Other tools did not report any predicted relative abundance for the negative 430 
+
+control (Fig.4a). 431 
+
+Across the remaining metagenome samples, Strainify exhibited the highest predicted 432 
+
+relative abundance assigned to false-positive “Other” strains, ranging from 0.03–0.07 433 
+
+(Fig.4a). This explains why applying detection thresholds to Strainify had the least 434 
+
+impact on F1 score, relative to PathoScope and StrainR2 (Fig.3b), whose false-435 
+
+positive predicted relative abundances were consistently <0.01 (Fig.4a). Isolated 436 
+
+false-positive detections cumulatively ³0.01 were also observed for StrainGE 437 
+
+(0.95:0.05, 20M; 0.03) and PanTax (0.75:0.25, 20M; 0.01) (Fig.4a). 438 
+
+All tools generally demonstrated strong performance across sequencing efforts, with 439 
+
+predicted relative abundances closely reflecting the expected stepwise increase in 440 
+
+abundance of K12-MG1655 (orange) and decrease in O157:H7 str. Sakai (purple), 441 
+
+with PanTax and StrainR2 showing the closest agreement with the expected ratios 442 
+
+(Fig.4a). An exception included StrainScan samples at 20M and 50M (0.95:0.05, 443 
+
+0.99:0.01), and 100M (0.99:0.01) which missed detection of O157:H7 str. Sakai at 444 
+
+these lower depths of coverage (0.21–2.63x; Table S4). StrainScan low depth mode 445 
+
+recovered detection of O157:H7 str. Sakai in the 20M 0.95:0.05 and 0.99:0.01 samples 446 
+
+(Fig.4a). A further exception was PanTax, which did not detect O157:H7 str. Sakai in 447 
+
+the 20M and 50M 0.99:0.01 samples (Fig.4a). 448 
+
+When taking mean APE across all simulated metagenomes, PanTax and StrainR2 449 
+
+were the most accurate tools, both with respective values of 0.06 (Fig.4b). StrainScan 450 
+
+(0.10), Strainify (0.13), PathoScope (0.28), and StrainGE (0.44) showed intermediate 451 
+
+errors. StrainScan low-depth mode had the highest mean APE (0.88), driven by 452 
+
+rescued detection of O157:H7 str. Sakai in the 20M 0.95:0.05 and 0.99:0.01 samples, 453 
+
+where predicted abundances (0.79:0.21; Fig.4a) deviated strongly from the ground 454 
+
+truth. Across all tools, when splitting mean APE by strain, K12-MG1655 showed 455 
+
+consistently lower mean APE, ranging from 0.02 (StrainR2) to 0.08 (StrainGE), 456 
+
+whereas O157:H7 Sakai showed consistently higher mean APE, ranging from 0.10 457 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint
+
+Page 18 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx 
+
+(StrainR2) to 2.11 (StrainScan super low depth) (Fig.S3b), indicating that overall error 458 
+
+was driven by the strain with lower sequencing depth (Table S4). 459 
+
+.CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint Page 19 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx 
+
+460 
+
+Fig. 4. Predicted relative abundance and mean absolute proportional error per tool for 461 
+
+the simulated metagenome dataset. (a) Predicted relative abundance per simulated 462 
+
+metagenome sample, stratified by tool and sequencing effort. The true ratio of E. coli K-12 463 
+
+MG1655 (orange) to O157:H7 str. Sakai (purple) is shown on the x-axis, with predicted relative 464 
+
+abundances displayed as stacked bars on the y-axis. “Other” (green) denotes the predicted 465 
+
+relative abundance assigned to the remaining 22 false-positive E. coli strains in the reference 466 
+
+database (Table S5). The 0.00:0.00 sample represents a negative control. All values represent 467 
+
+0.06 0.28 0.44 0.06 0.10 0.88 0.13 
+
+0123PanTax PathoScope StrainGE Strainify StrainR2 StrainScan StrainScan (low depth mode) Strain −level profiling tool Mean absolute proportional error 
+
+(a) 
+
+(b) 
+
+> 0.53 0.47 0.78 0.21 0.90 0.10 0.95 1.00
+> 0.53 0.47 0.78 0.22 0.91 0.08 0.95 1.00
+> 0.54 0.46 0.77 0.23 0.91 0.09 0.95 0.99
+> 1.00 0.57 0.43 0.87 0.13 0.96 0.98 0.99
+> 1.00 0.58 0.42 0.87 0.13 0.96 0.98 0.99
+> 1.00 0.57 0.43 0.87 0.13 0.96 0.98 0.99
+> 0.48 0.52 0.63 0.37 0.83 0.17 0.91 0.06 0.98
+> 0.48 0.52 0.57 0.43 0.81 0.19 0.90 0.10 0.97
+> 0.49 0.51 0.56 0.44 0.80 0.20 0.90 0.10 0.97
+> 0.96 0.53 0.43 0.76 0.20 0.88 0.08 0.92 0.05 0.96
+> 0.97 0.53 0.42 0.77 0.19 0.90 0.07 0.94 0.97
+> 0.96 0.53 0.43 0.77 0.20 0.90 0.07 0.94 0.97
+> 0.52 0.47 0.76 0.23 0.90 0.09 0.96 0.99
+> 0.52 0.47 0.77 0.23 0.90 0.10 0.95 0.99
+> 0.53 0.46 0.77 0.22 0.91 0.09 0.95 0.99
+> 0.51 0.49 0.71 0.29 0.78 0.22 1.00 1.00
+> 0.55 0.45 0.78 0.22 0.88 0.12 1.00 1.00
+> 0.55 0.45 0.79 0.21 0.91 0.09 0.94 0.06 1.00
+> 0.51 0.49 0.71 0.29 0.78 0.22 0.79 0.21 0.79 0.21
+> 0.55 0.45 0.78 0.22 0.88 0.12 1.00 1.00
+> 0.55 0.45 0.79 0.21 0.91 0.09 0.94 0.06 1.00
+
+PanTax PathoScope StrainGE Strainify StrainR2 StrainScan StrainScan (super low depth) 
+
+20M 
+
+50M 
+
+100M 
+
+> 0.00:0.00 0.50:0.50 0.75:0.25 0.90:0.10 0.95:0.05 0.99:1.00 0.00:0.00 0.50:0.50 0.75:0.25 0.90:0.10 0.95:0.05 0.99:1.00 0.00:0.00 0.50:0.50 0.75:0.25 0.90:0.10 0.95:0.05 0.99:1.00 0.00:0.00 0.50:0.50 0.75:0.25 0.90:0.10 0.95:0.05 0.99:1.00 0.00:0.00 0.50:0.50 0.75:0.25 0.90:0.10 0.95:0.05 0.99:1.00 0.00:0.00 0.50:0.50 0.75:0.25 0.90:0.10 0.95:0.05 0.99:1.00 0.00:0.00 0.50:0.50 0.75:0.25 0.90:0.10 0.95:0.05 0.99:1.00
+
+0.00 0.25 0.50 0.75 1.00 0.00 0.25 0.50 0.75 1.00 0.00 0.25 0.50 0.75 1.00 True K12 −MG1655 : O157:H7 str. Sakai ratio in simulated metagenome sample Predicted relative abundance 
+
+E. coli strain Other K12 −MG1655 O157:H7 Sakai 
+
+.CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint Page 20 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx 
+
+means across triplicates (see Methods), and no detection thresholds were applied. (b) Mean 468 
+
+absolute proportional error per tool, calculated from the predicted relative abundances of K-469 
+
+12 MG1655 and O157:H7 str. Sakai. Error bars represent mean ± standard deviation. 470 
+
+.CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint Page 21 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx 
+
+Removing strains from the reference database leads to out-of-phylogroup 471 
+
+assignments for some tools 472 
+
+In most use cases, the exact strain present in a metagenomic sample will not be 473 
+
+present in the reference database used. To simulate this scenario, we removed 474 
+
+reference genomes for K12-MG1655 and O157:H7 Sakai (phylogroups A and E; Table 475 
+
+S5) from the database, leaving 22 ‘false-positive’ E. coli strains. All tools were rerun 476 
+
+on the same simulated metagenomes to assess how predicted relative abundances 477 
+
+were reassigned (Fig.5). 478 
+
+PanTax produced a prediction only for the highest sequencing depth (10.51–52.55 (x); 479 
+
+Table S4) 0.50:0.50 samples across all sequencing efforts, assigning 1.00 relative 480 
+
+abundance to O157:H7 EDL933 (phylogroup E), the strain with the highest percentage 481 
+
+average nucleotide identity (ANI) to O157:H7 Sakai (99.97%; Table S6). StrainGE 482 
+
+most closely preserved the expected phylogroup A (K12-MG1655) to E (O157:H7 str. 483 
+
+Sakai) abundance ratios, with increased assignment to REL606 (98.95% ANI to K12-484 
+
+MG1655) and corresponding decreases in O157:H7 str. EDL933, except at the 485 
+
+0.99:0.01 ratio. PathoScope showed similar phylogroup-level accuracy but split 486 
+
+phylogroup A abundance between REL606 and HS (98.74% ANI), with the remaining 487 
+
+abundance (≤0.07) assigned predominantly to phylogroup D strains and numerous 488 
+
+low-abundance strains. 489 
+
+StrainR2 broadly recapitulated these phylogroup-level patterns observed in StrainGE 490 
+
+and PathoScope, but distributed phylogroup A abundance more evenly between 491 
+
+REL606 and HS, with increasing assignment to B1 strains (≤0.10) as the true K12-492 
+
+MG1655 ratio increased. Strainify showed a similar trend but redistributed ≤0.35 493 
+
+predicted relative abundance across a broader range of phylogroups (B1, B2, C, D; 494 
+
+Fig. 5). Only Strainify and PathoScope produced predictions for the negative control. 495 
+
+At 20M depth, StrainScan matched the expected phylogroup ratios for the 0.50:0.50– 496 
+
+0.90:0.10 samples. At 0.95:0.05, all relative abundance was assigned to REL606 497 
+
+(1.00) and at 0.99:0.01 it was split between HS and REL606 (0.67:0.33; Fig.5). At 498 
+
+higher sequencing efforts (50M; 100M), predictions were dominated by O157:H7 str. 499 
+
+EDL933. In contrast, StrainScan low-depth mode did not reflect the expected 500 
+
+phylogroup-level abundance ratios. Relative abundance predictions were distributed 501 
+
+broadly across a range of phylogroups (A, D C and B1), with no individual strain 502 
+
+exceeding 0.18 relative abundance (Fig.5). 503 
+
+Specificity at the strain-level was calculated from raw true negative and false positive 504 
+
+counts (Fig.S4), enabling quantitative assessment of the number of false positive 505 
+
+assignments. PanTax showed the highest specificity (0.992), followed by StrainScan 506 
+
+(0.953) and StrainGE (0.927). StrainScan low-depth mode (0.535) and StrainR2 507 
+
+(0.322) had intermediate values, while Strainify (0.051) and PathoScope (0.009) 508 
+
+showed the lowest specificity. 509 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint
+
+Page 22 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx 
+
+510 
+
+Fig. 5. Predicted relative abundance per tool across simulated metagenomes when K12-511 
+
+MG1655 and O157:H7 str. Sakai are excluded from the reference database. Predicted 512 
+
+relative abundances are shown for each simulated metagenome, faceted by tool and 513 
+
+sequencing effort. The two true strains (K12-MG1655 and O157:H7 str. Sakai) were removed 514 
+
+from the reference database prior to analysis, while the remaining 22 false-positive strains 515 
+
+were unchanged (Table S5). The initial K12-MG1655 (phylogroup A) to O157:H7 str. Sakai 516 
+
+(phylogroup E) ratio is shown on the x-axis; the 0.00:0.00 sample represents a negative 517 
+
+control. Stacked bars indicate predicted relative abundances, with phylogroups A and E 518 
+
+coloured as in previous figures (orange and purple, respectively; Fig.4a). Values represent 519 
+
+means across triplicates (see Methods). No detection thresholds were applied. 520 
+
+1.00 
+
+1.00 
+
+1.00 
+
+0.14 0.20 0.20 0.13 0.12 0.19 0.80 0.14 0.36 0.56 0.11 0.79 0.83 0.85 
+
+0.16 0.11 0.29 0.08 0.13 0.20 0.80 0.15 0.37 0.55 0.11 0.79 0.83 0.85 
+
+0.13 0.11 0.29 0.14 0.22 0.81 0.14 0.37 0.56 0.11 0.79 0.83 0.85 
+
+0.36 0.64 0.25 0.75 0.15 0.85 0.14 0.86 1.00 
+
+0.36 0.64 0.25 0.75 0.12 0.88 0.10 0.90 0.15 0.85 
+
+0.34 0.66 0.26 0.74 0.14 0.86 0.09 0.91 0.12 0.88 
+
+0.10 0.08 0.08 0.14 0.32 0.21 0.19 0.11 0.31 0.23 0.38 0.24 0.40 0.25 0.43 
+
+0.11 0.08 0.09 0.14 0.33 0.22 0.19 0.12 0.32 0.23 0.38 0.24 0.41 0.25 0.43 
+
+0.10 0.08 0.14 0.34 0.22 0.20 0.13 0.32 0.23 0.39 0.24 0.41 0.25 0.43 
+
+0.14 0.61 0.19 0.24 0.35 0.32 0.31 0.15 0.42 0.34 0.09 0.46 0.37 0.49 
+
+0.14 0.61 0.19 0.24 0.35 0.32 0.32 0.15 0.42 0.35 0.08 0.45 0.37 0.48 
+
+0.14 0.61 0.19 0.24 0.35 0.32 0.32 0.16 0.42 0.34 0.08 0.45 0.37 0.48 
+
+0.47 0.53 0.27 0.73 0.19 0.81 1.00 0.67 0.33 
+
+1.00 0.49 0.51 1.00 1.00 1.00 
+
+1.00 1.00 1.00 1.00 1.00 
+
+0.11 0.13 0.11 0.11 0.11 0.13 0.12 0.14 0.14 0.13 0.11 0.15 0.14 0.17 0.15 0.14 0.11 0.16 0.15 0.18 0.08 0.15 0.14 0.11 0.16 0.15 0.18 0.15 0.14 0.12 0.15 0.15 0.17 
+
+0.09 0.08 0.09 0.08 0.10 0.10 0.09 0.11 0.09 0.11 0.10 0.12 0.10 0.12 0.09 0.08 0.12 0.11 0.13 0.10 0.13 0.10 0.09 0.09 0.13 0.11 0.13 0.10 0.12 0.09 0.08 0.08 0.13 0.11 0.13 
+
+0.09 0.08 0.09 0.09 0.10 0.11 0.10 0.10 0.11 0.08 0.11 0.10 0.11 0.08 0.11 0.10 0.11 0.10 
+
+PanTax PathoScope StrainGE Strainify StrainR2 StrainScan 
+
+StrainScan (super low depth) 
+
+20M 
+
+50M 
+
+100M 
+
+> 0.00:0.00 0.50:0.50 0.75:0.25 0.90:0.10 0.95:0.05 0.99:0.01 0.00:0.00 0.50:0.50 0.75:0.25 0.90:0.10 0.95:0.05 0.99:0.01 0.00:0.00 0.50:0.50 0.75:0.25 0.90:0.10 0.95:0.05 0.99:0.01 0.00:0.00 0.50:0.50 0.75:0.25 0.90:0.10 0.95:0.05 0.99:0.01 0.00:0.00 0.50:0.50 0.75:0.25 0.90:0.10 0.95:0.05 0.99:0.01 0.00:0.00 0.50:0.50 0.75:0.25 0.90:0.10 0.95:0.05 0.99:0.01 0.00:0.00 0.50:0.50 0.75:0.25 0.90:0.10 0.95:0.05 0.99:0.01
+
+0.00 0.25 0.50 0.75 1.00 0.00 0.25 0.50 0.75 1.00 0.00 0.25 0.50 0.75 1.00 True K12 −MG1655 : O157:H7 str. Sakai ratio in simulated metagenome sample Predicted relative abundance 
+
+E. coli strain (phylogroup) HS (A) REL606 (A) IAI1 (B1) O139:H28 str.E24377A (B1) SE11 (B1) 536 (B2) IHE3034 (B2) UTI89 (B2) 97 −3250 (C) FORC_028 (C) O26:H11 str.11368 (C) O42 (D) PCN033 (D) UMN026 (D) O157:H7 str.EDL933 (E) O55:H7 str.CB9615 (E) 2016C −3878 (F) IAI39 (F) SMS −3−5 (F) 2009C −3133 (G) 2012C −4502 (G) 2014C −3338 (G) 
+
+.CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint Page 23 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx 
+
+8. Discussion 521 
+
+We benchmarked six tools (PanTax, PathoScope, StrainGE, Strainify, StrainR2 and 522 
+
+StrainScan) for strain-level profiling of Escherichia coli within short-read gut 523 
+
+metagenomes. In an equal-abundance mock community (ZymoBIOMICS ® D6331), 524 
+
+PanTax achieved zero error, perfectly predicting the equal abundance of 5 E. coli 525 
+
+strains. In a differentially abundant mock community (SRR13355226), human read 526 
+
+removal had no effect on predicted relative abundance across tools. StrainScan had 527 
+
+the lowest mean absolute proportional error (0.89), although this was driven by 528 
+
+reduced sensitivity. Across high-complexity simulated metagenomes reflecting a529 
+
+realistic healthy adult gut microbiome and with the E. coli strains present also included 530 
+
+in the reference database, all tools showed high sensitivity (≥0.833). Applying 531 
+
+detection thresholds to remove false-positive assignations at low abundance improved 532 
+
+specificity, precision and F1 score for three tools, including StrainR2, which reached 533 
+
+an F1 score of 0.952. Without thresholding, StrainGE achieved the highest F1 score 534 
+
+overall (0.978). Concerningly, some tools using alignment for strain assignment 535 
+
+(PathoScope and Strainify) reported non-zero E. coli abundance in negative controls, 536 
+
+emphasising the need for careful interpretation . Predicted relative abundances of two 537 
+
+true strains spiked into the simulated metagenomes were generally accurate across 538 
+
+tools, with PanTax and StrainR2 performing best (APE = 0.06). Finally, removing true 539 
+
+strains from the reference database resulted in divergent relative abundance 540 
+
+reassignments across tools. 541 
+
+To our knowledge, this represents the first independent E. coli -specific benchmark of 542 
+
+short-read metagenomic strain-level profiling tools. The ZymoBIOMICS® D6331 543 
+
+dataset has not previously been used, and our simulated metagenomes were 544 
+
+generated independently using InSilicoSeq[36]. Although SRR13355226 has been 545 
+
+used previously[24, 25, 29], it had not been evaluated across this combination of tools. 546 
+
+SRR13355226 was most recently used to compare Strainify with StrainScan, 547 
+
+StrainR2, and StrainGE[25]. Consistent with our findings, all tools preserved the 548 
+
+correct ranking of strains by relative abundance, but all predictions deviated 549 
+
+substantially from the estimated ground truth. As the authors did not quantify these 550 
+
+deviations using an error metric, we calculated mean absolute proportional error for 551 
+
+each tool using their reported values. StrainGE (21.99) and StrainR2 (16.59) were 552 
+
+consistent with our results (21.75 and 16.67, respectively), whereas the recalculated 553 
+
+StrainScan value (27.84) better reflects the true error when all strains are detected 554 
+
+(0.89; Fig.2b). In contrast, Strainify (14.97) was lower than that observed in our 555 
+
+analysis (26.48). The Strainify authors also used the four E. coli strains in 556 
+
+SRR13355226 to construct simulated mock communities[25]. Consistent with our 557 
+
+findings, StrainScan struggled to detect low-abundance strains, while its super low-558 
+
+depth mode improved detection at the cost of substantial overestimation; an effect 559 
+
+attributed to biasing the abundance estimate of the dominant strain[24, 25]. However, 560 
+
+they did not assess the impact of human read removal on relative abundance 561 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint Page 24 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx
+
+estimates. We found that human read removal had no significant effect on abundance 562 
+
+prediction accuracy across tools. Host DNA typically comprises around 10% of faecal 563 
+
+samples[50]. Therefore, the ability to remove human reads whilst remaining confident 564 
+
+in the accuracy of strain-level relative abundance estimates will substantially reduce 565 
+
+file size and storage requirements, while continuing to protect donor privacy by 566 
+
+removing patient-identifiable data. 567 
+
+Using our simulated metagenomes dataset, we noted that some tools (PathoScope, 568 
+
+Strainify and StrainR2) reported numerous low-abundance false-positive E. coli 569 
+
+detections, despite high sensitivity. Except for Strainify, the cumulative abundance of 570 
+
+these false positives was typically very low (<0.01), likely reflecting ambiguous read 571 
+
+assignments. Nevertheless, the application of detection thresholds indicates that post 572 
+
+hoc filtering can mitigate these effects, leading to improvements in specificity, precision 573 
+
+and F1 score. However, given the strong performance of the remaining tools without 574 
+
+the need for thresholding, it suggests that tool selection should be influenced by the 575 
+
+ease of implementation and intended application. For example, without needing any 576 
+
+thresholding StrainGE (F1 score = 0.978) provides a simple and accurate approach to 577 
+
+strain detection, and has already been successfully used to identify acquired E. coli 578 
+
+strains in pre- and post-international travel gut metagenomes[51] and in contaminated 579 
+
+drinking water in Kenya[52], both using larger reference databases than applied here, 580 
+
+inferring easy scalability. In comparison, PanTax, which achieved the highest 581 
+
+estimation accuracy in two out of three datasets, and StrainR2, which tied with PanTax 582 
+
+as the most accurate in the simulated metagenomes dataset, are better suited to 583 
+
+investigating accurate abundance estimation. 584 
+
+Notably, PanTax, which also supports the increasing availability of long-read 585 
+
+metagenomic data[28, 53], also demonstrated a comparably high F1 score (0.939). 586 
+
+This suggests that its recent pangenome graph-based methodology, which reduces 587 
+
+redundancy while retaining strain-level diversity in the reference database[54], may 588 
+
+offer advantages over other approaches when both accurate detection and abundance 589 
+
+estimation are desired within a single tool. However, it should be noted that PanTax 590 
+
+requires an integer linear programming solver. The authors recommend Gurobi and 591 
+
+demonstrate improved performance with this solver[28, 55]; however, this may 592 
+
+introduce practical constraints, particularly in high-performance computing 593 
+
+environments where internet access is restricted or unavailable on compute nodes, 594 
+
+potentially complicating license validation. The remaining tools do not require a solver 595 
+
+and are generally more computationally straightforward, with intuitive module- or 596 
+
+Snakemake-based command line workflows (Table 1). 597 
+
+We also evaluated tool performance when the true strains were excluded from the 598 
+
+reference database, reflecting real-world scenarios in which the expected strain 599 
+
+composition of a gut metagenome is unknown, rather than use cases where relative 600 
+
+abundances for strains which are expected to be present are being estimated. Whilst 601 
+
+some tools were developed to report the most similar strain in the reference 602 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint Page 25 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx
+
+database[24, 27-29], under the conditions tested we saw that tool behaviour diverged 603 
+
+in informative ways. StrainGE, PathoScope and StrainR2 exhibited broader 604 
+
+phylogroup-level assignments that approximated the expected E. coli abundance 605 
+
+ratios; a confirmatory diagnostic attribute that may be useful in upstream clinical 606 
+
+metagenomics when solely determining E. coli phylogroup presence is required[17]. 607 
+
+In contrast, PanTax exhibited high strain-level specificity, detecting solely O157:H7 str. 608 
+
+EDL933 (99.97% ANI to O157:H7 str. Sakai) for the 0.50:0.50 samples. This 609 
+
+demonstrates that PanTax was able to recover near-exact strain-level matches even 610 
+
+when the true strain was absent from the reference database, with misclassification 611 
+
+only occurring below %ANI and sequencing-depth thresholds that need to be further 612 
+
+defined for such an application as part of future work. As such, the “optimal” strain-613 
+
+level profiling tool is context-dependent, and a complementary, paired-tool strategy 614 
+
+may be advantageous for analysing novel metagenomic datasets. An initial pass with 615 
+
+a high performing detection metrics tool (e.g., StrainGE) could be used to filter a large 616 
+
+reference database and identify candidate phylogroups, followed by a strain-resolved 617 
+
+method with strong abundance estimation performance (e.g., PanTax) applied to this 618 
+
+reduced phylogroup search space. While our results support the rationale for paired 619 
+
+tool usage, this approach is not considered as part of this evaluation. 620 
+
+Advantages of our study include the independent benchmarking of six competitive 621 
+
+strain-level profiling tools on various metagenomes and with different reference 622 
+
+databases, enabling us to identify the advantages and disadvantages of each method. 623 
+
+These conclusions are summarised in Table 2. Furthermore, we focused on the strain-624 
+
+profiling of E. coli , a common and genetically diverse member of the human gut 625 
+
+microbiome and a major cause of Gram-negative bloodstream infections worldwide, 626 
+
+which is an increasing global One Health concern due to its high rates of antibiotic 627 
+
+resistance[56]. Although focusing on E. coli may limit the transferability of our 628 
+
+conclusions to other clinically relevant, strain-diverse gut colonisers, such as 629 
+
+Enterococcus faecium and Klebsiella pneumoniae [57], we have provided the means 630 
+
+to reproduce the benchmarking analysis to enable convenient repurposing to consider 631 
+
+performance for other important bacterial targets. However, while our conclusions are 632 
+
+valid at the time of writing, tool performance is likely to evolve as methods are updated. 633 
+
+For example, PanTax was upgraded to v2.1.0 on 2 March 2026 [28], after completion 634 
+
+of our benchmarking experiments. New tools will also continue to emerge, particularly 635 
+
+for long-read metagenomics, for which dedicated approaches, like Strainberry[58], are 636 
+
+already available. Continued benchmarking from the metagenomics community will be 637 
+
+essential to monitor these developments. Finally, we note that our analysis focused 638 
+
+exclusively on reference-based tools to ensure a consistent and comparable 639 
+
+evaluation. As such, the approaches assessed here are inherently limited in their 640 
+
+ability to detect novel or previously uncharacterised E. coli strains lacking reference 641 
+
+genomes, a limitation that de novo strain-level profiling methods can overcome[59]. 642 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint Company Limited by Guarantee l Registered in England No. 1039582 l Registered Office Charles Darwin House, 12 Roger Street, WC1N 2JU, UK Registered as a Charity: 264017 (England & Wales); SC039250 (Scotland) BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx
+
+Table 2. Advantages, disadvantages and suggested use cases of the short-read metagenomic strain-level profiling tools evaluated in 643 
+
+this study 644 
+
+645 Tool Advantages Disadvantages Suggested use case(s) 
+
+StrainScan 
+
+[24] 
+
+• Comes with 8 pre-built reference genome databases, including Escherichia coli • Large reference databases supported • Easy-to-use two module (strainscan_build & strainscan) command-line interface • Incorporated low depth modes for rescued detection of low depth of coverage strains • High F1 score, independent of threshold application 
+
+• Reduced sensitivity at low sequencing depth across datasets • Low depth mode biases abundance estimate of the dominant strain leading to substantial overestimation • Out of phylogroup assignments at higher sequencing efforts, if the true strain in removed from the reference database 
+
+• Filtering large reference databases before strain-level abundance estimation with another tool • Quick checks on single/small number of metagenomic samples with a specific, user-desired reference database • For users with limited bioinformatics experience 
+
+Strainify 
+
+[25] 
+
+• Simple-to-use Snakemake and config.yaml workflow • High sensitivity across datasets • Actively maintained in the last year 
+
+• High false-positive detection rate • Reports E. coli presence in negative controls 
+
+• Detection thresholds (≤ 0.005) minimally improve specificity, precision and F1 score • Recent publication (October 2025), but yet to be a peer-reviewed method (at the time of writing) • Discovered bug issues (see Supplementary Methods). 
+
+• Sensitivity applications when the expected strain(s) in a set of given metagenome samples are known 
+
+StrainR2 
+
+[26] 
+
+• Easy-to-use two module (PreProcessR & StrainR) command-line interface • StrainR provides a visualisation plot of FUKM abundances (unused in this study) • Strong F1 score improvements when detection thresholds (≤ 0.005) are applied • High accuracy tool across datasets for estimating strain-level relative abundance • Actively maintained in the last year 
+
+• Application of detection thresholds to remove low abundance false positives when using complex reference databases may be an additional practical step/time limitation for some users 
+
+• Estimating strain-level relative abundances when expected strains in a set of given metagenome samples are known or with a reduced phylogroup search space • Quick checks on single/small number of metagenomic samples with a specific, user-desired reference database • For users with limited bioinformatics experience Page 27 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx 
+
+PathoScope 
+
+[27] 
+
+• Consistently high sensitivity and abundance estimation across datasets with minimal variation in predictions • Historic tool (2014) which performs competitively relative to updated methodologies • Well cited tool on PubMed (147 results) 
+
+• Six modules but not all are needed, leading to user-confusion e.g., requirement to self-generate Bowtie2 libraries (see Supplementary Methods) • Generation of large intermediate .sam files (≥ 50 Gb) during alignment steps with multiple references leading to time and storage concerns • Reports E. coli presence in negative controls 
+
+• High false positive detection rate 
+
+• Estimating strain-level relative abundances with a small, specific reference database 
+
+PanTax 
+
+[28] 
+
+• Consistently high detection metrics and estimation accuracy performance across datasets • Extremely high percentage average nucleotide identity specificity when true strains are removed from the reference database • Simple workflow using installed tool with database building and sample running steps • Most modern tool available (published Feb 2026, last updated March 2026) and actively maintained • Also works with long-read metagenomic data (not benchmarked in this study) 
+
+• High specificity limits broader E. coli 
+
+phylogroup-level detection if the true strain is absent from the reference database • Gurobi optimizer necessary for performance but introduces user-restrictions and compatibility issues (see Discussion; Supplementary Methods) • Hard to install alongside Gurobi, bioinformatic experience required 
+
+• For strain-level detection and abundance estimation when a single tool is required • Accurate strain-level abundance estimations using a reference database curated from a reduced phylogroup search space 
+
+StrainGE 
+
+[29] 
+
+• High strain-level detection (F1 score) • Maintains within-phylogroup level assignments when true strains absent from the reference database • Easy-to-follow documentation (see Supplementary Methods) with option to progress to strain-aware variant calling using StrainGR (unused in this study) 
+
+• Well cited tool on PubMed (66 results), including previous E. coli strain-level diversity applications 
+
+• Relatively low strain-level abundance estimation accuracy across datasets • StrainGST and StrainGR are not implemented as a single, unified pipeline, requiring multiple sequential commands across modules, increasing workflow complexity 
+
+• For accurate strain-level detection on a novel dataset using a larger reference database • Coupled with a more accurate abundance estimation tool (StrainR2/PanTax) on a reduced search space 
+
+646 Company Limited by Guarantee l Registered in England No. 1039582 l Registered Office Charles Darwin House, 12 Roger Street, WC1N 2JU, UK Registered as a Charity: 264017 (England & Wales); SC039250 (Scotland) BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx 
+
+9. Conclusions 647 
+
+This study represents the most recent benchmarking of short-read metagenomic 648 
+
+strain-level profiling tools and the first to focus exclusively on Escherichia coli , a 649 
+
+species exhibiting substantial strain-level diversity within the human gut. The six 650 
+
+benchmarked tools showed variable performance across datasets, suggesting the use 651 
+
+of different methods depending on the intended application. Our findings will enable 652 
+
+characterisation of E. coli strain-level diversity within short-read gut metagenomes in 653 
+
+greater depth and at a larger-scale than has been achieved previously. This will 654 
+
+advance our understanding of whether consistent genetic distinctions exist between 655 
+
+commensal and pathogenic E. coli strains, with potential implications for the 656 
+
+development of targeted therapeutics and vaccines. 657 
+
+658 
+
+659 
+
+10. Author statements 660 
+
+10.1 Author contributions 661 
+
+Conceptualisation: SL, NS.; Data curation: MG.; Formal analysis: MG.; Funding 662 
+
+acquisition: NS.; Investigation: MG.; Methodology: MG, DW, LS, SL, NS.; Project 663 
+
+administration: NS.; Resources: NS.; Software: MG.; Supervision: DW, LS, SL, NS.; 664 
+
+Validation: MG.; Visualisation: MG.; Writing – original draft: MG.; Writing – review & 665 
+
+editing: DW, LS, SL, NS. 666 
+
+667 
+
+10.2 Conflicts of interest 668 
+
+The authors have no conflicts of interest to declare. 669 
+
+670 
+
+10.3 Funding information 671 
+
+This study/research is supported/funded by the National Institute for Health and Care 672 
+
+Research (NIHR) Health Protection Research Unit: Healthcare Associated Infections 673 
+
+and Antimicrobial Resistance (NIHR207397), a partnership between the UK Health 674 
+
+Security Agency (UKHSA) and the University of Oxford. This work was also supported 675 
+
+by the NIHR Oxford Biomedical Research Centre (BRC). Computation used the 676 
+
+Oxford Biomedical Research Computing (BMRC) facility, a joint development between 677 
+
+the Wellcome Centre for Human Genetics and the Big Data Institute supported by 678 
+
+Health Data Research UK and the NIHR Oxford Biomedical Research Centre. The 679 
+
+views expressed are those of the authors and not necessarily those of the NIHR, 680 
+
+UKHSA or the Department of Health and Social Care. 681 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint Page 29 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx
+
+682 
+
+11. References 683 
+
+1. Carter MM, Olm MR, Merrill BD, Dahan D, Tripathi S, Spencer SP, et al. Ultra-deep 684 sequencing of Hadza hunter-gatherers recovers vanishing gut microbes. Cell. 685 2023;186(14):3111–24.e13. doi: 10.1016/j.cell.2023.05.046 686 2. Human Microbiome Project ConsorVum. Structure, funcVon and diversity of the 687 healthy human microbiome. . Nature. 2012;486(7402):207–14. doi: 10.1038/nature11234 688 3. Anderson BD, Bisanz JE. Challenges and opportuniVes of strain diversity in gut 689 microbiome research. Front Microbiol. 2023;14:1117122. doi: 10.3389/fmicb.2023.1117122 690 4. Nysten J, Sofras D, Van Dijck P. One species, many faces: The underappreciated 691 importance of strain diversity. PLoS Pathog. 2024;20(1):e1011931. doi: 692 10.1371/journal.ppat.1011931 693 5. Stoesser N, Sheppard AE, Moore CE, Golubchik T, Parry CM, Nget P, et al. Extensive 694 Within-Host Diversity in Fecally Carried Extended-Spectrum-Beta-Lactamase-Producing 695 Escherichia coli Isolates: ImplicaVons for Transmission Analyses. J Clin Microbiol. 696 2015;53(7):2122–31. doi: 10.1128/jcm.00378-15 697 6. Barua R, Pavli P, Gordon D, O'Brien C. Diversity, distribuVon, and populaVon structure 698 of Escherichia coli in the lower gastrointesVnal tract of humans. PLoS One. 699 2025;20(7):e0328147. doi: 10.1371/journal.pone.0328147 700 7. Han N, Peng X, Zhang T, Qiang Y, Li X, Zhang W. Rapid turnover and short-term 701 blooms of Escherichia coli in the human gut. J Bacteriol. 2024;206(1):e0023923. doi: 702 10.1128/jb.00239-23 703 8. Condamine B, Morel-Journel T, Tesson F, Royer G, Magnan M, Bernheim A, et al. 704 Strain phylogroup and environmental constraints shape Escherichia coli dynamics and 705 diversity over a 20-year human gut Vme series. Isme j. 2025;19(1). doi: 706 10.1093/ismejo/wrae245 707 9. Maltby R, Leatham-Jensen MP, Gibson T, Cohen PS, Conway T. NutriVonal basis for 708 colonizaVon resistance by human commensal Escherichia coli strains HS and Nissle 1917 709 against E. coli O157:H7 in the mouse intesVne. PLoS One. 2013;8(1):e53957. doi: 710 10.1371/journal.pone.0053957 711 10. Gao YD, Zhao Y, Huang J. Metabolic modeling of common Escherichia coli strains in 712 human gut microbiome. Biomed Res Int. 2014;2014:694967. doi: 10.1155/2014/694967 713 11. Kaper JB, Nataro JP, Mobley HL. Pathogenic Escherichia coli. Nat Rev Microbiol. 714 2004;2(2):123–40. doi: 10.1038/nrmicro818 715 12. Geurtsen J, de Been M, Weerdenburg E, Zomer A, McNally A, Poolman J. Genomics 716 and pathotypes of the many faces of Escherichia coli. FEMS Microbiol Rev. 2022;46(6). doi: 717 10.1093/femsre/fuac031 718 13. Day MJ, Doumith M, Abernethy J, Hope R, Reynolds R, Wain J, et al. PopulaVon 719 structure of Escherichia coli causing bacteraemia in the UK and Ireland between 2001 and 720 2010. J AnVmicrob Chemother. 2016;71(8):2139–42. doi: 10.1093/jac/dkw145 721 14. Goswami C, Fox S, Holden M, Connor M, Leanord A, Evans TJ. GeneVc analysis of 722 invasive Escherichia coli in Scotland reveals determinants of healthcare-associated versus 723 community-acquired infecVons. Microb Genom. 2018;4(6). doi: 10.1099/mgen.0.000190 724 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint Page 30 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx
+
+15. Lipworth S, Vihta KD, Chau K, Barker L, George S, Kavanagh J, et al. Ten-year 725 longitudinal molecular epidemiology study of Escherichia coli and Klebsiella species 726 bloodstream infecVons in Oxfordshire, UK. Genome Med. 2021;13(1):144. doi: 727 10.1186/s13073-021-00947-2 728 16. Hu X, Tao J, Yan L, Hong W, Wang W, Wang L, et al. Molecular epidemiology of 729 Escherichia coli in bloodstream infecVons from a general hospital in Ningxia, China, 2022-730 2023. BMC Infect Dis. 2025;25(1):293. doi: 10.1186/s12879-025-10658-3 731 17. Chiu CY, Miller SA. Clinical metagenomics. Nat Rev Genet. 2019;20(6):341–55. doi: 732 10.1038/s41576-019-0113-7 733 18. Eckburg PB, Bik EM, Bernstein CN, Purdom E, Dethlefsen L, Sargent M, et al. Diversity 734 of the human intesVnal microbial flora. Science. 2005;308(5728):1635–8. doi: 735 10.1126/science.1110591 736 19. Shaw J, Gounot JS, Chen H, Nagarajan N, Yu YW. Floria: fast and accurate strain 737 haplotyping in metagenomes. BioinformaVcs. 2024;40(Suppl 1):i30–i8. doi: 738 10.1093/bioinformaVcs/btae252 739 20. Wood DE, Lu J, Langmead B. Improved metagenomic analysis with Kraken 2. Genome 740 Biol. 2019;20(1):257. doi: 10.1186/s13059-019-1891-0 741 21. Wright RJ, Comeau AM, Langille MGI. From defaults to databases: parameter and 742 database choice dramaVcally impact the performance of metagenomic taxonomic 743 classificaVon tools. Microb Genom. 2023;9(3). doi: 10.1099/mgen.0.000949 744 22. Zolfo M, Tem A, Jousson O, DonaV C, Segata N. MetaMLST: mulV-locus strain-level 745 bacterial typing from metagenomic samples. Nucleic Acids Res. 2017;45(2):e7. doi: 746 10.1093/nar/gkw837 747 23. Yin Q, da Silva AC, Zorrilla F, Almeida AS, PaVl KR, Almeida A. Ecological dynamics of 748 Enterobacteriaceae in the human gut microbiome across global populaVons. Nat Microbiol. 749 2025;10(2):541–53. doi: 10.1038/s41564-024-01912-6 750 24. Liao H, Ji Y, Sun Y. High-resoluVon strain-level microbiome composiVon analysis from 751 short reads. Microbiome. 2023;11(1):183. doi: 10.1186/s40168-023-01615-w 752 25. Luo RS, Kille B, Vaughan EE, Clark JR, Maresso AW, Nute MG, et al. Strainify: Strain-753 Level Microbiome Profiling for Low-Coverage Short-Read Metagenomic Datasets. bioRxiv. 754 2025. doi: 10.1101/2025.10.10.681738 755 26. Heber K, Tian S, Betancurt-Anzola D, Koo H, Bisanz JE. StrainR2 accurately 756 deconvolutes strain-level abundances in syntheVc microbial communiVes. BioinformaVcs. 757 2025;41(8). doi: 10.1093/bioinformaVcs/btaf440 758 27. Hong C, Manimaran S, Shen Y, Perez-Rogers JF, Byrd AL, Castro-Nallar E, et al. 759 PathoScope 2.0: a complete computaVonal framework for strain idenVficaVon in 760 environmental or clinical sequencing samples. Microbiome. 2014;2:33. doi: 10.1186/2049-761 2618-2-33 762 28. Zhang W, Liu Y, Li G, Xu J, Chen E, Schönhuth A, et al. Strain-level metagenomic 763 profiling using pangenome graphs with PanTax. Genome Res. 2026. doi: 764 10.1101/gr.280858.125 765 29. van Dijk LR, Walker BJ, Straub TJ, Worby CJ, Grote A, Schreiber HLt, et al. StrainGE: a 766 toolkit to track and characterize low-abundance strains in complex microbial communiVes. 767 Genome Biol. 2022;23(1):74. doi: 10.1186/s13059-022-02630-0 768 30. Bushnell B, editor BBMap: A Fast, Accurate, Splice-Aware Aligner2014. 769 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint Page 31 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx
+
+31. Waters NR, Abram F, Brennan F, Holmes A, Pritchard L. Easy phylotyping of 770 Escherichia coli via the EzClermont web app and command-line tool. Access Microbiol. 771 2020;2(9):acmi000143. doi: 10.1099/acmi.0.000143 772 32. Seemann T. mlst: Github; [Available from: hmps://github.com/tseemann/mlst. 773 33. Jolley KA, Bray JE, Maiden MCJ. Open-access bacterial populaVon genomics: BIGSdb 774 sopware, the PubMLST.org website and their applicaVons. Wellcome Open Res. 2018;3:124. 775 doi: 10.12688/wellcomeopenres.14826.1 776 34. ConstanVnides B, Lees J, Crook DW. Deacon: fast sequence filtering and contaminant 777 depleVon. bioRxiv. 2025:2025.06.09.658732. doi: 10.1101/2025.06.09.658732 778 35. King CH, Desai H, Sylvetsky AC, LoTempio J, Ayanyan S, Carrie J, et al. Baseline human 779 gut microbiota profile in healthy people and standard reporVng template. PLoS One. 780 2019;14(9):e0206484. doi: 10.1371/journal.pone.0206484 781 36. Gourlé H, Karlsson-Lindsjö O, Hayer J, Bongcam-Rudloff E. SimulaVng Illumina 782 metagenomic data with InSilicoSeq. BioinformaVcs. 2019;35(3):521–2. doi: 783 10.1093/bioinformaVcs/bty630 784 37. Abram K, Udaondo Z, Bleker C, Wanchai V, Wassenaar TM, Robeson MS, 2nd, et al. 785 Mash-based analyses of Escherichia coli genomes reveal 14 disVnct phylogroups. Commun 786 Biol. 2021;4(1):117. doi: 10.1038/s42003-020-01626-5 787 38. Jain C, Rodriguez RL, Phillippy AM, KonstanVnidis KT, Aluru S. High throughput ANI 788 analysis of 90K prokaryoVc genomes reveals clear species boundaries. Nat Commun. 789 2018;9(1):5114. doi: 10.1038/s41467-018-07641-9 790 39. R Core Team. R: A Language and Environment for StaVsVcal CompuVng. 4.5.1 ed. 791 Vienna, Austria: R FoundaVon for StaVsVcal CompuVng; 2025. 792 40. Wickham H, Bryan J. readxl: Read Excel Files (R package version 1.4.5). 2025. 793 41. Wickham H. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York. 794 2016. doi: 10.1007/978-3-319-24277-4_9 795 42. Wilke CO. cowplot: Streamlined Plot Theme and Plot AnnotaVons for “ggplot2” (R 796 package version 1.2.0). 2024. 797 43. Wickham H, François R, Henry L, Müller K, Vaughan D. dplyr: A Grammar of Data 798 ManipulaVon. 2023. 799 44. Wickham H. stringr: Simple, Consistent Wrappers for Common String OperaVons (R 800 package version 1.6.0). 2025. 801 45. Wickham H, Vaughan A, Girlich M. Vdyr: Tidy Messy Data (R package version 1.3.1). 802 2024. 803 46. Wickham H. forcats: Tools for Working with Categorical Variables (Factors; R package 804 version 1.0.1). 2025. 805 47. Wickham H, Pedersen T, Seidel D. Scales: Scale FuncVons for VisualizaVon (R package 806 version 1.4.0). 2025. 807 48. Dorai-Raj S. binom: Binomial Confidence Intervals for Several ParameterizaVons (R 808 package version 1.1.1.1). 2022. 809 49. Wickham H, Henry L. purrr: FuncVonal Programming Tools (R package version 1.1.0). 810 2025. 811 50. Tomofuji Y, Sonehara K, Kishikawa T, Maeda Y, Ogawa K, Kawabata S, et al. 812 ReconstrucVon of the personal informaVon from human genome reads in gut metagenome 813 sequencing data. Nat Microbiol. 2023;8(6):1079–94. doi: 10.1038/s41564-023-01381-3 814 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted May 19, 2026. ;https://doi.org/10.64898/2026.05.19.726160 doi: bioRxiv preprint Page 32 of 32 BioRxiv manuscript - Benchmarking strain-level profiling of Escherichia coli in short-read gut metagenomes.docx
+
+51. Worby CJ, Sridhar S, Turbem SE, Becker MV, Kogut L, Sanchez V, et al. Gut microbiome 815 perturbaVon, anVbioVc resistance, and Escherichia coli strain dynamics associated with 816 internaVonal travel: a metagenomic analysis. Lancet Microbe. 2023;4(10):e790–e9. doi: 817 10.1016/s2666-5247(23)00147-7 818 52. Kim DD, Swarthout JM, Worby CJ, Chieng B, Mboya J, Earl AM, et al. Contaminated 819 drinking water facilitates Escherichia coli strain-sharing within households in urban informal 820 semlements. Nat Microbiol. 2025;10(5):1198–209. doi: 10.1038/s41564-025-01986-w 821 53. AgusVnho DP, Fu Y, Menon VK, Metcalf GA, Treangen TJ, Sedlazeck FJ. Unveiling 822 microbial diversity: harnessing long-read sequencing technology. Nat Methods. 823 2024;21(6):954–66. doi: 10.1038/s41592-024-02262-1 824 54. Yen S, Johnson JS. Metagenomics: a path to understanding the gut microbiome. 825 Mamm Genome. 2021;32(4):282–96. doi: 10.1007/s00335-021-09889-x 826 55. Gurobi OpVmizaVon L. Gurobi OpVmizer Reference Manual. 11.0 ed2026. 827 56. Nnah EP, Asante J, Amoako DG, Abia ALK, Essack SY. AnVbioVc-resistant Escherichia 828 coli (E. coli) at one health interfaces in Africa: A scoping review. Sci Total Environ. 829 2025;958:177580. doi: 10.1016/j.scitotenv.2024.177580 830 57. SaV H, Carrara E, Savoldi A, Hansen P, Garlasco J, Campagnaro E, et al. The WHO 831 Bacterial Priority Pathogens List 2024: a prioriVsaVon study to guide research, development, 832 and public health strategies against anVmicrobial resistance. Lancet Infect Dis. 833 2025;25(9):1033–43. doi: 10.1016/s1473-3099(25)00118-5 834 58. Vicedomini R, Quince C, Darling AE, Chikhi R. Strainberry: automated strain 835 separaVon in low-complexity metagenomes using long reads. Nat Commun. 836 2021;12(1):4485. doi: 10.1038/s41467-021-24515-9 837 59. Anyansi C, Straub TJ, Manson AL, Earl AM, Abeel T. ComputaVonal Methods for 838 Strain-Level Microbial DetecVon in Colony and Metagenome Sequencing Data. Front 839 Microbiol. 2020;11:1925. doi: 10.3389/fmicb.2020.01925 840 
+
+841
