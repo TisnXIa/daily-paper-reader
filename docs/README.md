@@ -6,68 +6,49 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-05-28
-- 运行时间：2026-05-28 21:41:49 UTC
+- 最新运行日期：2026-05-29
+- 运行时间：2026-05-29 20:51:43 UTC
 - 运行状态：成功
-- 本次总论文数：16
-- 精读区：6
-- 速读区：10
+- 本次总论文数：9
+- 精读区：5
+- 速读区：4
 
 ### 今日简报（AI）
-今日聚焦测序技术比较与病毒宏基因组学，精读两篇高分研究（全长ITS元条形码跨平台对比、抗dsRNA抗体捕获稻瘟病菌病毒组）。值得关注Illumina/PacBio/Nanopore在真菌条形码中的性能差异，以及MADAM技术发现新病毒组的潜力。下步可结合RPD非参数方法评估自身样本的群落偏离程度，并尝试将抗体捕获策略扩展至其他植物病原体。
-- 详情：[/202605/28/README](/202605/28/README)
+今天聚焦宏基因组分类与微生物组诊断新方法，两篇高分研究分别利用精炼基础模型和贝叶斯低秩适应技术提升准确性。  
+最值得看的是TaxDistill如何通过蒸馏基因组基础模型改进宏基因组注释，以及iLoRA利用潜在交互图为微生物组诊断提供新思路。  
+建议关注这些方法在抗生素后菌群恢复路径和蜱传病原体生态学研究中的结合应用。
+- 详情：[/202605/29/README](/202605/29/README)
 
 ### 精读区论文标签
-1. [Benchmarking full-length ITS metabarcoding across Illumina 2x500, PacBio, and Oxford Nanopore sequencing using mock and soil communities](/202605/28/biorxiv-10-64898-2026-05-20-726443-v1-benchmarking-full-length-its-metabarcoding-across-illumina-2x500-pacbio-and-oxford-nanopore-sequencing-using-mock-and-soil-communities)  
+1. [TaxDistill: Improving Metagenomic Taxonomic Annotation via Distilled Genomic Foundation Models](/202605/29/2605.28868v1-taxdistill-improving-metagenomic-taxonomic-annotation-via-distilled-genomic-foundation-models)  
    标签：评分：9.0/10、query:microbiome
-   evidence：全长ITS宏条形码基准测试，比较测序平台和生信流程
-2. [Monoclonal anti-dsRNA antibody-based metagenomics (MADAM) reveal Pyricularia oryzae mycovirome](/202605/28/biorxiv-10-64898-2026-05-18-725940-v2-monoclonal-anti-dsrna-antibody-based-metagenomics-madam-reveal-pyricularia-oryzae-mycovirome)  
+   evidence：使用蒸馏技术改进宏基因组分类注释的新颖软件工具
+2. [iLoRA: Bayesian Low-Rank Adaptation with Latent Interaction Graphs for Microbiome Diagnosis](/202605/29/2605.30179v1-ilora-bayesian-low-rank-adaptation-with-latent-interaction-graphs-for-microbiome-diagnosis)  
+   标签：评分：9.0/10、query:microbiome
+   evidence：基于LLM适配的微生物组诊断新软件iLoRA
+3. [Leviathan: A fast, memory-efficient, and scalable taxonomic and pathway profiler for (pan)genome-resolved metagenomics and metatranscriptomics](/202605/29/biorxiv-10-1101-2025-07-14-664802-v3-leviathan-a-fast-memory-efficient-and-scalable-taxonomic-and-pathway-profiler-for-pangenome-resolved-metagenomics-and-metatranscriptomics)  
+   标签：评分：9.0/10、query:microbiome
+   evidence：Leviathan: 新型宏基因组分类和通路分析软件
+4. [Benchmarking the quantitative performance of metabarcoding and shotgun sequencing using mock communities of marine nematodes](/202605/29/biorxiv-10-64898-2026-02-09-704827-v2-benchmarking-the-quantitative-performance-of-metabarcoding-and-shotgun-sequencing-using-mock-communities-of-marine-nematodes)  
    标签：评分：8.0/10、query:microbiome
-   evidence：新型宏基因组方法MADAM，结合dsRNA富集和纳米孔测序用于病毒宏基因组分析
-3. [Integrated optimization of experimental and computational workflows improves genome recovery in long-read gut metagenomics](/202605/28/biorxiv-10-64898-2026-05-22-727065-v1-integrated-optimization-of-experimental-and-computational-workflows-improves-genome-recovery-in-long-read-gut-metagenomics)  
+   evidence：比较宏条形码（18S/28S）与鸟枪测序的定量性能
+5. [Genome-resolved metagenomics reveals conserved, flexible and emerging symbioses across global leafhoppers](/202605/29/biorxiv-10-64898-2026-05-20-726650-v1-genome-resolved-metagenomics-reveals-conserved-flexible-and-emerging-symbioses-across-global-leafhoppers)  
    标签：评分：8.0/10、query:microbiome
-   evidence：优化的长读长宏基因组工作流，包含计算组装，提高基因组恢复
-4. [Least Component Analysis reveals ecological constraints in microbial communities](/202605/28/biorxiv-10-64898-2026-05-22-727221-v1-least-component-analysis-reveals-ecological-constraints-in-microbial-communities)  
-   标签：评分：8.0/10、query:microbiome
-   evidence：微生物群落丰度数据的创新统计方法，揭示生态约束
-5. [Annotation-free sequence-level multimodal graph learning reveals gut microbiome signatures of atherosclerotic cardiovascular disease](/202605/28/biorxiv-10-64898-2026-05-24-727482-v1-annotation-free-sequence-level-multimodal-graph-learning-reveals-gut-microbiome-signatures-of-atherosclerotic-cardiovascular-disease)  
-   标签：评分：8.0/10、query:microbiome
-   evidence：基于序列的无注释图学习用于肠道微生物组疾病预测
-6. [Fast Set Operations for Compact k-mer Sets](/202605/28/biorxiv-10-64898-2026-05-24-727514-v1-fast-set-operations-for-compact-k-mer-sets)  
-   标签：评分：8.0/10、query:microbiome
-   evidence：基于SBWT的k-mer集合高效操作，可应用于宏基因组数据处理
+   evidence：对171种叶蝉进行基因组解析宏基因组分析
 
 ### 速读区论文标签
-1. [Ratio Percentile Deviation (RPD): A nonparametric, compositionally robust method for measuring the divergence of a microbial sample from a reference dataset](/202605/28/biorxiv-10-64898-2026-05-27-728224-v1-ratio-percentile-deviation-rpd-a-nonparametric-compositionally-robust-method-for-measuring-the-divergence-of-a-microbial-sample-from-a-reference-dataset)  
-   标签：评分：8.0/10、query:microbiome
-   evidence：非参数组成稳健的微生物组差异度量方法
-2. [Read-Consistent Minimum Unique Substrings: A Parameter-Free, Linear-Time Framework for Genomic Sequence Representation](/202605/28/biorxiv-10-64898-2026-02-28-708734-v2-read-consistent-minimum-unique-substrings-a-parameter-free-linear-time-framework-for-genomic-sequence-representation)  
+1. [geneML: Gene annotation across diverse fungal species using deep learning](/202605/29/biorxiv-10-64898-2026-05-18-725946-v1-geneml-gene-annotation-across-diverse-fungal-species-using-deep-learning)  
    标签：评分：7.0/10、query:microbiome
-   evidence：新的序列表示框架可应用于宏基因组数据分析
-3. [Environmental Microbial Community Signatures Associated with Listeria spp. Detection in German Meat Processing Facilities](/202605/28/biorxiv-10-64898-2026-05-25-727608-v1-environmental-microbial-community-signatures-associated-with-listeria-spp-detection-in-german-meat-processing-facilities)  
-   标签：评分：7.0/10、query:microbiome
-   evidence：使用16S rRNA V3/V4扩增子测序表征微生物群落
-4. [Metabarcode and transcriptome datasets of Pinus sylvestris to assess fungal phyllosphere and disease dynamics.](/202605/28/biorxiv-10-64898-2026-05-14-725107-v2-metabarcode-and-transcriptome-datasets-of-pinus-sylvestris-to-assess-fungal-phyllosphere-and-disease-dynamics)  
+   evidence：基于深度学习的真菌基因预测工具
+2. [Path-dependent recovery of the gut microbiome after antibiotics emerges from coupled ecological and evolutionary dynamics](/202605/29/biorxiv-10-64898-2026-05-22-727306-v1-path-dependent-recovery-of-the-gut-microbiome-after-antibiotics-emerges-from-coupled-ecological-and-evolutionary-dynamics)  
    标签：评分：6.0/10、query:microbiome
-   evidence：ITS2宏条形码数据集用于真菌叶际微生物组分析
-5. [Metabarcode and transcriptome datasets of Pinus sylvestris to assess fungal phyllosphere and disease dynamics.](/202605/28/biorxiv-10-64898-2026-05-14-725107-v3-metabarcode-and-transcriptome-datasets-of-pinus-sylvestris-to-assess-fungal-phyllosphere-and-disease-dynamics)  
+   evidence：鸟枪法宏基因组测序分析方法，用于纵向微生物组数据
+3. [Ehrlichia ruminantium infection is associated with tissue-specific microbial community shifts in Amblyomma gemma ticks from cattle in Kenya](/202605/29/biorxiv-10-64898-2026-05-26-727963-v1-ehrlichia-ruminantium-infection-is-associated-with-tissue-specific-microbial-community-shifts-in-amblyomma-gemma-ticks-from-cattle-in-kenya)  
    标签：评分：6.0/10、query:microbiome
-   evidence：ITS2代谢条形码数据集用于微生物组分析
-6. [Metabarcode and transcriptome datasets of Pinus sylvestris to assess fungal phyllosphere and disease dynamics.](/202605/28/biorxiv-10-64898-2026-05-14-725107-v4-metabarcode-and-transcriptome-datasets-of-pinus-sylvestris-to-assess-fungal-phyllosphere-and-disease-dynamics)  
+   evidence：蜱组织16S rRNA扩增子测序
+4. [Trophotypes of the human gut microbiome: discrete energetic states under a macroecological framework](/202605/29/biorxiv-10-64898-2026-05-27-728235-v1-trophotypes-of-the-human-gut-microbiome-discrete-energetic-states-under-a-macroecological-framework)  
    标签：评分：6.0/10、query:microbiome
-   evidence：ITS2代谢条形码数据集用于微生物组分析
-7. [ParaDISM: Precise mapping of short reads to genes with highly homologous regions](/202605/28/biorxiv-10-64898-2026-05-19-726275-v1-paradism-precise-mapping-of-short-reads-to-genes-with-highly-homologous-regions)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：用于同源区域的短读映射流程
-8. [CUPID-seq enables highly multiplexed amplicon sequencing via combinatorial in-line dual indexing](/202605/28/biorxiv-10-64898-2026-05-20-726713-v1-cupid-seq-enables-highly-multiplexed-amplicon-sequencing-via-combinatorial-in-line-dual-indexing)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：CUPID-seq提高16S rRNA基因扩增子测序的规模化能力
-9. [gTranslate: rapid and accurate translation table prediction for prokaryotic genomes](/202605/28/biorxiv-10-64898-2026-05-24-727570-v1-gtranslate-rapid-and-accurate-translation-table-prediction-for-prokaryotic-genomes)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：用于功能注释的翻译表预测工具
-10. [Early-life canine gut microbiome maturation follows a shared age-diet trajectory within persistent host-specific structure](/202605/28/biorxiv-10-64898-2026-05-25-727648-v1-early-life-canine-gut-microbiome-maturation-follows-a-shared-age-diet-trajectory-within-persistent-host-specific-structure)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：使用鸟枪法宏基因组和16S全长测序分析犬肠道微生物组
+   evidence：人类肠道微生物组宏观生态谱系分析方法
 
 
 <div class="dpr-home-promo-card">
