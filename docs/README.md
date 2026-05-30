@@ -6,49 +6,43 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-05-29
-- 运行时间：2026-05-29 20:51:43 UTC
+- 最新运行日期：2026-05-30
+- 运行时间：2026-05-30 20:55:44 UTC
 - 运行状态：成功
-- 本次总论文数：9
-- 精读区：5
-- 速读区：4
+- 本次总论文数：7
+- 精读区：4
+- 速读区：3
 
 ### 今日简报（AI）
-今天聚焦宏基因组分类与微生物组诊断新方法，两篇高分研究分别利用精炼基础模型和贝叶斯低秩适应技术提升准确性。  
-最值得看的是TaxDistill如何通过蒸馏基因组基础模型改进宏基因组注释，以及iLoRA利用潜在交互图为微生物组诊断提供新思路。  
-建议关注这些方法在抗生素后菌群恢复路径和蜱传病原体生态学研究中的结合应用。
-- 详情：[/202605/29/README](/202605/29/README)
+1) 今日精读2篇、速读3篇，重点推荐高评分9.0的《Sensitive long-read amplicon sequence variant recovery with savont》与《13C flux ratio analysis with FRAPPPE reveals differences in metabolic fluxes between gut Bacteroidota and Escherichia coli》。
+2) 值得关注的方向：长读长测序在微生物组变异精准恢复中的应用，以及代谢通量分析揭示肠道菌群代谢差异。
+3) 建议后续可结合速读中微生物-病毒互作与定量宏基因组学内容，深入理解菌群动态与环境适应性。
+- 详情：[/202605/30/README](/202605/30/README)
 
 ### 精读区论文标签
-1. [TaxDistill: Improving Metagenomic Taxonomic Annotation via Distilled Genomic Foundation Models](/202605/29/2605.28868v1-taxdistill-improving-metagenomic-taxonomic-annotation-via-distilled-genomic-foundation-models)  
+1. [Sensitive long-read amplicon sequence variant recovery with savont](/202605/30/biorxiv-10-64898-2026-05-26-727271-v1-sensitive-long-read-amplicon-sequence-variant-recovery-with-savont)  
    标签：评分：9.0/10、query:microbiome
-   evidence：使用蒸馏技术改进宏基因组分类注释的新颖软件工具
-2. [iLoRA: Bayesian Low-Rank Adaptation with Latent Interaction Graphs for Microbiome Diagnosis](/202605/29/2605.30179v1-ilora-bayesian-low-rank-adaptation-with-latent-interaction-graphs-for-microbiome-diagnosis)  
+   evidence：从长读长16S rRNA扩增子中恢复ASV的算法
+2. [13C flux ratio analysis with FRAPPPE reveals differences in metabolic fluxes between gut Bacteroidota and Escherichia coli](/202605/30/biorxiv-10-64898-2026-05-29-728648-v1-13c-flux-ratio-analysis-with-frapppe-reveals-differences-in-metabolic-fluxes-between-gut-bacteroidota-and-escherichia-coli)  
    标签：评分：9.0/10、query:microbiome
-   evidence：基于LLM适配的微生物组诊断新软件iLoRA
-3. [Leviathan: A fast, memory-efficient, and scalable taxonomic and pathway profiler for (pan)genome-resolved metagenomics and metatranscriptomics](/202605/29/biorxiv-10-1101-2025-07-14-664802-v3-leviathan-a-fast-memory-efficient-and-scalable-taxonomic-and-pathway-profiler-for-pangenome-resolved-metagenomics-and-metatranscriptomics)  
-   标签：评分：9.0/10、query:microbiome
-   evidence：Leviathan: 新型宏基因组分类和通路分析软件
-4. [Benchmarking the quantitative performance of metabarcoding and shotgun sequencing using mock communities of marine nematodes](/202605/29/biorxiv-10-64898-2026-02-09-704827-v2-benchmarking-the-quantitative-performance-of-metabarcoding-and-shotgun-sequencing-using-mock-communities-of-marine-nematodes)  
+   evidence：基于机器学习的肠道细菌代谢通量比量化工具
+3. [nail: software for high-speed sequence annotation with profile hidden Markov models](/202605/30/biorxiv-10-1101-2024-01-27-577580-v2-nail-software-for-high-speed-sequence-annotation-with-profile-hidden-markov-models)  
    标签：评分：8.0/10、query:microbiome
-   evidence：比较宏条形码（18S/28S）与鸟枪测序的定量性能
-5. [Genome-resolved metagenomics reveals conserved, flexible and emerging symbioses across global leafhoppers](/202605/29/biorxiv-10-64898-2026-05-20-726650-v1-genome-resolved-metagenomics-reveals-conserved-flexible-and-emerging-symbioses-across-global-leafhoppers)  
+   evidence：使用pHMM进行高速序列注释，并在宏基因组数据上测试
+4. [Improving viral protein clustering using both diversified protein profiles and structural information](/202605/30/biorxiv-10-64898-2026-05-26-727815-v1-improving-viral-protein-clustering-using-both-diversified-protein-profiles-and-structural-information)  
    标签：评分：8.0/10、query:microbiome
-   evidence：对171种叶蝉进行基因组解析宏基因组分析
+   evidence：利用宏基因组序列改进病毒蛋白聚类以增强功能注释
 
 ### 速读区论文标签
-1. [geneML: Gene annotation across diverse fungal species using deep learning](/202605/29/biorxiv-10-64898-2026-05-18-725946-v1-geneml-gene-annotation-across-diverse-fungal-species-using-deep-learning)  
+1. [Examining interactions between the microbiome and viral infection across Drosophila species](/202605/30/biorxiv-10-64898-2026-05-27-728249-v1-examining-interactions-between-the-microbiome-and-viral-infection-across-drosophila-species)  
    标签：评分：7.0/10、query:microbiome
-   evidence：基于深度学习的真菌基因预测工具
-2. [Path-dependent recovery of the gut microbiome after antibiotics emerges from coupled ecological and evolutionary dynamics](/202605/29/biorxiv-10-64898-2026-05-22-727306-v1-path-dependent-recovery-of-the-gut-microbiome-after-antibiotics-emerges-from-coupled-ecological-and-evolutionary-dynamics)  
+   evidence：利用16S rRNA扩增子测序研究微生物组-病毒互作
+2. [Quantitative metagenomics reveals fine-scale population dynamics across bacteria, archaea, and microbial eukaryotes in an estuarine-coastal continuum](/202605/30/biorxiv-10-64898-2026-05-28-728481-v1-quantitative-metagenomics-reveals-fine-scale-population-dynamics-across-bacteria-archaea-and-microbial-eukaryotes-in-an-estuarine-coastal-continuum)  
+   标签：评分：7.0/10、query:microbiome
+   evidence：定量基因组分辨宏基因组学方法
+3. [Performance of IBD machine learning classifiers varies across microbiome training data independent of geographic diversity](/202605/30/biorxiv-10-64898-2026-05-21-727052-v2-performance-of-ibd-machine-learning-classifiers-varies-across-microbiome-training-data-independent-of-geographic-diversity)  
    标签：评分：6.0/10、query:microbiome
-   evidence：鸟枪法宏基因组测序分析方法，用于纵向微生物组数据
-3. [Ehrlichia ruminantium infection is associated with tissue-specific microbial community shifts in Amblyomma gemma ticks from cattle in Kenya](/202605/29/biorxiv-10-64898-2026-05-26-727963-v1-ehrlichia-ruminantium-infection-is-associated-with-tissue-specific-microbial-community-shifts-in-amblyomma-gemma-ticks-from-cattle-in-kenya)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：蜱组织16S rRNA扩增子测序
-4. [Trophotypes of the human gut microbiome: discrete energetic states under a macroecological framework](/202605/29/biorxiv-10-64898-2026-05-27-728235-v1-trophotypes-of-the-human-gut-microbiome-discrete-energetic-states-under-a-macroecological-framework)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：人类肠道微生物组宏观生态谱系分析方法
+   evidence：微生物组数据机器学习分类器评估
 
 
 <div class="dpr-home-promo-card">
