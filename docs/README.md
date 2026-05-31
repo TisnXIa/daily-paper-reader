@@ -6,43 +6,38 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-05-30
-- 运行时间：2026-05-30 20:55:44 UTC
+- 最新运行日期：2026-05-31
+- 运行时间：2026-05-31 20:46:54 UTC
 - 运行状态：成功
-- 本次总论文数：7
-- 精读区：4
+- 本次总论文数：6
+- 精读区：3
 - 速读区：3
 
 ### 今日简报（AI）
-1) 今日精读2篇、速读3篇，重点推荐高评分9.0的《Sensitive long-read amplicon sequence variant recovery with savont》与《13C flux ratio analysis with FRAPPPE reveals differences in metabolic fluxes between gut Bacteroidota and Escherichia coli》。
-2) 值得关注的方向：长读长测序在微生物组变异精准恢复中的应用，以及代谢通量分析揭示肠道菌群代谢差异。
-3) 建议后续可结合速读中微生物-病毒互作与定量宏基因组学内容，深入理解菌群动态与环境适应性。
-- 详情：[/202605/30/README](/202605/30/README)
+今天精读3篇高分论文，聚焦宏基因组分类工具影响分析及超低生物量病毒基因组测序技术突破。最值得关注《Taxonomic profilers》对多样性分析的评估和《LBV-Seq》实现DNA/RNA病毒从头重建。建议优先精读这两篇，前者帮您选对分类工具，后者拓展低生物量样本的病毒组研究能力。
+- 详情：[/202605/31/README](/202605/31/README)
 
 ### 精读区论文标签
-1. [Sensitive long-read amplicon sequence variant recovery with savont](/202605/30/biorxiv-10-64898-2026-05-26-727271-v1-sensitive-long-read-amplicon-sequence-variant-recovery-with-savont)  
+1. [Taxonomic profilers and their influence on metagenomic diversity analyses](/202605/31/biorxiv-10-64898-2026-05-27-727884-v1-taxonomic-profilers-and-their-influence-on-metagenomic-diversity-analyses)  
    标签：评分：9.0/10、query:microbiome
-   evidence：从长读长16S rRNA扩增子中恢复ASV的算法
-2. [13C flux ratio analysis with FRAPPPE reveals differences in metabolic fluxes between gut Bacteroidota and Escherichia coli](/202605/30/biorxiv-10-64898-2026-05-29-728648-v1-13c-flux-ratio-analysis-with-frapppe-reveals-differences-in-metabolic-fluxes-between-gut-bacteroidota-and-escherichia-coli)  
+   evidence：宏基因组分类工具基准研究
+2. [Ultra-low biomass sequencing workflow (LBV-Seq) enables de novo metagenomic reconstruction of DNA and RNA viral genomes](/202605/31/biorxiv-10-64898-2026-05-28-728558-v1-ultra-low-biomass-sequencing-workflow-lbv-seq-enables-de-novo-metagenomic-reconstruction-of-dna-and-rna-viral-genomes)  
    标签：评分：9.0/10、query:microbiome
-   evidence：基于机器学习的肠道细菌代谢通量比量化工具
-3. [nail: software for high-speed sequence annotation with profile hidden Markov models](/202605/30/biorxiv-10-1101-2024-01-27-577580-v2-nail-software-for-high-speed-sequence-annotation-with-profile-hidden-markov-models)  
+   evidence：用于宏基因组病毒基因组重建的新型测序工作流
+3. [Architectural Confinement and Seasonal Forcing Shape Cross-Domain Pathogen Assemblages in Complex Built Environments](/202605/31/biorxiv-10-64898-2026-05-26-727965-v1-architectural-confinement-and-seasonal-forcing-shape-cross-domain-pathogen-assemblages-in-complex-built-environments)  
    标签：评分：8.0/10、query:microbiome
-   evidence：使用pHMM进行高速序列注释，并在宏基因组数据上测试
-4. [Improving viral protein clustering using both diversified protein profiles and structural information](/202605/30/biorxiv-10-64898-2026-05-26-727815-v1-improving-viral-protein-clustering-using-both-diversified-protein-profiles-and-structural-information)  
-   标签：评分：8.0/10、query:microbiome
-   evidence：利用宏基因组序列改进病毒蛋白聚类以增强功能注释
+   evidence：使用16S rRNA基因和ITS测序分析建筑环境微生物组
 
 ### 速读区论文标签
-1. [Examining interactions between the microbiome and viral infection across Drosophila species](/202605/30/biorxiv-10-64898-2026-05-27-728249-v1-examining-interactions-between-the-microbiome-and-viral-infection-across-drosophila-species)  
+1. [PCR-free, targeted genomic sequencing using Dynamically optimized reference Adaptive Sampling (DORAS)](/202605/31/biorxiv-10-64898-2026-05-26-727915-v1-pcr-free-targeted-genomic-sequencing-using-dynamically-optimized-reference-adaptive-sampling-doras)  
    标签：评分：7.0/10、query:microbiome
-   evidence：利用16S rRNA扩增子测序研究微生物组-病毒互作
-2. [Quantitative metagenomics reveals fine-scale population dynamics across bacteria, archaea, and microbial eukaryotes in an estuarine-coastal continuum](/202605/30/biorxiv-10-64898-2026-05-28-728481-v1-quantitative-metagenomics-reveals-fine-scale-population-dynamics-across-bacteria-archaea-and-microbial-eukaryotes-in-an-estuarine-coastal-continuum)  
-   标签：评分：7.0/10、query:microbiome
-   evidence：定量基因组分辨宏基因组学方法
-3. [Performance of IBD machine learning classifiers varies across microbiome training data independent of geographic diversity](/202605/30/biorxiv-10-64898-2026-05-21-727052-v2-performance-of-ibd-machine-learning-classifiers-varies-across-microbiome-training-data-independent-of-geographic-diversity)  
+   evidence：利用自适应采样的微生物靶向测序方法
+2. [Beyond the annotated: protein foundation models enable robust prediction of microbial root competence](/202605/31/biorxiv-10-64898-2026-05-22-727091-v1-beyond-the-annotated-protein-foundation-models-enable-robust-prediction-of-microbial-root-competence)  
    标签：评分：6.0/10、query:microbiome
-   evidence：微生物组数据机器学习分类器评估
+   evidence：蛋白质基础模型预测微生物根际定殖能力
+3. [Cohort-HMM marker recruitment with per-OG orthology QC for phylogenomic supermatrices](/202605/31/biorxiv-10-64898-2026-05-27-728348-v1-cohort-hmm-marker-recruitment-with-per-og-orthology-qc-for-phylogenomic-supermatrices)  
+   标签：评分：6.0/10、query:microbiome
+   evidence：用于宏基因组组装基因组的标记基因招募流程
 
 
 <div class="dpr-home-promo-card">
