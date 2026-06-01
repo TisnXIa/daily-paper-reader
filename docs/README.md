@@ -6,38 +6,32 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-05-31
-- 运行时间：2026-05-31 20:46:54 UTC
+- 最新运行日期：2026-06-01
+- 运行时间：2026-06-01 22:51:47 UTC
 - 运行状态：成功
-- 本次总论文数：6
-- 精读区：3
+- 本次总论文数：4
+- 精读区：1
 - 速读区：3
 
 ### 今日简报（AI）
-今天精读3篇高分论文，聚焦宏基因组分类工具影响分析及超低生物量病毒基因组测序技术突破。最值得关注《Taxonomic profilers》对多样性分析的评估和《LBV-Seq》实现DNA/RNA病毒从头重建。建议优先精读这两篇，前者帮您选对分类工具，后者拓展低生物量样本的病毒组研究能力。
-- 详情：[/202605/31/README](/202605/31/README)
+今日精读一篇高分研究，聚焦短读与HiFi长读联合宏基因组学精准重构土壤MAG。最值得关注的是结合长读长显著提升复杂土壤微生物组MAG重建质量，此外金属污染驱动土壤微生物抗生素抗性选择。建议优先阅读精读论文了解MAG重建方法，并关注环境宏基因组中金属与抗生素抗性关联的速读论文。
+- 详情：[/202606/01/README](/202606/01/README)
 
 ### 精读区论文标签
-1. [Taxonomic profilers and their influence on metagenomic diversity analyses](/202605/31/biorxiv-10-64898-2026-05-27-727884-v1-taxonomic-profilers-and-their-influence-on-metagenomic-diversity-analyses)  
-   标签：评分：9.0/10、query:microbiome
-   evidence：宏基因组分类工具基准研究
-2. [Ultra-low biomass sequencing workflow (LBV-Seq) enables de novo metagenomic reconstruction of DNA and RNA viral genomes](/202605/31/biorxiv-10-64898-2026-05-28-728558-v1-ultra-low-biomass-sequencing-workflow-lbv-seq-enables-de-novo-metagenomic-reconstruction-of-dna-and-rna-viral-genomes)  
-   标签：评分：9.0/10、query:microbiome
-   evidence：用于宏基因组病毒基因组重建的新型测序工作流
-3. [Architectural Confinement and Seasonal Forcing Shape Cross-Domain Pathogen Assemblages in Complex Built Environments](/202605/31/biorxiv-10-64898-2026-05-26-727965-v1-architectural-confinement-and-seasonal-forcing-shape-cross-domain-pathogen-assemblages-in-complex-built-environments)  
+1. [Accurate MAG reconstruction from complex soil microbiome through combined short- and HiFi long-reads metagenomics](/202606/01/biorxiv-10-1101-2025-09-12-675765-v2-accurate-mag-reconstruction-from-complex-soil-microbiome-through-combined-short--and-hifi-long-reads-metagenomics)  
    标签：评分：8.0/10、query:microbiome
-   evidence：使用16S rRNA基因和ITS测序分析建筑环境微生物组
+   evidence：使用短读和长读的宏基因组组装与分箱方法
 
 ### 速读区论文标签
-1. [PCR-free, targeted genomic sequencing using Dynamically optimized reference Adaptive Sampling (DORAS)](/202605/31/biorxiv-10-64898-2026-05-26-727915-v1-pcr-free-targeted-genomic-sequencing-using-dynamically-optimized-reference-adaptive-sampling-doras)  
-   标签：评分：7.0/10、query:microbiome
-   evidence：利用自适应采样的微生物靶向测序方法
-2. [Beyond the annotated: protein foundation models enable robust prediction of microbial root competence](/202605/31/biorxiv-10-64898-2026-05-22-727091-v1-beyond-the-annotated-protein-foundation-models-enable-robust-prediction-of-microbial-root-competence)  
+1. [BacTaxID: A universal framework for standardized bacterial classification](/202606/01/biorxiv-10-64898-2025-12-09-693184-v4-bactaxid-a-universal-framework-for-standardized-bacterial-classification)  
    标签：评分：6.0/10、query:microbiome
-   evidence：蛋白质基础模型预测微生物根际定殖能力
-3. [Cohort-HMM marker recruitment with per-OG orthology QC for phylogenomic supermatrices](/202605/31/biorxiv-10-64898-2026-05-27-728348-v1-cohort-hmm-marker-recruitment-with-per-og-orthology-qc-for-phylogenomic-supermatrices)  
+   evidence：适用于宏基因组数据的通用细菌分类框架
+2. [TopOmics: Topic Modelling for All Omics](/202606/01/biorxiv-10-64898-2026-05-26-727810-v1-topomics-topic-modelling-for-all-omics)  
    标签：评分：6.0/10、query:microbiome
-   evidence：用于宏基因组组装基因组的标记基因招募流程
+   evidence：通用主题建模库可应用于微生物组学数据
+3. [Genome-resolved metagenomics reveals the potential for selection for antibiotic resistance due to metal pollution in soil microbial communities near a copper-nickel mine site in Botswana](/202606/01/biorxiv-10-64898-2026-05-29-728080-v1-genome-resolved-metagenomics-reveals-the-potential-for-selection-for-antibiotic-resistance-due-to-metal-pollution-in-soil-microbial-communities-near-a-copper-nickel-mine-site-in-botswana)  
+   标签：评分：6.0/10、query:microbiome
+   evidence：应用基因组解析宏基因组学方法
 
 
 <div class="dpr-home-promo-card">

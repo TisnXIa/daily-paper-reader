@@ -1,0 +1,2098 @@
+Title: Accurate MAG reconstruction from complex soil microbiome through combined short- and HiFi long-reads metagenomics
+
+URL Source: https://www.biorxiv.org/content/10.1101/2025.09.12.675765v2.full.pdf
+
+Number of Pages: 27
+
+Markdown Content:
+Accurate MAG reconstruction from complex soil microbiome through combined short- and 1
+
+HiFi long-reads metagenomics 2
+
+Carole Belliardo 1,2 , Nicolas Maurice 3,4 , Arthur Pere 2, Samuel Mondy 4, Alain Franc 5,6 , Marc 3
+
+Bailly-Bechet 2, Claire Lemaitre 3, Riccardo Vicedomini 3, Jean-Marc Frigerio 5,6 , Franck Salin 5,6 ,4
+
+Élodie Belmonte 7, Marie Gislard 8, David James Sherman 5, Pierre Abad 2, Clémence Frioux 5*, 5
+
+Étienne G.J. Danchin 2*6
+
+1 Université Côte d’Azur, MSI, France; 2 INRAE, Université Côte d’Azur, Institut Sophia Agrobiotech, France; 7
+
+3 Univ Rennes, CNRS, Inria, IRISA - UMR 6074, F-35000 Rennes, France; 4 Université Bourgogne Europe, 8
+
+Institut Agro Dijon, INRAE, Agroécologie, Dijon France; 5 Inria, Univ. Bordeaux, INRAE, F-33400 Talence, 9
+
+France; 6 INRAE, Univ. Bordeaux, BIOGECO, Cestas, F-33610, France; 7 Plateforme Gentyane, UMR 10 
+
+1095 Génétique Diversité Ecophysiologie des Céréales INRAE, UCA, Clermont-Ferrand, France 8 INRAE, 11 
+
+GeT-PlaGe, Genotoul, 31326 Castanet-Tolosan, France 12 
+
+* equal contributions 13 
+
+Contacts: carole.belliardo@univ-cotedazur.fr, clemence.frioux@inria.fr, Etienne.danchin@inrae.fr 14 
+
+# Abstract 15 
+
+Background 16 
+
+Advances in high-fidelity long-read (HiFi-LR) sequencing technologies have opened new opportunities to 17 
+
+explore the microbial genomic diversity of complex environments, such as soils. While short-read (SR) 18 
+
+sequencing has enabled broad insights at the gene level, the limited read length constrains the reconstruction 19 
+
+of complete genomes. HiFi-LRs, in contrast, improve assembly continuity and completeness, supporting 20 
+
+higher-resolution taxonomic and functional annotation. However, the cost and relatively low throughput of 21 
+
+HiFi-LR sequencing can limit genome recovery—particularly at the binning stage, where coverage depth is 22 
+
+critical. In this study, we assess the benefit of combining HiFi-LR and SR sequencing for genome-resolved 23 
+
+characterization of a soil microbiome. 24 
+
+Results 25 
+
+We generated metagenomic data for a tunnel-cultivated soil sample using high coverage Illumina SRs as well 26 
+
+as a combination of two HiFi-LR sequencing platforms (PacBio Sequel II and PacBio Revio). We found 27 
+
+that assemblies generated from pooled HiFi-LR data alone exhibited higher completeness compared to those 28 
+
+from ultra-deep SR data. Incorporating SR-derived coverage information for the binning of HiFi-LR contigs 29 
+
+further increased both the number and quality of recovered metagenome-assembled genomes (MAGs), with 30 
+
+a 24% increase in MAG recovery (313 vs. 252) and lower contamination levels (116 vs. 132 contaminated 31 
+
+bins; mean 7.09 vs. 8.07), compared to using HiFi-LR data alone. This approach enabled the recovery of 32 
+
+61 additional MAGs, including 67% of low-abundance and taxonomically diverse lineages such as Archaea, 33 
+
+representing 36 novel lineages. 34 
+
+Conclusion 35 
+
+Our results demonstrate that integrating HiFi-LR and SR sequencing markedly enhances genome recovery 36 
+
+and binning accuracy in a highly diverse environment such as soil. The hybrid approach employed leverages 37 
+
+the strengths of both technologies, leading to more contiguous assemblies and enabling the recovery of a 38 
+
+broader range of genomes, including low-abundance and taxonomically diverse taxa. While factors such as 39 
+
+sequencing depth, cost, and DNA quality remain important considerations, our study provides practical 40 
+
+guidance for designing future soil metagenomics projects and underscores the value of adopting long-read 41 
+
+technologies for more comprehensive characterization of complex microbial communities. 42 
+
+Keywords: Metagenomic | Soil | HiFi long read sequencing | Short read sequencing | Metagenomic assembled 43 
+
+genomes 44 
+
+1
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint
+
+# Background 45 
+
+Soil is one of the most diverse microbial ecosystems and remains underexplored [ 1 , 2]. It hosts an extraordinary 46 
+
+diversity of microorganisms, including bacteria, archaea, fungi, protists, and microscopic animals. The work 47 
+
+of Torsvik et al. [ 3 ] reports that a single gram of soil may contain up to 10 10 microbial cells covering diverse 48 
+
+taxa, and may harbour up to thousands of different species. Compared to host-associated biomes such as 49 
+
+the human gut, soil microbiomes exhibit much greater alpha-diversity and a higher proportion of unknown 50 
+
+taxa. Remarkably, just ∼2% of bacterial phylotypes account for nearly 50% of all bacterial sequences in soils 51 
+
+worldwide [ 4]. Comprehensive characterization of soil microbiomes, especially rare species, is essential for 52 
+
+advancing our understanding of biogeochemical cycles [ 5 ] and developing sustainable agricultural practices 53 
+
+[6]. Microbial genomes encode the genes responsible for the metabolic capacities and ecological functions that 54 
+
+shape soil processes, including interactions, catalysis of biochemical reactions, and contributions to ecosystem 55 
+
+functioning [ 7]. Thus, uncovering the diversity of soil microbial genomes is crucial for harnessing microbial 56 
+
+resources and promoting soil health and sustainability [6]. 57 
+
+Various approaches have been developed to characterise soil microbial communities. Although culturomics 58 
+
+has provided valuable insights, many soil species remain uncultivable under laboratory conditions [ 8]. 59 
+
+Consequently, metagenomics and other culture-independent omics approaches have become the primary 60 
+
+strategies for exploring the taxonomic diversity and functional potential of soil microbiomes. Shotgun 61 
+
+metagenomics allows direct DNA sequencing from complex microbial communities without prior cultivation. 62 
+
+This approach can provide a genomic snapshot of the microbial community in a given soil sample, even if 63 
+
+dark matter, constituted by rare species, remains difficult to capture. Metagenomics has revolutionised our 64 
+
+ability to investigate the diversity and functions of uncultured organisms, providing unprecedented insights 65 
+
+into the genetic diversity, functional potential, and ecological roles of microbiota [ 9 ]. De novo metagenomic 66 
+
+assembly allows the reconstruction of genomes species, including uncultured taxa, and the prediction of the 67 
+
+encoded proteins [ 10, 11 ]. However, the reconstruction of high-quality genomes from the complex mixture of 68 
+
+sequenced reads remains very limited in soil, due to the extremely high microbial diversity, uneven species 69 
+
+abundance, and the presence of closely related strains, which together complicate assembly and binning 70 
+
+processes. Consequently, only a few whole genomes are usually obtained, with many unassembled reads [ 12]. 71 
+
+Most metagenomic projects conducted over the past decade have relied on short-read (SR) sequencing 72 
+
+technologies, generating high-throughput datasets typically composed of 2x 50–150-base-pair fragments. 73 
+
+Consequently, SR-based metagenomic studies still dominate public repositories such as the JGI IMG/M 74 
+
+[13 ] and EBI MGnify [ 14 ] databases in terms of available sequence data. Despite their high accuracy and 75 
+
+throughput, SR remains limited to face the challenge of reconstructing genomes containing multicopy genes 76 
+
+or repeat-rich regions, which are inherently difficult to resolve with short sequences, creating ambiguous 77 
+
+paths in the assembly graph and leading to fragmented assemblies [ 15]. In the 2022 release of the JGI 78 
+
+IMG/M platform, only 10% of SR-derived contigs exceeded one kilobase in length, illustrating the extent of 79 
+
+assembly fragmentation. Moreover, inconsistencies in protein taxonomic assignments within contigs suggest 80 
+
+the presence of chimeric assemblies [11]. 81 
+
+Increased read length in metagenomic studies enhances contig lengths by providing long-range information, 82 
+
+which allows better resolution of repetitive sequences. In recent years, Oxford Nanopore Technologies (ONT) 83 
+
+[16 , 17 ] and Pacific Biosciences (PacBio) [ 18 ] platforms have significantly improved read accuracy, length, 84 
+
+and throughput. While the first generations of LR sequencing technologies were characterised by high error 85 
+
+rates, which led to the recommendation of combining them with SR for error correction during the assembly 86 
+
+step [ 19 ], recent technologies provide high-fidelity (HiFi) sequences, with error rates that are similarly low to 87 
+
+those of SR [ 20 , 21 ]. To leverage the complementary strengths of SR and LR technologies, several hybrid 88 
+
+metagenomic strategies have been developed. For assembly, tools such as OPERA-MS [ 16 ] use LR data 89 
+
+primarily to scaffold contigs initially assembled from SR reads. More recently, HyLight integrated HiFi-LR 90 
+
+and SR from low-depth metagenomes [ 22] and MetaPlatanus [ 23 ] implemented mutual-support strategies or 91 
+
+overlap-graph approaches to achieve strain-level resolution. Integrated workflows such as MUFFIN [ 24 ] further 92 
+
+combine hybrid assembly with differential coverage binning to recover high-quality metagenome-assembled 93 
+
+genomes (MAGs). Recent benchmarking studies additionally demonstrated that multi-sample hybrid binning 94 
+
+strategies outperform other approaches for recovering near-complete strains and detecting antimicrobial 95 
+
+resistance genes [25]. 96 
+
+2
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint
+
+Although several studies have explored hybrid approaches for metagenomic assembly and binning, a strategy 97 
+
+relying exclusively on LR data for assembly while using SR data exclusively for binning remains unexplored. 98 
+
+In this study, we assessed the added value of HiFi-LR sequencing compared to SR sequencing for metagenomic 99 
+
+assembly in complex environments such as soil. We generated and analysed PacBio HiFi-LRs, Illumina 100 
+
+SRs, and metabarcoding data from a cultivated soil sample, comparing contigs and MAG recovery for each 101 
+
+individual technology and for both combined. Our results demonstrate that a hybrid strategy, combining the 102 
+
+higher contiguity of HiFi-LR assemblies with the greater sequencing depth of SR data, improves genome 103 
+
+reconstruction. Incorporating SR-derived coverage into HiFi-LR binning led to an increase in MAG recovery (+ 104 
+
+24%), and reduced the global contamination levels compared to HiFi-LR data alone. The gain is particularly 105 
+
+marked for low-abundance taxa. Comparison with microbial diversity estimates from metabarcoding data 106 
+
+confirmed that this hybrid approach captures a broader spectrum of the soil microbiome. 107 
+
+# Methods 108 
+
+## Sampling 109 
+
+We collected a soil sample between two rows of salad crops in a tunnel farming setup in Lambesc, southern 110 
+
+France. Rapid freezing, followed by subsequent freeze-drying procedures at -40 °C, immediately preserved 111 
+
+the soil sample. These preservation and preparation steps were meticulously executed at the Conservatoire 112 
+
+de Ressources Génétiques (CRG), hosted within the Genosol platform in Dijon, France, to maintain the 113 
+
+molecular integrity of the samples in readiness for subsequent analytical procedures. 114 
+
+## DNA extraction 115 
+
+Total genomic DNA was extracted using modified IS0-11063 protocols for DNA extraction and Nucleospin soil 116 
+
+for DNA purification [ 26 ]. From 1g of dry equivalent soil (freeze-dried), DNA was extracted by mechanical 117 
+
+lysis using FastPrep 5G (MP Bio) coupled with cell lysis with denaturing detergent (lysis buffer: EDTA, 118 
+
+Tris pH 8.0, NaCl and SDS 2%). Deproteinisation consisted of precipitating the proteins with a high salt 119 
+
+concentration (KAc 5M) followed by high-speed centrifugation to separate the DNA (supernatant) and 120 
+
+proteins (pellet). DNA has been precipitated with isopropanol (v/v) and washed with ethanol 70%. DNA was 121 
+
+quantified with NanoDrop technology with a concentration of 114.7 ng/ μL (260/280 ratio of 1.84, 260/230 122 
+
+ratio of 1.5). As Nanodrop could overestimate the DNA content, the QuBit method, a more reliable method 123 
+
+for DNA quantification, was used and yielded a dosage of 50.5 ng/ μL (total DNA quantity 2.62 μg in a 124 
+
+volume of ca. 50 μL). Notably, the sample exhibited a straightforward appearance, denoting its suitability for 125 
+
+further investigation. 126 
+
+## Metagenomic and metabarcoding sequencing and raw data processing 127 
+
+Long-read metagenomic sequencing 128 
+
+Extracted soil DNA was sequenced on the PacBio platforms using the HiFi sequencing mode. One complete 129 
+
+SMRT cell was run on both the Sequel II and Revio platforms, generating two datasets. For the Sequel II 130 
+
+sequencing, high-molecular-weight DNA with an average fragment size of ~8 Kb was used to prepare an 131 
+
+unamplified, non-multiplexed HiFi library with the Template Prep Kit v2.0, following the PacBio metagenomic 132 
+
+shotgun protocol. Sequencing was carried out on a SMRT Cell 8M over 30 h. For the Revio sequencing, 133 
+
+the HiFi library was prepared with ~8 Kb not-sheared native DNA, using the Template Prep Kit 3.0. The 134 
+
+SMRTBell library was sequenced on a SMRTCell 25M over 24 h with the Revio sequencing plate reagents. 135 
+
+For both Sequel II and Revio datasets, adapter removal, read quality filtering (minimum Q20), and generation 136 
+
+of circular consensus sequencing (CCS) reads were performed using dedicated PacBio pipelines. HiFi-LR 137 
+
+reads of both platforms were pooled to increase sequencing depth. 138 
+
+Short-read metagenomic sequencing 139 
+
+DNA from the same soil sample underwent a second extraction and was sequenced at ultra-deep coverage on 140 
+
+a full NextSeq 2000 Illumina P3 flow cell. 141 
+
+3
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint
+
+16S rRNA gene amplicon sequencing 142 
+
+16S rRNA gene amplicon sequencing data were generated from the same soil sample through targeted 143 
+
+sequencing of the V3-V4 region of the 16S rRNA gene using primers 341F_UDI and 785R_UDI on the 144 
+
+Illumina NextSeq 2000 platform, producing 2x300bp reads. Library preparation and sequencing were 145 
+
+conducted with the protocol described by [ 27 ]. Based on the selected primers, we expected to sequence 146 
+
+approximately 444 bp of the 16S rRNA gene, with an expected overlap of approximately 156 bp between 147 
+
+R1 and R2. Paired-end reads were merged using FLASH v0.23.4 [ 28 ] with flexible overlap settings (--148 
+
+min-overlap 10, --max-overlap 301) to reconstruct full-length amplicons, even with region size variability. 149 
+
+Primer sequences were trimmed using Cutadapt v4.9 [ 29] with parameters optimised for mismatch handling 150 
+
+(--error-rate 0.1, --match-read-wildcards, --overlap). Quality filtering was performed using Fastp v0.23.4 151 
+
+[30], with the following parameters: a Phred quality score threshold of 30 (--qualified_quality_phred 30), a 152 
+
+minimum sequence length of 230 bp (--length_required 230), and an average quality of 30 (--average_qual). 153 
+
+Additional trimming at the 5’ and 3’ ends was done using a sliding window approach (--cut_window_size 154 
+
+4, --cut_mean_quality 30) with low-quality bases removed (--cut_front, --cut_right). Adaptor trimming 155 
+
+was disabled (--disable_adapter_trimming) to avoid interference with prior primer removal steps. Chimeric 156 
+
+sequences were detected and removed using Vsearch v2.9.1 [31] in de novo mode (--uchime3_denovo). 157 
+
+## Bioinformatic analyses 158 
+
+A summary of the bioinformatic pipeline and metagenomic processing is available in Supp. Fig. 1. After 159 
+
+data acquisition, we performed quality control on each dataset using FastQC software version 0.12.0 [ 32] with 160 
+
+default parameters. The results were merged using MultiQC software version 1.25.1 [33] in default mode. 161 
+
+Assembly 162 
+
+Paired-end metagenomic SR were assembled using MEGAHIT v1.2.9 [ 34 ] with the ‘--presets meta-large’ 163 
+
+parameter. HiFi-LR were assembled using MetaMDBG v.0.3 with default parameters [35]. 164 
+
+Binning 165 
+
+We used three binning strategies according to the sequencing data used to perform alignments against contigs 166 
+
+(Supp. Fig. 1). Sequence features, such as GC content, tetranucleotide frequency, and coverage as a proxy 167 
+
+for abundance, were used for clustering contigs that are supposed to belong to the same organism in the bin, 168 
+
+toward the reconstruction of MAGs. 169 
+
+• Binning strategy 1: short-read assembly with short read mapping for contig binning (SR-SR). 170 
+
+• Binning strategy 2: long-read assembly with long read mapping for contig binning (LR-LR). 171 
+
+• Binning strategy 3: long-read assembly with short read mapping for contig binning (Hybrid SR-LR 172 
+
+strategy). 173 
+
+In binning strategies 1 and 3, short reads were mapped on contigs using BWA-MEM2 v.2.2 [ 36 ] with default 174 
+
+parameters. In Binning strategy 2, long reads were mapped with Minimap2 v.2.26 [ 37 ] with the parameters 175 
+
+-x map-hifi -a --sam-hit-only --secondary=no. 176 
+
+In all the binning strategies, resulting alignments were used to compute contig coverage, which served as a 177 
+
+proxy for estimating species abundance. Mapping outputs were processed using Samtools v.1.10 [ 38 ]. Then, 178 
+
+in all three strategies, contigs were binned using MetaBAT2 v.2.15 [ 39 ] in default mode, and SemiBin v.1.5.0 179 
+
+[40] with parameters ‘--environment soil’ and ’--sequencing-type=long_read’ for long-read processing (Binning 180 
+
+strategies 2 and 3). The obtained results were merged and dereplicated using DAStool v.1.1.6 [41]. 181 
+
+Bin and Metagenome-aAssembled Genome (MAG) evaluation 182 
+
+Gene prediction was performed using Prodigal v2.6.3 [ 42 ], and the completeness and contamination of bins 183 
+
+were assessed using CheckM2 v1.0.1 [ 43 ]. Those analyses were performed using a previously published 184 
+
+workflow [ 44 ]. We required at least 50% completeness and less than 10% contamination, without any filter on 185 
+
+4
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint
+
+the number of contigs, for MAGs and taxonomically assigned bins. Dereplicated bins were classified based 186 
+
+on their completeness and contamination levels, as described in the MIMAGs guidelines [ 45 ]. Bins with 187 
+
+100% completeness and ≤5% contamination were considered near-complete MAGs. Bins reaching the ≥90% 188 
+
+completeness criterion were labelled high-quality (HQ) MAGs. Those comprising between ≤90% and ≥50% 189 
+
+completeness were considered medium-quality (MQ) MAGs. Bins below these thresholds were considered 190 
+
+low-quality (LQ) MAGs, while those over 10% of contamination were classified as ‘ contaminated bins ’. Metrics 191 
+
+regarding assembled and non-assembled reads (e.g., k-mers, GC content, read size) and assembly and binning 192 
+
+quality were obtained using Mapler v2.0.0 [46]. 193 
+
+Subsampling of short-reads for coverage calculation at the binning step 194 
+
+To evaluate the impact of short-read sequencing depth on contig binning efficiency, additional subsampling 195 
+
+analyses were performed on the Hybrid SR-LR strategy (binning strategy 3). SR datasets were randomly 196 
+
+subsampled to 10% and 50% of the initial sequencing depth using SeqKit v.2.13.0 [ 47 ] with the command 197 
+
+seqkit sample2 -p and default parameters. The resulting subsets of short reads were independently mapped 198 
+
+against LR-sq+rv contigs using BWA-MEM2 v.2.2, and contigs were subsequently binned following the same 199 
+
+workflow described above using MetaBAT2, SemiBin, and DAS Tool. 200 
+
+Taxonomic classification 201 
+
+To characterise the taxonomic composition of MAGs, contigs, and reads from each dataset, two complementary 202 
+
+taxonomic assignment strategies were applied. For MAGs with more than 50% completeness, taxonomic 203 
+
+classification was confirmed using GTDB-tk v.2.1.1 [ 48 ] with database version 214, providing robust information 204 
+
+based on multigene phylogenetic placement [49]. 205 
+
+Additionally, both Illumina 16S rRNA amplicon sequences and PacBio metagenomic contigs as well as reads 206 
+
+underwent a common taxonomic assignment strategy to facilitate their comparison. Reads (metabarcoding 207 
+
+and LR metagenomics) and contigs (LR and SR metagenomics) were assigned a taxon using MMseqs2 [ 50 ]208 
+
+“easy-search” module against the SILVA 138.2 SSURef NR99 database of curated 16S rRNA sequences as 209 
+
+the reference. To ensure high-confidence assignments, homology searches were performed using a stringent 210 
+
+threshold of 97% sequence identity and a minimum alignment length of 100 bp (parameters --min-seq-id 0.97 211 
+
+and --min-aln-len 100, respectively). Coverage was set to improve sensitivity in detecting partial sequence 212 
+
+matches of fragmented SR and LR reads and contigs by including overlapping hits (--cov-mode 2). Alignment 213 
+
+coverage was analysed using BEDtools [ 51 ], calculating the proportion of each reference sequence covered by 214 
+
+aligned reads. Species with 16S sequences from SILVA that were covered on more than 97% of their length 215 
+
+were retained for further study. Eukaryotic hits against the SILVA database [ 52 ] were excluded to ensure 216 
+
+consistency in taxonomic inference. The taxonomic lineage was used to increment counts in an abundance 217 
+
+matrix for each taxonomic rank from species to domain. These matrices underwent downstream diversity 218 
+
+analyses, which were performed using custom Jupyter Notebooks. Phylogenetic visualisations were generated 219 
+
+using the Interactive Tree Of Life (iTOL) v7 [53]. 220 
+
+# Results 221 
+
+## HiFi-LR sequencing delivers more comprehensive and continuous metagenome 222 
+
+## reconstruction. 223 
+
+To compare shotgun metagenomic assembly performance of short-read and long-read sequencing technologies, 224 
+
+we sequenced a soil sample with Illumina SR and PacBio HiFi-LR (Sequel II and Revio) platforms and 225 
+
+assembled the resulting datasets. Our data show that HiFi-LR sequencing, particularly with the Revio 226 
+
+platform, yields more comprehensive reconstructions of microbial genomes with enhanced continuity and 227 
+
+more complete contigs. 228 
+
+Ultra-deep sequencing with paired-end Illumina technology generated 903.3 million reads of 2x150 base pairs 229 
+
+in length. Combining PacBio HiFi-LRsequencing using a full SMRTcell on Sequel II and another on Revio 230 
+
+platforms yielded a lower total of 11.2 million reads, but with an average length of 7.25 kb, and a maximum 231 
+
+5
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint
+
+length of 40 kb (Table 1). The read length distribution of our metagenome sequencing aligns with DNA 232 
+
+fragment size estimates for soil samples, mirroring findings from human gut microbiome studies [18]. 233 
+
+HiFi-LR sequences result in more comprehensive metagenome assembly 234 
+
+Reads were assembled using technology-specific pipelines to ultimately reconstruct the genomes of soil 235 
+
+microorganisms. A first observation is that, before assembly, raw HiFi read lengths substantially surpass 236 
+
+the lengths of contigs assembled from SR, as previously observed in publicly available soil metagenomes, 237 
+
+where the average size of SR contigs was less than 1kb [ 11 ]. Our dataset confirms these observations, with 238 
+
+SR contigs having an N50 of 620 bp and a largest contig size of 192 kb, whereas unassembled HiFi-LRs have 239 
+
+an N50 of 7,618 bp. The assembly of PacBio HiFi-LRs further increases this length difference. Sequel II and 240 
+
+Revio long reads were both assembled separately, and also pooled (sq+rv) as a third HiFi-LR dataset, which 241 
+
+was assembled to compare the effect of technologies and depth (Sequel II < Revio < merged Sequel + Revio) 242 
+
+on assembly quality. Revio generated three times more base pairs than Sequel II (Table 1), a trend that 243 
+
+persisted at the assembly level, with Revio assemblies containing three times more assembled base pairs in 244 
+
+total (Table 1). 245 
+
+Four contigs obtained from Sequel II reads were longer than 1 Mb, with the longest being 1.5Mb in length. 246 
+
+In contrast, assembly of Revio reads yielded 139 contigs of at least 1 Mb, and 87 longer than the longest 247 
+
+Sequel II contig. The longest contig obtained with Revio was 5.7 Mb long, demonstrating the capacity of this 248 
+
+technology to deliver HiFi-LRs with higher coverage useful for resolving microbial genomes from complex 249 
+
+environments. Although Illumina yielded nearly twice the total number of base pairs compared to PacBio at 250 
+
+both the read and contig levels, the short-read assembly remained highly fragmented, with an N50 of only 251 
+
+620 bp and a maximum contig length of 185 kb (Table 1, Fig. 1). The Revio platform, by generating more 252 
+
+HiFi-LRs, enables the assembly of contigs longer than those generated not only from Illumina data but also 253 
+
+from Sequel II data. 254 
+
+The improvement in contig lengths generated from long reads is expected to positively impact the downstream 255 
+
+completeness of gene predictions. De novo gene prediction from long-read assemblies yielded approximately 18 256 
+
+million proteins classified as complete, representing 80% of all predictions, compared to fewer than 5 million 257 
+
+(12% of all predicted proteins) from SR contigs. Furthermore, the length distributions of predicted proteins 258 
+
+are consistent with those reported by Never and colleagues [ 54 ] for high-quality predicted proteomes (Supp 259 
+
+Fig. 1B). Indeed, in this work, the authors showed that protein length distribution is a reliable indicator of 260 
+
+genome assembly quality, with conserved protein lengths typically mostly ranging from 236 to 353 amino 261 
+
+acids (726 to 1059 base pairs) across different domains of the tree of life (archaea: 242 amino acids, bacteria: 262 
+
+270 amino acids, eukaryotes: 353 amino acids). This increased protein prediction accuracy is observed in 263 
+
+both the LR contigs and the predictions from raw LR reads. 264 
+
+Although HiFi-LRs generated by the Revio platform yielded better assembly metrics and gene predictions 265 
+
+than short reads, combining the two long-read datasets (Sequel II + Revio, sq+rv) further enhanced assembly 266 
+
+metrics. This suggests a direct positive effect of HiFi-LR sequencing depth on the assembly statistics. While 267 
+
+the contig length is only slightly improved (Fig. 1, Supp. Fig. 2), the number of contigs and total base pairs 268 
+
+incorporated in contigs for the pooled sq+rv dataset have significantly increased (Table 1). These results 269 
+
+confirm the importance of sequencing depth in reconstructing DNA sequences from complex environments 270 
+
+[55]. 271 
+
+6
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint Category  Dataset  Short reads  Long reads-sq  Long reads-rv  Long reads-sq+rv Sequencing data in-formation
+> Number of Reads  903,3 M (x2)  2,9 M  8,2 M  11 ,2 M Total bp  147,371,618,700  20,251,105,762  60,979,354,823  81,230,460,585 Average  Read  Length (bp) 150 (x2)  6,951  7,358  7,252 Maximum Read Length (bp) 29,991  40,482  40,482 N50 (bp)  7,618  7,969  7,881
+> Assembly Metrics  Number of Contigs  31,071,620  493,072  1,208,875  1,545,396 Total bp  19,141,441,572  3,069,439,982  9,001,313,035  11,591,114,055 Maximum Length (bp)  185,456  1,508,276  5,668,623  6,140,418 N50 Contigs (bp)  620  7,636  9,365  9,553 % Unmapped reads  17.5  27.95  16.18  13.95
+> Table 1:  Summary of Illumina Next-seq 2000 short reads and PacBio long reads from Sequel II (sq), Revio (rv) and pooled Sequel and Revio (sq+rv). *“M” = Millions, “G”=Giga, "bp" = base pairs, “ sq” = sequel, “rv” = revio.
+
+7
+
+.CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint 3 4 5 6    
+
+> Contig Length (log10 bp)
+> 0.0 0.5 1.0 1.5 2.0 2.5 3.0
+> Density
+> 1.5 2.0 2.5 3.0 3.5
+> Protein Length (log10 aa)
+> 0.00 0.25 0.50 0.75 1.00 1.25 1.50 1.75 2.00
+> Density
+
+A B Illumina SR 
+
+> SequelII HiFi-LR
+> Revio HiFi-LR
+> Pooled sq+rv HiFi-LR
+
+Figure 1: A) Contig size and B) protein length distribution (log scale) for short reads, SequelII and Revio as well as pooled sq+rv HiFi-LRs. 
+
+Unmapped reads indicate limitations in coverage and assembly, mainly in low-abundance 272 
+
+species. 273 
+
+Unmapped reads are those that fail to align with the assembly either because they contain sequencing errors 274 
+
+or are not represented in any contig. Characterising unmapped reads is crucial for assessing sequencing com-275 
+
+pleteness and identifying genomic regions (or even species) that are challenging to assemble. In metagenomics, 276 
+
+those unmapped reads often originate from low-abundant populations, leading to undetected species or highly 277 
+
+fragmented bins. 278 
+
+Here, mapping statistics revealed significant differences between sequencing platforms. When Illumina 279 
+
+SR exhibited an unmapped-read rate of 17.5% on their associated contigs, PacBio HiFi-LR demonstrated 280 
+
+unmapped-read rates of 28%, 16% and 14% for contigs generated from Sequel II, Revio or both technologies 281 
+
+pooled, respectively (Table 1, Fig. 1A). On the PacBio datasets, the higher sequencing depth yielded 282 
+
+a significantly lower proportion of unmapped reads (p-value < 10 −5, Z >100 for all comparisons with a 283 
+
+two-sample proportion Z-test), with a small to medium effect size, increasing with the difference in sequencing 284 
+
+depth (cohen’s h: 0.06 between pooled and Revio, 0.29 between Revio and Sequel II, and 0.35 between pooled 285 
+
+and Sequel II). Thus, the higher number of generated contigs and incorporated base pairs increased the 286 
+
+diversity of genomic regions captured by the assembly. 287 
+
+Further comparisons of reads (Supp. Fig. 3) highlighted that unassembled long reads (sq+rv) exhibited 288 
+
+slightly shorter lengths than those participating in the assembly, with a median length of 6.3 and 7.0 kb, 289 
+
+respectively; the distributions in the two groups differing significantly (Mann-Whitney, P < 2.2e -16 , two-tailed), 290 
+
+but with a small effect (rank-biserial correlation, r=0.15). Unassembled reads also displayed a lower GC 291 
+
+content than the other reads, with a median of 63.6% compared to a median of 65.8% (Mann-Whitney, P < 292 
+
+2.2e -16 , two-tailed, rank-biserial correlation: r=0.17). Additionally, their abundance (as calculated by the 293 
+
+median of their k-mer occurrences within the full read dataset) was significantly lower, with a median of 1, 294 
+
+compared to 3 for the assembled reads (Mann-Whitney, P < 2.2e -16 two-tailed), and with a strong effect 295 
+
+(rank-biserial correlation, r=0.73). 296 
+
+It is worth noting that, with an average length of 6.7 kb, the unassembled reads could still contain full-length 297 
+
+gene sequences. These sequences could uncover genomic fragments and functions, possibly from low-abundance 298 
+
+species still uncaptured in assembly-based analyses. These findings suggest that, due to sequencing depth 299 
+
+limitations, long-read assemblies still miss a significant portion of the metagenomic diversity, resulting in a 300 
+
+substantial number of species left unassembled. This underscores the importance of integrating complementary 301 
+
+8
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint
+
+strategies to enhance the recovery of genomes from complex soil communities. 302 
+
+Finally, to assess overlap between captured biodiversity across technologies, short reads were mapped on 303 
+
+long-read assemblies. We observed that 21% of SR remained unmapped; this proportion increased to 62% 304 
+
+under stringent mapping parameters (identity >90% and alignment length ≥130 bp), highlighting partial but 305 
+
+incomplete overlap in captured biodiversity between both sequencing technologies. 306 
+
+## Using SR coverage improves binning of HiFi-LR contigs 307 
+
+We then compared the number and completeness of genomes reconstructed after binning for both SR and 308 
+
+HiFi-LR datasets, considering different mapping strategies prior to binning: (i) mapping Illumina SR to 309 
+
+the short-read contigs (SR-SR), (ii) HiFi-LR to the HiFi-LR contigs (LR-LR), and (iii) Illumina SR to the 310 
+
+HiFi-LR contigs (SR-LR). This resulted in three distinct binning workflows (Supp. Fig. 1). Since the pooled 311 
+
+sq+rv HiFi-LR from both Revio and Sequel II technologies yielded the best assembly results in terms of 312 
+
+contig length distribution and lower % of unmapped reads, we consider only this dataset as representative of 313 
+
+the HiFi-LR technology from now on. 314 
+
+Comparative analysis of bins and MAGs from Illumina SR and PacBio HiFi-LR assemblies 315 
+
+obtained through self-mapping coverage 316 
+
+We first considered binning the HiFi-LR assembly using the mapping of the corresponding long reads to the 317 
+
+contigs (Fig. 2A). Such binning led to reduced unbinned contig length (Fig. 2B) and generated more than 318 
+
+twice the number of bins (2,587 vs 1,187) and nearly twice as many MAGs (252 vs 145) compared to binning 319 
+
+the SR contigs with short-read mapping (Table 2, Fig. 2C). This improvement was also reflected by longer 320 
+
+contigs (up to 6.7 Mbp vs. 192 Kbp), greater bin lengths after dereplication, and a substantially higher N50 321 
+
+(487 Kbp vs. 9 Kbp), indicating improved contiguity (Table 2). Regarding MAGs, the HiFi-LR assembly 322 
+
+produced substantially more high- and medium-quality MAGs (75 HQ and 169 MQ vs. 16 HQ and 128 MQ 323 
+
+for SR), as well as a greater number of low-quality MAGs (176 vs. 51). Notably, HiFi-LR assemblies also 324 
+
+generated significantly more near-complete MAGs (8 vs none), highlighting their potential for near-complete 325 
+
+genome reconstruction, even in very complex microbiomes (Fig. 2C). 326 
+
+However, these better assembly metrics came with an increase in contamination, as evidenced by a larger 327 
+
+number of contaminated bins (>10% contamination estimates) in the HiFi-LR dataset (132 vs. 63 bins 328 
+
+classified as contaminated). This pitfall is likely related to the insufficient coverage information in HiFi-LR 329 
+
+bins, due to relatively limited sequencing depth (Table 1) and resulting in relatively homogeneous read 330 
+
+abundance when mapped to contigs (Fig. 2A,C). Specifically, HiFi-LR self-mapping resulted in low coverage 331 
+
+depths on contigs (mean: 3X; range: 0–310X, Fig 2A) and on MAGs (mean: 6X; range: 0–63X), limiting the 332 
+
+resolution of the binning process. 333 
+
+In contrast, the depth of SR sequencing led to broader coverage estimation. Self-mapping SRs on their 334 
+
+corresponding contigs yielded substantially higher coverage, with mean depths of 33X on SR-assembled 335 
+
+contigs (range: 5–17,156X, Fig. 2A) and 40X on MAGs (range: 10–254X). Notably, more than half of 336 
+
+Illumina reads aligned stringently to HiFi-LR-assembled contigs, with coverage depths reaching up to 27,323X 337 
+
+(for bins mean: 9X; for MAGs mean: 16X range: 1–126X). These results suggest that the limited depth of 338 
+
+HiFi-LR self-mapping undermines binning accuracy and results in an increase in contaminated bins (Fig. 339 
+
+2C). Consequently, we hypothesised that incorporating SR coverage into the HiFi-LR binning process could 340 
+
+improve bin quality by enhancing binning resolution and reducing contamination. 341 
+
+9
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint Binning Strategy  Self-coverage  SR-coverage Metric  Processing Step  Illumina  Pcb_sq_rv  Pcb_sq_rv
+> Number of bins  Raw bins  1 187  2 587  2 518 Non-redundant bins  258  560  627 MAGs  145  252  313 Binned contigs (all bins)  Non-redundant bins  146,518  83,327  113,232 MAGs  68,669  20,889  31,384 Binned base pairs (Mbp)  Non-redundant bins  987  1 990  2 274 MAGs  548  995  1 196 Max. contig length (Kp)  Non-redundant bins  192  6 697  6 697 MAGs  186  6 140  6 697 N50 (Kb)  Non-redundant bins  9 487  429 MAGs  12  907  750
+> Table 2:  Summary of bins from Illumina and PacBio sequencing obtained using self-coverage or SR coverage for binning of contigs.
+> “Raw bins” correspond to the total number of bins generated independently by MetaBAT2 and SemiBin. “Non-redundant bins” refer to the set of bins retained after refinement and scoring with DAS Tool, which integrates results from multiple binning tools and selects non-redundant bins. MAGs correspond to metagenome-assembled genomes as defined by CheckM criteria ( ≥50% completeness and  ≤10% contamination). **’ M’ = Millions, “G”=Giga, "bp" = base pairs, “ Pcb_sq_rv” = contigs from coassembly of sequel and revio data. Note: DAS Tool was used to integrate bins generated by MetaBAT2 and SemiBin. Dereplication refers to the selection of non-redundant bins based on quality scores
+
+10 
+
+.CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint Comparative analysis of genome bins from PacBio HiFi-LR assemblies using self-mapping 342 
+
+versus SR coverage mapping 343 
+
+We therefore designed a hybrid binning strategy, using coverage information from Illumina SR mapping 344 
+
+on contigs assembled from pooled sq+rv PacBio HiFi-LR and assessed its benefit. Although the raw total 345 
+
+number of produced bins was slightly lower (2,587 bins for self LR-self coverage vs. 2,518 for SR coverage), 346 
+
+SR coverage of HiFi-LR contigs generated more unique bins. Indeed, dereplication yielded 627 non-redundant 347 
+
+bins using SR coverage, representing a more than 10% increase over the 560 bins obtained from self-coverage, 348 
+
+which reflects improved resolution of overlapping or ambiguous contigs in the complex samples. This strategy 349 
+
+yielded 313 reconstructed MAGs (+24%) compared to. 252 obtained using LR self-coverage (Table 2, Fig. 350 
+
+2C, Supp. Fig. 4, Supp. Fig. 5). 351 Illumina PacBio PacBio SRcov 050 100 150 200 250             
+
+> Average Depth
+> Dataset
+> Illumina PacBio PacBio SRcov
+> Illumina PacBio PacBio SRcov 020 40 60 80 100
+> Aligned bases percentage
+> 6.81% 7.06% 6.50% 6.37% 8.04% 2.38% 6.77% 5.61% 64.21% 38.23% 37.38%
+> Bin quality
+> Complete MAG HQ MAG MQ MAG LQ MAG Contaminated bins Unbinned contigs
+> Illumina PacBio PacBio SRcov 0100 200 300 400 500 600
+> Bin Count
+> 08816 75 80 128 169 225 51 176 198 63 132 116
+
+A B C
+
+Figure 2: A) Average coverage of SR and HiFi-LR contigs after mapping of their respective (SR and HiFi-LR) reads, along with the average coverage of Hifi-LR contigs after SR alignment (PacBio SRcov). B) Aligned bases percentage (length of read segments aligned to the assembly divided by total reads length, grouped by bin quality). C) Number of bins and their quality classification. SR and HiFI-LR datasets were binned using self-mapping of their respective reads, while “PacBioSRcov” refers to the PacBio assembly binned using SR data. Bin quality categories include Complete, High Quality (HQ), Medium Quality (MQ), Low Quality (LQ), and Contaminated (>10% contamination). Improvement is observed for MAGs, where an additional 30% of contigs participate in high-quality MAGs 352 
+
+(LR mapping: 20,889 vs. SR: 31,384, Fig 2B). As expected, those contigs have a reduced read coverage 353 
+
+compared to the ones shared in the two binning strategies (Supp. Fig. 6, Mann–Whitney U test, p = 6.56 354 
+
+× 10 -135 ). Therefore, SR coverage allowed for the incorporation of more base pairs (2,274 Mbp vs. 1,990 355 
+
+Mbp with HiFi-LR self-coverage) in bins, and within MAG sequence recovery (1,196 Mbp vs. 995 Mbp). 356 
+
+However, bins obtained from SR coverage have a slightly reduced median contiguity (MAG N50 decreased 357 
+
+from 907.6 Kbp to 750.9 Kbp). The number of near-complete MAGs remained stable (8), and the number 358 
+
+of high-quality MAGs increased slightly from 75 to 80. In parallel, the number of medium-quality MAGs 359 
+
+increased from 169 to 225, and low-quality MAGs increased (176 vs 198). These results suggest that the 360 
+
+higher coverage provided by SRs allowed more species to be represented as MAGs, although a substantial 361 
+
+proportion remained fragmented. The number of contaminated bins decreased substantially with SR coverage 362 
+
+(132 vs 116), suggesting better bin purity with the increase of coverage (Fig. 2A). 363 
+
+If direct comparison of genetic diversity between bins is difficult for assessing genome reconstruction quality 364 
+
+in uncultivated species, metrics such as completeness, contamination, and MAG taxonomic assignment 365 
+
+can aid in evaluation. The increase in contig recruitment driven by SR coverage enhances the recovery of 366 
+
+additional MAGS, while exerting only a marginal effect on the completeness of MAG already reconstructed 367 
+
+LR coverage (mean completeness estimates of 62.71 HiFi-LR and 63.05 for SR coverage, respectively, Supp. 368 
+
+Fig. 4 and 5). In contrast, this coverage improves genome discrimination by reducing contamination levels 369 
+
+(mean contamination estimates of 8.07 HiFi-LR and 7.09 SR coverage, respectively). 370 
+
+This improvement was contingent on sufficiently deep short-read coverage. When subsampling the SR dataset 371 
+
+to 50%, we obtained 45 additional MQ MAGs compared to self-coverage, while only one HQ MAG present 372 
+
+11 
+
+.CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint with self-coverage was lost. However, at 10% SR subsampling, binning quality markedly declined, with fewer 373 
+
+MAGs recovered at all quality thresholds than with self-coverage (Supp. Fig. 7). 374 
+
+Taxonomic analysis of MAGs 375 
+
+We further compared the MAGs obtained with each of the three binning strategies by exploring their 376 
+
+taxonomic assignments. A total of 34 GTDB lineages were identified as being specific to the SR-covered 377 
+
+HiFi-LR MAGs dataset. They were not recovered in SR contigs nor HiFi-LR self-coverage binning (Fig. 3). 378 
+
+Recovered HiFi-LR-SR MAGs spanned over 30 genera or families, of which 20 were also retrieved in Illumina 379 
+
+MAGs, supporting the presence of these lineages in the original samples. Although potentially representing 380 
+
+binning artefacts, the remaining 10 taxa specific to SR coverage may include additional lineages uncovered by 381 
+
+improved SR-driven binning. Only seven HiFi-LR-self coverage genera were absent in MAGs produced with 382 
+
+the SR coverage, including five nonetheless recovered in Illumina-based MAGs (Fig. 3A). Moreover, with SR 383 
+
+coverage, some contigs previously clustered in the same bin were redistributed across different MAGs. The 384 
+
+low coverage from HiFi-LR mapping originally resulted in the collapse of strain or species-level genomes into 385 
+
+a unique MAG. 386 
+
+Phylogenetic analysis confirmed that HiFi-LR contigs binned with SR yield the widest taxonomic spectrum (Fig. 387 
+
+3B), recovering previously unbinned clades, such as the bacterial genus SXQI01 from the Verrucomicrobiota 388 
+
+phylum. The 48 SR-specific MAGs displayed broad taxonomic diversity, encompassing 17 phyla, and 32 389 
+
+orders. Taxonomic resolution remained high up to the family level (95.8%), while genus- and species-level 390 
+
+assignments were obtained for 68.8% and 6.3% of MAGs, respectively. Moreover, the increased number of 391 
+
+MAGs across bacterial phyla, such as Planctomycetota and Acidobacteriota, underscores the effectiveness of 392 
+
+the hybrid binning strategy in recovering underrepresented lineages. This balance enabled broader genome 393 
+
+recovery, including low-abundance populations, and yielded more taxonomically specific results. Despite the 394 
+
+slight reduction of the N50 compared to self-coverage binning, this new hybrid binning strategy ensured better 395 
+
+grouping of contigs within the same phylum and improved separation between divergent taxa. SR coverage 396 
+
+resolution improvement was observed primarily through an increased number of unique and non-redundant 397 
+
+bins, which mainly resulted from the addition of new reconstructed bins and the improvement of some bins 398 
+
+that were previously retrieved with LR coverage. 399 
+
+In some cases, the number of high-quality bins increased by salvaging contigs and including them in existing 400 
+
+bins. SR coverage-based bins involved 113,232 contigs, whereas HiFi-LR coverage allowed the recruitment of 401 
+
+only 83,327. Clustering capacity improvement resulted from enhanced coverage depth signal with SR. 402 
+
+A detailed analysis of mid- and high-quality bins further illustrates the impact of SR coverage. For example, 403 
+
+with HiFi-LR self-coverage, bin metabat2.163 included 11 contigs, and exhibited a completeness of 93.16% 404 
+
+and contamination of 2.98%. When SR coverage was used, 10 of its contigs were regrouped into bin 405 
+
+metabat2.1044 , with nearly identical metrics (completeness: 93.02%, contamination: 2.70%). Notably, one 406 
+
+contig (ctg3929932_19x_l) was excluded from the SR-coverage bin. This contig had a significantly lower 407 
+
+coverage (17X in HiFi-LR, 62X in SR) compared to the mean of the SR bin (92X, standard deviation: 12), 408 
+
+suggesting it may have been a coverage outlier. Such redistribution of contigs was likely the cause of the 409 
+
+reduced contamination associated with SR-coverage binning (fig. 2B,C). In contrast, the HiFi-LR bin had a 410 
+
+broader coverage dispersion (mean: 27X, standard deviation: 10.1), likely causing erroneous contig inclusion. 411 
+
+This example highlights how SR coverage refines clustering by improving depth resolution and eliminating 412 
+
+poorly supported contigs. The overall taxonomic assignment remained consistent between both bins, assigned 413 
+
+to the same lineage within the Burkholderiales order (genus JAABQT01), with nearly identical ANI and 414 
+
+tree placement results. Thus, a hybrid binning strategy with SR coverage enhances bin completeness and 415 
+
+specificity, stabilising bin composition by filtering out ambiguous contigs, which leads to more taxonomically 416 
+
+accurate genome reconstructions. 417 
+
+## Hybrid binning captures a broader soil microbiota diversity 418 
+
+To assign taxonomy to shotgun metagenomic data, we applied two complementary strategies: MAG-based 419 
+
+classification using GTDB phylogenomic approach, as described in the previous sections of the manuscript 420 
+
+and in-silico metabarcoding. In-silico metabarcoding refers to identifying and assigning taxonomy to 16S 421 
+
+12 
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint
+
+A
+
+BFigure 3: A) Taxonomic distribution of metagenome-assembled genomes (MAGs) by phylum across three sequencing and binning strategies, where SR Illumina data are represented in blue, Self-mapped HiFi-LR in orange and HiFi-LR contigs binning with SR coverage in green. B) Phylogenetic tree of taxonomic annotations for MAGs, generated using GTDB-tk [ 48 ]. The occurrence of each taxon across datasets is visualised as a heatmap. The interactive tree is available at: https://itol.embl.de/export/17616122570468971737508212. 13 
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint
+
+rRNA gene fragments directly extracted from metagenomic reads or contigs, using the SILVA database as a 422 
+
+reference[ 52 ]. While both methods aim to characterise microbial diversity, MAG-based classification provides 423 
+
+more accurate resolution at the genome level, whereas in-silico metabarcoding enables direct comparison 424 
+
+with taxa obtained by mapping reads (HiFi-LR and SR) on the 16S rRNA reference database. This latter 425 
+
+step enables us to evaluate the consistency between taxonomic profiles inferred from metagenomic sequencing 426 
+
+and those obtained through standard amplicon-based approaches, which serve as a widely accepted reference 427 
+
+in microbial ecology. Additionally, metabarcoding profiles were used as an external benchmark to assess how 428 
+
+well the different binning strategies captured the estimated biodiversity in the assemblies. 429 
+
+Long-read metagenomics achieves the highest taxonomic overlap with metabarcoding and 430 
+
+captures broader microbial diversity 431 
+
+While HiFi-LR sequencing improves assembly contiguity and completeness, SR sequencing provides more 432 
+
+informative coverage signals, which are critical for accurate binning. When studying soil samples, a key 433 
+
+challenge is to determine how effectively sequencing and binning strategies capture the microbial diversity 434 
+
+present in the environment. 435 
+
+To assess this, we compared in-silico metabarcoding obtained from metagenomic data with real metabarcoding 436 
+
+data obtained from the same soil sample. The metabarcoding approach, targeting the V3-V4 region of the 437 
+
+16S rRNA gene, served here as a proxy for estimation of the microbial diversity in the absence of ground truth 438 
+
+and despite biases associated to such data [ 56]. Taxonomic comparisons were performed based on matches of 439 
+
+16S sequences between metabarcoding data and contigs or reads from the different metagenomic datasets 440 
+
+(SR, HiFi-LR, and their corresponding contigs). Given the limited reliability of abundance estimation using 441 
+
+metagenomics, these analyses focused solely on the presence/absence of taxa (Fig. 4A). 442 
+
+Across all methods, both bacterial and archaeal lineages were consistently identified. However, significant 443 
+
+differences emerged when comparing richness at various taxonomic ranks: (i) SR-only metagenomics showed 444 
+
+the lowest diversity across most taxonomic levels, except for species (Fig. 4A), where an unusually large 445 
+
+number of taxa (7,897 vs. 3,593 in metabarcoding) were detected. This inflation is likely due to low specificity 446 
+
+of SR mapping to 16S libraries due to their short length, resulting in overestimation. (ii) HiFi-LR data 447 
+
+consistently showed the highest richness among metagenomic datasets and captured taxonomic profiles closer 448 
+
+to metabarcoding. At the phylum level, HiFi-LR assemblies and raw reads identified 24 to 29 phyla compared 449 
+
+to 33 identified in metabarcoding. (iii) At higher resolution (e.g. genus level), long-read assemblies recovered 450 
+
+~33% of genera detected by metabarcoding. In contrast, raw HiFi-LR recovered nearly two-thirds of the 451 
+
+genera, confirming that the reads forming contigs represent a subset of the total diversity (Table 2, Fig. 4A). 452 
+
+To better visualise taxonomic overlaps, an Upset plot at the genus level (Fig. 4B) illustrates shared and 453 
+
+unique genera across the five datasets (SRs , SR assembly, HiFi-LRs, HiFi-LR assembly, and metabarcoding). 454 
+
+Metabarcoding recovered the highest number of genera (784), followed by the raw LR dataset. However, 455 
+
+only a small subset of genera was shared across all approaches, reflecting detection thresholds and method-456 
+
+specific biases due to the use of databases (i.e., GTDB/SILVA) constructed with different lineage structures. 457 
+
+Notably, over 200 genera were uniquely detected by metabarcoding, indicating that a fraction of the microbial 458 
+
+community, likely corresponding to rare taxa, remains elusive to metagenomics, even with HiFi-LRs and high 459 
+
+depth SRs. 460 
+
+The taxonomic profile provided by metabarcoding sequencing was used as a proxy to assess the taxonomic 461 
+
+reliability of reconstructed genomes. We compared GTDB annotations of MAGs with 16S-based annotations 462 
+
+of their contigs using the SILVA database (Supp. Fig. 8). Our objective was to assess whether HiFi-LR-based 463 
+
+and SR-based coverage at the binning step resulted in differences in MAG quality. Across all taxonomic 464 
+
+ranks, annotations from MAG generated using SR coverage were consistently more concordant with SILVA 465 
+
+annotations than those from HiFi-LR coverage (Supp. Fig. 8). At the domain level, annotations were 466 
+
+consistently assessed across all methods. As the level of resolution increased (from phylum to genera), 467 
+
+discrepancies became more frequent, due in part to differences in database content and lineage structure. 468 
+
+Despite this, SR-informed binning always yielded a higher number of MAGs with consistent taxonomic 469 
+
+placement. Out of 313 bins, 200 MAGs could be compared (due to the absence of the 16S rRNA gene in 470 
+
+others), confirming that SR coverage significantly improves both detection and phylogenetic resolution despite 471 
+
+14 
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint
+
+persisting discordance with metabarcoding profiles at low taxonomic ranks. 472 
+
+HiFi-LR metagenomic microbial detection correlates strongly with taxon abundance 473 
+
+To assess the relationship between microbial abundance and capture efficiency in shotgun metagenomics, 474 
+
+we used metabarcoding relative abundance information to compare genera detected and undetected in the 475 
+
+HiFi-LR assembly. Figure 5A illustrates the distributions of relative abundances. Genera recovered via 476 
+
+metagenomics exhibit significantly higher abundance in the metabarcoding dataset (Wilcoxon test, p = 477 
+
+5.5 × 10 ¯80 ), suggesting a strong positive correlation between microbial abundance and recovery likelihood. 478 
+
+Consequently, and as expected metagenomic capture and reconstruction are biased towards dominant taxa. 479 
+
+Consistently, the comparison of community profiles across amplicons, bins, and MAGs shows that while 480 
+
+dominant phyla such as Actinomycetota, Gemmatimonadota, and Planctomycetota are robustly recovered 481 
+
+across approaches, low-abundance phyla (e.g., Chloroflexota, Bacillota) are well represented in amplicon 482 
+
+data but tend to be underrepresented in MAGs (Fig. 5B). Importantly, SR coverage information during 483 
+
+HiFi-LR binning quantitatively improved the recovery of low-abundance taxa. Specifically, the SR-coverage 484 
+
+strategy enabled the reconstruction of 48 MAGs that were not recovered using LR-coverage alone. Taxonomic 485 
+
+annotation of these SR-specific MAGs identified 17 phyla, 23 classes, 32 orders, 35 families, and 29 genera, 486 
+
+demonstrating that SR-guided binning substantially expands the phylogenetic breadth of reconstructed 487 
+
+microbial diversity. This approach effectively reduces the detection gap between metagenomic MAG-identified 488 
+
+taxa and metabarcoding profiles. 489 
+
+# Discussion 490 
+
+## HiFi-LR sequencing advances genome-resolved soil metagenomics 491 
+
+Soil is among the most microbially diverse environments, with profound implications for global biogeochemical 492 
+
+cycles and yet still under-characterised at the genomic level [ 1, 2]. Although amplicon sequencing and SR 493 
+
+metagenomics have provided insight into microbial composition and function, genome-resolved understanding 494 
+
+has lagged due to fragmentation, poor resolution of closely related strains, and challenges in assembling 495 
+
+repetitive regions [ 11 , 15 ]. Recent advances in long-read technologies—particularly PacBio HiFi sequencing— 496 
+
+have demonstrated their potential in the gut microbiome, enabling highly contiguous assemblies and more 497 
+
+comprehensive recovery of the gene sets [ 18, 44 , 57 ]. Here, we explore their benefits in a soil microbiome 498 
+
+sample, directly comparing the added value of several sequencing and binning strategies. We show that 499 
+
+HiFi-LRs substantially improve assembly quality as well as MAG completeness and contiguity compared 500 
+
+to Illumina SRs alone, even at moderate sequencing depth. This improvement is expected to support more 501 
+
+precise taxonomic and functional annotation in future studies, providing a robust foundation for investigating 502 
+
+microbe–microbe and microbe–environment interactions in soil. 503 
+
+## Hybrid binning of HiFi-LR contigs with SR data enhances recovery and resolution 504 
+
+## of MAGs 505 
+
+Despite the benefits of long reads, MAG recovery from long-read assemblies can be constrained by low 506 
+
+coverage and weak abundance signals, particularly for rare taxa. In our work, coverage estimates from 507 
+
+HiFi-LR data alone were poorly effective for abundance-based binning, even though an entire Sequel II and 508 
+
+entire Revio SMRT Cell were used for sequencing of a unique sample. This low coverage signal resulted in 509 
+
+contamination and collapsed bins. To address these challenges, we used the high-coverage Illumina SR data 510 
+
+to generate coverage profiles for HiFi-assembled contigs. This hybrid binning strategy significantly improved 511 
+
+bin quality—reducing contamination, increasing dereplication, and resulting in a 24% increase in MAG yield. 512 
+
+Notably, this approach enabled the recovery of additional MAGs from low-abundance and taxonomically 513 
+
+underrepresented lineages, including 34 genera not detected with other strategies and several lacking close 514 
+
+matches in reference databases. We also observed improved resolution in phyla such as Acidobacteriota and 515 
+
+Planctomycetota, consistent with previous successes of hybrid methods in less complex microbiomes [ 16 ]. We 516 
+
+note, however, that MAG counts alone are not a comprehensive quality measure and that bin segmentation, 517 
+
+strain heterogeneity and contig taxonomic discordance within bins are additional valuable metrics to consider. 518 
+
+15 
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint
+
+ABFigure 4: A) Comparison of taxonomic richness across sequencing strategies and taxonomic ranks. Bar plots show the number of distinct taxa, richness, identified at four taxonomic levels (Phylum, Order, Family and Genus) using five sequencing approaches: MG SR assembly, MG unassembled SRs, MG HiFi-LR assembly, MG unassembled HiFi-LRs, and MB amplicons, where MG refers to data produced by shotgun metagenomic sequencing and MB: refers to metabarcoding data of 16S V3-V4 region. See also Supp. Table 1. B) 
+
+Taxonomic overlap at the genus level across five datasets: MG SR assembly, MG unassembled SRs, MG HiFi-LR assembly, MG unassembled HiFi-LRs, and MB amplicons, where MG refers to data produced by whole genome metagenomic sequencing and MB refers to metabarcoding data of the 16S V3-V4 region. Horizontal bars on the left of the upset plot represent the total number of genera detected by each method. Vertical bars above indicate the size of each intersection set, corresponding to specific combinations of techniques shown by filled circles below. Overall, the plot illustrates both shared and method-specific taxonomic recovery at the genus level (N = 914). Taxonomic reference confirmed the annotation accuracy improvement through SRcoverage-informed binning of HiFi-LR contigs. 16 
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint
+
+Figure 5: A) Distribution of relative abundances for genera assessed by metabarcoding analysis that were either detected or not detected by PacBio HiFi combined metagenomic assembly (Sequel + Revio). Density plots show the relative abundance of genera, classified as either detected (green) or not detected (blue), on a log10 scale using HiFi-LRs. Genera detected by metagenomics (MG) exhibit significantly higher abundances compared to those not detected, with a highly significant difference (Wilcoxon test, p = 6 × 10 −80 ). B) 
+
+Relative abundance of phyla among reconstructed bins and MAGs and in the 16S rRNA gene amplicon sequencing dataset (“amplicons”). Phyla accounting for less than 5% of relative abundance were merged into “Others”. By testing the impact of subsampling the SR dataset used for coverage estimation during binning, we showed 519 
+
+that SR sequencing depth is a critical factor for improving MAG recovery. This indicates that binning may 520 
+
+remain a major bottleneck in LR-only strategies, particularly as long-read throughput is still limited compared 521 
+
+to SR. We also explored alternative hybrid strategies, such as combining SR and LR data at the assembly 522 
+
+step [ 16, 22 , 23 ]. However, the size and complexity of our soil dataset posed significant challenges for current 523 
+
+hybrid assemblers, often requiring extensive manual intervention or failing to complete successfully despite 524 
+
+substantial computational resources. Although partial hybrid assemblies improved read recruitment, these 525 
+
+gains did not translate into improved MAG quality in our dataset. This suggests that, for highly complex soil 526 
+
+microbiomes, using SR data for coverage-guided binning of LR assemblies is presently a more scalable and 527 
+
+robust approach than full hybrid metagenomic assembly, while still capturing most of the complementary 528 
+
+information provided by short reads. 529 
+
+Datasets integrating multiple sequencing platforms, and in particular HiFi long reads, remain scarce (49–51). 530 
+
+Our dataset—including 81 Gbp of PacBio HiFi reads and 147 Gbp of Illumina ultra deep sequencing short 531 
+
+reads from the same soil sample, as well as 16S rRNA gene amplicon data—provides a valuable benchmark 532 
+
+for soil metagenomics. 533 
+
+## Limitations and future perspectives 534 
+
+Despite the improvements offered by HiFi-LR sequencing and hybrid binning, the number of recovered MAGs 535 
+
+remains substantially lower than the taxonomic richness estimated by amplicon-based profiling. For complex 536 
+
+communities such as soil, the absence of a ground truth makes comprehensive benchmarking challenging. 537 
+
+Current standards rely on mock or synthetic communities [ 58], which do not fully capture environmental 538 
+
+complexity. In this study, we use metabarcoding data as a proxy to estimate an upper bound for microbial 539 
+
+diversity, while acknowledging the known limitations of this approach, including amplification bias, copy 540 
+
+number variation, and taxonomic assignment inaccuracies [ 56 ]. The discrepancy between 16S rRNA gene-541 
+
+based estimates and the number of recovered MAGs has been frequently reported [ 7, 12 ], and is likely even 542 
+
+greater in soil due to its extreme heterogeneity and prevalence of low-abundance or recalcitrant taxa. It is 543 
+
+17 
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint
+
+also important to note that our analyses were performed on a single soil sample, limiting the extent to which 544 
+
+these findings can be generalized to other soils or environmental contexts. 545 
+
+Another limitation is the cost currently associated with HiFi-LR sequencing. While increasing sequencing 546 
+
+depth—potentially with multiple SMRT Cells—could improve recovery of genomes from low-abundance 547 
+
+species, this was not evaluated in our study and remains financially prohibitive for many projects. Thus, 548 
+
+cost remains a significant factor that may restrict large-scale adoption of this approach. We also note that 549 
+
+integrating data from two sequencing platforms (PacBio and Illumina) introduces some additional steps 550 
+
+compared to single-platform workflows. However, the bioinformatics tools and approaches employed are 551 
+
+state-of-the-art and widely used in metagenomic studies, making the workflow re-usable for most research 552 
+
+groups with standard resources and expertise. 553 
+
+A technical constraint in soil metagenomics is the relatively short length of extracted DNA, rarely exceeding 554 
+
+6 kb, which is well below the 30–40 kb typically obtained from gut or aquatic samples [ 59]. This limits the 555 
+
+full potential of HiFi and other long-read technologies. Thus, the development of improved DNA extraction 556 
+
+methods that minimize shearing and efficiently remove inhibitors is of importance. Achieving greater fragment 557 
+
+lengths will enhance assembly contiguity and enable full-length resolution of repeats, further improving MAG 558 
+
+quality and yield. 559 
+
+Looking forward, advances in high-throughput HiFi sequencing, optimised protocols for extracting long 560 
+
+DNA fragments from challenging samples, and continued expansion of environmental genome catalogs 561 
+
+will be essential. Together, these improvements will enable more comprehensive and functionally resolved 562 
+
+characterisation of soil microbial communities, contributing to our understanding of their roles in nutrient 563 
+
+cycling, soil health, and ecosystem resilience. 564 
+
+# Conclusion 565 
+
+Collectively, our results demonstrate that integrating PacBio HiFi-LR sequencing with SR coverage for 566 
+
+binning markedly enhances the recovery, resolution, and diversity of MAGs from complex soil environments. 567 
+
+This hybrid strategy represents a step toward closing the gap between microbial diversity estimated with 568 
+
+amplicon-based profiling and that captured by shotgun metagenomic assembly, facilitating access to previously 569 
+
+undetected lineages and enabling a more comprehensive taxonomic characterization of soil microbiomes. By 570 
+
+leveraging the high contiguity of long reads and the depth provided by short reads, the hybrid approach 571 
+
+improves binning accuracy and supports the recovery of a broader range of genomes, including those from 572 
+
+low-abundance taxa. 573 
+
+Importantly, while HiFi-LR sequencing alone offers advantages in assembly quality, the addition of short-read 574 
+
+data for binning substantially increases the resolution and completeness of recovered MAGs. Our findings 575 
+
+underscore the potential of this hybrid method both for enhancing new studies and, whenever samples are 576 
+
+still available, for adding value to existing SR datasets. However, the benefits of this approach are contingent 577 
+
+on adequate sequencing depth, which remains a limiting factor, particularly for the recovery of rare taxa in 578 
+
+highly complex soil microbiomes. 579 
+
+In summary, the integration of HiFi-LR and SR sequencing represents a robust and scalable strategy for 580 
+
+genome-resolved exploration of complex microbial ecosystems. As sequencing technologies and library 581 
+
+preparation methods continue to advance, and as comprehensive reference catalogues expand, the potential for 582 
+
+soil metagenomics to reveal the functional roles and interactions within microbial communities will continue 583 
+
+to grow. 584 
+
+# Declarations 585 
+
+## Availability of data and material 586 
+
+All data generated or analysed during this study are publicly available. The datasets and custom scripts have 587 
+
+been deposited in the Recherche Data Gouv repository under the Soil Metagenome Binning collection [ 60]. 588 
+
+18 
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint
+
+Sequencing and assembly data are available through the European Bioinformatics Institute (EBI) under the 589 
+
+following accession number: PRJEB97182. 590 
+
+## Ethics approval and consent to participate 591 
+
+Not applicable. 592 
+
+## Consent for publication 593 
+
+Not applicable. 594 
+
+## Competing interests 595 
+
+The authors declare no competing interests. 596 
+
+## Funding 597 
+
+This work was supported by the French National Research Agency (ANR) and “France 2030” under the 598 
+
+MISTIC project (ANR-22-PEAE-0011) and the Initiative of Excellence Université Côte d’Azur (ANR-15-599 
+
+IDEX-01) through the Maison de la Modélisation, Simulation et Interaction. This research was also supported 600 
+
+by the Plant Health and Environment Department of INRAE through the MetaNema project. The GenoSol 601 
+
+platform is supported by a grant from the French State through the National Research Agency (ANR) under 602 
+
+the “Investments for the Future” program (ANR-11-INBS-0001) and “France 2030” (ANR-24-INBS-0001, 603 
+
+AnaEE-France). Additional funding was provided by GIS-IBISA, the Bourgogne–Franche-Comté Regional 604 
+
+Council, and INRAE. GeT core facility was supported by France Génomique National infrastructure, funded 605 
+
+as part of “Investissement d’avenir” program managed by Agence Nationale pour la Recherche (contract 606 
+
+ANR-10-INBS-09). 607 
+
+## Authors’ contributions 608 
+
+C.B., N.M., S.M., A.F., M.B.-B., C.L., J.-M.F., C.F., and E.G.J.D. conceived and designed the study. 609 
+
+C.B., N.M., A.P. developed and implemented the software and methodological approaches. 610 
+
+C.B., N.M., and A.F. carried out the analyses and formal data interpretation. 611 
+
+C.B. curated the data. 612 
+
+C.B., N.M., C.F., and É.G.J.D. prepared the original draft of the manuscript. 613 
+
+C.L., R.V., C.F., and É.G.J.D. supervised the project. 614 
+
+M.B.-B., A.F., P.A., D.J.S., C.F., and É.G.J.D. acquired funding. 615 
+
+All authors reviewed and approved the final manuscript. 616 
+
+## Acknowledgement 617 
+
+We sincerely thank the Sophia Agrobiotech bioinformatics platform for its valuable support and expertise 618 
+
+in data processing, as well as for providing optimised computing hardware and software [ 61 ]. We also 619 
+
+thank Genotoul for providing high computing resources and fast reactivity during access openings [ 62 ]. 620 
+
+We acknowledge the GenOuest bioinformatics core facility (https://www.genouest.org) for providing the 621 
+
+computing infrastructure. Some experiments presented in this paper were also carried out using the PlaFRIM 622 
+
+experimental testbed, supported by Inria, CNRS (LABRI and IMB), Université de Bordeaux, Bordeaux INP 623 
+
+and Conseil Régional d’Aquitaine (see https://www.plafrim.fr). 624 
+
+Part of the experiments (short read metagenomic sequencing, 16S rRNA gene sequencing) were performed 625 
+
+at the PGTB platform [ 63 ]. We are grateful to the Genosol, Gentyane, Get-Plage and PGTB platforms 626 
+
+for their significant contributions, including soil DNA extraction and high-throughput sequencing, which 627 
+
+19 
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint
+
+have been essential for the progress of this work. We are grateful to all collaborators and technical staff 628 
+
+who have contributed their expertise and assistance throughout this research. This work benefited from the 629 
+
+use of the GenoSol-CRB and GenoSol-LADM services of the GenoSol platform [ 64 ], hosted by UMR 1347 630 
+
+Agroecology at the INRAE Bourgogne–Franche-Comté center. GenoSol-CRB is part of BRC4Env [ 65 ], while 631 
+
+GenoSol-LADM is integrated into the AnaEE-France research infrastructure. This work was performed in 632 
+
+collaboration with the GeT core facility, Toulouse, France [ 66]. We sincerely thank Isabelle Kupin for her 633 
+
+assistance in depositing the datasets. 634 
+
+# References 635 
+
+# References 636 
+
+[1] Laura A. Hug, Brett J. Baker, Karthik Anantharaman, Christopher T. Brown, Alexander J. Probst, 637 
+
+Cindy J. Castelle, Cristina N. Butterfield, Alex W. Hernsdorf, Yuki Amano, Kotaro Ise, Yohey Suzuki, 638 
+
+Natasha Dudek, David A. Relman, Kari M. Finstad, Ronald Amundson, Brian C. Thomas, and Jillian F. 639 
+
+Banfield. A new view of the tree of life. Nature Microbiology , 1(5):16048, April 2016. ISSN 2058-5276. 640 
+
+doi: 10.1038/nmicrobiol.2016.48. URL https://www.nature.com/articles/nmicrobiol201648. 641 
+
+[2] Luke R. Thompson, Jon G. Sanders, Daniel McDonald, Amnon Amir, Joshua Ladau, Kenneth J. Locey, 642 
+
+Robert J. Prill, Anupriya Tripathi, Sean M. Gibbons, Gail Ackermann, Jose A. Navas-Molina, Stefan 643 
+
+Janssen, Evguenia Kopylova, Yoshiki Vázquez-Baeza, Antonio González, James T. Morton, Siavash 644 
+
+Mirarab, Zhenjiang Zech Xu, Lingjing Jiang, Mohamed F. Haroon, Jad Kanbar, Qiyun Zhu, Se Jin Song, 645 
+
+Tomasz Kosciolek, Nicholas A. Bokulich, Joshua Lefler, Colin J. Brislawn, Gregory Humphrey, Sarah M. 646 
+
+Owens, Jarrad Hampton-Marcell, Donna Berg-Lyons, Valerie McKenzie, Noah Fierer, Jed A. Fuhrman, 647 
+
+Aaron Clauset, Rick L. Stevens, Ashley Shade, Katherine S. Pollard, Kelly D. Goodwin, Janet K. Jansson, 648 
+
+Jack A. Gilbert, Rob Knight, The Earth Microbiome Project Consortium, Jose L. Agosto Rivera, Lisa 649 
+
+Al-Moosawi, John Alverdy, Katherine R. Amato, Jason Andras, Largus T. Angenent, Dionysios A. 650 
+
+Antonopoulos, Amy Apprill, David Armitage, Kate Ballantine, Jir ˇí Bárta, Julia K. Baum, Allison 651 
+
+Berry, Ashish Bhatnagar, Monica Bhatnagar, Jennifer F. Biddle, Lucie Bittner, Bazartseren Boldgiv, 652 
+
+Eric Bottos, Donal M. Boyer, Josephine Braun, William Brazelton, Francis Q. Brearley, Alexandra H. 653 
+
+Campbell, J. Gregory Caporaso, Cesar Cardona, JoLynn Carroll, S. Craig Cary, Brenda B. Casper, 654 
+
+Trevor C. Charles, Haiyan Chu, Danielle C. Claar, Robert G. Clark, Jonathan B. Clayton, Jose C. 655 
+
+Clemente, Alyssa Cochran, Maureen L. Coleman, Gavin Collins, Rita R. Colwell, Mónica Contreras, 656 
+
+Benjamin B. Crary, Simon Creer, Daniel A. Cristol, Byron C. Crump, Duoying Cui, Sarah E. Daly, 657 
+
+Liliana Davalos, Russell D. Dawson, Jennifer Defazio, Frédéric Delsuc, Hebe M. Dionisi, Maria Gloria 658 
+
+Dominguez-Bello, Robin Dowell, Eric A. Dubinsky, Peter O. Dunn, Danilo Ercolini, Robert E. Espinoza, 659 
+
+Vanessa Ezenwa, Nathalie Fenner, Helen S. Findlay, Irma D. Fleming, Vincenzo Fogliano, Anna Forsman, 660 
+
+Chris Freeman, Elliot S. Friedman, Giancarlo Galindo, Liza Garcia, Maria Alexandra Garcia-Amado, 661 
+
+David Garshelis, Robin B. Gasser, Gunnar Gerdts, Molly K. Gibson, Isaac Gifford, Ryan T. Gill, Tugrul 662 
+
+Giray, Antje Gittel, Peter Golyshin, Donglai Gong, Hans-Peter Grossart, Kristina Guyton, Sarah-Jane 663 
+
+Haig, Vanessa Hale, Ross Stephen Hall, Steven J. Hallam, Kim M. Handley, Nur A. Hasan, Shane R. 664 
+
+Haydon, Jonathan E. Hickman, Glida Hidalgo, Kirsten S. Hofmockel, Jeff Hooker, Stefan Hulth, Jenni 665 
+
+Hultman, Embriette Hyde, Juan Diego Ibáñez-Álamo, Julie D. Jastrow, Aaron R. Jex, L. Scott Johnson, 666 
+
+Eric R. Johnston, Stephen Joseph, Stephanie D. Jurburg, Diogo Jurelevicius, Anders Karlsson, Roger 667 
+
+Karlsson, Seth Kauppinen, Colleen T. E. Kellogg, Suzanne J. Kennedy, Lee J. Kerkhof, Gary M. King, 668 
+
+George W. Kling, Anson V. Koehler, Monika Krezalek, Jordan Kueneman, Regina Lamendella, Emily M. 669 
+
+Landon, Kelly Lane-deGraaf, Julie LaRoche, Peter Larsen, Bonnie Laverock, Simon Lax, Miguel Lentino, 670 
+
+Iris I. Levin, Pierre Liancourt, Wenju Liang, Alexandra M. Linz, David A. Lipson, Yongqin Liu, Manuel E. 671 
+
+Lladser, Mariana Lozada, Catherine M. Spirito, Walter P. MacCormack, Aurora MacRae-Crerar, Magda 672 
+
+Magris, Antonio M. Martín-Platero, Manuel Martín-Vivaldi, L. Margarita Martínez, Manuel Martínez-673 
+
+Bueno, Ezequiel M. Marzinelli, Olivia U. Mason, Gregory D. Mayer, Jamie M. McDevitt-Irwin, James E. 674 
+
+McDonald, Krista L. McGuire, Katherine D. McMahon, Ryan McMinds, Mónica Medina, Joseph R. 675 
+
+Mendelson, Jessica L. Metcalf, Folker Meyer, Fabian Michelangeli, Kim Miller, David A. Mills, Jeremiah 676 
+
+Minich, Stefano Mocali, Lucas Moitinho-Silva, Anni Moore, Rachael M. Morgan-Kiss, Paul Munroe, 677 
+
+20 
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint
+
+David Myrold, Josh D. Neufeld, Yingying Ni, Graeme W. Nicol, Shaun Nielsen, Jozef I. Nissimov, 678 
+
+Kefeng Niu, Matthew J. Nolan, Karen Noyce, Sarah L. O’Brien, Noriko Okamoto, Ludovic Orlando, 679 
+
+Yadira Ortiz Castellano, Olayinka Osuolale, Wyatt Oswald, Jacob Parnell, Juan M. Peralta-Sánchez, 680 
+
+Peter Petraitis, Catherine Pfister, Elizabeth Pilon-Smits, Paola Piombino, Stephen B. Pointing, F. Joseph 681 
+
+Pollock, Caitlin Potter, Bharath Prithiviraj, Christopher Quince, Asha Rani, Ravi Ranjan, Subramanya 682 
+
+Rao, Andrew P. Rees, Miles Richardson, Ulf Riebesell, Carol Robinson, Karl J. Rockne, Selena Marie 683 
+
+Rodriguezl, Forest Rohwer, Wayne Roundstone, Rebecca J. Safran, Naseer Sangwan, Virginia Sanz, 684 
+
+Matthew Schrenk, Mark D. Schrenzel, Nicole M. Scott, Rita L. Seger, Andaine Seguin-Orlando, Lucy 685 
+
+Seldin, Lauren M. Seyler, Baddr Shakhsheer, Gabriela M. Sheets, Congcong Shen, Yu Shi, Hakdong Shin, 686 
+
+Benjamin D. Shogan, Dave Shutler, Jeffrey Siegel, Steve Simmons, Sara Sjöling, Daniel P. Smith, Juan J. 687 
+
+Soler, Martin Sperling, Peter D. Steinberg, Brent Stephens, Melita A. Stevens, Safiyh Taghavi, Vera 688 
+
+Tai, Karen Tait, Chia L. Tan, Neslihan Tas ¸, D. Lee Taylor, Torsten Thomas, Ina Timling, Benjamin L. 689 
+
+Turner, Tim Urich, Luke K. Ursell, Daniel Van Der Lelie, William Van Treuren, Lukas Van Zwieten, 690 
+
+Daniela Vargas-Robles, Rebecca Vega Thurber, Paola Vitaglione, Donald A. Walker, William A. Walters, 691 
+
+Shi Wang, Tao Wang, Tom Weaver, Nicole S. Webster, Beck Wehrle, Pamela Weisenhorn, Sophie Weiss, 692 
+
+Jeffrey J. Werner, Kristin West, Andrew Whitehead, Susan R. Whitehead, Linda A. Whittingham, 693 
+
+Eske Willerslev, Allison E. Williams, Stephen A. Wood, Douglas C. Woodhams, Yeqin Yang, Jesse 694 
+
+Zaneveld, Iratxe Zarraonaindia, Qikun Zhang, and Hongxia Zhao. A communal catalogue reveals Earth’s 695 
+
+multiscale microbial diversity. Nature , 551(7681):457–463, November 2017. ISSN 0028-0836, 1476-4687. 696 
+
+doi: 10.1038/nature24621. URL https://www.nature.com/articles/nature24621. 697 
+
+[3] Vigdis Torsvik and Lise Øvreås. Microbial diversity and function in soil: from genes to ecosystems. Current 698 
+
+Opinion in Microbiology , 5(3):240–245, June 2002. ISSN 13695274. doi: 10.1016/S1369-5274(02)00324-7. 699 
+
+URL https://linkinghub.elsevier.com/retrieve/pii/S1369527402003247. 700 
+
+[4] Manuel Delgado-Baquerizo, Angela M. Oliverio, Tess E. Brewer, Alberto Benavent-González, David J. 701 
+
+Eldridge, Richard D. Bardgett, Fernando T. Maestre, Brajesh K. Singh, and Noah Fierer. A global 702 
+
+atlas of the dominant bacteria found in soil. Science , 359(6373):320–325, January 2018. ISSN 0036-8075, 703 
+
+1095-9203. doi: 10.1126/science.aap9516. URL https://www.science.org/doi/10.1126/science.aap9516. 704 
+
+[5] Noah W. Sokol, Eric Slessarev, Gianna L. Marschmann, Alexa Nicolas, Steven J. Blazewicz, Eoin L. 705 
+
+Brodie, Mary K. Firestone, Megan M. Foley, Rachel Hestrin, Bruce A. Hungate, Benjamin J. Koch, 706 
+
+Bram W. Stone, Matthew B. Sullivan, Olivier Zablocki, LLNL Soil Microbiome Consortium, Gareth Trubl, 707 
+
+Karis McFarlane, Rhona Stuart, Erin Nuccio, Peter Weber, Yongqin Jiao, Mavrik Zavarin, Jeffrey Kimbrel, 708 
+
+Keith Morrison, Dinesh Adhikari, Amrita Bhattacharaya, Peter Nico, Jinyun Tang, Nicole Didonato, 709 
+
+Ljiljana Paša-Tolić, Alex Greenlon, Ella T. Sieradzki, Paul Dijkstra, Egbert Schwartz, Rohan Sachdeva, 710 
+
+Jillian Banfield, and Jennifer Pett-Ridge. Life and death in the soil microbiome: how ecological processes 711 
+
+influence biogeochemistry. Nature Reviews Microbiology , 20(7):415–430, July 2022. ISSN 1740-1526, 712 
+
+1740-1534. doi: 10.1038/s41579-022-00695-z. URL https://www.nature.com/articles/s41579-022-00695-z. 713 
+
+[6] Martin Hartmann and Johan Six. Soil structure and microbiome functions in agroecosystems. Nature 714 
+
+Reviews Earth & Environment , 4(1):4–18, November 2022. ISSN 2662-138X. doi: 10.1038/s43017-022-715 
+
+00366-w. URL https://www.nature.com/articles/s43017-022-00366-w. 716 
+
+[7] Christopher G. Knight, Océane Nicolitch, Rob I. Griffiths, Tim Goodall, Briony Jones, Carolin Weser, 717 
+
+Holly Langridge, John Davison, Ariane Dellavalle, Nico Eisenhauer, Konstantin B. Gongalsky, Andrew 718 
+
+Hector, Emma Jardine, Paul Kardol, Fernando T. Maestre, Martin Schädler, Marina Semchenko, 719 
+
+Carly Stevens, Maria A. Tsiafouli, Oddur Vilhelmsson, Wolfgang Wanek, and Franciska T. De Vries. 720 
+
+Soil microbiomes show consistent and predictable responses to extreme events. Nature , 636(8043): 721 
+
+690–696, December 2024. ISSN 0028-0836, 1476-4687. doi: 10.1038/s41586-024-08185-3. URL 722 
+
+https://www.nature.com/articles/s41586-024-08185-3. 723 
+
+[8] Shuai Li, Wen-Hui Lian, Jia-Rui Han, Mukhtiar Ali, Zhi-Liang Lin, Yong-Hong Liu, Li Li, Dong-724 
+
+Ya Zhang, Xian-Zhi Jiang, Wen-Jun Li, and Lei Dong. Capturing the microbial dark matter in 725 
+
+desert soils using culturomics-based metagenomics and high-resolution analysis. npj Biofilms and 726 
+
+Microbiomes , 9(1):67, September 2023. ISSN 2055-5008. doi: 10.1038/s41522-023-00439-8. URL 727 
+
+https://www.nature.com/articles/s41522-023-00439-8. 728 
+
+21 
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint
+
+[9] Timothy M. Vogel, Penny R. Hirsch, Pascal Simonet, Janet K. Jansson, James M. Tiedje, Jan Dirk 729 
+
+Van Elsas, Renaud Nalin, Laurent Philippot, and Mark J. Bailey. Advantages of the metagenomic 730 
+
+approach for soil exploration: reply from Vogel et al. Nature Reviews Microbiology , 7(10):756–757, 731 
+
+October 2009. ISSN 1740-1526, 1740-1534. doi: 10.1038/nrmicro2119-c3. URL https://www.nature.com 732 
+
+/articles/nrmicro2119-c3. 733 
+
+[10] Donovan H. Parks, Christian Rinke, Maria Chuvochina, Pierre-Alain Chaumeil, Ben J. Woodcroft, Paul N. 734 
+
+Evans, Philip Hugenholtz, and Gene W. Tyson. Recovery of nearly 8,000 metagenome-assembled genomes 735 
+
+substantially expands the tree of life. Nature Microbiology , 2(11):1533–1542, September 2017. ISSN 736 
+
+2058-5276. doi: 10.1038/s41564-017-0012-7. URL https://www.nature.com/articles/s41564-017-0012-7. 737 
+
+[11] Carole Belliardo, Georgios D. Koutsovoulos, Corinne Rancurel, Mathilde Clément, Justine Lipuma, Marc 738 
+
+Bailly-Bechet, and Etienne G. J. Danchin. Improvement of eukaryotic protein predictions from soil 739 
+
+metagenomes. Scientific Data , 9(1):311, June 2022. ISSN 2052-4463. doi: 10.1038/s41597-022-01420-4. 740 
+
+URL https://www.nature.com/articles/s41597-022-01420-4. 741 
+
+[12] Peifeng Ji, Yanming Zhang, Jinfeng Wang, and Fangqing Zhao. MetaSort untangles metagenome assembly 742 
+
+by reducing microbial community complexity. Nature Communications , 8(1):14306, January 2017. ISSN 743 
+
+2041-1723. doi: 10.1038/ncomms14306. URL https://www.nature.com/articles/ncomms14306. 744 
+
+[13] I-Min A Chen, Ken Chu, Krishna Palaniappan, Manoj Pillay, Anna Ratner, Jinghua Huang, Marcel 745 
+
+Huntemann, Neha Varghese, James R White, Rekha Seshadri, Tatyana Smirnova, Edward Kirton, Sean P 746 
+
+Jungbluth, Tanja Woyke, Emiley A Eloe-Fadrosh, Natalia N Ivanova, and Nikos C Kyrpides. IMG/m 747 
+
+v.5.0: an integrated data management and comparative analysis system for microbial genomes and 748 
+
+microbiomes. Nucleic Acids Research , 47(D1):gky901, 2018. ISSN 1362-4962. doi: 10.1093/nar/gky901. 749 
+
+[14] Lorna Richardson, Ben Allen, Germana Baldi, Martin Beracochea, Maxwell L Bileschi, Tony Burdett, 750 
+
+Josephine Burgin, Juan Caballero-Pérez, Guy Cochrane, Lucy J Colwell, Tom Curtis, Alejandra Escobar-751 
+
+Zepeda, Tatiana A Gurbich, Varsha Kale, Anton Korobeynikov, Shriya Raj, Alexander B Rogers, 752 
+
+Ekaterina Sakharova, Santiago Sanchez, Darren J Wilkinson, and Robert D Finn. MGnify: the 753 
+
+microbiome sequence data analysis resource in 2023. Nucleic Acids Research , 2022. ISSN 0305-1048. doi: 754 
+
+10.1093/nar/gkac1080. 755 
+
+[15] Todd J. Treangen and Steven L. Salzberg. Repetitive DNA and next-generation sequencing: computational 756 
+
+challenges and solutions. Nature Reviews Genetics , 13(1):36–46, January 2012. ISSN 1471-0056, 1471-0064. 757 
+
+doi: 10.1038/nrg3117. URL https://www.nature.com/articles/nrg3117. 758 
+
+[16] Denis Bertrand, Jim Shaw, Manesh Kalathiyappan, Amanda Hui Qi Ng, M. Senthil Kumar, Chenhao Li, 759 
+
+Mirta Dvornicic, Janja Paliska Soldo, Jia Yu Koh, Chengxuan Tong, Oon Tek Ng, Timothy Barkham, 760 
+
+Barnaby Young, Kalisvar Marimuthu, Kern Rei Chng, Mile Sikic, and Niranjan Nagarajan. Hybrid 761 
+
+metagenomic assembly enables high-resolution analysis of resistance determinants and mobile elements 762 
+
+in human microbiomes. Nature Biotechnology , 37(8):937–944, August 2019. ISSN 1087-0156, 1546-1696. 763 
+
+doi: 10.1038/s41587-019-0191-2. URL https://www.nature.com/articles/s41587-019-0191-2. 764 
+
+[17] Yunhao Wang, Yue Zhao, Audrey Bollas, Yuru Wang, and Kin Fai Au. Nanopore sequencing technology, 765 
+
+bioinformatics and applications. Nature Biotechnology , 39(11):1348–1365, November 2021. ISSN 1087-766 
+
+0156, 1546-1696. doi: 10.1038/s41587-021-01108-x. URL https://www.nature.com/articles/s41587-021-767 
+
+01108-x. 768 
+
+[18] Florian Plaza Oñate, Hugo Roume, and Mathieu Almeida. Recovery of Metagenome-Assembled Genomes 769 
+
+from a Human Fecal Sample with Pacific Biosciences High-Fidelity Sequencing. Microbiology Resource 770 
+
+Announcements , 11(6):e00250–22, June 2022. ISSN 2576-098X. doi: 10.1128/mra.00250-22. URL 771 
+
+https://journals.asm.org/doi/10.1128/mra.00250-22. 772 
+
+[19] Sergey Koren, Brian P. Walenz, Konstantin Berlin, Jason R. Miller, Nicholas H. Bergman, and Adam M. 773 
+
+Phillippy. Canu: scalable and accurate long-read assembly via adaptive k-mer weighting and repeat 774 
+
+separation. Genome Research , 27(5):722–736, May 2017. ISSN 1088-9051, 1549-5469. doi: 10.1101/gr.2 775 
+
+15087.116. URL http://genome.cshlp.org/lookup/doi/10.1101/gr.215087.116. 776 
+
+22 
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint
+
+[20] Aaron M. Wenger, Paul Peluso, William J. Rowell, Pi-Chuan Chang, Richard J. Hall, Gregory T. 777 
+
+Concepcion, Jana Ebler, Arkarachai Fungtammasan, Alexey Kolesnikov, Nathan D. Olson, Armin Töpfer, 778 
+
+Michael Alonge, Medhat Mahmoud, Yufeng Qian, Chen-Shan Chin, Adam M. Phillippy, Michael C. Schatz, 779 
+
+Gene Myers, Mark A. DePristo, Jue Ruan, Tobias Marschall, Fritz J. Sedlazeck, Justin M. Zook, Heng Li, 780 
+
+Sergey Koren, Andrew Carroll, David R. Rank, and Michael W. Hunkapiller. Accurate circular consensus 781 
+
+long-read sequencing improves variant detection and assembly of a human genome. Nature Biotechnology ,782 
+
+37(10):1155–1162, October 2019. ISSN 1087-0156, 1546-1696. doi: 10.1038/s41587-019-0217-9. URL 783 
+
+https://www.nature.com/articles/s41587-019-0217-9. 784 
+
+[21] Klara Cerk, Pablo Ugalde-Salas, Chabname Ghassemi Nedjad, Maxime Lecomte, Coralie Muller, David J. 785 
+
+Sherman, Falk Hildebrand, Simon Labarthe, and Clémence Frioux. Community-scale models of micro-786 
+
+biomes: Articulating metabolic modelling and metagenome sequencing. Microbial Biotechnology , 17(1): 787 
+
+e14396, 2024. ISSN 1751-7915. doi: 10.1111/1751-7915.14396. 788 
+
+[22] Xiongbin Kang, Wenhai Zhang, Yichen Li, Xiao Luo, and Alexander Schönhuth. HyLight: Strain aware 789 
+
+assembly of low coverage metagenomes. Nature Communications , 15(1):8665, October 2024. ISSN 2041-790 
+
+1723. doi: 10.1038/s41467-024-52907-0. URL https://www.nature.com/articles/s41467-024-52907-0. 791 
+
+[23] Rei Kajitani, Hideki Noguchi, Yasuhiro Gotoh, Yoshitoshi Ogura, Dai Yoshimura, Miki Okuno, Atsushi 792 
+
+Toyoda, Tomomi Kuwahara, Tetsuya Hayashi, and Takehiko Itoh. MetaPlatanus: a metagenome 793 
+
+assembler that combines long-range sequence links and species-specific features. Nucleic Acids Research ,794 
+
+49(22):e130–e130, December 2021. ISSN 0305-1048, 1362-4962. doi: 10.1093/nar/gkab831. URL 795 
+
+https://academic.oup.com/nar/article/49/22/e130/6376035. 796 
+
+[24] Renaud Van Damme, Martin Hölzer, Adrian Viehweger, Bettina Müller, Erik Bongcam-Rudloff, and 797 
+
+Christian Brandt. Metagenomics workflow for hybrid assembly, differential coverage binning, metatran-798 
+
+scriptomics and pathway analysis (MUFFIN). PLOS Computational Biology , 17(2):e1008716, February 799 
+
+2021. ISSN 1553-7358. doi: 10.1371/journal.pcbi.1008716. URL https://dx.plos.org/10.1371/journal.pc 800 
+
+bi.1008716. 801 
+
+[25] Haitao Han, Ziye Wang, and Shanfeng Zhu. Benchmarking metagenomic binning tools on real datasets 802 
+
+across sequencing platforms and binning modes. Nature Communications , 16(1):2865, March 2025. ISSN 803 
+
+2041-1723. doi: 10.1038/s41467-025-57957-6. URL https://www.nature.com/articles/s41467-025-57957-804 
+
+6. 805 
+
+[26] Pierre Plassart, Sébastien Terrat, Bruce Thomson, Robert Griffiths, Samuel Dequiedt, Mélanie Lelievre, 806 
+
+Tiffanie Regnier, Virginie Nowak, Mark Bailey, Philippe Lemanceau, Antonio Bispo, Abad Chabbi, 807 
+
+Pierre-Alain Maron, Christophe Mougel, and Lionel Ranjard. Evaluation of the ISO standard 11063 808 
+
+DNA extraction procedure for assessing soil microbial abundance and community structure. PloS One , 7 809 
+
+(9):e44279, 2012. ISSN 1932-6203. doi: 10.1371/journal.pone.0044279. 810 
+
+[27] Isabel Abellan-Schneyder, Monica S. Matchado, Sandra Reitmeier, Alina Sommer, Zeno Sewald, Jan 811 
+
+Baumbach, Markus List, and Klaus Neuhaus. Primer, Pipelines, Parameters: Issues in 16S rRNA Gene 812 
+
+Sequencing. mSphere , 6(1):e01202–20, February 2021. ISSN 2379-5042. doi: 10.1128/mSphere.01202-20. 813 
+
+URL https://journals.asm.org/doi/10.1128/mSphere.01202-20. 814 
+
+[28] Tanja Magoč and Steven L. Salzberg. FLASH: fast length adjustment of short reads to improve genome 815 
+
+assemblies. Bioinformatics , 27(21):2957–2963, November 2011. ISSN 1367-4811, 1367-4803. doi: 10.109 816 
+
+3/bioinformatics/btr507. URL https://academic.oup.com/bioinformatics/article/27/21/2957/217265. 817 
+
+[29] Marcel Martin. Cutadapt removes adapter sequences from high-throughput sequencing reads. EM-818 
+
+Bnet.journal , 17(1):10, May 2011. ISSN 2226-6089. doi: 10.14806/ej.17.1.200. URL http: 819 
+
+//journal.embnet.org/index.php/embnetjournal/article/view/200. 820 
+
+[30] Shifu Chen, Yanqing Zhou, Yaru Chen, and Jia Gu. fastp: an ultra-fast all-in-one FASTQ preprocessor. 821 
+
+Bioinformatics , 34(17):i884–i890, September 2018. ISSN 1367-4803, 1367-4811. doi: 10.1093/bioinforma 822 
+
+tics/bty560. URL https://academic.oup.com/bioinformatics/article/34/17/i884/5093234. 823 
+
+[31] Torbjørn Rognes, Tomáš Flouri, Ben Nichols, Christopher Quince, and Frédéric Mahé. VSEARCH: 824 
+
+23 
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint
+
+a versatile open source tool for metagenomics. PeerJ , 4:e2584, October 2016. ISSN 2167-8359. doi: 825 
+
+10.7717/peerj.2584. URL https://peerj.com/articles/2584. 826 
+
+[32] S. Andrews. FastQC: A quality control tool for high throughput sequence data. 2010. URL http: 827 
+
+//www.bioinformatics.babraham.ac.uk/projects/fastqc. 828 
+
+[33] Philip Ewels, Måns Magnusson, Sverker Lundin, and Max Käller. MultiQC: summarize analysis results 829 
+
+for multiple tools and samples in a single report. Bioinformatics , 32(19):3047–3048, October 2016. ISSN 830 
+
+1367-4811, 1367-4803. doi: 10.1093/bioinformatics/btw354. URL https://academic.oup.com/bioinform 831 
+
+atics/article/32/19/3047/2196507. 832 
+
+[34] Dinghua Li, Chi-Man Liu, Ruibang Luo, Kunihiko Sadakane, and Tak-Wah Lam. MEGAHIT: an 833 
+
+ultra-fast single-node solution for large and complex metagenomics assembly via succinct de Bruijn 834 
+
+graph. Bioinformatics , 31(10):1674–1676, May 2015. ISSN 1367-4811, 1367-4803. doi: 10.1093/bioinfor 835 
+
+matics/btv033. URL https://academic.oup.com/bioinformatics/article/31/10/1674/177884. 836 
+
+[35] Gaëtan Benoit, Sébastien Raguideau, Robert James, Adam M. Phillippy, Rayan Chikhi, and Christopher 837 
+
+Quince. High-quality metagenome assembly from long accurate reads with metaMDBG. Nature 838 
+
+Biotechnology , 42(9):1378–1383, September 2024. ISSN 1087-0156, 1546-1696. doi: 10.1038/s41587-023-839 
+
+01983-6. URL https://www.nature.com/articles/s41587-023-01983-6. 840 
+
+[36] Md. Vasimuddin, Sanchit Misra, Heng Li, and Srinivas Aluru. Efficient Architecture-Aware Acceleration 841 
+
+of BWA-MEM for Multicore Systems. In 2019 IEEE International Parallel and Distributed Processing 842 
+
+Symposium (IPDPS) , pages 314–324, Rio de Janeiro, Brazil, May 2019. IEEE. ISBN 978-1-7281-1246-6. 843 
+
+doi: 10.1109/IPDPS.2019.00041. URL https://ieeexplore.ieee.org/document/8820962/. 844 
+
+[37] Heng Li. Minimap2: pairwise alignment for nucleotide sequences. Bioinformatics , 34(18):3094–3100, 845 
+
+September 2018. ISSN 1367-4803, 1367-4811. doi: 10.1093/bioinf ormatics/bty191. URL https: 846 
+
+//academic.oup.com/bioinformatics/article/34/18/3094/4994778. 847 
+
+[38] Petr Danecek, James K Bonfield, Jennifer Liddle, John Marshall, Valeriu Ohan, Martin O Pollard, 848 
+
+Andrew Whitwham, Thomas Keane, Shane A McCarthy, Robert M Davies, and Heng Li. Twelve 849 
+
+years of SAMtools and BCFtools. GigaScience , 10(2):giab008, January 2021. ISSN 2047-217X. doi: 850 
+
+10.1093/gigascience/giab008. URL https://academic.oup.com/gigascience/article/doi/10.1093/gigascien 851 
+
+ce/giab008/6137722. 852 
+
+[39] Dongwan D. Kang, Feng Li, Edward Kirton, Ashleigh Thomas, Rob Egan, Hong An, and Zhong 853 
+
+Wang. MetaBAT 2: an adaptive binning algorithm for robust and efficient genome reconstruction from 854 
+
+metagenome assemblies. PeerJ , 7:e7359, July 2019. ISSN 2167-8359. doi: 10.7717/peerj.7359. URL 855 
+
+https://peerj.com/articles/7359. 856 
+
+[40] Shaojun Pan, Xing-Ming Zhao, and Luis Pedro Coelho. SemiBin2: self-supervised contrastive learning 857 
+
+leads to better MAGs for short- and long-read sequencing. Bioinformatics , 39(Supplement_1):i21– 858 
+
+i29, June 2023. ISSN 1367-4803, 1367-4811. doi: 10.1093/bioinf ormatics/btad209. URL https: 859 
+
+//academic.oup.com/bioinformatics/article/39/Supplement_1/i21/7210480. 860 
+
+[41] Christian M. K. Sieber, Alexander J. Probst, Allison Sharrar, Brian C. Thomas, Matthias Hess, 861 
+
+Susannah G. Tringe, and Jillian F. Banfield. Recovery of genomes from metagenomes via a dereplication, 862 
+
+aggregation and scoring strategy. Nature Microbiology , 3(7):836–843, May 2018. ISSN 2058-5276. doi: 863 
+
+10.1038/s41564-018-0171-1. URL https://www.nature.com/articles/s41564-018-0171-1. 864 
+
+[42] Doug Hyatt, Gwo-Liang Chen, Philip F LoCascio, Miriam L Land, Frank W Larimer, and Loren J 865 
+
+Hauser. Prodigal: prokaryotic gene recognition and translation initiation site identification. BMC 866 
+
+Bioinformatics , 11(1):119, December 2010. ISSN 1471-2105. doi: 10.1186/1471-2105-11-119. URL 867 
+
+https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-11-119. 868 
+
+[43] Alex Chklovski, Donovan H. Parks, Ben J. Woodcroft, and Gene W. Tyson. CheckM2: a rapid, scalable 869 
+
+and accurate tool for assessing microbial genome quality using machine learning. Nature Methods , 20 870 
+
+(8):1203–1212, August 2023. ISSN 1548-7091, 1548-7105. doi: 10.1038/s41592-023-01940-w. URL 871 
+
+https://www.nature.com/articles/s41592-023-01940-w. 872 
+
+24 
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint
+
+[44] Daniel M Portik, Xiaowen Feng, Gaetan Benoit, Daniel J Nasko, Benjamin Auch, Samuel J Bryson, 873 
+
+Raul Cano, Martha Carlin, Anabelle Damerum, Brett Farthing, Jonas R Grove, Moutusee Islam, 874 
+
+Kyle W Langford, Ivan Liachko, Kristopher Locken, Hayley Mangelson, Shuiquan Tang, Siyuan Zhang, 875 
+
+Christopher Quince, and Jeremy E Wilkinson. Highly accurate metagenome-assembled genomes from 876 
+
+human gut microbiota using long-read assembly, binning, and consolidation methods, May 2024. URL 877 
+
+http://biorxiv.org/lookup/doi/10.1101/2024.05.10.593587. 878 
+
+[45] Robert M Bowers, Nikos C Kyrpides, Ramunas Stepanauskas, Miranda Harmon-Smith, Devin Doud, 879 
+
+T B K Reddy, Frederik Schulz, Jessica Jarett, Adam R Rivers, Emiley A Eloe-Fadrosh, Susannah G 880 
+
+Tringe, Natalia N Ivanova, Alex Copeland, Alicia Clum, Eric D Becraft, Rex R Malmstrom, Bruce 881 
+
+Birren, Mircea Podar, Peer Bork, George M Weinstock, George M Garrity, Jeremy A Dodsworth, Shibu 882 
+
+Yooseph, Granger Sutton, Frank O Glöckner, Jack A Gilbert, William C Nelson, Steven J Hallam, Sean P 883 
+
+Jungbluth, Thijs J G Ettema, Scott Tighe, Konstantinos T Konstantinidis, Wen-Tso Liu, Brett J Baker, 884 
+
+Thomas Rattei, Jonathan A Eisen, Brian Hedlund, Katherine D McMahon, Noah Fierer, Rob Knight, Rob 885 
+
+Finn, Guy Cochrane, Ilene Karsch-Mizrachi, Gene W Tyson, Christian Rinke, Alla Lapidus, Folker Meyer, 886 
+
+Pelin Yilmaz, Donovan H Parks, A Murat Eren, Lynn Schriml, Jillian F Banfield, Philip Hugenholtz, 887 
+
+and Tanja Woyke. Minimum information about a single amplified genome (MISAG) and a metagenome-888 
+
+assembled genome (MIMAG) of bacteria and archaea. Nature Biotechnology , 35(8):725–731, August 2017. 889 
+
+ISSN 1087-0156, 1546-1696. doi: 10.1038/nbt.3893. URL https://www.nature.com/articles/nbt.3893. 890 
+
+[46] Nicolas Maurice, Claire Lemaitre, Riccardo Vicedomini, and Clémence Frioux. Mapler: a pipeline for 891 
+
+assessing assembly quality in taxonomically rich metagenomes sequenced with HiFi reads. Bioinformatics ,892 
+
+41(6), June 2025. ISSN 1367-4811. doi: 10.1093/bioinformatics/btaf334. URL https://academic.oup.c 893 
+
+om/bioinformatics/article/doi/10.1093/bioinformatics/btaf334/8157874. 894 
+
+[47] Wei Shen, Shuai Le, Yan Li, and Fuquan Hu. SeqKit: A Cross-Platform and Ultrafast Toolkit for 895 
+
+FASTA/Q File Manipulation. PLOS ONE , 11(10):e0163962, October 2016. ISSN 1932-6203. doi: 896 
+
+10.1371/journal.pone.0163962. URL https://dx.plos.org/10.1371/journal.pone.0163962. 897 
+
+[48] Pierre-Alain Chaumeil, Aaron J Mussig, Philip Hugenholtz, and Donovan H Parks. GTDB-Tk: a toolkit 898 
+
+to classify genomes with the Genome Taxonomy Database. Bioinformatics , 36(6):1925–1927, March 899 
+
+2020. ISSN 1367-4803, 1367-4811. doi: 10.1093/bioinformatics/btz848. URL https://academic.oup.com 900 
+
+/bioinformatics/article/36/6/1925/5626182. 901 
+
+[49] Frederick A Matsen, Robin B Kodner, and E Virginia Armbrust. pplacer: linear time maximum-likelihood 902 
+
+and Bayesian phylogenetic placement of sequences onto a fixed reference tree. BMC Bioinformatics , 11 903 
+
+(1):538, December 2010. ISSN 1471-2105. doi: 10.1186/1471-2105-11-538. URL https://bmcbioinformat 904 
+
+ics.biomedcentral.com/articles/10.1186/1471-2105-11-538. 905 
+
+[50] Martin Steinegger and Johannes Söding. MMseqs2 enables sensitive protein sequence searching for the 906 
+
+analysis of massive data sets. Nature Biotechnology , 35(11):1026–1028, November 2017. ISSN 1087-0156, 907 
+
+1546-1696. doi: 10.1038/nbt.3988. URL https://www.nature.com/articles/nbt.3988. 908 
+
+[51] Aaron R. Quinlan and Ira M. Hall. BEDTools: a flexible suite of utilities for comparing genomic features. 909 
+
+Bioinformatics , 26(6):841–842, March 2010. ISSN 1367-4811, 1367-4803. doi: 10.1093/bioinformatics/b 910 
+
+tq033. URL https://academic.oup.com/bioinformatics/article/26/6/841/244688. 911 
+
+[52] Christian Quast, Elmar Pruesse, Pelin Yilmaz, Jan Gerken, Timmy Schweer, Pablo Yarza, Jörg Peplies, 912 
+
+and Frank Oliver Glöckner. The SILVA ribosomal RNA gene database project: improved data processing 913 
+
+and web-based tools. Nucleic Acids Research , 41(D1):D590–D596, November 2012. ISSN 0305-1048, 1362-914 
+
+4962. doi: 10.1093/nar/gks1219. URL http://academic.oup.com/nar/article/41/D1/D590/1069277/The-915 
+
+SILVA-ribosomal-RNA-gene-database-project. 916 
+
+[53] Ivica Letunic and Peer Bork. Interactive Tree of Life (iTOL) v6: recent updates to the phylogenetic tree 917 
+
+display and annotation tool. Nucleic Acids Research , 52(W1):W78–W82, July 2024. ISSN 0305-1048, 1362-918 
+
+4962. doi: 10.1093/nar/gkae268. URL https://academic.oup.com/nar/article/52/W1/W78/7645242. 919 
+
+[54] Yann Nevers, Natasha M. Glover, Christophe Dessimoz, and Olivier Lecompte. Protein length distribution 920 
+
+25 
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint
+
+is remarkably uniform across the tree of life. Genome Biology , 24(1):135, 2023. ISSN 1474-760X. doi: 921 
+
+10.1186/s13059-023-02973-2. 922 
+
+[55] Ulisses Rocha, Jonas Coelho Kasmanas, Rodolfo Toscan, Danilo S. Sanches, Stefania Magnusdottir, and 923 
+
+Joao Pedro Saraiva. Simulation of 69 microbial communities indicates sequencing depth and false positives 924 
+
+are major drivers of bias in prokaryotic metagenome-assembled genome recovery. PLOS Computational 925 
+
+Biology , 20(10):e1012530, October 2024. ISSN 1553-7358. doi: 10.1371/journal.pcbi.1012530. URL 926 
+
+https://dx.plos.org/10.1371/journal.pcbi.1012530. 927 
+
+[56] Rob Knight, Alison Vrbanac, Bryn C. Taylor, Alexander Aksenov, Chris Callewaert, Justine Debelius, 928 
+
+Antonio Gonzalez, Tomasz Kosciolek, Laura-Isobel McCall, Daniel McDonald, Alexey V. Melnik, James T. 929 
+
+Morton, Jose Navas, Robert A. Quinn, Jon G. Sanders, Austin D. Swafford, Luke R. Thompson, Anupriya 930 
+
+Tripathi, Zhenjiang Z. Xu, Jesse R. Zaneveld, Qiyun Zhu, J. Gregory Caporaso, and Pieter C. Dorrestein. 931 
+
+Best practices for analysing microbiomes. Nature Reviews Microbiology , 16(7):410–422, July 2018. ISSN 932 
+
+1740-1526, 1740-1534. doi: 10.1038/s41579-018-0029-9. URL https://www.nature.com/articles/s41579-933 
+
+018-0029-9. 934 
+
+[57] Derek M. Bickhart, Mikhail Kolmogorov, Elizabeth Tseng, Daniel M. Portik, Anton Korobeynikov, 935 
+
+Ivan Tolstoganov, Gherman Uritskiy, Ivan Liachko, Shawn T. Sullivan, Sung Bong Shin, Alvah Zorea, 936 
+
+Victòria Pascal Andreu, Kevin Panke-Buisse, Marnix H. Medema, Itzhak Mizrahi, Pavel A. Pevzner, 937 
+
+and Timothy P. L. Smith. Generating lineage-resolved, complete metagenome-assembled genomes from 938 
+
+complex microbial communities. Nature Biotechnology , 40(5):711–719, May 2022. ISSN 1087-0156, 1546-939 
+
+1696. doi: 10.1038/s41587-021-01130-z. URL https://www.nature.com/articles/s41587-021-01130-z. 940 
+
+[58] Alexander Sczyrba, Peter Hofmann, Peter Belmann, David Koslicki, Stefan Janssen, Johannes Dröge, 941 
+
+Ivan Gregor, Stephan Majda, Jessika Fiedler, Eik Dahms, Andreas Bremges, Adrian Fritz, Ruben 942 
+
+Garrido-Oter, Tue Sparholt Jørgensen, Nicole Shapiro, Philip D Blood, Alexey Gurevich, Yang Bai, 943 
+
+Dmitrij Turaev, Matthew Z DeMaere, Rayan Chikhi, Niranjan Nagarajan, Christopher Quince, Fernando 944 
+
+Meyer, Monika Balvoči¯ ut˙ e, Lars Hestbjerg Hansen, Søren J Sørensen, Burton K H Chia, Bertrand 945 
+
+Denis, Jeff L Froula, Zhong Wang, Robert Egan, Dongwan Don Kang, Jeffrey J Cook, Charles Deltel, 946 
+
+Michael Beckstette, Claire Lemaitre, Pierre Peterlongo, Guillaume Rizk, Dominique Lavenier, Yu-Wei 947 
+
+Wu, Steven W Singer, Chirag Jain, Marc Strous, Heiner Klingenberg, Peter Meinicke, Michael D Barton, 948 
+
+Thomas Lingner, Hsin-Hung Lin, Yu-Chieh Liao, Genivaldo Gueiros Z Silva, Daniel A Cuevas, Robert A 949 
+
+Edwards, Surya Saha, Vitor C Piro, Bernhard Y Renard, Mihai Pop, Hans-Peter Klenk, Markus Göker, 950 
+
+Nikos C Kyrpides, Tanja Woyke, Julia A Vorholt, Paul Schulze-Lefert, Edward M Rubin, Aaron E 951 
+
+Darling, Thomas Rattei, and Alice C McHardy. Critical assessment of metagenome interpretation—a 952 
+
+benchmark of metagenomics software. Nature Methods , 14(11):1063–1071, 2017. ISSN 1548-7091. doi: 953 
+
+10.1038/nmeth.4458. 954 
+
+[59] Chan Yeong Kim, Junyeong Ma, and Insuk Lee. HiFi metagenomic sequencing enables assembly of 955 
+
+accurate and complete genomes from human gut microbiota. Nature Communications , 13(1):6367, October 956 
+
+2022. ISSN 2041-1723. doi: 10.1038/s41467-022-34149-0. URL https://www.nature.com/articles/s41467-957 
+
+022-34149-0. 958 
+
+[60] Carole Belliardo, Frioux Clémence, and Institut Sophia Agrobiotech. Soil Metagenome Binning, 2025. 959 
+
+URL https://entrepot.recherche.data.gouv.fr/citation?persistentId=doi:10.57745/NRED6I. 960 
+
+[61] PlantBios. Plant Biocontrol Facility, 2019. URL https://institut-sophia-agrobiotech.paca.hub.inrae.fr/ 961 
+
+infrastructure-plantbios. 962 
+
+[62] GenoToul Bioinfo. GenoToul Bioinformatics Facility, 2018. URL http://bioinfo.genotoul.fr/. 963 
+
+[63] PGTB. Bordeaux Genome Transcriptome Facility, 2018. URL https://pgtb.fr/. 964 
+
+[64] GENOSOL. Soil Microbial Metagenomics Facility, 2018. URL https://www2.dijon.inrae.fr/plateforme 965 
+
+_genosol/. 966 
+
+[65] Christian Mougin, Emmanuelle Artige, Frédéric Marchand, Samuel Mondy, Céline Ratié, Nadine Sellier, 967 
+
+Philippe Castagnone-Sereno, Armelle Cœur D’Acier, Daniel Esmenjaud, Céline Faivre-Primot, Laurent 968 
+
+26 
+
+> .CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint
+
+Granjon, Valérie Hamelet, Frederic Lange, Sylvie Pagès, Frédéric Rimet, Nicolas Ris, and Guillaume Sallé. 969 
+
+BRC4Env, a network of Biological Resource Centres for research in environmental and agricultural sciences. 970 
+
+Environmental Science and Pollution Research , 25(34):33849–33857, December 2018. ISSN 0944-1344, 971 
+
+1614-7499. doi: 10.1007/s11356-018-1973-7. URL http://link.springer.com/10.1007/s11356-018-1973-7. 972 
+
+[66] GET. Genome & Transcriptome Facility, 2018. URL https://get.genotoul.fr/. 973 
+
+27 
+
+.CC-BY-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted June 1, 2026. ;https://doi.org/10.1101/2025.09.12.675765 doi: bioRxiv preprint
