@@ -6,32 +6,28 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-01
-- 运行时间：2026-06-01 22:51:47 UTC
+- 最新运行日期：2026-06-02
+- 运行时间：2026-06-02 22:52:47 UTC
 - 运行状态：成功
-- 本次总论文数：4
+- 本次总论文数：2
 - 精读区：1
-- 速读区：3
+- 速读区：1
 
 ### 今日简报（AI）
-今日精读一篇高分研究，聚焦短读与HiFi长读联合宏基因组学精准重构土壤MAG。最值得关注的是结合长读长显著提升复杂土壤微生物组MAG重建质量，此外金属污染驱动土壤微生物抗生素抗性选择。建议优先阅读精读论文了解MAG重建方法，并关注环境宏基因组中金属与抗生素抗性关联的速读论文。
-- 详情：[/202606/01/README](/202606/01/README)
+今日精读一篇微生物组计数数据污染模型论文，速读一篇土壤病毒活性研究，共2篇。  
+最值得关注的是微生物组多重计数数据的污染校正模型（8分），以及利用DNA稳定同位素探针揭示不同生态系统活跃土壤病毒群落的多样性（7分）。  
+建议普通读者优先精读第一篇，掌握处理过度离散计数数据的方法；速读第二篇可拓展对土壤病毒生态的认知。
+- 详情：[/202606/02/README](/202606/02/README)
 
 ### 精读区论文标签
-1. [Accurate MAG reconstruction from complex soil microbiome through combined short- and HiFi long-reads metagenomics](/202606/01/biorxiv-10-1101-2025-09-12-675765-v2-accurate-mag-reconstruction-from-complex-soil-microbiome-through-combined-short--and-hifi-long-reads-metagenomics)  
+1. [A Contaminated Model for Overdispersed Multinomial Microbiome Count Data](/202606/02/2606.02199v1-a-contaminated-model-for-overdispersed-multinomial-microbiome-count-data)  
    标签：评分：8.0/10、query:microbiome
-   evidence：使用短读和长读的宏基因组组装与分箱方法
+   evidence：针对过度分散多项微生物组计数数据的污染模型
 
 ### 速读区论文标签
-1. [BacTaxID: A universal framework for standardized bacterial classification](/202606/01/biorxiv-10-64898-2025-12-09-693184-v4-bactaxid-a-universal-framework-for-standardized-bacterial-classification)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：适用于宏基因组数据的通用细菌分类框架
-2. [TopOmics: Topic Modelling for All Omics](/202606/01/biorxiv-10-64898-2026-05-26-727810-v1-topomics-topic-modelling-for-all-omics)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：通用主题建模库可应用于微生物组学数据
-3. [Genome-resolved metagenomics reveals the potential for selection for antibiotic resistance due to metal pollution in soil microbial communities near a copper-nickel mine site in Botswana](/202606/01/biorxiv-10-64898-2026-05-29-728080-v1-genome-resolved-metagenomics-reveals-the-potential-for-selection-for-antibiotic-resistance-due-to-metal-pollution-in-soil-microbial-communities-near-a-copper-nickel-mine-site-in-botswana)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：应用基因组解析宏基因组学方法
+1. [Virome DNA stable isotope probing reveals diverse active soil virus communities across ecosystem contexts](/202606/02/biorxiv-10-64898-2026-03-02-709135-v2-virome-dna-stable-isotope-probing-reveals-diverse-active-soil-virus-communities-across-ecosystem-contexts)  
+   标签：评分：7.0/10、query:microbiome
+   evidence：病毒组宏基因组与DNA稳定同位素探针分析活性病毒
 
 
 <div class="dpr-home-promo-card">
