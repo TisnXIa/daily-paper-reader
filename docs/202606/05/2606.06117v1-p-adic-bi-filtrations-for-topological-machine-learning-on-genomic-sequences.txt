@@ -1,0 +1,887 @@
+Title: p-adic Bi-Filtrations for Topological Machine Learning on Genomic Sequences
+
+URL Source: https://arxiv.org/pdf/2606.06117v1
+
+Published Time: Fri, 05 Jun 2026 01:09:19 GMT
+
+Number of Pages: 12
+
+Markdown Content:
+> 1
+
+# p-adic Bi-Filtrations for Topological Machine Learning on Genomic Sequences 
+
+Tirtharaj Dash 1,∗ and Gunja Sachdeva 2
+
+Abstract —We introduce pVR , a topological machine learning framework for alignment-free genomic sequence classification that combines p-adic numbers with topological data analysis. Each DNA sequence is encoded along two complementary axes: a p-adic distance on k-mer prefixes, which captures hierarchical positional structure, and a compositional L1 distance on k-mer frequencies, which captures local sequence content. The two distances jointly parameterise a bi-filtered Vietoris–Rips complex, and per-sequence topological summaries from this bi-filtration serve as features for standard machine learning classifiers. We establish theoretical guarantees for the construction: stability under metric perturbations and invariance to the choice of prime, alongside a result that explains why a single p-adic axis is topologically uninformative and why the bi-filtration recovers nontrivial homology. On twelve genomic benchmarks ( 28 to 500 sequences, 3 to 7 classes), pVR outperforms four established alignment-free baselines on three of six low-sample datasets, with gains of up to 21 percentage points; it underperforms only on a SARS-CoV-2 variant benchmark whose point-mutation divergence violates the hierarchical assumption, and all methods saturate in the large-sample regime. pVR also outperforms zero-shot frozen embeddings from the 500M-parameter Nucleotide Transformer v2 by 6.7 to 11 .4 percentage points on three low-sample benchmarks. pVR codebase is publicly available at https://github.com/MAHI-Group/pVR. 
+
+Index Terms —Topological data analysis, alignment-free methods, genomic classification, p-adic numbers, simplicial complexes, persistent homology 
+
+✦
+
+1 INTRODUCTION 
+
+Comparative genomic analysis is a foundational task in bioinformatics. It includes classifying organisms, identifying variants, and reconstructing evolutionary relationships from genetic sequences. Classical alignment-based approaches such as MAFFT and MUSCLE are effective for closely re-lated sequences but scale poorly with sequence length and divergence. Alignment-free methods address these limita-tions by mapping sequences to fixed-length feature vectors, enabling scalable comparison without explicit alignment [1]. Among these, k-mer frequency methods [2] compare distri-butions of short subsequences, the natural vector method (NVM) [3] encodes positional statistics of nucleotides, and MinHash-based tools like Mash [4] estimate Jaccard sim-ilarity via locality-sensitive hashing. While these methods are effective, they treat k-mers as independent entities and discard the structural relationships that exist among them. Recently, topological data analysis (TDA) has emerged as a tool for capturing higher-order structures in genomic data. Chan et al. [5] applied persistent homology to detect reas-sortment in viral evolution. Hozumi and Wei [6] introduced 
+
+k-mer topology using persistent Laplacians, and Suwayyid et al. [7] proposed commutative algebra k-mer learning (CAKL) using persistent Stanley–Reisner invariants. Both demonstrate that topological and algebraic invariants cap-ture information invisible to frequency-based approaches. A separate line of work has used p-adic distances to model biological sequences. Dragovich and Dragovich [8] 
+
+• 1Department of CS & IS, BITS Pilani, K K Birla Goa Campus, Zuarina-gar, Goa 403726, India. E-mail: tirtharaj@goa.bits-pilani.ac.in 
+
+• 2Department of Mathematics, BITS Pilani, K K Birla Goa Campus, Zuarinagar, Goa 403726, India. E-mail: gunjas@goa.bits-pilani.ac.in 
+
+• ∗Corresponding author 
+
+showed that encoding nucleotides as digits in Z5 yields a metric space where codon degeneracy corresponds to p-adic proximity. Dragovich et al. [9] surveyed broader connections between p-adic analysis, ultrametric spaces, and models of genetic codes. Unlike ordinary metrics, p-adic distances are ultrametric, satisfying the strong triangle inequality 
+
+dp(x, z ) ≤ max( dp(x, y ), d p(y, z )) . Finite ultrametric spaces are exactly the leaf sets of rooted weighted trees [10], which is the precise sense in which the p-adic distance imposes a hierarchical, tree-like structure on k-mers. This structure may align with evolutionary divergence when sequence variation accumulates along tree-like lineages [11]. Despite these parallel developments, to the best of our knowledge, no method has combined p-adic encodings with simplicial persistent homology for genomic sequence classi-fication. In this work, we bring these two ideas together for genomic sequence classification. We first provide self-contained introductions to p-adic distance and Vietoris–Rips complexes in Section 3.1 for readers without specialised backgrounds. Our contributions are both theoretical and empirical. The first three results are structural: in the ide-alised setting of a strictly ultrametric distance, they ex-plain why a single p-adic axis cannot capture higher-order topology while pairing it with a compositional axis can. Since the implemented distance Dp is only approximately ultrametric (Remark 6), these results motivate pVR rather than describe it exactly, and we confirm the predicted be-haviour empirically (Section 5.2). The fourth contribution implements this design for genomic classification. We state these contributions precisely below. 1) We prove that Vietoris–Rips complexes built from finite ultrametric spaces have trivial homology in 
+
+> arXiv:2606.06117v1 [q-bio.QM] 4 Jun 2026 2
+
+all positive dimensions (Theorem 5), so a single strictly ultrametric axis cannot capture higher-order structure. This motivates a second filtration axis. 2) We introduce a bi-filtered Vietoris–Rips complex using both p-adic and compositional L1 distances and prove, on a strictly ultrametric configuration, that it recovers nontrivial homology absent from either filtration alone (Proposition 8). 3) We prove that the resulting bi-persistence module is stable under metric perturbations (Proposition 11) and invariant to the choice of prime (Proposi-tion 12), so the features are robust and free of a prime hyperparameter. 4) We implement these ideas as pVR , an alignment-free framework for genomic sequence classification, and evaluate it on twelve genomic benchmarks span-ning two scale regimes. In the low-sample regime, pVR outperforms four established alignment-free baselines on several datasets, with gains of up to 21 
+
+percentage points; in the large-sample regime it re-mains competitive, where most methods approach saturated performance. 
+
+2 RELATED WORK 
+
+2.1 Alignment-Free Sequence Comparison 
+
+Most alignment-free methods reduce a sequence to a fixed-length vector and compare these vectors directly, differ-ing mainly in what they put in the vector. The Feature Frequency Profile (FFP) framework [2] compares k-mer count distributions under Jensen–Shannon divergence. The natural vector method (NVM) [3] instead summarises each nucleotide type by its count, mean position, and normalised second central moment. Sketch-based tools such as Mash [4] avoid explicit vectors altogether, using MinHash to approx-imate the Jaccard similarity between k-mer sets; see [1] for a broader survey. Despite their differences, these methods all treat k-mers as independent features and make no use of the hierarchical arithmetic structure of the genetic encoding. A more recent line of work instead learns representations directly: Large pretrained models such as DNABERT [12], Nucleotide Transformer [13], and GROVER [14] apply trans-former architectures to large collections of DNA sequences. Notably, the representations these models learn remain largely compositional; GROVER’s token embeddings, for in-stance, primarily encode k-mer frequency, sequence content, and length [14]. 
+
+2.2 Topological Data Analysis in Genomics 
+
+TDA was applied in genomics through the work of Chan et al. [5], who used Vietoris–Rips persistent homology to detect reassortment events in influenza and HIV; Camara et al. [15] give a broader overview of topological methods in evolutionary biology. Closest to our setting are two recent methods: k-mer topology [6], which applies persis-tent Laplacians to k-mer frequency data, and CAKL [7], which extracts algebraic invariants from k-mer complexes via persistent Stanley–Reisner theory. Both build simplicial complexes from sequences and read off topological or al-gebraic features for classification. Topological summaries have also been used to study recombination, evolutionary structure, and sequence organisation more generally [16]. Our construction differs in where the complex comes from. The ultrametric that drives it is a biologically motivated p-adic encoding rather than a frequency or sketch distance, and we combine it with a compositional metric in a single bi-filtered complex, so the resulting topology reflects how the two distances interact. 
+
+2.3 p-adic Models in Biology 
+
+The use of p-adic numbers in biology goes back to Dragovich and Dragovich [8], who mapped nucleotides to 5-adic digits and showed that the degeneracy of the genetic code corresponds to p-adic proximity of codons. Dragovich et al. [9] later extended this to protein folding as ultrametric energy landscapes and gene expression as 2-adic dynamical systems, with an ultrametric similarity for DNA, RNA, and protein sequences sketched in [17]. The idea has since moved into machine learning, in p-adic clustering of single-cell RNA-seq data [18], van der Put neural networks operating natively in Zp [19], and theoretical accounts of 
+
+p-adic classification and representation learning [20]. We find the combination of p-adic encodings with simplicial persistent homology to be a largely underexplored direction, particularly for alignment-free genomic sequence classifica-tion, and we explore it in this work. 
+
+3 THEORETICAL FRAMEWORK 
+
+3.1 Preliminaries 
+
+We first provide the mathematical machinery underlying 
+
+pVR : the p-adic distance, its use in encoding k-mers, the Vietoris–Rips complex, and the two sequence-level dis-tances that drive the bi-filtration. We attempt to illustrate each object with worked examples on biological sequence data. Throughout the paper we work with a finite set 
+
+S = {s1, . . . , s N } of DNA sequences over the alphabet 
+
+Σ = {A, C, G, T }. Readers familiar with p-adic numbers and persistent homology may skip to the theoretical results in Section 3.2; general introductions to persistent homology and topological data analysis can be found in [21]. 
+
+p-adic distance. The p-adic distance is an alternative notion of closeness between integers based on divisibility rather than absolute difference. Fix a prime p. For any nonzero integer n, write n = pv · m where gcd( m, p ) = 1 . The exponent v is the p-adic valuation , denoted vp(n). The p-adic distance between two integers a, b is: 
+
+dp(a, b ) = p−vp(a−b), (1) with dp(a, a ) = 0 . Two integers are p-adically close when their difference is highly divisible by p.
+
+Example 1 (5-adic distance between integers) . Let p = 5 .Then d5(7 , 3) = 5 0 = 1 since 7 − 3 = 4 is not divisible by 5,while d5(7 , 132) = 5 −3 = 0 .008 since 7 − 132 = −125 = −53.Counterintuitively, 132 is 5-adically much closer to 7 than 3 is: the p-adic distance privileges divisibility over magnitude. 
+
+Ultrametric property. The p-adic distance satisfies the stan-dard metric axioms and a strengthened form of the triangle inequality, 
+
+dp(a, c ) ≤ max  dp(a, b ), d p(b, c ), (2) 3
+
+which is called the ultrametric inequality . Geometrically, every triangle in p-adic space is isosceles, with the two longest sides having equal length. This forces a hierarchical, tree-like structure on any finite subset, and this constraint underlies Theorem 5 below. 
+
+The space Qp. The p-adic numbers Qp are the completion of Q under dp, with the p-adic integers Zp ⊂ Qp given by elements expressible as P 
+
+> i≥0
+
+ai pi, ai ∈ { 0, 1, . . . , p − 1}.Finite truncations of these series correspond exactly to non-negative integers written in base p. This base-p representa-tion is the basis for the k-mer encoding introduced next. 
+
+p-adic encoding of k-mers. Following [8], we fix a prime 
+
+p ≥ | Σ| + 1 = 5 and define the digit assignment ϕ : Σ →{1, 2, 3, 4} by ϕ(A) = 1 , ϕ(C) = 2 , ϕ(G) = 3 , ϕ(T ) = 4 . A 
+
+k-mer w = w0w1 · · · wk−1 is encoded as the p-adic integer 
+
+ϕp(w) = 
+
+> k−1
+
+X
+
+> i=0
+
+ϕ(wi) · pi, (3) treating its nucleotides as digits in base p with the first nucleotide in the lowest-order position. Under dp, two k-mers are close exactly when they share a long common prefix, and differences at later positions are absorbed by higher powers of p. We show this in an example below. 
+
+Example 2 (5-adic distance between k-mers) . With p = 5 
+
+and the encoding A 7 → 1, C 7 → 2, G 7 → 3, T 7 → 4, consider the 4-mer w = ACGT . We compute ϕ5(w) = 1 + 2 · 5 + 3 ·
+
+25 + 4 · 125 = 586 . A mutation at the last position, w′ = ACGA ,gives ϕ5(w′) = 211 and ϕ5(w) − ϕ5(w′) = 375 = 3 · 53,so v5 = 3 and d5(w, w ′) = 5 −3 = 0 .008 . A mutation at the first position, w′′ = TCGT , gives ϕ5(w′′ ) = 589 and ϕ5(w) −
+
+ϕ5(w′′ ) = −3, so v5 = 0 and d5(w, w ′′ ) = 1 . Thus p-adic distance treats positional information asymmetrically: mutations at conserved (early) positions are weighted exponentially more than mutations at variable (late) positions. 
+
+Vietoris–Rips complexes. A simplex generalises a triangle. A 0-simplex is a point, a 1-simplex is an edge, a 2-simplex is a filled triangle, a 3-simplex is a filled tetrahedron, and so on. A k-simplex on k + 1 points is a single combinato-rial object recording that those k + 1 points are mutually connected. A simplicial complex K on a finite vertex set V
+
+is a collection of simplices satisfying the closure property: if a simplex σ ∈ K, every nonempty subset of σ is also in K. Hence if a triangle {a, b, c } ∈ K, then all three of its edges and vertices must also be in K. Given a finite metric space (X, d ) and a threshold r ≥ 0, the Vietoris–Rips complex VR( X; r) is the simplicial complex whose simplices are subsets of X in which every pair of points is within distance r,
+
+VR( X; r) = σ ⊆ X : d(x, y ) ≤ r ∀ x, y ∈ σ . (4) This is a flag complex : σ is a simplex whenever all its vertex pairs are edges. Because increasing r only adds simplices, the complexes form a filtration VR( X; r1) ⊆ VR( X; r2) ⊆· · · for r1 ≤ r2 ≤ · · · .
+
+Example 3 (Building a small Vietoris–Rips complex) . Let 
+
+X = {a, b, c, d } with pairwise distances d(a, b ) = 0.2,
+
+d(a, c ) = 0 .5, d(a, d ) = 0 .7, d(b, c ) = 0 .3, d(b, d ) = 0 .6,and d(c, d ) = 0 .4. Figure 1 illustrates the filtration. At r = 0 .1
+
+only the four vertices are present and no edges are drawn. At 
+
+r = 0 .35 edges {a, b } and {b, c } are present, but the triple 
+
+{a, b, c } is not yet a triangle because d(a, c ) = 0 .5 > 0.35 .At r = 0 .5 the edges {a, b }, {b, c }, {a, c }, {c, d } are present, and the triangle {a, b, c } now appears. The complex grows from disconnected points through a graph-like intermediate stage into a fully connected high-dimensional simplex.                       
+
+> r=0 .1
+> ab
+> c
+> d
+> r=0 .35
+> ab
+> c
+> d
+> r=0 .5
+> ab
+> c
+> d
+> β0=4 , β 1=0 β0=2 , β 1=0 β0=1 , β 1=0
+> Fig. 1. Three snapshots of a Vietoris–Rips filtration on four points
+> {a, b, c, d }as the threshold rincreases. At r= 0 .1no edges are present and the complex consists of four isolated vertices ( β0= 4 ). At r= 0 .35
+> two edges have appeared but no triangle, so the complex is a path graph (β0= 2 ). At r= 0 .5the triangle {a, b, c }has formed and the edge {c, d }
+> connects the fourth point ( β0= 1 ).
+
+Betti numbers. Persistent homology tracks how the shape of VR( X; r) evolves with r via integer invariants called Betti numbers β0, β 1, β 2, . . . . Informally, β0 counts connected components, β1 counts independent 1-dimensional loops (cycles that are not boundaries of filled triangles), and β2
+
+counts independent enclosed voids, and so on. Tracking how these numbers change as r varies is the main object of study in persistent homology [5], [22], [23]. Applied to sequence data, each sequence si ∈ S is a vertex, edges encode pairwise similarity below threshold r, and higher-dimensional simplices encode groups of mutually-similar sequences; persistent homology then extracts how these groups merge, form loops, and dissolve as we relax the threshold, capturing information that no single distance threshold could reveal. The novelty of our work is to use 
+
+two distances simultaneously, producing the bi-filtration 
+
+VR( ϵp, ϵ c) defined below, from which we extract per-sequence topological features that combine hierarchical and compositional information for downstream classification. 
+
+Sequence-level distances. We now lift the p-adic distance on k-mers, and the standard compositional distance on k-mer frequency vectors, to distances on the sequence set 
+
+S; these two sequence-level distances furnish the two axes of the bi-filtration. At scale j (j = 1 , . . . , J where J =min( k, 3) ), we group k-mers by their residue ϕp(w) mod pj
+
+and form a normalised frequency vector h(s) 
+
+> j
+
+over pj bins for each sequence s ∈ S . Scale j groups k-mers sharing the same first j characters, providing a hierarchy from coarse (j = 1 , p bins) to fine ( j = J, pJ bins). The sequence-level 
+
+p-adic distance is a weighted L1 distance, 
+
+Dp(si, s ℓ) = 
+
+PJj=1 j · ∥ h(si) 
+
+> j
+
+− h(sℓ) 
+
+> j
+
+∥1
+
+PJj=1 j . (5) Each scale-j term ∥h(si) 
+
+> j
+
+− h(sℓ) 
+
+> j
+
+∥1 is an L1 distance on histograms, hence a metric; a positive weighted sum of metrics is a metric, so Dp is a metric. From an empirical perspective, the cap at j = 3 keeps the histogram dimension (p + p2 + p3 = 155 for p = 5 ) comparable to the 4k = 256 4
+
+compositional features at k = 4 , while avoiding the sparse-bin regime in which L1 distance approximates discrete set-difference rather than smooth statistics. The compositional distance is simpler. For each sequence 
+
+s ∈ S , let f (s) ∈ R|Σ|k
+
+be the vector of normalised k-mer frequencies, with components f (s)(w) = count( w; s)/m s,where count( w; s) is the number of occurrences of k-mer 
+
+w in s and ms is the total number of overlapping k-mers extracted from s. The compositional distance between two sequences is the L1 distance between these frequency vectors, 
+
+Dc(si, s ℓ) = ∥f (si) − f (sℓ)∥1. (6) 
+
+Dp captures hierarchical prefix structure across scales, while 
+
+Dc captures local compositional content; the two are com-plementary by design. 
+
+3.2 Theoretical Results 
+
+We now provide the results underlying the construction of pVR . We first show why a single axis is not sufficient (Theorem 5), then characterise the bi-filtration that follows (Propositions 8–12). 
+
+Triviality of ultrametric VR complexes. We begin by re-calling the definition of an ultrametric space. 
+
+Definition 4 (Ultrametric space) . A metric space (X, d )
+
+is ultrametric if for all x, y, z ∈ X, d(x, z ) ≤
+
+max( d(x, y ), d (y, z )) .
+
+The following theorem reflects the collapse of higher-order topology in Vietoris–Rips filtrations constructed from ultrametric spaces, which are closely related to hierarchical clustering structures [10]. 
+
+Theorem 5 (Trivial higher homology) . Let (X, d ) be a finite ultrametric space. For every r ≥ 0, VR( X; r) is homotopy equiv-alent to a discrete set indexed by its connected components. In particular, Hk(VR( X; r)) = 0 for all k ≥ 1, and β0(VR( X; r)) 
+
+equals the number of clusters in the single-linkage dendrogram of 
+
+(X, d ) cut at height r.Proof. Let C be a connected component of the 1-skeleton of VR( X; r). Take any x, z ∈ C connected by a path x =
+
+v0, v 1, . . . , v m = z with d(vi−1, v i) ≤ r. We prove d(x, z ) ≤
+
+r by induction on m. The base case m = 1 is immediate. For m ≥ 2, the inductive hypothesis gives d(x, v m−1) ≤ r,and d(vm−1, z ) ≤ r by assumption. By the ultrametric in-equality, d(x, z ) ≤ max( d(x, v m−1), d (vm−1, z )) ≤ r. Hence 
+
+{x, z } is an edge, so C is a complete graph. Since the VR complex is a flag complex, the subcomplex on C is the full simplex ∆|C|− 1, which is contractible. Thus VR( X; r) is a disjoint union of contractible simplices. 
+
+Remark 6. Theorem 5 implies that applying standard single-parameter persistent homology to any finite ultrametric space, for instance, a set of k-mers under the p-adic distance dp of Eq. 1 is uninformative beyond β0. This is the fundamental obstacle motivating the bi-filtration. We note one technical caveat. The sequence-level distance Dp in Eq. 5 is a weighted L1 aggregate of histograms over p-adic residues; it inherits hierarchical prefix structure from dp but satisfies only the ordinary triangle inequal-ity, not strict ultrametricity. As a concrete example, consider the sequences a = AL, b = AL/ 2CL/ 2, c = CL,with L ≫ k, so that boundary k-mers in b are negligible. The k-mer distributions of a and c are each concentrated on a single k-mer, while that of b is asymptotically split equally between the two. Consequently, in the limit L → ∞ , at ev-ery scale j, ∥h(a) 
+
+> j
+
+− h(b) 
+
+> j
+
+∥1 → 1, ∥h(b) 
+
+> j
+
+− h(c) 
+
+> j
+
+∥1 → 1,while ∥h(a) 
+
+> j
+
+− h(c) 
+
+> j
+
+∥1 → 2. Substituting into Eq. (5) there-fore gives, in the same limit, Dp(a, b ) → 1, Dp(b, c ) →
+
+1, Dp(a, c ) → 2, which violates the ultrametric inequality 
+
+Dp(a, c ) ≤ max( Dp(a, b ), D p(b, c )) . Hence Dp is generally not ultrametric. Theorem 5 therefore does not formally apply to the implemented sequence-level distance Dp; it instead motivates the bi-filtration as a structural design principle for sequence data, while the corresponding topological collapse of Dp-only complexes is observed empirically (Section 5.2) rather than as a direct corollary. 
+
+Nontrivial topology from the bi-filtration. We now define the bi-filtered complex used by pVR .
+
+Definition 7 (Bi-filtered VR complex) . Let X be a finite set equipped with two metrics, dp (a hierarchical or ultrametric distance) and dc (a compositional distance). The bi-filtered VR complex at thresholds (ϵp, ϵ c) is 
+
+VR( ϵp, ϵ c) = {σ ⊆ X : dp(x, y ) ≤ ϵp and dc(x, y ) ≤ ϵc ∀ x, y ∈ σ}.
+
+The pVR pipeline (Section 4) applies Definition 7 with 
+
+X = S, dp = Dp (Eq. 5), and dc = Dc (Eq. 6). The substitution dc = Dc is rigorous since both are genuine metrics. The substitution dp = Dp is approximate: Dp
+
+inherits hierarchical structure from the p-adic encoding of 
+
+k-mers but is not strictly ultrametric (see Remark 6). The existence-of-cycle result below (Proposition 8) is established on a strictly ultrametric example to demonstrate that the bi-filtration can recover nontrivial topology in principle; its empirical realisation on real sequence data is documented in Section 5.2. 
+
+Proposition 8 (Nontrivial homology in the bi-filtration) . Let 
+
+(X, d p, d c) be a finite set with ultrametric dp and metric dc. There exists a configuration for which H1(VR( ϵp, ϵ c)) ̸ = 0 .Proof. Let X = {a, b, c, d, e } with the following distances: 
+
+dp(a, b ) = dp(c, d ) = 1 /5; dp(a, c ) = dp(a, d ) = dp(b, c ) = 
+
+dp(b, d ) = 1; dp(·, e ) = 25 for every other point ; dc(a, c ) = 
+
+dc(b, d ) = dc(a, d ) = dc(b, c ) = 0 .3; dc(a, b ) = dc(c, d ) = 0.5; dc(·, e ) = 0 .3 for every other point . One verifies that dp
+
+is ultrametric (every triangle is isosceles) and dc satisfies the triangle inequality. At thresholds (ϵp, ϵ c) = (1 , 0.4) , the bi-filtration excludes all edges incident to e (since dp(·, e ) = 25 )and excludes {a, b }, {c, d } (since dc = 0 .5). The remaining four edges {a, c }, {a, d }, {b, c }, {b, d } form a 4-cycle a–c–b–
+
+d–a. No triangle exists in the complex, so H1 ∼= Z. The 
+
+dc-only filtration at the same ϵc = 0 .4 includes all eight cross-cluster and witness edges, producing filling triangles 
+
+{a, c, e }, {c, b, e }, {b, d, e }, {d, a, e } that bound the 4-cycle, hence H1 = 0 . The dp-only filtration produces a tetrahedron on {a, b, c, d } with e isolated, also yielding H1 = 0 . Figure 2 shows the three configurations. 
+
+Remark 9. Proposition 8 is an existence statement. In practice we use the whole 2D Betti landscape, since no single threshold pair carries the signal on its own. 5                                            
+
+> (a) dp-only
+> ϵp= 1
+> a
+> b
+> c
+> d
+> e
+> β1= 0 (tetrahedron + e)
+> (b) dc-only
+> ϵc= 0 .4
+> a
+> b
+> c
+> d
+> e
+> β1= 0 (cycle filled via e)
+> (c) Bi-filtration
+> (ϵp, ϵ c) = (1 ,0.4)
+> a
+> b
+> c
+> d
+> e
+> β1= 1 (open 4-cycle)
+> Fig. 2. Illustration of Proposition 8on the five-point configuration
+> {a, b, c, d, e }at (ϵp, ϵ c) = (1 ,0.4) , where eis compositionally close to every point but p-adically far. (a) dp-only: tetrahedron on {a, b, c, d }with
+> eisolated ( β1= 0 ). (b) dc-only: the 4-cycle a–c–b–d–ais filled through
+> e(β1= 0 ). (c) Bi-filtration: e’s edges are excluded, leaving the 4-cycle unfilled ( β1= 1 ). The cycle is invisible to either single-axis filtration alone.
+
+Example 10 (Bi-filtration on biological sequences) . Consider six DNA sequences forming two evolutionary clades, with repre-sentative 4-mer prefixes shown in the table below. All within-clade pairs share the prefix AC or TG , yielding dp ≤ 5−2 = 0 .04 . Cross-clade pairs differ at position 0 and yield dp = 1 . At ϵp = 0 .04 ,only within-clade edges appear, and the compositional axis reveals internal clade structure. At ϵp = 1 , cross-clade edges may appear selectively via compositional, potentially creating 1-cycles that signal cross-clade similarity invisible to either single filtration alone. Sequence Clade 4-mer prefix ( ϕ5)
+
+s1 = ACGT . . . I ACGT (586 )
+
+s2 = ACGA . . . I ACGA (211 )
+
+s3 = ACTT . . . I ACTT (561 )
+
+s4 = TGCA . . . II TGCA (189 )
+
+s5 = TGCG . . . II TGCG (439 )
+
+s6 = TGTA . . . II TGTA (164 )
+
+Stability and prime invariance. The stability result below applies to any pair of metrics (dp, d c) on a finite set; for the 
+
+pVR pipeline it is applied with dp = Dp and dc = Dc. The statement uses three standard objects from multi-parameter persistent homology. First, we write PH(VR dp,d c ) for the bi-persistence module obtained by applying simplicial homol-ogy degree-wise to the bi-filtration of Definition 7, viewed as a functor (R2, ≤) → Vec F over a fixed field F of coefficients [24]. Second, given two persistence modules 
+
+M, M ′ over (R2, ≤), the interleaving distance dI (M, M ′) is the infimum over δ ≥ 0 such that there exist morphisms shifting each module by (δ, δ ) that compose to the respective structure maps; we refer to [25] for the formal definition. Third, for two metrics d, d ′ on a finite set X, the sup-norm is ∥d − d′∥∞ = max x,y ∈X |d(x, y ) − d′(x, y )|. Set-ting (dp, d c) = ( Dp, D c) and (d′
+
+> p
+
+, d ′
+
+> c
+
+) = ( D′
+
+> p
+
+, D ′
+
+> c
+
+) for two sequence sets that differ by small perturbations of either distance therefore gives robustness of the bi-persistence module to such perturbations. 
+
+Proposition 11 (Stability) . Let (X, d p, d c) and (X, d ′
+
+> p
+
+, d ′
+
+> c
+
+) be two bi-metric structures on the same finite set. Using the L∞
+
+interleaving distance on (R2, ≤) in the sense of [25], 
+
+dI (PH(VR dp,d c ), PH(VR d′ 
+
+> p,d ′
+> c
+
+)) ≤ max( ∥dp − d′
+
+> p
+
+∥∞, ∥dc − d′
+
+> c
+
+∥∞).
+
+Proof. Set δp = ∥dp − d′
+
+> p
+
+∥∞ and δc = ∥dc − d′
+
+> c
+
+∥∞. For any pair x, y ∈ X, d′
+
+> p
+
+(x, y ) ≤ dp(x, y )+ δp and likewise for dc, so 
+
+VR dp,d c (ϵp, ϵ c) ⊆ VR d′ 
+
+> p,d ′
+> c
+
+(ϵp + δp, ϵ c + δc) and the reverse inclusion holds by symmetry. Setting δ = max( δp, δ c), these inclusions yield a diagonal δ-interleaving of the two bi-persistence modules under the L∞ shift convention on R2,analogous to the algebraic stability framework for multi-parameter persistence [24], [25]. 
+
+Proposition 12 (Prime invariance) . Let Σ be a finite alphabet with |Σ| = q. For any two primes p1, p 2 ≥ q + 1 , the multi-scale histogram distances Dp1 and Dp2 are identical on any set of sequences over Σ, up to a relabeling of histogram bins. Proof. At scale j, the histogram bins are indexed by 
+
+Pj−1 
+
+> i=0
+
+ϕ(wi) · pi for j-prefixes (w0, . . . , w j−1) ∈ { 1, . . . , q }j .Since p ≥ q + 1 , this map is injective (digits are < p , so the base-p representation is unique), and changing p only relabels the bin indices while preserving the bijection with the prefix multiset. The non-zero bins and their counts are determined by the multiset of j-prefixes, which is indepen-dent of p. The L1 distance depends only on count differences across corresponding bins, hence Dp1 = Dp2 .
+
+Remark 13. For the DNA alphabet ( q = 4 ), any prime p ≥ 5
+
+yields identical features. This eliminates p as a hyperparameter, and we use p = 5 in all our experiments. 
+
+4 THE P VR F RAMEWORK 
+
+4.1 Method 
+
+We summarise the steps for constructing the pVR pipeline in Procedure 1 along with a graphical overview of this in Figure 3. Each sequence is encoded along two complemen-tary axes: a p-adic histogram capturing hierarchical k-mer prefix structure, and a k-mer frequency vector capturing local composition. Pairwise distances on these two encod-ings parameterise a bi-filtered Vietoris–Rips complex on a 
+
+Gp × Gc threshold grid: Gp values of the p-adic threshold 
+
+ϵp and Gc values of the compositional threshold ϵc. From each grid point we read off the per-sequence vertex degree (a per-sequence summary of local connectivity) and the global Betti numbers β0, β 1. The concatenation of degree profiles, p-adic histograms, and k-mer frequencies forms the feature vector for a standard classifier. We consider three ML classifiers: XGBoost [26], SVM and 5-NN. We now describe these three groups. For each sequence 
+
+si: (1) degree profiles , the number of neighbours of si in 
+
+VR( ϵp, ϵ c) at each of the Gp ×Gc grid points, capturing how local connectivity evolves across the bi-filtration; (2) multi-scale p-adic histograms , concatenated across scales; and (3) k-mer frequency vectors . The Betti numbers β0 and β1 are global properties of the complex at each grid point and are therefore identical across all sequences in a dataset. They serve as dataset-level descriptors rather than per-sequence features, and therefore the per-sequence topological signal enters exclusively through the degree profiles. 6
+
+DNA sequences S = {s1, . . . , s N }, Σ = {A, C, G, T }
+
+k-mer extraction ( k = 4 ) 
+
+> hierarchical (ultrametric) compositional (metric)
+
+p-adic encoding ϕ(w) = P 
+
+> i
+
+ϕ(wi) pi
+
+multi-scale histograms h1, h 2, h 3
+
+Dp (N ×N ), weighted L1
+
+k-mer frequency vectors 
+
+Dc (N ×N ), L1 distance 
+
+bi-filtered VR complex VR( ϵp, ϵ c)
+
+on Gp × Gc grid         
+
+> (∩:edge in complex iff both ϵpand ϵcconstraints hold )
+
+[ degree profiles | p-adic histograms | k-mer frequencies ]  
+
+> degree profiles
+> p-adic hists k-mer freq
+
+ML classifier (XGBoost / SVM / 5-NN); 5-fold stratified CV 
+
+predicted class-label (variant / species / serotype)          
+
+> Fig. 3. The pVR pipeline. Each sequence passes through two branches: a p-adic (hierarchical) branch gives the distance matrix Dp, and a compositional ( L1) branch gives Dc. The two matrices parameterise a bi-filtered Vietoris–Rips complex, from which per-sequence degree profiles are extracted; these, with the p-adic histograms and k-mer frequencies, form the feature vector for a standard classifier. The ∩symbol denotes that an edge appears only when both distance constraints hold.
+
+4.2 Implementation 
+
+Let N be the number of sequences and k the k-mer size. The distance matrices require O(N 2 · J · pJ ) for Dp and 
+
+O(N 2 · 4k) for Dc. For each of the Gp · Gc grid points, constructing the VR complex and computing Betti num-bers takes O(N 3) in the worst case under the dimension-2
+
+simplicial expansion adopted in our implementation, which bounds the simplex count cubically in N ; without truncation the count grows exponentially in N . The total complexity is therefore O(N 2(Jp J + 4 k + GpGcN )) .We expand the complex only up to dimension 2. Across all twelve datasets β2 was zero at every grid point, which we attribute to the absence of higher-dimensional voids in sparsely-sampled finite metric spaces; the truncation is therefore exact here (dimension-3 expansion gives identical Betti numbers; see Section 5.2, Runtime). The bi-filtration grid loop and the p-adic distance matrix are parallelised across CPU cores via Joblib. pVR is implemented in Python using GUDHI [27] (v3.12) for simplicial complexes and persistent homology, scikit-learn (v1.8) for classical classi-fiers, and XGBoost (v3.2) for gradient-boosted trees. All experiments were run on a single workstation with a 12-core AMD Ryzen CPU and 64 GB RAM; no GPU was used. With the default parameters ( k = 4 , J = 3 , Gp = 10 , Gc = 15 ,
+
+N ≤ 500 ), every dataset completes in under 30 seconds (Table 8). Code and data for reproducing our experiments are available at: https://github.com/MAHI-Group/pVR. 
+
+5 EMPIRICAL EVALUATION 
+
+5.1 Setup 
+
+Datasets. We evaluate pVR on twelve genomic classifica-tion benchmarks from NCBI GenBank, spanning two scale regimes (Table 1). The low-sample regime comprises six small 7
+
+Procedure 1 pVR : p-adic Bi-Filtered Classification 
+
+Input: Sequences S = {s1, . . . , s N }, labels y, prime p, k-mer size k, grid sizes Gp, G c
+
+Output: Predicted class-labels  
+
+> 1:
+
+Extract overlapping k-mers from each si 
+
+> 2:
+
+Compute p-adic histograms h(si) 
+
+> j
+
+at scales j =1, . . . , min( k, 3)  
+
+> 3:
+
+Compute Dp via weighted L1 across scales (Eq. 5)  
+
+> 4:
+
+Compute Dc via L1 on k-mer frequency vectors  
+
+> 5:
+
+Choose grid {ϵ(a) 
+
+> p
+
+}Gp 
+
+> a=1
+
+× { ϵ(b) 
+
+> c
+
+}Gc 
+
+> b=1
+> 6:
+
+for each grid point (ϵ(a) 
+
+> p
+
+, ϵ (b) 
+
+> c
+
+) do  
+
+> 7:
+
+Construct VR( ϵ(a) 
+
+> p
+
+, ϵ (b) 
+
+> c
+
+) 
+
+> 8:
+
+Compute degree of each vertex si in the 1-skeleton  
+
+> 9:
+
+Compute β0, β 1 
+
+> 10:
+
+end for  
+
+> 11:
+
+Features for each si: concatenate degree profiles, p-adic histograms, k-mer frequency vectors  
+
+> 12:
+
+Standardise features; train and test an ML classifier  
+
+> 13:
+
+return predicted class-labels, ˆy
+
+datasets with N between 28 and 150 . These reflect realis-tic low-data settings: emerging pathogens, rare species, or newly identified variants for which annotated sequences are scarce. The large-sample regime comprises six datasets with N between 73 and 500 , obtained by expanding NCBI search queries on the same organisms, with approximately 
+
+75 to 100 sequences per class where available. The two regimes use overlapping organisms but distinct sequence sets, enabling a controlled comparison of pVR ’s behaviour as sample size grows.                                            
+
+> TABLE 1 Benchmark datasets in two scale regimes. Ndenotes the number of sequences after filtering, and Cdenotes the number of classes after merging singletons.
+> Dataset NCTask
+> Low-sample regime
+> Mammalian mito (small) 30 7Taxonomic order SARS-CoV-2 (small) 31 5Variant lineage HRV (small) 150 3Serotype (A/B/C) Influenza HA (small) 59 4HA subtype HEV (small) 29 3Genotype Ebola (small) 28 5Species
+> Large-sample regime
+> SARS-CoV-2 (large) 316 4Variant lineage Influenza HA (large) 300 4HA subtype HRV (large) 300 3Serotype HEV (large) 73 3Genotype Ebola (large) 99 4Species Dengue (large) 400 4Serotype
+
+All experiments use k = 4 and p = 5 . Classes with fewer than three members are merged into a residual “Other” class to ensure that stratified cross-validation is well-defined. Sequences shorter than 100 nucleotides are excluded as out-liers. The mammalian dataset spans 11 taxonomic orders, re-duced to 7 classes after merging, including Primates, Roden-tia, Carnivora, Artiodactyla, Cetacea, and Perissodactyla. The SARS-CoV-2 datasets cover variant lineages (Original, Alpha, Beta, Gamma, Delta, Omicron) with the large-sample variant containing four well-represented lineages after the Alpha query returned no sequences. The Ebola dataset spans five species (EBOV, SUDV, BDBV, RESTV, TAFV). The Influenza HA datasets cover four hemagglutinin subtypes (H1N1, H3N2, H5N1, H7N9). The HEV datasets cover four genotypes, with the small dataset containing three after merging. The HRV datasets cover three serotypes (A, B, C). The Dengue dataset, used only at large scale, covers all four DENV serotypes. 
+
+Baselines. We implement four alignment-free baseline methods on the same data with the same evaluation proto-col. FFP-JS uses k-mer frequency profiles ( k = 3 ) compared via Jensen–Shannon divergence [2]. NVM uses nucleotide-level positional statistics, namely the count, mean posi-tion, and normalised second central moment of each nu-cleotide [3]; its features are standardised before computing Euclidean distances. Mash uses MinHash sketches with 
+
+200 hash functions and k = 7 to estimate Jaccard dis-tance [4]. The k-mer frequency baseline uses k = 4 relative-frequency vectors with Euclidean distance after standardi-sation. Distance-based methods are evaluated using 5-NN classification, while feature-based methods (the k-mer fre-quency baseline at the feature level, and pVR ) are evalu-ated using XGBoost, RBF-kernel SVM, and 5-NN. Accu-racy is reported as mean ± standard deviation over 10 
+
+repeats of 5-fold stratified cross-validation, yielding up to 
+
+50 paired fold accuracies per (dataset, method) cell with seeds {42 , 43 , . . . , 51 }. Some small datasets contain a class with fewer than five members, which forces nfolds < 5 and reduces the count to 20 –40 folds. For headline comparisons, we report a one-sided paired Wilcoxon signed-rank test on the paired fold differences. We note that fold-level ac-curacies from repeated cross-validation are not statistically independent, since training sets overlap across folds and seeds. The resulting paired Wilcoxon p-values are therefore mildly anti-conservative in the sense of [28], [29]; we report them as a consistency check on repeated paired differences rather than as formal hypothesis tests, and the gaps we emphasise (Ebola, Influenza HA) here are large enough that this concern does not affect the qualitative conclusions. 
+
+5.2 Results 
+
+We report results in two scale regimes, low-sample and large-sample, followed by a comparison with foundation-model embeddings and supporting analyses. 
+
+Low-sample regime. On the six low-sample benchmarks (Table 2), pVR is strongest on three (Ebola, Influenza HA, mammalian mitochondrial), is a statistical tie with FFP-JS on HEV, ties the best baseline on HRV, and trails NVM on SARS-CoV-2. The largest gain is on Ebola: pVR -SVM reaches 
+
+100 .0 ± 0.0% against 78 .9 ± 5.7% for MinHash, a 21 .1-point gap (one-sided paired Wilcoxon, p < 10 −4, n = 20 ). Influenza HA is similar ( 72 .5 ± 11 .0% vs 62 .2% for FFP-JS; p < 10 −4, n = 50 ), as is mammalian mitochondrial (62 .0 ± 13 .7% vs 53 .9% for FFP-JS; p = 0 .0002 , n = 40 ). The gains track datasets with clearer hierarchical class separa-tion. HEV is a near-tie ( 67 .0±8.2% vs 66 .0±6.5% for FFP-JS; 
+
+p = 0 .27 ), and HRV is saturated, with pVR , FFP-JS, and the 
+
+k-mer baseline all at 100% . The exception is SARS-CoV-2: 
+
+pVR -XGBoost reaches 42 .1 ± 15 .7% against 47 .5 ± 17 .0% for 8
+
+NVM. Its variants differ by scattered point mutations rather than hierarchical divergence, which the p-adic axis does not capture; raising k from 4 to 6 recovers 61 .0% (sensitivity analysis below). 
+
+Large-sample regime. With more data, the benchmarks saturate (Table 3): most methods land between 96 and 100% ,and Dengue, Ebola, and HRV exceed 99% across every baseline, so simple compositional features already suffice. 
+
+pVR stays in this band, with pVR -SVM at 99 .2–100% on five datasets and 98 .5 ± 3.1% on HEV-large; no gap to the best baseline is significant ( p > 0.16 ). The lack of an edge here reflects task saturation, not an uninformative bi-filtration: its hierarchical structure may still help on downstream tasks such as phylogenetic reconstruction or recombination analysis (Section 6). 
+
+Comparison with NT embeddings. We also compared 
+
+pVR against zero-shot embeddings from Nucleotide Trans-former v2 (NT v2, 500M parameters, multi-species) [13] on Ebola, mammalian mitochondrial, and Influenza HA. We mean-pool the final-layer hidden states (chunking se-quences past the 2048-token limit into non-overlapping 12 kb windows and averaging) and use them as frozen features under the same cross-validation protocol. pVR out-performs NT v2 on all three (Table 4), by 11 .4 points on Ebola, 7.1 on mammalian, and 6.7 on Influenza HA, and its cosine-UMAP projection separates subtypes more cleanly than NT v2 (Figure 4). The comparison is deliberately nar-row, using frozen embeddings without fine-tuning and at most 60 labelled sequences per task. In that regime pVR ’s handcrafted hierarchical and compositional structure is a stronger inductive bias [30], [31] than generic pretraining; a comparison against fine-tuned foundation models at larger 
+
+N is left to future work. pVR features NT v2 embeddings      
+
+> influenza ha
+> H1N1
+> H3N2
+> H5N1
+> H7N9
+> Fig. 4. Cosine-UMAP projections of pVR features (left) and Nucleotide Transformer v2 zero-shot embeddings (right) on Influenza HA-small (N= 59 , four subtypes). pVR produces visibly subtype-separated clus-ters; NT v2 embeddings show only weak separation. Equivalent figures for the other two benchmarks are included within our code repository.
+
+Ablation. We classify with one feature group at a time, using XGBoost throughout (Tables 5 and 6). The relative contribution of each group varies sharply across datasets. Combining axes helps most on Ebola, where the full rep-resentation reaches 91 .4 ± 8.0% versus 90 .7% for the best single group ( p-adic histograms), rising to 100% under SVM (Table 2). On SARS-CoV-2 the combined representation (42 .1 ± 15 .7% ) edges past every component (best single: 
+
+k-mer frequencies, 40 .7% ) but stays below NVM. HRV is saturated across all ablations, and on Influenza HA the combination matches its best component. HEV and mam-malian instead expose a classifier effect: under XGBoost the combination underperforms its best single group ( 55 .6% vs 
+
+61 .1% on HEV; 47 .7% on mammalian), yet the same features reach 67 .0% and 62 .0% under SVM and 5-NN respectively, so the loss reflects XGBoost’s sensitivity to noisy features rather than a weakness of the representation. At large N most groups already exceed 95% , leaving lit-tle to combine; Dengue, Ebola, HRV, and Influenza are near-saturated on both hierarchical and compositional features alone. The informative exceptions are HEV-large, which seems to repeat the XGBoost pattern ( p-adic histograms 
+
+93 .5% , combined 92 .4% , against 98 .5% under SVM/ 5-NN), and SARS-CoV-2-large, where the p-adic VR degree profiles alone reach only 80 .0% but lift the combination to 98 .0% ,complementing the k-mer frequencies that carry most of the signal on this dataset. 
+
+Feature importance. Table 7 reports normalised XGBoost gain per feature group across the three per-sequence groups. The global Betti numbers β0, β 1 take a single value per dataset at each grid point, so they are constant across sequences and cannot serve as per-sequence features by construction; the topological signal enters instead through the degree profiles, which summarise each sequence’s con-nectivity in the bi-filtered complex. Degree profiles lead where classes are well separated (HRV-small, 54 .7% ; Ebola-large, 28 .7% ); p-adic histograms contribute steadily across both regimes; and k-mer frequencies dominate when class structure is compositional, most starkly on SARS-CoV-2-large at 95 .7% . The three groups are thus complementary, with their relative weight set by the dataset’s evolutionary structure, so no single group dominates across all datasets. 
+
+Runtime. Every dataset runs in under 30 seconds on a 12 -core workstation (Table 8). The costliest is Dengue-large (N = 400 ): about 3 seconds for the distance matrices and 25 
+
+for the bi-filtration grid loop over Gp × Gc = 150 threshold pairs. Restricting simplicial expansion to dimension 2, exact here since β2 was zero on every dataset, holds peak memory below 5 GB; dimension-3 expansion pushed it past 60 GB on Dengue-large for identical features. Cost is set less by 
+
+N than by the density of the complexes across the grid, and only a small fraction of grid points hit the expensive intermediate-density regime. 
+
+Sensitivity to hyperparameters. Table 9 reports XGBoost accuracy across k ∈ { 3, 4, 5, 6}; by Proposition 12 the prime is irrelevant ( p ∈ { 5, 7, 11 , 13 } give identical features), so only k is varied. At low N , most datasets peak at k = 4 
+
+or 5, with one informative exception: SARS-CoV-2-small jumps from 47 .6% at k = 4 to 61 .0% at k = 6, con-sistent with longer k-mers capturing its variant-defining point mutations. The smallest datasets move the other way; mammalian and Influenza HA degrade at k = 6 , where the 46 = 4096 -dimensional compositional space is hard to estimate from a few dozen sequences. We fix k = 4 for all main experiments rather than tuning per dataset, which would overfit and break cross-method comparability. At large N , accuracy is flat across k to within a few points, so the choice of k-mer length barely matters. 9                                                                                                                                                                                                                                          
+
+> TABLE 2 Classification accuracy (%) in the low-sample regime. Each cell is mean ±std over up to 50 fold accuracies (10 seeds ×5 folds; reduced when class size forces nfolds <5). Baselines use 5-NN. pVR reports the best classifier per dataset; the symbol indicates the classifier ( †5-NN,
+> ‡XGBoost, §SVM). Best in bold.
+> Method Mam. CoV-2 HRV Inf. HEV Ebola FFP-JS 53.9 ±18.2 42.6 ±14.7 100.0 ±0.0 62.2 ±12.4 66.0 ±6.5 76.8 ±6.7 NVM 46.3 ±14.9 47.5 ±17.0 96.7 ±2.4 61.9 ±12.5 65.6 ±6.7 72.5 ±2.6 MinHash 50.4 ±14.3 25.7 ±7.6 98.0 ±2.2 53.9 ±13.8 57.0 ±7.5 78.9 ±5.7
+> k-mer freq 49.9 ±14.9 45.1 ±16.8 100.0 ±0.0 60.0 ±12.3 65.2 ±5.6 57.9 ±2.1
+> pVR 62.0 ±13.7 †42.1 ±15.7 ‡100.0 ±0.0 †72.5 ±11.0 ‡67.0 ±8.2 §100.0 ±0.0 §
+> TABLE 3 Classification accuracy (%) in the large-sample regime. Each cell is mean ±std over up to 50 fold accuracies (10 seeds ×5 folds). Best in bold.
+> Method Dengue Ebola HEV HRV Inf. CoV-2 FFP-JS 100.0 ±0.0 100.0 ±0.0 97.3 ±1.5 99.4 ±1.4 99.0 ±1.2 99.2 ±1.0 NVM 99.7 ±0.5 100.0 ±0.0 95.6 ±2.0 96.3 ±2.3 99.0 ±1.2 96.1 ±2.6 MinHash 100.0 ±0.0 100.0 ±0.0 98.6 ±1.4 94.9 ±2.7 99.7 ±0.7 70.9 ±3.7
+> k-mer freq 100.0 ±0.0 100.0 ±0.0 99.9 ±0.6 99.4 ±1.4 98.8 ±1.3 99.4 ±0.9
+> pVR 99.4 ±0.8 ‡100.0 ±0.0 †98.5 ±3.1 §99.2 ±1.1 §99.5 ±0.9 §99.6 ±0.8 §
+> TABLE 4 Comparison of pVR with Nucleotide Transformer v2 (500M, multi-species) zero-shot embeddings on three low-sample benchmarks. NT embeddings are mean-pooled hidden states from the final layer; long sequences are chunked and averaged. Both methods use repeated stratified CV (up to 50 folds) and the best-performing classifier per row.
+> Dataset pVR (best) NT v2 (best probe) Ebola 100.0 ±0.0 §88.6 ±9.9 §
+> Mammalian 62.0 ±13.7 †54.9 ±15.2 §
+> Influenza HA 72.5 ±11.0 ‡65.8 ±8.8 §
+
+Topological visualisation. Figure 5 shows the p-adic and compositional L1 distance matrices with the β0, β 1
+
+heatmaps for two datasets. The p-adic matrix has sharp block structure aligned with class boundaries (taxonomic orders for mammalian, serotypes for HRV), while the compositional matrix is smoother and more graded. The 
+
+β1 heatmaps make Proposition 8 concrete on real data: nontrivial 1-cycles appear in a narrow band at low-to-intermediate p-adic and moderate compositional threshold. At very low p-adic threshold the complex is restricted to within-clade pairs, and the compositional axis decides which connect; at high p-adic threshold it collapses to a full simplex per component and β1 → 0, as Theorem 5 predicts. The band’s shape varies with the data, wider and diffuse for mammalian (seven orders), narrower for HRV (three well-separated serotypes), sparse with low peaks for SARS-CoV-2-small (near-uniform k-mer composition across variants), and peaked at intermediate thresholds on small Ebola (cross-species relationships among Ebolavirus ). We provide the heatmaps for SARS-CoV-2 and Ebola in the code repository. 
+
+6 DISCUSSION 
+
+When pVR helps. In the low-sample regime, three of six datasets improve significantly over baselines (paired Wilcoxon p < 0.05 ), by 8.1 to 21 .1 points, with a fourth (HEV) a non-significant gain. The bi-filtration acts as an inductive prior [30], [32], constraining the hypothesis space with structural information that matters most when la-bels are scarce. This places pVR alongside efforts to build structured prior knowledge into learning systems, whether supplied as external domain knowledge [33] or mined from the data [34]. At large N the alignment-free methods all con-verge to near-perfect accuracy, and pVR neither beats nor trails k-mer frequencies. This saturation reflects the easiness of the task rather than a limit of the method, and the stability and prime-invariance guarantees hold across both regimes. In short, pVR helps when data is scarce and divergence is hierarchical, the setting of emerging pathogens, rare species, and newly identified variants. At large N the task itself saturates: three datasets reach 99 –100% for every method and the rest exceed 95% , the one exception being MinHash on SARS-CoV-2-large ( 70 .9% ), a known weakness of sketch methods on near-identical genomes. The hierarchical signal from bi-filtration is more likely to help on harder tasks that do not saturate, such as phylogenetic reconstruction [11]. 
+
+When it does not. pVR underperforms on SARS-CoV-2-small ( 42 .1 ± 15 .7% against 47 .5 ± 17 .0% for NVM), and the ablation is consistent with this: the p-adic VR and histogram components score 39 .5% and 37 .5% , both under the k-mer baseline. SARS-CoV-2 lineages descend from one ancestor by scattered point mutations rather than deep clade divergence, so the p-adic prefix ordering has little to exploit. Raising k from 4 to 6 lifts accuracy from 47 .6% to 
+
+61 .0% (single-seed CV; sensitivity analysis above), as longer prefixes catch mutations that shorter ones miss; we keep 
+
+k = 4 everywhere to avoid per-dataset tuning, which would overfit. Lineages dominated by point substitution call for longer k or a different encoding. HEV-small is the boundary case, a statistical tie with FFP-JS ( 67 .0 vs 66 .0, p = 0 .27 ): HEV genotypes recombine [35], breaking the hierarchical assumption, consistent with earlier TDA findings on recom-bination [15]. 
+
+Practical considerations. RBF-SVM is the most reliable pVR 
+
+classifier, never ranking worst and ranking best on the 10 
+
+TABLE 5 Low-sample ablation study (XGBoost mean ± std accuracy %, repeated CV with 10 seeds × 5 folds, matching the main-table protocol). Each row reports a classifier trained on a single feature group; pVR combined uses all groups. Comp. VR denotes the compositional ( L1) VR degree profiles. 
+
+Features Mam. CoV-2 HRV Inf. HEV Ebola 
+
+p-adic VR 49.6 ± 15.4 39.5 ± 16.5 97.4 ± 2.5 64.1 ± 14.1 59.3 ± 11.4 85.4 ± 8.9 Comp. VR 56.5 ± 17.2 26.4 ± 7.5 96.9 ± 3.1 67.4 ± 12.7 61.1 ± 11.0 86.1 ± 6.2 Bi-filt. topo 49.0 ± 16.1 39.5 ± 16.5 98.5 ± 2.2 64.4 ± 13.4 60.6 ± 10.4 85.0 ± 7.8 
+
+p-adic hist 54.6 ± 15.4 37.5 ± 15.3 98.7 ± 2.2 73.0 ± 12.3 54.9 ± 10.5 90.7 ± 9.3 
+
+k-mer freq 43.3 ± 14.2 40.7 ± 15.6 97.9 ± 2.4 72.7 ± 10.8 53.7 ± 15.5 87.5 ± 8.7 
+
+pVR combined 47.7 ± 13.5 42.1 ± 15.7 98.3 ± 2.5 72.5 ± 11.0 55.6 ± 15.7 91.4 ± 8.0 
+
+TABLE 6 Large-sample ablation study (XGBoost mean ± std accuracy %, repeated CV with 10 seeds × 5 folds). Feature conventions are identical to those in Table 5. 
+
+Features Dengue Ebola HEV HRV Inf. CoV-2 
+
+p-adic VR 98.1 ± 1.5 98.6 ± 2.3 88.8 ± 4.6 95.0 ± 2.4 96.1 ± 2.4 80.0 ± 3.4 Comp. VR 98.5 ± 1.0 98.3 ± 3.0 90.3 ± 5.7 95.3 ± 2.3 96.9 ± 2.3 93.6 ± 2.9 Bi-filt. topo 99.4 ± 0.8 99.4 ± 1.9 89.4 ± 5.2 95.5 ± 2.4 98.5 ± 1.4 93.2 ± 2.9 
+
+p-adic hist 99.6 ± 0.8 100.0 ± 0.0 93.5 ± 5.3 98.8 ± 1.3 98.4 ± 1.6 98.1 ± 1.6 
+
+k-mer freq 99.4 ± 0.9 97.6 ± 3.1 91.0 ± 5.5 99.0 ± 1.3 98.5 ± 1.6 98.3 ± 1.7 
+
+pVR combined 99.4 ± 0.8 99.6 ± 1.7 92.4 ± 6.3 98.5 ± 1.5 98.6 ± 1.6 98.0 ± 1.9 0 5 10 15 20 25                     
+
+> Sequence index
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> Sequence index
+> p-adic distance Dp
+> 0510 15 20 25
+> Sequence index
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> L1(k-mer composition) distance Dc
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> Distance
+> mammalian mito 0.0 2.5 5.0 7.5 10.0 12.5
+> Compositional threshold index
+> 0
+> 2
+> 4
+> 6
+> 8
+> p-adic threshold index
+> β0(components)
+> 0.0 2.5 5.0 7.5 10.0 12.5
+> Compositional threshold index
+> 0
+> 2
+> 4
+> 6
+> 8
+> β1(loops)
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> 1.25
+> 1.50
+> 1.75
+> 2.00
+> Betti numbers: mammalian mito
+
+(a) Mammalian mitochondrial ( N = 30 , 7 taxonomic orders) 0 20 40 60 80 100 120 140                       
+
+> Sequence index
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> 120
+> 140
+> Sequence index
+> p-adic distance Dp
+> 020 40 60 80 100 120 140
+> Sequence index
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> 120
+> 140
+> L1(k-mer composition) distance Dc
+> 0.00
+> 0.05
+> 0.10
+> 0.15
+> 0.20
+> 0.25
+> 0.30
+> Distance
+> hrv 0.0 2.5 5.0 7.5 10.0 12.5
+> Compositional threshold index
+> 0
+> 2
+> 4
+> 6
+> 8
+> p-adic threshold index
+> β0(components)
+> 0.0 2.5 5.0 7.5 10.0 12.5
+> Compositional threshold index
+> 0
+> 2
+> 4
+> 6
+> 8
+> β1(loops)
+> 20
+> 40
+> 60
+> 80
+> 100
+> 120
+> 140
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> 1.25
+> 1.50
+> 1.75
+> 2.00
+> Betti numbers: hrv
+
+(b) HRV ( N = 150 , three serotypes) 
+
+Fig. 5. Distance matrices (left) and Betti heatmaps (right) for two low-sample datasets. Distance matrices: the p-adic distance Dp exhibits sharp block structure aligned with class boundaries while the compositional L1 distance Dc varies more smoothly; both panels in each row share a common colour scale. Betti heatmaps: β0 decays as both thresholds grow, while β1 becomes nontrivial in a narrow band at moderate compositional threshold and low to intermediate p-adic threshold, empirically realising the bi-filtration cycle predicted by Proposition 8. β2 vanished at every grid point and is therefore omitted. 
+
+largest number of datasets, including the small ones where the gains are largest. This may be due to its smooth decision boundary, which can tolerate noisy features. On the other hand, XGBoost [26] is preferable when the class margin sits in a few features, as on SARS-CoV-2-large, where k-mer frequencies carry 95 .7% of the XGBoost gain. Similarly, 5-NN suits datasets where degree profiles align with class structure, as on mammalian, where neighbourhood struc-11                                                                                                  
+
+> TABLE 7 Feature group importance (%, XGBoost gain). Deg. denotes degree profiles, Hist denotes p-adic histograms, and Freq denotes k-mer frequencies. The global Betti numbers β0, β 1are constant across sequences within a dataset; they are omitted.
+> Dataset Deg. Hist Freq
+> Low-sample
+> Ebola 10.5 45.5 44.0 HEV 13.1 26.5 60.4 HRV 54.7 27.6 17.7 Influenza 1.6 35.4 63.0 Mammalian 2.4 44.7 52.9 SARS-CoV-2 3.4 30.8 65.8
+> Large-sample
+> Dengue 23.6 49.8 26.6 Ebola 28.7 26.4 45.0 HEV 10.8 43.7 45.5 HRV 10.5 81.9 7.5 Influenza 15.4 50.4 34.2 SARS-CoV-2 0.4 3.9 95.7
+> TABLE 8 Runtime in seconds. Column “pVR dist.” is the time to compute Dpand
+> Dc. Column “pVR feat.” is the time to compute the bi-filtration grid and extract features. Column “Baselines” is the total time to compute all four baseline distance matrices.
+> Dataset NpVR dist. pVR feat. Baselines
+> Low-sample
+> Mammalian 30 0.3 0.3 0.8 SARS-CoV-2 31 0.5 0.5 1.0 HRV 150 0.8 2.0 2.3 Influenza 59 0.1 0.3 0.2 HEV 29 0.1 0.2 0.4 Ebola 28 0.3 0.3 0.8
+> Large-sample
+> Dengue 400 3.1 25.3 9.1 Ebola 99 1.2 1.2 3.2 HEV 73 0.3 0.4 1.2 HRV 300 1.6 12.7 5.1 Influenza 300 0.7 8.2 1.9 SARS-CoV-2 316 6.0 21.4 13.0
+
+ture tracks taxonomy. We recommend SVM as the default among the classifiers tested here. A natural next step is to feed the bi-filtration features into a deep neural network, which could model richer, nonlinear interactions among the degree profiles, p-adic histograms, and k-mer frequencies in its hidden layers than a kernel method allows. The constraint is data: with N in the tens to low hundreds, such a model would need strong regularisation or pretraining to avoid overfitting, so the gain is likeliest in the large-sample regime or on the downstream tasks discussed above. Feature importance follows the same logic (Table 7): degree profiles dominate when classes are well separated (HRV-small 54 .7% , Ebola-large 28 .7% ), p-adic histograms when hierarchy aligns with classes, and k-mer frequencies when the structure is compositional. The Betti numbers are dataset-level descriptors rather than per-sequence features, which points to an extension we leave open: per-sequence topological features, such as local persistent homology around each vertex or on vertex-removed subcomplexes. 
+
+7 CONCLUDING REMARKS 
+
+pVR bridges p-adic number theory and topological data analysis for alignment-free genomic classification. The con-struction rests on four mathematical observations: ultra-metric VR complexes have trivial higher homology, the bi-filtration recovers nontrivial topology from the interaction of two metrics, the resulting persistence module is stable under metric perturbations, and the choice of prime is im-material provided p ≥ | Σ|+1 . Empirically, pVR outperforms four alignment-free baselines on three of six low-sample benchmarks (significance on Ebola, Influenza HA, and the mammalian dataset; gap up to 21 .1 percentage points) and remains competitive when all methods saturate at larger sample sizes. We note several limitations of our present work. SARS-CoV-2 variants derive from a single ancestral genome by scattered point mutations rather than deep clade diver-gence; on this benchmark pVR underperforms composi-tional baselines by 5.4 points. The HEV genotypes, which are known to recombine [35], sit at the boundary, with pVR 
+
+matching FFP-JS within fold-level noise. The p-adic axis contributes when divergence is hierarchical and contributes little when it is not. The O(N 3) cost of the bi-filtration grid loop becomes the bottleneck beyond N = 500 sequences, and witness-complex approximations on landmark sequences [36] are the standard route to larger N . The present uniform Gp ×Gc
+
+grid could be replaced by an adaptive grid concentrated where the topology changes. The nucleotide-to-digit assign-ment used in our work ( A 7 → 1, C 7 → 2, G 7 → 3, T 7 → 4)is arbitrary up to permutation. A biochemically informed assignment that groups purines and pyrimidines may yield sharper hierarchical structure than the lexicographic map-ping. The hand-designed degree profiles could give way to learnable vectorisations of the bi-persistence module, such as persistence images [37] or neural persistence layers [38], feeding into a deep classifier in place of the kernel methods used here. Whether the bi-filtration is more informative for phylogenetic reconstruction than for classification remains an open empirical question. 
+
+ACKNOWLEDGEMENT 
+
+We used Anthropic’s Claude (Opus 4.x) to help draft por-tions of the Related Work, debug the implementation, inter-pret results, and condense the Results and Discussion. All proofs, code, numerical results, and claims were verified by the authors, who take full responsibility for the content. 
+
+REFERENCES                
+
+> [1] A. Zielezinski, S. Vinga, J. Almeida, and W. M. Karlowski, “Alignment-free sequence comparison: benefits, applications, and tools,” Genome biology , vol. 18, no. 1, p. 186, 2017. [2] G. E. Sims, S.-R. Jun, G. A. Wu, and S.-H. Kim, “Alignment-free genome comparison with feature frequency profiles (ffp) and optimal resolutions,” Proceedings of the National Academy of Sciences ,vol. 106, no. 8, pp. 2677–2682, 2009. [3] M. Deng, C. Yu, Q. Liang, R. L. He, and S. S.-T. Yau, “A novel method of characterizing genetic sequences: genome space with biological distance and applications,” PloS one , vol. 6, no. 3, p. e17293, 2011. 12
+
+TABLE 9 Sensitivity to k-mer size: XGBoost accuracy (%, mean ± std over a single 5-fold split). The prime p is invariant by Proposition 12.  
+
+> k
+
+Low-sample datasets Mam. CoV-2 HRV Inf. HEV Ebola 3 53.6 ± 18.0 45.7 ± 20.2 98.7 ± 1.6 69.7 ± 15.2 51.9 ± 5.2 89.3 ± 10.7 4 50.4 ± 14.9 47.6 ± 17.6 99.3 ± 1.3 73.0 ± 7.8 62.1 ± 2.1 92.9 ± 7.1 5 56.2 ± 11.9 44.8 ± 17.8 100.0 ± 0.0 72.9 ± 11.0 58.3 ± 8.3 89.3 ± 10.7 6 39.7 ± 23.0 61.0 ± 13.9 99.3 ± 1.3 64.5 ± 9.3 58.6 ± 1.4 92.9 ± 7.1  
+
+> k
+
+Large-sample datasets Dengue Ebola HEV HRV Inf. CoV-2 3 99.5 ± 0.6 99.0 ± 1.7 83.3 ± 8.3 99.0 ± 1.3 98.7 ± 1.2 98.7 ± 0.6 4 99.0 ± 0.9 99.0 ± 1.7 84.7 ± 9.7 98.7 ± 1.2 99.0 ± 0.8 97.8 ± 2.4 5 98.5 ± 0.9 100.0 ± 0.0 84.7 ± 9.7 98.7 ± 1.9 97.7 ± 2.5 97.8 ± 1.9 6 99.0 ± 0.9 99.0 ± 1.7 80.6 ± 5.6 98.7 ± 1.2 97.7 ± 2.5 98.7 ± 1.2 [4] B. D. Ondov, T. J. Treangen, P. Melsted, A. B. Mallonee, N. H. Bergman et al. , “Mash: fast genome and metagenome distance estimation using minhash,” Genome biology , vol. 17, no. 1, p. 132, 2016. [5] J. M. Chan, G. Carlsson, and R. Rabadan, “Topology of viral evolution,” Proceedings of the National Academy of Sciences , vol. 110, no. 46, pp. 18 566–18 571, 2013. [6] Y. Hozumi and G.-W. Wei, “Revealing the shape of genome space via k-mer topology,” arXiv preprint arXiv:2412.20202 , 2024. [7] F. Suwayyid, Y. Hozumi, H. Feng, M. Zia, J. Wee, and G.-W. Wei, “Cakl: Commutative algebra k-mer learning of genomics,” arXiv preprint arXiv:2508.09406 , 2025. [8] B. Dragovich and A. Dragovich, “p-adic modelling of the genome and the genetic code,” The Computer Journal , vol. 53, no. 4, pp. 432–442, 2010. [9] B. Dragovich, A. Y. Khrennikov, S. V. Kozyrev, and N. ˇ Z. Miˇ si´ c, “p-adic mathematics and theoretical biology,” Biosystems , vol. 199, p. 104288, 2021. [10] G. E. Carlsson, F. M´ emoli et al. , “Characterization, stability and convergence of hierarchical clustering methods.” J. Mach. Learn. Res. , vol. 11, no. 47, pp. 1425–1470, 2010. [11] C. Semple, M. Steel et al. , Phylogenetics . Oxford University Press on Demand, 2003, vol. 24. [12] Y. Ji, Z. Zhou, H. Liu, and R. V. Davuluri, “DNABERT: pre-trained bidirectional encoder representations from transformers model for dna-language in genome,” Bioinformatics , vol. 37, no. 15, pp. 2112– 2120, 2021. [13] H. Dalla-Torre, L. Gonzalez, J. Mendoza-Revilla, N. Lopez Car-ranza et al. , “Nucleotide transformer: building and evaluating robust foundation models for human genomics,” Nature Methods ,vol. 22, no. 2, pp. 287–297, 2025. [14] M. Sanabria, J. Hirsch, P. M. Joubert, and A. R. Poetsch, “Dna language model grover learns sequence context in the human genome,” Nature Machine Intelligence , vol. 6, no. 8, pp. 911–923, 2024. [15] P. G. C´ amara, “Topological methods for genomics: present and future directions,” Current opinion in systems biology , vol. 1, pp. 95–101, 2017. [16] R. Rabadan and A. J. Blumberg, Topological data analysis for genomics and evolution: topology in biology . Cambridge University Press, 2019. [17] B. Dragovich, A. Y. Khrennikov, and N. ˇ Z. Miˇ si´ c, “Ultrametrics in the genetic code and the genome,” Applied Mathematics and Computation , vol. 309, pp. 350–358, 2017. [18] P. Sharma, S. Mishra, H. Kurban, and M. Dalkilic, “p-clustval: a novel p-adic approach for enhanced clustering of high-dimensional single-cell rnaseq data,” International Journal of Data Science and Analytics , vol. 20, no. 4, pp. 4051–4066, 2025. [19] G. L. R. N’guessan, “v-punns: van der put neural networks for transparent ultrametric representation learning,” arXiv preprint arXiv:2508.01010 , 2025. [20] A. F. Martins, “Learning with the p-adics,” arXiv preprint arXiv:2512.22692 , 2025. [21] R. Ghrist, “Barcodes: the persistent topology of data,” Bulletin of the American Mathematical Society , vol. 45, no. 1, pp. 61–75, 2008. [22] H. Edelsbrunner, D. Letscher, and A. Zomorodian, “Topological persistence and simplification,” Discrete & computational geometry ,vol. 28, no. 4, pp. 511–533, 2002. [23] A. Zomorodian and G. Carlsson, “Computing persistent homol-ogy,” in Proceedings of the twentieth annual symposium on Computa-tional geometry , 2004, pp. 347–356. [24] G. Carlsson and A. Zomorodian, “The theory of multidimensional persistence,” in Proceedings of the twenty-third annual symposium on Computational geometry , 2007, pp. 184–193. [25] M. Lesnick, “The theory of the interleaving distance on multi-dimensional persistence modules,” Foundations of Computational Mathematics , vol. 15, no. 3, pp. 613–650, 2015. [26] T. Chen and C. Guestrin, “XGBoost: A scalable tree boosting system,” in Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining , 2016, pp. 785– 794. [27] C. Maria, J.-D. Boissonnat, M. Glisse, and M. Yvinec, “The gudhi library: Simplicial complexes and persistent homology,” in Inter-national congress on mathematical software . Springer, 2014, pp. 167– 174. [28] C. Nadeau and Y. Bengio, “Inference for the generalization error,” 
+
+Machine Learning , vol. 52, no. 3, pp. 239–281, Sep 2003. [Online]. Available: https://doi.org/10.1023/A:1024068626366 [29] R. R. Bouckaert and E. Frank, “Evaluating the replicability of significance tests for comparing learning algorithms,” in Pacific-Asia conference on knowledge discovery and data mining . Springer, 2004, pp. 3–12. [30] T. M. Mitchell, Machine Learning . McGraw-Hill, 1997. [31] J. Baxter, “A model of inductive bias learning,” Journal of artificial intelligence research , vol. 12, pp. 149–198, 2000. [32] K. Kontolati, R. J. Gladstone, I. Davis, and E. Pickering, “Biology-informed neural networks learn nonlinear representations from omics data to improve genomic prediction and interpretability,” 
+
+arXiv preprint arXiv:2510.14970 , 2025. [33] T. Dash, S. Chitlangia, A. Ahuja, and A. Srinivasan, “A review of some techniques for inclusion of domain-knowledge into deep neural networks,” Scientific Reports , vol. 12, no. 1, p. 1040, 2022. [34] T. Dash, “BIRDNet: Mining and encoding boolean implication knowledge graphs as interpretable deep neural networks,” arXiv preprint arXiv:2605.28739 , 2026. [35] D. B. Smith, P. Simmonds, I. C. on the Taxonomy of Viruses Hepe-viridae Study Group et al. , “Consensus proposals for classification of the family hepeviridae,” Journal of General Virology , vol. 95, no. 10, pp. 2223–2232, 2014. [36] V. De Silva and G. E. Carlsson, “Topological estimation using witness complexes.” in PBG , 2004, pp. 157–166. [37] H. Adams, T. Emerson, M. Kirby, R. Neville, C. Peterson et al. ,“Persistence images: A stable vector representation of persistent homology,” Journal of Machine Learning Research , vol. 18, no. 8, pp. 1–35, 2017. [38] C. D. Hofer, R. Kwitt, and M. Niethammer, “Learning representa-tions of persistence barcodes,” Journal of Machine Learning Research ,vol. 20, no. 126, pp. 1–45, 2019.

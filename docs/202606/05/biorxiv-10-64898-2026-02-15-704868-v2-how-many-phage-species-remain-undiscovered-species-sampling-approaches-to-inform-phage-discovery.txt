@@ -1,0 +1,543 @@
+Title: How many phage species remain undiscovered? Species sampling approaches to inform phage discovery
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.02.15.704868v2.full.pdf
+
+Number of Pages: 24
+
+Markdown Content:
+# Highlights 
+
+How many phage species remain undiscovered? Species sampling approaches to inform phage discovery 
+
+Cavallaro, Massimo, Kinsella, Andrew, Megremis, Spyridon, Morozov, An-drew, Millard, Andrew D., Freund, Fabian 
+
+ Species abundance distribution of phages infecting seven of eight anal-ysed host bacterial genera collected in phage databases changed signif-icantly over time. 
+
+ Maintaining current sampling strategies for phages of host Mycobac-terium may lead to diminishing returns in the number of new phages found in additional samples. 
+
+ Both non-parametric and parametric estimators of the numbers of un-seen species show comparable, moderate errors when predicting a ran-dom subset from the remainder of host-specic phage sets from the INPHARED database 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint
+
+# How many phage species remain undiscovered? Species sampling approaches to inform phage discovery 
+
+Cavallaro, Massimo a, Kinsella, Andrew a,b , Megremis, Spyridon a,b , Morozov, Andrew a, Millard, Andrew D. a,b , Freund, Fabian a, ∗
+
+> a
+
+University of Leicester, University Road, Leicester, LE1 7RH, , United Kingdom 
+
+> b
+
+Becky Mayer Centre for Phage Research, University of Leicester, University Road Leicester, LE1 7RH, , United Kingdom 
+
+Abstract 
+
+The emergence of antimicrobial resistant bacteria has been identied as one of the most serious public health and development threats for the near fu-ture. The use of bacteriophages (phages) is a promising solution for the sustainable control of these pathogens. Phages are natural viral predators of bacterial pathogens. However, due to the variability and adaptability of bac-teria, developing eective and sustainable phage treatments requires drawing from a wide variety of dierent phage species. This study applies specialised mathematical and computational estimation approaches to the problem of sampling and discovering species of phages in microbiological communities. Our goal is to predict how many new phage species will be discovered in future samples based on species recorded in a phage sequence database for eight common bacterial hosts. While internal validation shows that cur-rent estimators yield low prediction errors for how many new species can be found when sampling more phages, these critically assume that the under-lying mechanisms of phage sampling and database inclusion remain similar across time - an assumption put into question by our analysis for all but the host genus Mycobacterium .From this, we discuss how our results can still inform future sampling strate-gies - both through directly predicting the number of additional species, or by detecting changes in sampling and database inclusion. Our results have the potential to inform and optimise the hunt for and iso-
+
+> ∗
+
+corresponding author 
+
+Email address: ff95@leicester.ac.uk (Freund, Fabian) 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint
+
+lation of novel of phages from the the natural environment. 
+
+Keywords: Biodiversity; antimicrobial resistance; species sampling; phage database 
+
+1. Introduction 
+
+Bacteriophages, or phages, are viruses that specically target and kill bacteria. Phages are the most abundant biological entities on our planet, their estimated number is 10 31 particles. Phages comprise an extremely vast and diverse group of bacterial viruses that do not share a common evolution-ary origin [1]. They are characterised by their common ability to parasitise, prey on, and destroy bacterial cells [2]. Phages play key role in control-ling microbial ecosystems and regulating bacterial populations, as they act as natural predators in every environment, including humans. Phages have been explored as an alternative to antibiotics since the 1920s, particularly for combating multi-drug-resistant bacterial infections [3]. This is related to the currently growing antimicrobial resistance (AMR), the ability of microorgan-isms (mainly bacteria) to survive antibiotic treatments. AMR is considered to be a global health threat, largely driven by the overuse and misuse of con-ventional antibiotics. In humans, AMR contributes to increased mortality rates and prolonged hospital stays, making infections harder and more ex-pensive to treat [4]. In agriculture, development of AMR results in selecting and spreading resistant genes and bacteria across food chains [5]. Despite being highly specialised bacterial predators, phages are not im-mune to resistance mechanisms put in place by bacteria to defend themselves. Bacteria can evolve strategies to evade phage attacks, which may reduce the eectiveness of phage therapy over time and result in the same resistance as-sociated with traditional antibiotics [6]. One promising approach to counter this phenomenon and provide sustainable control of pathogens is the use of so-called phage cocktails, which are combinations of dierent phages tai-lored to target a specic bacterial infection [7]. This strategy mimics natural ecosystems, where a single bacterial species is often targeted by a wide di-versity of phage species [8]. To eciently implement phage therapy, using targeted cocktails, there is a strong need for maintaining extensive libraries of characterised phages. Scientic eorts are currently underway to discover and catalogue new phages (e.g., the phage database INPHARED [9]), and the ndings suggest that 2
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint
+
+the diversity of phages is too far from being fully explored. This leads, however, to the fundamental open question: How many phage species remain undiscovered? A related, but more relevant practical question is: How many new phage species should we expect to observe if we sample additional m
+
+phages? In this paper, based on the curated collection of phage genomes from IN-PHARED, we explore the biodiversity of phages observed in eight common bacterial pathogen host genera (i.e., Escherichia, Klebsiella, Mycobacterium, Pseudomonas, Salmonella, Staphylococcus, Streptococcus, and Vibrio ). Using the advanced mathematical techniques borrowed from the species sampling problem literature, we estimate the number of yet-to-be-discovered species in future samples. We assess dierent parametric and non-parametric estima-tors for the number of additional phage species in further samples and show that most of them perform moderately and comparably well. We also discuss and analyse the critical assumption of these approaches that the species abun-dances entering INPHARED are following a similar distribution over time, an assumption we can show is likely violated for most host genera. We then discuss how this prediction approach still can provide informative insight to improve future repeated sampling of phages from the same environment. 
+
+2. Methods 
+
+Mathematically, the question that we want to answer is: how many new phage species can we expect in additional samples based on the existing data. We address this question in the context of the phage diversity in humans. We should note that this question is part of the broad `species sampling' problem (SSP), which uses a variety of general inference and estimation approaches in statistics [10]. We apply and compare predictions from several existing estimation methods borrowed from the SSP theory to a well-curated phage database. 
+
+2.1. Data source 
+
+Phage genomes and their metadata were retrieved from the September 2024 and the May 2025 versions of the INPHARED database [9], hereafter referred to as DB24 and DB25, respectively. Phage genomes were clustered into species using previously described method [11], where a species was dened as 95% identity over 85% target coverage. The bacterial host was resolved at the genus level in the database. 3
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint
+
+2.2. Notation 
+
+For each bacterial host we assume that, from a full population of N indi-vidual phages hosted, a random sample of n, n ≪ N , individuals (X1, . . . , X n)
+
+is observed and recorded. These are drawn from the same underlying species set/abundance distribution. Each individual phage also belongs to one of 
+
+S species, with Sobs (n) being the number of species actually observed in the sample. We are mainly concerned with the observed abundance ai(n) of indi-viduals of species i, i = 1 , . . . , S obs (n), and the numbers fk(n) := |{ i|ai(n) = 
+
+k}| of species observed k times, k = 1 , 2, . . . , with n = PSobs (n) 
+
+> i=1
+
+ai(n) = P 
+
+> k≥1
+
+k × fk(n) and Sobs = P 
+
+> k≥1
+
+fk(n). The true (unknown) species rel-ative abundance distribution, underlying f1(n), f 2(n), . . . , f Sobs (n), does not depend on n and is denoted by p0, p 1, p 2, . . . , p S , and the observed frequency count follows a multinomial distribution with total number of event Sobs and event probabilities pk/(1 − p0), k = 1 , 2, . . . , S .
+
+2.3. The species sampling problem - estimators for unseen species 
+
+As the sampling eort increases, and so the number of observed indi-viduals, it is expected that previously unobserved phage species in the ini-tial sample will be observed in the new sample. The additional sample 
+
+(Xn+1 , . . . , X m) is drawn from the same underlying species set/abundance distribution as the already observed sample (X1, . . . , X n) The estimation of the number of novel species u(n, m ) in a new sample of size m and ultimately of the total number of unseen species Sobs (m + n) = Sobs (n) + u(n, m ) is a central component of the SSP, which describes statistical questions around estimating and inferring properties of the underlying distribution of species based on limited data from that distribution. See [12] for an in-depth dis-cussion of SSPs. We estimated u(n, m ) using two classes of estimators, non-parametric and parametric. We consider three non-parametric estimators. Two are based on the Good-Toulmin estimator [13] (GT) 
+
+ˆuGT (n, m ) = − X
+
+> k≥1
+
+(−m/n )k × fk(n), (1) which is referred to as non-parametric since it does not rely on any assump-tion regarding the distribution pk underlying fk(n). For m ≥ n, P
+
+> k≥1
+
+(−m/n )k
+
+in Equation (1) does not converge (gives large weights to high abundance classes), and thus the Good-Toulmin estimator tends to oscillate strongly 4
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint
+
+in this case, leading to suboptimal estimation properties. Several correction terms (smoothings) have been proposed to dampen these oscillations. One correction was proposed by Efron and Thisted, 
+
+ˆuET (n, m ) = − X
+
+> k≥1
+
+(−m/n )k × Pk × fk(n) (2) with Pk = Pk′
+
+> j=k
+
+ k′
+
+> j
+
+ × pj × (1 − p)k′−j [14], where p = 1 /(1 − m/n ) and 
+
+k′ is a tunable parameter, which we choose to be k′ = 10 . We will refer to this estimator by the abbreviation ET. In [10] it was shown that this can be seen as averaging over truncations of the sum (1) at a random, binomially distributed summand index. Additionally, the study also suggests a more optimal (binomial) truncation distribution for m > n , see [10, Table 1]. Technically, this just changes (Pk)k∈N. We will refer to the estimator using this alternative smoothing as OSW. Note here that we use smoothing in ET for all m, while only for m > n for OSW (for m ≤ n, OSW is GT). A further non-parametric estimator was proposed in [15], which only uses the count of species appearing a single time or twice in the sample. This estimator will be referred to as CJ and is dened as 
+
+ˆuCJ (n, m ) = ˆf0
+
+
+
+1 −
+
+
+
+1 − f1
+
+n ˆf0 + f1
+
+m
+
+, (3) where ˆf0 = (n−1) f 21 
+
+> 2nf 2
+
+if f2 > 0 and ˆf0 = (n−1) f1(f1−1) 2n if f2 = 0 .The second type of estimators is derived from the assumption that the species abundances pk follows a distribution taken from a parametric family of distributions. The rst family consists of Poisson-gamma mixtures (also often referred to as a negative binomial distributions) for k = 0 , 1, 2, . . . , i.e., 
+
+pk(ϕ, β ) = Γ( ϕ + k)
+
+k! × Γ( ϕ)
+
+ ββ + 1 
+
+ϕ  1
+
+β + 1 
+
+k
+
+, (4) where Γ is the Gamma function and the parameters ϕ and β are to be learned from data. The expected number of unseen species corresponds to the mass at k = 0 and, under the Poisson-gamma assumption, reads 
+
+Eϕ,β [u(n, m )] = 
+
+
+
+f1
+
+γ × log 
+
+
+
+1 + γ × mn
+
+
+
+, if ϕ = 0 
+
+−f1 ×  1 + γ × mn
+
+−ϕ − 1
+
+ϕ × γ , if ϕ > 0
+
+(5) 5
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint
+
+with γ = 1 /(1 + β) [14, 16]. We obtained maximum likelihood estimates 
+
+ˆϕ and ˆβ of the parameters ϕ and β from the observed frequencies fk by maximising the multinomial likelihood function 
+
+L(ϕ, β ) ∝
+
+> Sobs
+
+Y
+
+> k=1
+
+pk(ϕ, β )
+
+p0(ϕ, β )
+
+fk
+
+, (6) which yields the estimator 
+
+ˆuF P G (n, m ) = Eˆϕ, ˆβ [u(n, m )] , (7) hereafter referred to by the abbreviation FPG (Fisher-Poisson-gamma). Our second parametric distribution family is given by the Pitman-Yor two-parameter model. The Pitman-Yor model is a class of general distri-butions of set partitions for integer sets {1, . . . , n } with a exible struc-ture to describe increasing the set sizes sequentially [17] and has been pro-posed as a fairly general underlying distribution family for species sam-pling problems [18]. In more detail, the probability P of observing counts 
+
+A := {a1(n), . . . , a Sobs (n)(n)} is assumed to depend on the two parameters 
+
+(α, θ ) via 
+
+P (A) = 
+
+  θα
+
+
+
+> Sobs (n)
+
+(θ)nSobs (n)
+
+Y
+
+> i=1
+
+α(1 − α)ai(n)−1, (8) where (x)k := Qk−1 
+
+> i=0
+
+(x + i) denotes the rising factorial. Following [12], we use an empirical Bayes (plug-in) estimator where we rst provide the maximum likelihood estimate (ˆ α, ˆθ) for (α, θ ). Then, we can estimate the number of unseen species as the expected value of u(n, m ) under the corresponding distribution, which has a closed expression for given (α, θ ) [12], 
+
+Eα,θ [u(n, m )] = 
+
+
+
+k + θα
+
+  (θ + n + α)m
+
+(θ + n)m
+
+− 1
+
+
+
+, (9) thus leading to the Pitman-Yor-prior (PYP) estimator 
+
+ˆuP Y P (n, m ) = Eˆα, ˆθ[u(n, m )] . (10) For PYP and FPG, we computed the maximum likelihood estimate via nu-merical optimisation using the Nelder-Mead optimisation method as imple-mented in the R package optimx [19, 20]. Both parametric estimators allow 6
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint
+
+to capture the observed species diversity in general, though not perfectly -justifying their use as estimators in our use case. Supplementary Figures 2 and 3 show the t of the ML parameter estimate to the species abundance spectrum. A critical assumption of all these estimation methods is that both the already observed sample of size n and the additional sample of size m are sampled from a common underlying (unknown) species (abundance) distribution (e.g., [10]). As the phage research community sequentially enters more entries into the database, this stationarity is not necessarily given for future samples as sampling strategies, sampling targets (e.g. specic host species or environ-ments) and/or which sequences are sent to the database may change over time. We will assess and address this issue below. Moreover, we can only make any predictions on the distribution of phage species entering the database. This is not the true ecological phage species abundance distribution. However, for potential clinical use the isolated phages, from which database entries are coming, are indeed the relevant distribution. 
+
+2.4. Validation 
+
+To assess how well the estimators OSW, ET, CJ, FPG and PYP per-form in the specic setting of species sampling of bacteriophages, we used a data-driven approach of internal validation. For each bacterial host, we used random subsets of a given size (corresponding to 25%, 35%, 50%, 60% and 80% of the sampled phages, rounded to the next integer) to predict the new species in remainder of the full set from this host (i.e., minus the random subset). We then measure the normalised absolute error (NAE), i.e. |x−ˆx|
+
+> x
+
+for a true value x compared to its estimate ˆx. We performed 500 iterations of this validation approach. We performed this analysis on the two temporal snapshots DB24 and DB25 of the database. For the two estimators with overall best performance from the internal valida-tion (OSW and FPG), we further assessed how prediction accuracies compare if we x the training set size and predict the number of additional species for dierent sizes of sets of newly sampled phages. We used training set sizes of 
+
+200 , 300 , 400 , 500 and new sample sizes m = 100 , 200 , 300 , 400 , 500 to perform predictions from the training sets (and then compare with a real subset of the same size). Both the training and the prediction sets were random (disjoint) subsets of the database at the snapshot from 2025. Again, we performed 500 validation runs. 7
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint
+
+A known issue with the species sampling problem is that all estimates de-pend on how representative the observed sample is for the underlying species abundance distribution, which is hard to assess, see e.g. [21, 22]. At least for assessing temporal representativeness, i.e. whether the underlying species distribution of the recorded species changes over time, we can assess this as follows: We applied the dierent estimators, based on input from DB24, to predict the number of additional phage species per host genus in DB25. We compared the error of this estimation (NAE) with the error of predicting, from a random subset of DB25 of the same size as the number of phage species of this host in DB24, the number of new phage species in the rest of the DB25 snapshot. 
+
+2.5. Prediction from latest snapshot 
+
+We projected the estimated number of new species in m newly sampled (isolated) phages, based on the DB25 data set, using the recommended OSW estimator for each host, as well as using FPG and CJ. As the OSW estimator is not guaranteed to be monotone in m, we also reported its monotone-concave modication following Appendix 6 in [10]. The modication is 
+
+ˆu′(n, m ) = max(min(ˆ u(n, m ), ˆu′(n, m − 1)) , 2ˆ u′(n, m − 1) − u′(n, m − 2)) ,with ˆu′(n, 0) = 0 , ˆu′(n, 1) = max(ˆ u(n, 1) , 0) .Condence intervals were obtained by means of bootstrap at the species distribution level (see Supplementary Text 1 for more details). 
+
+3. Results 
+
+3.1. Descriptive analysis 
+
+The 2024 data set contains 29,410 records of individual phages spanning 10,934 species, observed across 309 bacterial host genera. The 2025 data set includes 36,288 individual phages belonging to 14,604 dierent species from 318 bacterial host genera. For the eight bacterial hosts considered, i.e., 
+
+Escherichia, Klebsiella, Mycobacterium, Pseudomonas, Salmonella, Staphy-lococcus, Streptococcus, and Vibrio, the total numbers of observed individual phages n and observed phages species Sobs are reported in Table 1. The distributions of the number of observed species counts fk are illustrated in Supplementary Figure 1 and Figure 1 for the 2024 and 2025 data sets, re-spectively. They all exhibit fat tails, with many rare phage species observed one or two times, and a few species observed many times, sparsely populating the tails of the empirical distributions. 8
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint
+
+Figure 1: Frequency distributions of the number of times phage species have been ob-served by their host organisms ( Escherichia , Klebsiella , Mycobacterium , Pseudomonas ,
+
+Salmonella , Staphylococcus , Streptococcus , and Vibrio ). Data from the 2025 dataset. In-sets: same distributions on log-log axes. 
+
+9
+
+.CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint 2024 data 2025 data Host n Sobs n Sobs 
+
+Escherichia 2559 716 2863 826 
+
+Klebsiella 1502 532 1821 616 
+
+Mycobacterium 3123 563 3195 574 
+
+Pseudomonas 1644 448 1878 517 
+
+Salmonella 1384 332 1584 370 
+
+Vibrio 1089 476 2381 602 
+
+Staphylococcus 912 279 1005 313 
+
+Streptococcus 938 449 1331 705 
+
+Table 1: Observed numbers of individual phages ( n) and phage species ( Sobs ) per bacterial host in the 2024 and 2025 datasets. 
+
+While we focus on the number of species found in samples and subsamples, further measures of overall species diversity describing the underlying species abundance distributions are interesting to discuss - see Supplementary text 4 for further summaries and analysis of species diversity. 
+
+3.2. Internal validation 
+
+For our internal validation, we have summarised the error distributions in Figures 2 for dataset DB25 (Supplementary Figure 4 for DB24). Table 2 and Figure 3 compares median (normalized absolute) errors between the dierent estimators across all training set size and host genus combinations. For all ratios between training set size and the size of the set we want to predict, we see that the PYP estimator shows, in many training set size and host genus combinations, higher errors than the other estimators, although the dierences are not necessarily big. For DB25, OSW shows more often lower median errors than all other estimators (Table 2, Figure 3). This picture slightly changes for DB24 where FPG outperforms OSW measurably, while CJ shows only very slightly better performance (Table 2, Figure 3). For the two overall best estimators OSW and FPG, we also considered an alternative prediction scenario for DB25, from xed training set sizes (200, 300, . . . , 500) the number of additional species of a further set of samples of smaller or larger size (100, 200, . . . , 500). In this validation setup, OSW performs slightly, but nearly consistently better (Supplementary Text 3). Only for training set size n = 200 for host genus Streptococcus FPG performs slightly better when predicting a further sample of size m = 400 , 500 .10 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint
+
+Estim. best: DB24 best: DB25 vs OSW: DB24 vs OSW: DB25 ET 1 6 80% (40%) 80% (35%) PYP 0 0 97.5% (80%) 92% (80%) CJ 10 5 47.5% (22.5%) 62.5% (17.5 %) OSW 9 17 - -FPG 20 12 35% (20%) 60% (27.5%) 
+
+Table 2: best: Counts of times each estimator had the lowest median error across train-ing set sizes and host genera, vs OSW: Percentage of OSW having lower median error than other estimators across of training set size and species combinations when compared with each other estimator (in parentheses: percentage of comparison signicant at 5%, two-sample one-sided Wilcoxon test for lower error in OSW, with Holm correction for multiple testing across all combinations). OSW, FPG and CJ perform best generally and comparably. For the comparison based on DB25, the Wilcoxon test for smaller errors for FPG than for OSW was signicant 37.5%, for CJ 7.5%. 
+
+Taken together, FPG and OSW perform similarly with CJ not fa xr behind (see also Figure 3), we would recommend OSW to predict as FPG shows considerably large errors for some combinations for DB25 (e.g., host genus 
+
+Vibrio for low training set sizes). In many conditions, apart from PYP, all estimators perform similarly well. Thus, the choice of specic estimator among CJ, FPG and OSW is not that important. We see that, at least in our internal validation scheme, we can predict the additional species with good to medium accuracy for our best estimators. For instance, for xed ratios between training and to-be-predicted sets, OSW shows a maximum median error across all conditions of 14.1 % for DB24 and 13.2 % for DB25 (3rd quartile: 24.8 % for DB24, 22.3% for DB25). While errors are higher when predicting larger samples from a small train-ing set and lower for larger training set sizes, the trends are not monotoni-cally decreasing as illustrated in Figure 4 (DB25) and Supplementary Figure 5 (BD24). 
+
+3.3. Predicting real data - from temporal snapshot to temporal snapshot 
+
+As discussed above, all estimators are based on assuming that the species abundance distribution, or more precisely the entry distribution into the database, stays stationary over time. However, we observe that predicting the additional species in the later state of the data (DB25) from the earlier species distribution (DB24) had much higher normalised mean errors (Table 3) than predicting the species of an equally sized set from a random split of 11 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint
+
+Streptococcus Vibrio 
+
+Salmonella Staphylococcus 
+
+Mycobacterium Pseudomonas 
+
+Escherichia Klebsiella 
+
+0.25 0.35 0.5 0.65 0.8 0.25 0.35 0.5 0.65 0.8 
+
+0.0 0.2 0.4 
+
+0.0 0.2 0.4 0.6 
+
+0.00 0.25 0.50 0.75 1.00 1.25 
+
+0.0 0.2 0.4 0.6 
+
+0.0 0.2 0.4 0.6 
+
+0.0 0.5 1.0 1.5 
+
+0.0 0.5 1.0 
+
+0.00 0.25 0.50 0.75 1.00 
+
+training set size 
+
+> NAE
+
+stat 
+
+ET 
+
+OSW 
+
+CJ 
+
+PYP 
+
+FPG 
+
+2025 Figure 2: Normalized absolute errors (NAEs) for prediction of the number of unseen phage species per host genus in the rest of the database from a training set of size x% of all sampled phages from this host (DB25). Estimators CJ, FPG and OSW show comparable errors across host genera and training set/prediction set ratios. 
+
+12               
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint CJ FPG
+> −0.05 0.00 0.05 −0.05 0.00 0.05
+> 0.0 2.5 5.0 7.5 10.0 12.5
+> Difference in NAE to OSW
+> count
+> DB24 CJ FPG
+> −0.05 0.00 0.05 0.10 −0.05 0.00 0.05 0.10
+> 0510
+> Difference in median NAE to OSW
+> count
+> DB25
+
+Figure 3: Histogram of the dierence between median normalized absolute errors for CJ or FPG to those of OSW. Positive dierences correspond to smaller errors of OSW. 
+
+the entries in DB25 (following our internal validation approach). Moreover, apart from host Vibrio , estimating the later state of the database from an ear-lier snapshot strongly underestimated the number of newly observed phage species (negative normalised mean errors in Table 3). Comparison with the appropriate analogous subsetting for internal validation yielded that, apart from host Mycobacterium , these errors were also at the highest quantiles of the error distribution when comparing predicting from a random subset of equal sizes (Table 4), for all estimators but PYP. This hints at the possi-bility that the data generation changed between the time points. As PYP estimates were much noisier than the other estimates, the less clear picture for PYP will be, at least partially, due to the higher prediction errors. This analysis shows that, for all host genera but Mycobacterium , the under-lying database entry distribution, and thus very likely the phage sampling strategies, have not been stable over time. 
+
+3.4. Predicting the eciency of future phage sampling 
+
+To predict the number of new phage species to be discovered in future samples, the presented approaches need stationarity of the underlying species distribution of database entries, i.e. that the species entering the database come from a species distribution not changing over time. If this assump-tion holds, indeed, we can use the presented estimators and would expect manageable prediction errors, based on our validation results. However, our temporal analysis indicates that only for host genus Mycobacterium we can 13    
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint PYP FPG
+> ET OSW CJ
+> Escherichia Klebsiella Mycobacterium Pseudomonas Salmonella Staphylococcus Streptococcus Vibrio
+> Escherichia Klebsiella Mycobacterium Pseudomonas Salmonella Staphylococcus Streptococcus Vibrio
+> Escherichia Klebsiella Mycobacterium Pseudomonas Salmonella Staphylococcus Streptococcus Vibrio
+> 0.0 0.1 0.2 0.3 0.4 0.5
+> 0.0 0.1 0.2 0.3 0.4
+> 0.0 0.2 0.4
+> 0.0 0.2 0.4 0.6
+> 0.00 0.25 0.50 0.75 1.00
+
+Host 
+
+> NAE
+
+training 
+
+> 0.25
+> 0.35
+> 0.5
+> 0.65
+> 0.8
+
+2025 Figure 4: Normalized absolute errors (NAEs) for prediction of the number of unseen phage species per host species in the rest of the database from a training set of size x% of all sampled phages from this host (DB25). Outliers not shown. 
+
+OSW ET CJ FPG PYP 
+
+Escherichia -0.69 -0.69 -0.69 -0.67 -0.60 
+
+Klebsiella -0.32 -0.32 -0.32 -0.31 -0.23 
+
+Mycobacterium -0.67 -0.67 -0.67 -0.66 -0.48 
+
+Pseudomonas -0.58 -0.58 -0.58 -0.57 -0.51 
+
+Salmonella -0.61 -0.61 -0.60 -0.57 -0.45 
+
+Staphylococcus -0.61 -0.61 -0.61 -0.60 -0.55 
+
+Streptococcus -0.66 -0.66 -0.66 -0.64 -0.62 
+
+Vibrio 0.84 0.74 0.88 1.02 1.42 
+
+Table 3: Normalised mean errors (predicted −observed )/observed of predicting the number of additional phages in a later database snapshot (DB25) from the species distribution at an earlier timepoint (DB24). For all host genera but Vibrio , we see underprediction of the number of additional phage species. 
+
+assume this has not changed over time. This means that prediction for the other host genera is only valid if future samples come from the now updated species distribution that mixes dierent distributions from dierent time-points - an assumption that does not necessarily hold. Under this stationarity assumption, what do the estimators predict for future sampling eorts? Figure 5 shows the predictions for (the monotone-concave 14 
+
+.CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint OSW ET CJ FPG PYP 
+
+Escherichia 1.00 1.00 1.00 1.00 0.98 
+
+Klebsiella 0.98 0.98 0.98 0.97 0.83 
+
+Mycobacterium 0.70 0.74 0.69 0.73 0.51 
+
+Pseudomonas 0.99 0.99 0.99 0.99 0.98 
+
+Salmonella 0.96 0.96 0.97 0.94 0.75 
+
+Staphylococcus 0.95 0.94 0.94 0.96 0.87 
+
+Streptococcus 1.00 1.00 1.00 1.00 1.00 
+
+Vibrio 1.00 1.00 1.00 1.00 1.00 
+
+Table 4: Quantile of normalized absolute error when predicting the additional species in a database snapshot (DB25) from the species distribution at an earlier timepoint (DB24) in the null distribution of the comparable random set prediction described above. For all host genera but Mycobacterium , we see a tendency to see uncharacteristically high errors for the prediction of DB25 from DB24, indicating changes in the underlying species abundance distributions entering the database. 
+
+modication of) OSW, FPG and CJ. Predictions dier between estimators, but qualitatively agree for host genera Klebsiella , Pseudomonas , Staphylococ-cus , Streptococcus and Vibrio . For these host genera, if the entries into the database follow the distribution of the previous ones, we can expect a linear gain for small additional sample sizes and then a slightly sublinear gain if m
+
+increases. When projecting the number of sampled individuals to twice the current number of isolates, we predict at least 229 additional species ( ≈ 37 % of currently observed species) for Klebsiella , 158 (31%) for Pseudomonas ,96 (31%) for Staphylococcus , 321 (46%) for Streptococcus , and 247 (41%) for Vibrio . For host genera Escherichia , Mycobacterium and Salmonella ,the prediction of estimators diverge: OSW predicts that de facto satura-tion may be reached for all three species, CJ only for Mycobacterium and 
+
+Salmonella (on slightly higher level), while FPG predicts that there will still be a steady discovery of new species in new samples. These indicated sat-urations/diminishing returns would slow species gain so strongly that they even fall below extrapolating a #species ∼ log( sample size ) model tted to the species accumulation curve (following [23], see Supplementary text 2 and Supplementary Figure 8 within) for Mycobacterium and Salmonella , which provided a clear lower bound for all estimators for other genera (and for the true species in internal validation when predicting from 80% of all samples). However, these estimates are only reliable if sampling eorts and data base 15                                       
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint Streptococcus Vibrio
+> Pseudomonas Salmonella Staphylococcus
+> Escherichia Klebsiella Mycobacterium
+> 0500 1000 1500 01000 2000 3000
+> 0500 1000 1500 2000 2500 0500 1000 1500 2000 0500 1000
+> 01000 2000 3000 0500 1000 1500 2000 01000 2000 3000 4000
+> 050 100
+> 050 100
+> 0100 200 300
+> 030 60 90 120
+> 0100 200 300
+> 0100 200 300
+> 050 100 150 200 250
+> 0100 200 300 400
+> m
+> #predicted species in additional sample
+> Estimator
+> CJ
+> cm−mod. OSW
+> FPG
+> OSW
+
+Figure 5: Prediction of the number of additionally observed species by OSW (with and without concave-monotonic modication), CJ and FPG in an additional phage sample from the host genus of size m. Dashed vertical line show the current number of phages in the DB25 snapshot. Estimations are based on the DB25 snapshot. See Supplementary Figure 6 for added bootstrap quantiles. 
+
+entry strategies stay comparably to past eorts - which as we saw is not a given for phage databases. 
+
+4. Discussion 
+
+To provide sustainable control of bacterial pathogens by phages one needs to be able to estimate diversity of phages from limited samples. Here we explore how well we can predict the number of new phage species to be po-tentially discovered from new samples, when m more individual phages are isolated. In this study, we assessed ve established SSP estimators for the number of unseen species. We focused on the phage species distribution for eight common bacterial genera from a well-curated phage genome database, and evaluated the accuracy of these estimation procedures using a subsam-pling approach to extract training and validation sets from the database. As we do not have any mechanistic theories about phage speciation and species distributions, such validation approaches, i.e. approximating the unknown species abundance distribution through subsampling is essentially the only option to assess the distribution from the current state of sampling. However, such approaches, are naturally dependant on whether the already collected samples are representative of the underlying species distribution [21]. On 16 
+
+.CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint top, any species sampling question also depends on what counts as a species. i.e. how we delineate species. We use a denition for phage species based on sequence similarity and coverage, with a typical similarity threshold as adopted in the phage genomics community [24, 25]. Our analysis sheds light on the diculties of predicting the eciency of future species sampling, but allow some pointers towards analysing species sampling strategies. First, we show that several estimators predict similarly well (in our internal validation scheme), with only the parametric Pitman-Yor-prior-based PYP estimator, the computationally most expensive esti-mator, trailing clearly behind the other estimators. This may be due to a sub-optimal t of the Pitman-Yor distribution to the underlying species dis-tribution per se , but also to known issues with large-sample consistency as reported in [12]. We have not explicitly discussed methods based on simply extrapolating the rareed species accumulation curve, as a preliminary test of one such approach (which approximates this curve by a semi-log model [23]) showed, for our data, comparably higher errors than the methods presented here (Supplementary text 2). Using the non-parametric OSW or CJ predictors or the parametric FPG estimator for the number of unknown species leads to controllable errors when predicting the number of additional species (for OSW, errors typically, i.e. their third quartile, stay below 25% of the current value). However, these error estimates are only directly indicative of estimation precision of future samples if the species abundance distribution of the phages entering the database does not change over time. This is not only critical for our internal validation scheme, but a critical assumption behind all estimators of additional species found in future samples we used and discussed here. Their statistical model assumes a common underlying species abundance distri-bution, i.e. its stationarity for all samples, present or future [10, 22, 26]. However, for all host genera but Mycobacterium , our analysis of predicting a later sampled state (DB25) from a previous state (DB24), reveals that sampling, or more precisely database entry species abundances have changed over time, questioning this crucial assumption. Indeed, for all genera but My-cobacterium and Vibrio , all estimators underpredicted the actual new species entering the database, which is often reported for estimators of additional species in future samples [23, 21]. Interestingly, host genus Vibrio shows an overprediction. In terms of sampling and database entry eorts for phages, 17 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint
+
+there is an interpretation of the dierences between genera: Most genera have been more variably sampled over time, with sampling from an increasing va-riety of host species and environmental contexts over time. A notable excep-tion is Mycobacterium , whose phages have been sampled predominantly from host species Mycobacterium smegmatis as part of the SEA-PHAGES phage isolation program [27]). This strategy for sampling has not changed during collection time reected in the database. This may also explain the potential saturation after additional sampling (Figure 5), as the range of host species for Mycobacterium is much narrower than for other bacterial host genera considered. For Vibrio , on the other hand, phage sampling (and subsequent database entry) reportedly shifted to a previously less sampled host group (phylogenetic clade) [25] - thus highlighting a potentially new but narrow set of hosts, leading to a more narrow/less rich species abundance distribution -which may explain the observed overprediction. Taken together, our ndings suggest that there is a dierence between the underlying species distributions of samples entering the database at dif-ferent time points. This has a clear implication for how predictions from the database on future sampling should be interpreted: we predict how many new phage species will enter the database under the assumption that new isolates are drawn from the same underlying species distribution as the current data - in other words, if the sampling and database entry strategy does not change when sampling new isolates. As it has likely changed previously, this does mean that predicting the number of additional phages in future samples us-ing any of our estimators is only reliable if the new sampling strategy is a similar mix of strategies as used until now. Under this constraint, we still may cautiously interpret our prediction results. We would expect, if future sampling strategies are mixed similarly between the sampling eorts behind previous database entries, that for host genera Klebsiella , Pseudomonas , Staphylococcus , Streptococcus and Vibrio ,future sampling will provide ample new species. There is some evidence for host genera Mycobacterium (where predictions are more reliable as we have no statistical evidence that sampling strategies have changed), Escherichia 
+
+and Salmonella that new phage species found may plateau with future sam-pling eorts. For the latter three species we found that predictions are also estimator-dependent, as also reported for other data sets [21]. We emphasise that predicting from the database can and will only predict how many phage 18 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint
+
+species enter the database, as this is the distribution we have information on - which reects the true underlying ecological species abundance distribution only through the lens of research and curation bias. Dierences in the rate at which we may discover additional species in future samples for dierent host genera are expected. The genera dier in the mixture of ecological niches for their member species, their biological and genetical properties, which may aect the inclusion and selection for or against phages, but also dierent sampling strategies. For further assessment of the dierences in species abundance diversity within the database, as we here were only directly interested in the number of dif-ferent species, see Supplementary text 4. Our analysis focussed on the eight most common host genera, and can be easily applied to other host genera, given enough sampled phages. How-ever, can we also predict the number of phage species for an unsampled host or a metagenomic environmental sample with multiple dierent hosts? Our strategy this would be to generate an expected distribution for this by simply sampling the appropriate size from a random genus in the database (in the case of a single host genus/species) or generally sample appropriately from the full database for a given number of random hosts predicted to be present within an environmental sample. A dierent limitation arises from the aggregation of phages across host genera: phages infecting hosts of the same genus will not be infecting all bac-terial species within that genus - thus, for a direct application our prediction may be misleading as we have not predicted which fraction of phage species collected from a host genus aects a given species. However, if we can increase the resolution to host species or estimate this fraction, or alternatively con-sider regional or sample-type sampling sets, the estimation approach would remain also as valid at these levels - it could prove even more reliable, as on these levels, sampling strategies may have been more stable. However, at least directly from the database, we do not have these resolution for our samples. Still, we still can predict the eciency of future sampling, just not whether all these species would be useful to combat specic bacterial species. In conclusion, our study highlights a general need for adjusting phage sampling strategies in order to maintain a steady inow of new phage species. Our analysis shows that for host genus Mycobacterium , future sampling ef-forts with the same sampling strategy may prove inecient, while for all other genera observed we could detect that there is evidence for a paste change in sampling respectively data base entry strategy, which lead to increasing 19 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint
+
+species diversity in genera Klebsiella , Pseudomonas , Staphylococcus , Strep-tococcus , Salmonella and Escherichia over time, but a more narrow species range than earlier for Vibrio . Due to that change in sampling strategies, pre-diction methods of additional species in further phage samples entering the data base, developed for the classic species sampling problem, have limited prediction ability and their results should be interpreted with caution. 
+
+5. Data and code availability 
+
+All data is available via the INPHARED database https://github.com/ RyanCook94/inphared , https://millardlab.org/bacteriophage-genomics/ inphared/ . The analysis scripts have been made available at https:// github.com/mcavallaro/PhageDiversity .
+
+6. Acknowledgements 
+
+This project was supported by a seed corn grant of the Leicester In-stitute for Advanced Studies (LIAS), and by our colleagues: Christopher Bayliss, Sarah Diver, Jason Hughes, Eva Krockow, Sergei Petrovskii, Andy Schoeld, Carolyn Tarrant from the interdisciplinary phage research group of the University of Leicester. AK was supported by the Medical Research Council [grant number MR/W007002/1]. Andrew Millard was supported by the Medical Research Council MR/T030062/1 and MR/L015080/1, United Kingdom. Andrew Morozov supported by the Engineering and Physical Sci-ences Research Council (EPSRC, EP/W522326/1) of the United Kingdom. We thank three anonymous reviewers for their constructive feedback. 
+
+References 
+
+[1] M. B. Dion, F. Oechslin, S. Moineau, Phage diversity, genomics and phylogeny, Nat Rev Microbiol 18 (3) 125138. doi:10.1038/s41579-019-0311-5. [2] C. A. Suttle, Marine viruses  major players in the global ecosystem, Nat Rev Microbiol 5 (10) 801812. doi:10.1038/nrmicro1750. [3] G. P. C. Salmond, P. C. Fineran, A century of the phage: past, present and future, Nat Rev Microbiol 13 (12) (2015) 777786. doi:10.1038/nrmicro3564. 20 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint
+
+[4] C. A. Arias, B. E. Murray, Antibiotic-resistant bugs in the 21st century  a clinical super-challenge, New England Journal of Medicine 360 (5) 439443. doi:10.1056/NEJMp0804651. [5] C. McKernan, T. Benson, S. Farrell, M. Dean, Antimicrobial use in agriculture: Critical review of the factors inuencing behaviour, JAC-antimicrobial resistance 3 (4) (2021) dlab178. [6] H. G. Hampton, B. N. J. Watson, P. C. Fineran, The arms race be-tween bacteria and their phage foes, Nature 577 (7790) (2020) 327336. doi:10.1038/s41586-019-1894-8. [7] B. K. Chan, S. T. Abedon, C. Loc-Carrillo, Phage cocktails and the future of phage therapy, Future Microbiology 8 (6) 769783. doi:10.2217/fmb.13.47. [8] J. S. Weitz, T. Poisot, J. R. Meyer, C. O. Flores, S. Valverde, M. B. Sullivan, M. E. Hochberg, Phagebacteria infection networks, Trends in Microbiology 21 (2) 8291. doi:10.1016/j.tim.2012.11.003. [9] R. Cook, N. Brown, T. Redgwell, B. Rihtman, M. Barnes, M. Clokie, D. J. Stekel, J. Hobman, M. A. Jones, A. Millard, Infrastructure for a phage reference database: Identication of large-scale biases in the current collection of cultured phage genomes, Phage (New Rochelle) 2 (4) 214223. doi:10.1089/phage.2021.0007. [10] A. Orlitsky, A. T. Suresh, Y. Wu, Optimal prediction of the number of unseen species, Proceedings of the National Academy of Sciences 113 (47) (2016) 1328313288. [11] S. Nayfach, A. P. Camargo, F. Schulz, E. Eloe-Fadrosh, S. Roux, N. C. Kyrpides, Checkv assesses the quality and completeness of metagenome-assembled viral genomes, Nature Biotechnology 39 (5) 578 585. doi:10.1038/s41587-020-00774-7. [12] C. Balocchi, S. Favaro, Z. Naulet, Bayesian nonparametric infer-ence for species-sampling problems., Statistical science (upcoming, arXiv:2203.06076) (2024). 21 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint
+
+[13] I. J. Good, G. H. Toulmin, The number of new species, and the increase in population coverage, when a sample is increased, Biometrika 43 (1-2) (1956) 4563. [14] B. Efron, R. Thisted, Estimating the number of unseen species: How many words did shakespeare know?, Biometrika 63 (3) (1976) 435447. doi:10.1093/biomet/63.3.435. [15] A. Chao, L. Jost, Coverage-based rarefaction and extrapolation: stan-dardizing samples by completeness rather than size, Ecology 93 (12) (2012) 25332547. [16] R. A. Fisher, A. S. Corbet, C. B. Williams, The relation between the number of species and the number of individuals in a random sample of an animal population, The Journal of Animal Ecology 12 (1) (1943) 42. doi:10.2307/1411. [17] J. Pitman, M. Yor, The two-parameter poisson-dirichlet distribution derived from a stable subordinator, The Annals of Probability (1997) 855900. [18] A. Lijoi, R. H. Mena, I. Prünster, Bayesian nonparametric estimation of the probability of discovering new species, Biometrika 94 (4) (2007) 769786. [19] J. C. Nash, R. Varadhan, Unifying optimization algorithms to aid soft-ware system users: optimx for R, Journal of Statistical Software 43 (9) (2011) 114. doi:10.18637/jss.v043.i09. [20] John C. Nash, On best practice optimization methods in R, Journal of Statistical Software 60 (2) (2014) 114. doi:10.18637/jss.v060.i02. [21] R. O'hara, Species richness estimators: how many species can dance on the head of a pin?, Journal of Animal Ecology (2005) 375386. [22] U. Brose, N. D. Martinez, R. J. Williams, Estimating species richness: sensitivity to sample coverage and insensitivity to spatial patterns, Ecol-ogy 84 (9) (2003) 23642377. [23] K. I. Ugland, J. S. Gray, K. E. Ellingsen, The speciesaccumulation curve and estimation of species richness, Journal of animal ecology 72 (5) (2003) 888897. 22 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.02.15.704868 doi: bioRxiv preprint
+
+[24] D. Turner, A. M. Kropinski, E. M. Adriaenssens, A roadmap for genome-based phage taxonomy, Viruses 13 (3) (2021) 506. [25] J. Liang, K. Cahier, D. Piel, D. Cueva Granda, D. Goudenège, Y. Labreuche, L. Ma, M. Monot, C. Bernard, E. P. Rocha, et al., Com-plex temporal dynamics of phage-bacteria populations in an animal-associated marine system, Nature Communications (2026). [26] A. Chao, N. J. Gotelli, T. C. Hsieh, E. L. Sander, K. H. Ma, R. K. Colwell, A. M. Ellison, Rarefaction and extrapolation with Hill numbers: a framework for sampling and estimation in species diversity studies, Ecological Monographs 84 (1) 4567. doi:10.1890/13-0133.1. [27] G. Hatfull, M. Pedulla, D. Jacobs-Sera, P. Cichon, A. Foley, M. Ford, R. Gonda, J. Houtz, A. Hryckowian, V. Kelchner, S. Namburi, K. Pa-jcini, M. Popovich, D. Schleicher, B. Simanek, A. Smith, G. Zdanow-icz, V. Kumar, C. Peebles, W. Jacobs Jr, J. Lawrence, R. Hen-drix, Exploring the mycobacteriophage metaproteome: Phage ge-nomics as an educational platform, PLoS Genetics 2 (6) e920847. doi:10.1371/journal.pgen.0020092. 23
