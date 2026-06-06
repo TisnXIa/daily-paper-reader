@@ -1,0 +1,907 @@
+Title: Virome-mediated ecological firewalls govern pathogen eradication in the gut microbiome
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.06.02.729649v1.full.pdf
+
+Number of Pages: 13
+
+Markdown Content:
+# Virome-mediated ecological firewalls govern pathogen eradication in the gut microbiome 
+
+Andrea Tabi 1, 2, ∗ and Ricard Sol´ e2, 3, 4, 5, †
+
+> 1
+
+Institute of Marine Sciences (ICM–CSIC), 08003 Barcelona, Spain 
+
+> 2
+
+Complex Systems Lab, Universitat Pompeu Fabra, Dr Aiguader 88, 08003 Barcelona, Spain. 
+
+> 3
+
+Instituci´ o Catalana de la Recerca i Estudis Avanc ¸ats (ICREA), Pg. Llu´ ıs Companys 23, 08010 Barcelona, Spain. 
+
+> 4
+
+Institut de Biologia Evolutiva, CSIC–UPF, Pg. Mar´ ıtim de la Barceloneta 37, 08003 Barcelona, Spain. 
+
+> 5
+
+Santa Fe Institute, 1399 Hyde Park Road, Santa Fe, NM 87501, United States.   
+
+> Microbiome recovery after antibiotic-induced dysbiosis is often unpredictable, and the ecological mechanisms governing successful gut microbiome restoration remain unclear. Here we introduce a novel dynamical model of bacteria-phage-pathogen interactions to examine how gut virome reshapes gut microbiome states. The model identifies pathogen eradication thresholds and shows that recovery is strongly history-dependent, with bista-bility allowing either clearance or persistence depending on past conditions. Viral ad-sorption rates strongly regulate invasion probability and recurrence susceptibility, while microbial diversity enhances stability. Furthermore, we identify an ecological ”firewall” mechanism in which resident microbiome maintains a standing virome community that suppresses pathogen invasion and stabilizes healthy microbiome. These results reveal general ecological principles governing virus-mediated microbiome recovery and inform the design of virome-based therapeutic strategies.
+
+I. INTRODUCTION 
+
+The gut microbiome (GM) is a complex ecosystem that, in many respects, behaves as a species-rich ecologi-cal community [13], with interacting populations compet-ing for resources, exchanging metabolites, and respond-ing to environmental perturbations [31]. Its structure and dynamics emerge from multiscale processes rang-ing from microbial metabolism and interspecies interac-tions to host-mediated constraints, placing the GM at the intersection of ecology, evolution, and physiology. Perhaps not surprisingly, many approaches to the dy-namics of the GM are grounded in ecological and evo-lutionary concepts, including stability [52], alternative stable states [16, 29, 30], succession [11, 18], resilience [12], and metapopulation structure [27, 28]. At the same time, the GM exhibits distinctive features that distin-guish it from most free-living ecosystems, such as high levels of functional redundancy in taxa, rapid evolu-tionary turnover, and strong coupling to host regula-tory mechanisms, including immune and neuroendocrine pathways [10, 36]. These idiosyncrasies complicate di-rect ecological analogies while motivating the develop-ment of new mathematical and computational models [2, 4, 8, 9, 20, 22, 47, 51, 53]. At the same time, the GM has been described as an “ecosystem on a leash,” emphasizing the role of host control in shaping micro-bial dynamics and constraining evolutionary outcomes [15]. Health benefits associated with the microbiome thus emerge from a delicate interplay between microbial inter-actions and host-mediated selection and regulation. As   
+
+> ∗Corresponding author: andrea.tabi@gmail.com
+> †Corresponding author: ricard.sole@upf.edu
+
+a result, GM has become a central focus of contempo-rary biomedical research, with a rapidly growing body of evidence linking its composition and dynamics to a wide range of health outcomes, including metabolic disorders, immune dysfunction, neurological conditions, and sus-ceptibility to infection [6, 10, 39, 41]. This recognition has, in turn, motivated the exploration of microbiome-targeted interventions, including antibiotics [14] dietary modulation and probiotics [25], fecal microbiota trans-plantation [43] and, more recently, virome-based thera-pies [54]. More specifically, antibiotic-mediated damage of the gut microbiome opens an opportunistic niche for pathogenic colonisers such as drug-resistant Enterobac-teriaceae , Clostridioides difficile , vancomycin-resistant 
+
+Enterococcus and Salmonella spp. [14]. Antibiotics acutely and persistently perturb the gut microbial com-munity by impacting microbial community composition and structure and eroding important taxa such as Bac-teroidetes, Firmicutes and Actinobacteria. As a remedy for antibiotic-induced infections, recent advances across clinical microbiome research have shown the high effi-cacy of fecal microbiota transplantation (FMT). Syn-thesized clinical literature report that FMT achieves 80-90% success rates in C. difficile infections (CDI) and has an emerging roles in other metabolic, autoimmune, and neurological disorders [21, 37]. Several studies demon-strated that FMT restores microbial diversity, changes in metabolic functions, modulates the immune system, af-fects bacteriophage populations in the gut [24, 32], influ-ences the dynamics of bacterial strains [42]. Despite the high effectiveness of FMT treatments, there are signifi-cant drawbacks such as safety concerns and the challeng-ing and expensive donor recruitment and screening pro-
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.06.02.729649 doi: bioRxiv preprint
+
+2
+
+Figure 1 Ecological and mathematical framework for fecal virome transplantation in the gut microbiome. (a) The gut ecosystem is represented as a community of interacting microbial populations inhabiting the intestinal environment. (b) Conceptual interaction network underlying the model. Commensal bacterial taxa {Bj }, an opportunistic pathogen population 
+
+C, and bacteriophages {Pk } form a coupled ecological system. Phages are sustained by bacterial hosts and exert top–down control on both commensal and pathogenic populations, generating feedbacks that shape community composition and ecosystem stability. (c) Mean-field dynamical model describing the coupled bacteria–phage system. Commensal bacteria grow logistically, interact competitively and cooperatively, and are subject to phage predation. The pathogen population C competes with resident bacteria and is likewise targeted by phages. Phage populations increase through infection of bacterial hosts and decline through loss processes; the term Ij (t) represents the external input associated with virome transplantation. Together, these equations define the ecological dynamics governing transitions between healthy and dysbiotic states. (d) Representative dynamical trajectory illustrating microbiome disruption and recovery. Antibiotic treatment (Ab) drives the system from a healthy state into a dysbiotic regime characterized by pathogen domination and loss of microbial diversity. Subsequent fecal virome transplantation (FVT) restores phage-mediated ecological control, suppresses pathogen overgrowth, and returns the system to a healthy state. (e) Coarse-grained representation of the model. The full microbial community is reduced to three interacting compartments: commensal bacteria ( B = ∑ 
+
+> j
+
+Bj ), pathogen ( C), and virome ( P = ∑ 
+
+> k
+
+Pk ). This reduced framework captures the essential ecological feedbacks responsible for pathogen suppression, microbiome resilience, and recovery following virome transplantation. 
+
+cess [53]. Therefore, future FMT research requires more focus on host immune status and non-bacterial compo-nents [24]. Recent works suggest that fecal virome transplantation (FVT) have been similarly effective in treating rCDI, pos-sibly through bacteriophage-mediated modulation of the gut microbiome [7, 40]. This method might potentially reduce risks of infections following FVT treatment by removing harmful eukaryotic RNA viruses and increase donor suitability [40]. Bacteriophages have a large im-pact on different ecosystems from the oceans to the hu-man gut [3, 33, 49]. The adaptive capacity of phages plays a crucial role in multidrug resistance and protecting the gut microflora, and preserving its functional robust-ness during antibiotic stress [35, 45]. Despite growing evidence that bacteriophages are major regulators of mi-crobial communities, most theoretical models of the gut microbiome focus exclusively on bacterial interactions and neglect viral dynamics. Incorporating the virome is therefore essential for understanding microbiome sta-bility and pathogen invasion. However, the exact mecha-nisms of how phages mediate and restore bacterial com-munity structure are largely unknown. Bacteriophages can modify intrinsic growth rates and interaction coeffi-cients of bacterial species, e.g. via horizontal gene trans-fer of beneficial metabolic genes [19]. In this work we identify ecological virus-mediated mech-anisms driving microbiome restoration. First, we derive eradication thresholds that determine when pathogen growth can be suppressed by bacterial competition and viral adsorption. Second, we identify alternative stable states, i.e. path-dependent recovery dynamics in which invasion probability and recurrence susceptibility depend on initial microbiome composition. Third, we iden-
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.06.02.729649 doi: bioRxiv preprint
+
+3tify a virome-mediated “ecological firewall” mechanism whereby resident microbial communities maintain viral populations that suppress pathogen invasion. Finally, we show that increasing virome diversity strengthen invasion resistance. 
+
+> II. METHODS
+
+To investigate the mechanisms by which virome trans-plantation can suppress pathogens and promote recovery from dysbiosis, we develop a minimal but mechanistically explicit dynamical model of a gut microbial ecosystem composed of commensal bacteria, bacteriophages, and a pathogenic population. Figure 1a-b summarizes the eco-logical scenario motivating the model, illustrating how antibiotic perturbation can disrupt the resident micro-biome, allowing C. difficile to expand and drive the sys-tem into a dysbiotic state, and how subsequent virome transplantation can restore microbial balance. At the conceptual level (Fig. 1b), the system consists of three interacting compartments: commensal bacterial popula-tions {Bi}(i = 1 , ..., N ), a pathogen C, and a virome 
+
+{Pj }(j = 1 , ..., M ). The modelling framework is designed to capture the essential ecological processes operating across these compartments, including intrinsic microbial growth under resource limitation, competitive and fa-cilitative interactions among bacterial taxa, phage-host dynamics, and the targeted introduction of exogenous phages during virome transplantation. These processes are formalized in the mathematical model, which follows a generalized Lotka-Volterra (gLV) approach. Our sys-tem of N + M + 1 equations, shown in Fig.1c. Describing the coupled dynamics between the micro-biome {Bk}, the virome {Pj } and the pathogen popu-lation C. Here Γ b,c = 1 − (∑ 
+
+> i
+
+Bi + C)/K introduces the competition for space between the resident micro-biome and the C. difficile population. In this formula-tion, commensal bacteria and the pathogen undergo lo-gistic growth constrained by a shared carrying capacity, reflecting global resource limitation in the gut environ-ment, while bottom-up microbial dynamics are coupled to top-down control mediated by bacteriophages that in-fect both commensals and the pathogen with distinct ef-ficiencies. The virome is therefore treated as an active regulatory layer capable of reshaping community struc-ture and stability. This community-level defense mech-anism can be interpreted as an ecological firewall, by which the resident microbiome indirectly protects itself by maintaining a standing virome, which then suppresses pathogen invasion. Rather than aiming for taxonomic re-alism, the model focuses on functional interactions that govern ecosystem-level transitions between healthy and dysbiotic states.           
+
+> Figure 2 Competitive exclusion and invasion threshold in the bacteria–pathogen (BC) model. Phase portraits of the coarse-grained microbiome-C. difficile system show-ing trajectories in the (B, C) state-space. The system ex-hibits competitive exclusion, with two alternative outcomes: pathogen clearance (healthy state, C∗= 0) and pathogen persistence (dysbiotic state, C∗>0). The boundary sepa-rating these regimes corresponds to the eradication threshold
+> Rcb
+> 0= 1, which defines the conditions under which pathogen invasion becomes possible.
+> III. RESULTS A. Eradication thresholds
+
+To understand the conditions under which the pathogen can be eliminated from the system, we first de-rive eradication thresholds from our coarse-grained model (see SM for details). Such thresholds identify the pa-rameter regimes in which pathogen growth can no longer compensate for suppressive ecological interactions. In an ecological and epidemiological context, threshold condi-tions provide a useful analytical tool to define transitions between persistence and extinction [1, 46]. In our con-text, they allow us to quantify how competitive pressure from the resident microbiome and additional control from bacteriophages limit the growth of C. difficile . By first analyzing a bacteria–pathogen system without phages and then extending the analysis to the virus-mediated model, we can isolate the mechanisms that determine when pathogen eradication becomes possible. First, we estimate the threshold conditions for pathogen clearance ( C = 0) in a bacteria-pathogen model. The original set of equations (Fig.1c) is thus simplified to a set of N + 1 equations, and a further simplification is obtained by using a coarse-grained Bacterium-C.difficile 
+
+model (see SM for details). Specifically, if we assume a 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.06.02.729649 doi: bioRxiv preprint
+
+4a b
+
+# c     
+
+> 0.00
+> 0.05
+> 0.10
+> 0.15
+> 0.0 0.1 0.2 0.3 0.4 0.5
+
+Bacterial suppression (γCB )     
+
+> Viral adsorption  (φC) Invasion
+> probability
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> 0.00
+> 0.05
+> 0.10
+> 0.15
+> 0.0 0.1 0.2 0.3 0.4 0.5
+
+Bacterial suppression (γCB )
+
+> Viral adsorption  (φC) Recurrence
+> susceptibility
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+
+φC = 0.01 ; γCB = 0.15 
+
+1 2 3 4
+
+1
+
+2
+
+3
+
+4
+
+# Initial B 0
+
+> Initial C 0
+
+C*
+
+0
+
+5
+
+Pathogen clearance basin 
+
+Pathogen persistence basin 
+
+Recurrence-susceptible region 
+
+# 01 ; γCB = 0.15 
+
+# 3 4
+
+# Initial B 0
+
+# C*
+
+# 0
+
+# 5
+
+# 01 ; γCB = 0.15 
+
+# 3 4
+
+# Initial B 0
+
+# C*
+
+# 0
+
+# 5
+
+Figure 3 Basin of attraction, invasion probability and recurrence susceptibility. (a) Basin of attraction in the Bacterium–Phage-C. difficile model for viral adsorption rates φc = 0 .01 and bacterial suppression γcb = 0 .15. Points show initial conditions ( B0, C0) and are colored by the long-term equilibrium outcome C∗, illustrating that C. difficile invasion depends on initial microbiome state. The red outlined region represents the recurrence-susceptible region, where both clearance ( C∗ = 0) and persistence ( C∗ > 0) are possible (i.e., alternative outcomes occur depending on initial conditions). (b) C. difficile invasion probability across γcb and φc computed as the fraction of initial conditions leading to persistence ( C∗ > 0). (c) Recurrence susceptibility across γcb and φc computed as the fraction of initial conditions compatible with both clearance and persistence. 
+
+homogeneous set of parameters (i. e. all Bk exhibit the same growth, death, and interaction rates), the system reduces to a two-dimensional model, where B = ∑ 
+
+> k
+
+Bk
+
+is the aggregated microbiome population as described by equations (1-3) (see Materials and Methods and SM). The conditions for invasion of a pathogen-free micro-biome are obtained from: 
+
+∂∂C 
+
+( dC dt 
+
+)
+
+> (B∗,0)
+
+= 1
+
+ε
+
+(
+
+rc
+
+(
+
+1 − B∗
+
+K
+
+)
+
+− γcb B∗
+
+)
+
+> 0 (1) where B∗ = rb/(rb/K − α) is the pathogen-free equilib-rium population. The critical condition for invasion by 
+
+C (i.e., the transition to a dysbiotic state) can be written as a standard eradication threshold Rcb  
+
+> 0
+
+[1, 46], namely: 
+
+Rcb  
+
+> 0
+
+:= γcb B∗
+
+rc
+
+(1 − B∗
+
+> K
+
+) > 1 (2) Conversely, when Rcb  
+
+> 0
+
+< 1, pathogen invasion occurs. This two-dimensional model displays competitive exclu-sion, as illustrated in Fig.2. This threshold defines the conditions required for the pathogen to invade the resident community, leading to the dysbiotic state. How is this changed one we incor-porate the virome? Once again, using the coarse-grained approximation (SM), the three-dimensional reduced sys-tem includes the virome dynamics, which is driven by the effective burst rate β and the adsorption rate φc for bacteria and pathogen and natural viral clearance θ. The interior equilibrium point ( B∗, C ∗, P ∗) where all compo-nents are positive, is: 
+
+B∗ = θβbφb
+
+C∗ = K
+
+(
+
+1 − γcb B∗ + φcP ∗
+
+rc
+
+)
+
+− B∗ (3) 
+
+P ∗ = 1
+
+φb
+
+[
+
+r
+
+(
+
+1 − B∗
+
+K
+
+)
+
++ αB ∗
+
+]
+
+(4) We can now find the conditions for the transition to dys-biosis (see SM) from the eigenvalue: 
+
+λC = rC
+
+(
+
+1 − B∗
+
+K
+
+)︸ ︷︷ ︸
+
+> growth in residual niche
+
+− γcb B∗
+
+︸ ︷︷ ︸ 
+
+> resident suppression
+
+− φcP ∗
+
+︸ ︷︷ ︸ 
+
+> virome killing
+
+.
+
+(5) with invasion by C when λc > 0 when C is rare. This eigenvalue can be understood as the effective growth rate of the pathogen and the meaning of each term is indi-cated. The “firewall” mechanism is captured by the last term: if the virome is maintained at a positive equilib-rium P ∗ > 0 by the resident microbiome, then phage pre-
+
+.CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.06.02.729649 doi: bioRxiv preprint 5dation provides an additional, density-independent (with respect to C) removal pressure on the pathogen at the moment of invasion. In effect, the resident microbiome supports a standing virome that can immediately reduce 
+
+C. difficile fitness upon introduction. The system thus exhibits an emergent community-level defense: the mi-crobiome indirectly protects itself by sustaining a virome that selectively targets the pathogen (large φc) while tol-erating resident bacteria (smaller φb, or smaller βbφb im-pact beyond maintaining P ∗). 
+
+> B. Virome transplantation as an ecological intervention
+
+The previous analysis shows that invasion of C. difficile 
+
+is controlled by the sign of the invasion eigenvalue 
+
+λC = rC
+
+(
+
+1 − B∗
+
+K
+
+)
+
+− γCB B∗ − φC P ∗. (6) The pathogen is unable to invade whenever λC < 0, whereas invasion and pathogen expansion occur when 
+
+λC > 0. This expression provides a natural framework for understanding both antibiotic-induced dysbiosis and recovery through virome transplantation (VT). Consider a healthy equilibrium (B∗, C ∗, P ∗) = ( B∗, 0, P ∗) (7) with λC < 0. Antibiotic treatment primarily targets the resident microbiome, causing a rapid decline in bacterial biomass. At the coarse-grained level this can be repre-sented by adding an external mortality term, 
+
+dB dt = rB B
+
+(
+
+1 − B + CK
+
+)
+
++aB 2−φB P B −γBC BC −α(t)B, 
+
+(8) where α(t) describes antibiotic exposure. Immediately after treatment, the resident biomass drops from B∗ to a lower value BA. Because phage persistence depends on bacterial hosts, the virome is also indirectly affected and decreases from P ∗ to PA. The pathogen growth rate then becomes 
+
+λ(A) 
+
+> C
+
+= rC
+
+(
+
+1 − BA
+
+K
+
+)
+
+− γCB BA − φC PA. (9) Several effects now act in the same direction. First, reduction of BA decreases competitive exclusion and an-tagonistic suppression. Second, lower bacterial density weakens maintenance of the resident virome, reducing phage-mediated pathogen control. Third, the pathogen experiences reduced competition for resources. As a con-sequence, a system initially satisfying 
+
+λC < 0 (10) can be shifted into a dysbiotic regime characterized by 
+
+λ(A) 
+
+> C
+
+> 0. (11) The pathogen then expands exponentially during the early stages of invasion, 
+
+C(t) ≈ C0 exp 
+
+( λ(A)
+
+> C
+
+ε t
+
+)
+
+. (12) In this picture, dysbiosis is not simply the result of pathogen introduction. Rather, it emerges because an-tibiotic perturbation moves the ecosystem across the invasion threshold separating pathogen exclusion from pathogen growth. A virome transplant introduces an external inoculum of bacteriophages into the dysbiotic ecosystem. The phage equation becomes 
+
+dP dt = P (βB φB B + βC φC C − θ) + I(t), (13) where I(t) represents the virome inoculum. For a pulse-like transplantation at time t = tF , i. e. using 
+
+I(t) = PF δ(t − tF ), (14) so that 
+
+P (t+ 
+
+> F
+
+) = P (t− 
+
+> F
+
+) + PF . (15) Immediately after transplantation the pathogen inva-sion eigenvalue becomes 
+
+λ(F ) 
+
+> C
+
+= rC
+
+(
+
+1 − BK
+
+)
+
+− γCB B − φC (P + PF ). (16) The direct effect of the transplant is therefore to in-crease the magnitude of the phage suppression term. Pathogen decline occurs whenever 
+
+λ(F ) 
+
+> C
+
+< 0. (17) This condition defines a critical therapeutic inoculum 
+
+P crit  
+
+> F
+
+= 1
+
+φC
+
+[
+
+rC
+
+(
+
+1 − BK
+
+)
+
+− γCB B
+
+]
+
+− P. (18) For PF > P crit  
+
+> F
+
+, the pathogen growth rate becomes neg-ative and the pathogen population decays. The therapeutic action of VT is not limited to direct pathogen suppression. Once the pathogen begins to de-cline, the resident microbiome experiences reduced com-petitive pressure and can recover. As B increases, two additional feedbacks are activated. First, larger bacterial populations increase niche occupation and antagonistic suppression of the pathogen through the term −γCB BC .Second, recovery of the resident microbiome enhances phage production through βB φB BP , thereby strength-ening the virome itself. The healthy state is therefore stabilized by two coupled feedback loops: 
+
+B ⊣ C, (19) 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.06.02.729649 doi: bioRxiv preprint
+
+6representing direct microbiome-mediated suppression of the pathogen, and 
+
+B → P ⊣ C, (20) representing indirect suppression mediated by bacterio-phages. These feedbacks explain why VT can have long-lasting effects even when the introduced phages them-selves are transient. The transplant shifts the system toward a region of state space where the resident mi-crobiome can recover, and once recovery occurs the mi-crobiome sustains the virome that in turn maintains pathogen control. From a dynamical systems perspec-tive, antibiotic treatment and virome transplantation act in opposite directions. Antibiotics displace the ecosystem away from the healthy equilibrium and toward a dysbiotic attractor dominated by the pathogen. Virome transplan-tation increases phage pressure, reduces pathogen abun-dance, and moves the system back toward the basin of attraction of the healthy state. Successful therapy therefore requires more than tran-sient pathogen killing. The intervention must move the system across the separatrix that divides healthy and dysbiotic states. Once this threshold is crossed, eco-logical feedbacks involving the resident microbiome and the virome drive the system toward recovery. In this in-terpretation, VT acts as an ecological restoration strat-egy that re-establishes the coupled bacteria-phage net-work responsible for maintaining colonization resistance against pathogen invasion. 
+
+> C. The protective role of the resident virome
+
+The distinct protective effects of the virome can be clarified by comparing the invasion dynamics of the pathogen under the presence or absence of a virome. Consider first a resident community lacking a virome. In this case P ∗ = 0, and the invasion eigenvalue reduces to 
+
+λ(0)  
+
+> C
+
+= rC
+
+(
+
+1 − B∗
+
+K
+
+)
+
+− γCB B∗. (21) The ability of the resident community to resist invasion depends entirely on the resident bacterial biomass and on the strength of competitive or antagonistic interactions represented by γCB . Pathogen exclusion requires 
+
+λ(0)  
+
+> C
+
+< 0, (22) or, equivalently, 
+
+γCB B∗ > r C
+
+(
+
+1 − B∗
+
+K
+
+)
+
+. (23) In this situation, colonization resistance is generated ex-clusively by the bacterial community itself through niche occupation, resource depletion, metabolic inhibition, and other direct interactions with the pathogen. Now consider a resident community supporting a sta-ble virome. The pathogen invasion eigenvalue is 
+
+λ(V ) 
+
+> C
+
+= rC
+
+(
+
+1 − B∗
+
+K
+
+)
+
+− γCB B∗ − φC P ∗. (24) Comparison of Eqs. (21) and (24) gives 
+
+λ(V ) 
+
+> C
+
+= λ(0)  
+
+> C
+
+− φC P ∗. (25) Since φC P ∗ > 0, the presence of a virome always de-creases the pathogen invasion rate relative to the same resident bacterial community without phages. The vi-rome therefore acts as an additional barrier against inva-sion that complements bacterial competition and antag-onism. The exclusion condition is also modified. In the pres-ence of a virome, pathogen exclusion requires 
+
+λ(V ) 
+
+> C
+
+< 0, (26) which is equivalent to 
+
+γCB B∗ + φC P ∗ > r C
+
+(
+
+1 − B∗
+
+K
+
+)
+
+. (27) This expression shows that part of the burden of pathogen control is transferred from the resident micro-biome to the virome. As a consequence, pathogen exclu-sion may occur even when bacterial competition alone would be insufficient. In other words, there are parame-ter regions satisfying 
+
+γCB B∗ < r C
+
+(
+
+1 − B∗
+
+K
+
+)
+
+< γ CB B∗ + φC P ∗, (28) for which the pathogen would invade in the absence of a virome but would be excluded in its presence. The difference becomes particularly important follow-ing antibiotic perturbation. Suppose that antibiotic treatment reduces resident bacterial biomass from B∗ to 
+
+BA. In a community without phages, pathogen control weakens because the suppressive term γCB BA decreases. The post-antibiotic invasion eigenvalue without a virome is 
+
+λ(0 ,A ) 
+
+> C
+
+= rC
+
+(
+
+1 − BA
+
+K
+
+)
+
+− γCB BA. (29) This quantity may become positive if the resident micro-biome is sufficiently depleted, 
+
+λ(0 ,A ) 
+
+> C
+
+> 0, (30) leading to pathogen expansion and dysbiosis. In contrast, when a resident virome is present, pathogen suppression contains an additional contribution from phage-mediated 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.06.02.729649 doi: bioRxiv preprint
+
+7control. If the post-antibiotic phage abundance is PA, the post-antibiotic invasion eigenvalue is 
+
+λ(V,A ) 
+
+> C
+
+= rC
+
+(
+
+1 − BA
+
+K
+
+)
+
+− γCB BA − φC PA. (31) The difference between the two post-antibiotic invasion rates is 
+
+λ(V,A ) 
+
+> C
+
+= λ(0 ,A ) 
+
+> C
+
+− φC PA. (32) Thus, even if bacterial competition is weakened by an-tibiotics, residual phage populations can continue to sup-press pathogen growth. The virome therefore increases ecosystem resilience by buffering the consequences of bac-terial loss. The protective effect of the virome can be quantified by the reduction in pathogen invasion fitness due to phage-mediated predation, ∆λC = λ(0)  
+
+> C
+
+− λ(V ) 
+
+> C
+
+= φC P ∗. (33) Analogously, after antibiotic perturbation, ∆λ(A) 
+
+> C
+
+= λ(0 ,A ) 
+
+> C
+
+− λ(V,A ) 
+
+> C
+
+= φC PA. (34) These quantities measure the contribution of the vi-rome to colonization resistance. The larger the standing phage population and the stronger its effective infection rate against the pathogen, the greater the reduction in pathogen invasion potential. The same comparison can be expressed in terms of an effective pathogen reproduction ratio. Without a virome, define 
+
+R(0)  
+
+> C
+
+=
+
+rC
+
+(
+
+1 − B∗
+
+> K
+
+)
+
+γCB B∗ . (35) Pathogen exclusion requires 
+
+R(0)  
+
+> C
+
+< 1. (36) With a virome, the corresponding ratio is 
+
+R(V ) 
+
+> C
+
+=
+
+rC
+
+(
+
+1 − B∗
+
+> K
+
+)
+
+γCB B∗ + φC P ∗ . (37) Since the virome increases the denominator, one obtains 
+
+R(V ) 
+
+> C
+
+< R (0)  
+
+> C
+
+. (38) The resident virome therefore lowers the effective repro-ductive potential of the pathogen and enlarges the pa-rameter region in which pathogen exclusion is possible. 
+
+> D. Path-dependence of pathogen invasion and recurrence
+
+In our coarse-grained Bacterium-Pathogen model, bac-teria and the pathogen compete for the same ecolog-ical resources. The competition for shared resources (carrying capacity) introduces nonlinear feedbacks lead-ing to alternative stable states corresponding to bac-terial dominance ( C∗ = 0) or C. difficile persistence (C∗ > 0). Which equilibrium is reached depends on the initial conditions of bacteria ( B0) and C. difficile (C0)densities (Fig.2). Thus, identical parameter values can lead to qualitatively different outcomes depending on ini-tial conditions. The eradication thresholds correspond to the boundary separating the basins of attraction of the pathogen-free and pathogen-persistent equilibria. The observed bistability reflects a switch-like behavior, rep-resenting one of the simplest dynamical mechanisms by which biological systems exhibits history-dependence, i.e. memory of prior states. Once the system settles into one attractor, small perturbations do not induce a transition to the other state preserving the outcome of past condi-tions. This results in path-dependent colonisation. In the virus-mediated model, the system still exhibits alterna-tive stable states (Fig.3a), in which the invasion dynam-ics of C.difficile is determined by two factors, the viral adsorption rate ( φc) and bacterial suppression rate ( γcb ). We computed the invasion probability of C. difficile as the fraction of initial conditions leading to persistence across bacterial suppression rates. In the Bacterium-Pathogen model, invasion probability gradually weakens with stronger suppression. While, invasion in the virus-mediated model decreases with bacterial suppression and shows a hard threshold of viral adsorption rate, beyond which invasion of C.difficile becomes unfeasible (Fig.3b). Recurrence susceptibility, defined as the region of ini-tial conditions compatible with both clearance and per-sistence outcomes, is negligible in the Bacteria-Pathogen model. In this case, system dynamics are determined by a single dominant attractor, such that trajectories converge either to pathogen clearance or persistence. As a result, recurrence following perturbations is unlikely. By con-trast, in the virus-mediated model recurrence susceptibil-ity becomes substantial and peaks at intermediate values of bacterial suppression and viral adsorption (Fig. 3c). In this regime, virus-mediated pathogen control and bacte-rial suppression interact to generate bistability, produc-ing mixed-outcome region in the bacteria-pathogen state space. Consequently, small differences in specific regions of initial conditions in bacteria under identical parameter values can result in qualitatively different outcomes. This sensitivity to initial conditions reflects strong influence of virome dynamics and implies an increased likelihood of recurrence following perturbations, as the system can be repeatedly displaced between alternative stable states. Importantly, the long-term outcome depends strongly only on the initial composition of the bacterial commu-
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.06.02.729649 doi: bioRxiv preprint
+
+8nity and the pathogen, but it is independent of the initial phage abundance. Basin-of-attraction analyses reveal that varying the initial phage densities does not quali-tatively alter the system trajectory (Fig. S3 and S4 in SM). Together these results indicate that path depen-dence arises from the initial microbiome-pathogen bal-ance rather than from the initial viral abundance. The virome influences invasion thresholds through its equilib-rium abundance, but the transient initial phage density does not determine the long-term ecological outcome. 
+
+> E. Transient dynamics
+
+Overall, transient dynamics dominates recovery in-cluding monotonic relaxation and oscillatory transients such as damped oscillations (Fig.4a). Dynamical be-havior was classified using eigenvalues and trajectories. Systems were first categorized as transient if trajectories converged to equilibrium, i.e. eigenvalues had negative real parts. Among transient dynamics, oscillatory be-havior was identified by counting sign changes in devia-tions from equilibrium x(t)−x∗. Trajectories with two or more sign changes were classified as damped oscillations and those with at most one sign change were classified as monotonic relaxation. Transitions to sustained oscil-lations (limit cycles) were identified by eigenvalues with positive real parts and nonzero imaginary part, consis-tent with Hopf bifurcations. Almost 86% cases showed oscillatory transients (Fig.4b) arising from nonlinear feedbacks between bacterial and viral populations, which always appears above a thresh-old level of viral adsorption rate ( φc ≈ 0.07). Monotonic relaxation is the second most frequent dynamical behav-ior (14%) occurring at lower levels of both viral adsorp-tion and bacterial suppression rates. Limit cycles were detected only in a few cases for a limited number of pa-rameter combinations in some low bacterial suppression and low viral adsorption regimes. 
+
+> F. Diversity effects
+
+The coarse-grained model provides analytical tractability, but it neglects the diversity inherent to real gut ecosystems, where multiple bacterial and phage strains coexist and interact. To assess how diversity influences system dynamics, we extended the framework to multi-strain communities with varying numbers of bacterial and phage populations (Fig.5a), introducing small perturbations to their parameter values while keeping the average coefficients to capture functional variability (see for more details in SM). In the absence of phages, increasing bacterial diversity had no significant effect on C. difficile invasion proba-bility (Fig.S6 in SM). Across multi-strain communities, invasion curves largely overlapped, indicating that bacterial diversity alone does not substantially alter invasion outcomes. By contrast, pronounced diversity effects emerged in the virus-mediated multi-strain model (Fig. 5b). Increasing number of strains substan-tially altered invasion probabilities compared to the coarse-grained outcomes. In particular, greater phage diversity enhanced community resilience by increasing clearance states for lower viral adsorption rates. These results indicate that viral diversity qualitatively modifies ecosystem stability and increases the likelihood of pathogen clearance. 
+
+> IV. DISCUSSION
+
+Our results strongly support that bacteriophages act as a top-down ecological control and as a key component of microbiome recovery and pathogen clearance. Viral control has long been recognised as a crucial regulator in nutrient cycling and microbial diversity [3, 26, 50] and most recently in antibiotic-induced dysbiosis treatments [38]. We showed that pathogenic invasion depend not only on average viral adsorption or bacterial suppression rates, but on initial microbiome states as well. Such mul-tistability in gut systems is increasingly recognized as a common feature of microbial ecosystems, where competi-tive interactions and nonlinear feedbacks generate multi-ple stable community configurations under identical en-vironmental conditions [2, 9, 16, 44]. This phenomenon is the simplest form of memory. Such history-dependent dynamics are common in ecological systems, where pri-ority effects and nonlinear interactions allow past states to influence future community trajectories [11, 17]. Al-ternative stable states provide a mechanistic explanation for inconsistent clinical outcomes after viral transplan-tation. Furthermore, we identified a specific state-space region of recurrence susceptibility, where a small pertur-bation in pathogen or microbial density can switch be-tween pathogen clearance or persistence. This separatrix between basin boundaries implies high uncertainty in mi-crobiome recovery which is not only history-dependent but sensitive to perturbations. These results align well with the reported empirical relapse rates after micro-biome transplantations, typically around 20% in clinical studies [23]. We clearly showed that virome reshapes invasion thresh-olds. Our results distinguish two qualitatively differ-ent modes of pathogen control; competition and phage threshold. Bacterial suppression reduces pathogen den-sity gradually through competitive effects, whereas phage adsorption introduces a hard threshold, whereby once ad-sorption exceeds a critical value, pathogen clearance be-comes inevitable. This nonlinear effect generates a phase transition between dysbiotic and healthy states, provid-ing a mechanistic basis for abrupt recovery or relapse. 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.06.02.729649 doi: bioRxiv preprint
+
+90.0            
+
+> 2.5
+> 5.0
+> 7.5
+> 10.0
+> 025 50 75 100
+> Density
+> B
+> P
+> C
+> 1
+> 2
+> 3
+> 4
+> 5
+> 0100 200 300
+> Time
+> Density
+> 0
+> 1
+> 2
+> 3
+> 4
+> 5
+> 025 50 75 100
+> Time
+> Density
+
+# a Oscillatory transient dynamics  
+
+> Monotonic relaxation Limit cycles
+
+0.00 
+
+0.05 
+
+0.10 
+
+0.15 
+
+0.0 0.1 0.2 0.3 0.4 0.5 
+
+# Bacterial suppression (γCB )
+
+> Viral adsorption  (φC)
+
+Oscillatory 
+
+transient dynamics     
+
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> 0.0
+> 2.5
+> 5.0
+> 7.5
+> 025 50 75 100
+> Density
+
+# b
+
+Figure 4 Transient dynamics. (a) Example trajectories showing transient oscillatory dynamics, characterized by damped fluctuations (left) before convergence to equilibrium and non-monotonic fluctuations (right). (b) Non-transient regimes, in-cluding limit cycles (left) and stable nodes (right). (c) Probability of transient dynamics across bacterial suppression ( γcb ) and viral adsorption ( φc). Transient responses dominate most of parameter space, indicating that microbiome recovery is typically non-monotonic. a b n = 10 
+
+0.0 0.1 0.2 0.3 0.4 0.5 
+
+0.00 
+
+0.05 
+
+0.10 
+
+0.15 
+
+## Bacterial suppression (γCB )
+
+> Viral adsorption  (φC)
+
+Invasion 
+
+probability     
+
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> 025 50 75 100
+
+Time     
+
+> Viral Density (%)
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> 025 50 75 100
+
+Time 
+
+> Bacterial Density (%)
+
+Figure 5 Diversity-dependent effects on pathogen invasion in multi-strain microbiome models. (a) Representative time series showing population densities of resident bacteria (top), phages (bottom) ( n = 10, E[γcb ] = 0 .01, E[φc] = 0 .1 ) (b) Invasion probability of C. difficile in the multi-strain virome-mediated model as a function of bacterial suppression ( γcb )and viral adsorption ( φc). Increasing microbial and viral diversity reshapes the invasion landscape, expanding the parameter region leading to pathogen clearance and shifting invasion thresholds toward lower adsorption rates. These results demonstrate that virome diversity qualitatively enhances microbiome stability and resistance to pathogen invasion. Warmer colors indicate higher invasion probability and darker colors indicate lower invasion probability. 
+
+An interesting implication of our results is that path de-pendence in the system is governed by the initial bal-ance between the resident microbiome and the pathogen rather than by the initial viral population. This implies that virome-based interventions may benefit more from phages with strong adsorption efficiency than from in-creasing the volume or diversity of virome transplants, potentially allowing for more universal treatment strate-gies. Our model introduces a “firewall” mechanism [34, 48]. If 
+
+.CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.06.02.729649 doi: bioRxiv preprint 10 the virome is maintained at a positive equilibrium P ∗ > 0by the resident microbiome, then phage predation pro-vides an additional, density-independent removal pres-sure on the pathogen at the moment of invasion. In effect, the resident microbiome supports a standing virome that can immediately reduce C.difficile fitness upon introduc-tion. The system thus exhibits an emergent community-level defense [5]: the microbiome indirectly protects it-self by sustaining a virome that selectively targets the pathogen while tolerating resident bacteria. Increasing 
+
+P ∗ strengthens the firewall through φcP ∗, but phage pre-dation also imposes a cost on the resident microbiome through the term φbP B . Thus, a protective virome is most effective when it combines high pathogen target-ing ( φc) with relatively modest resident targeting ( φb), or when the resident microbiome compensates via higher net growth rb and positive internal interactions a. This defense mechanism is amplified with increasing diversity. In multi-strain communities, the top-down phage control increases the likelihood of pathogen clearance, empha-sizing the stabilizing role of complex virome-microbiome interactions. Our model assumes mean-field interactions without spa-tial structure. Moreover, parameters are not calibrated to specific experimental systems. Targeted in vitro ex-periments can be used to test eradication thresholds and recurrence susceptibility. These simplifications allow an-alytical tractability but limit biological realism. Future work can be extended to incorporating spatial structure, migration, and network structure, which would further clarify how gut virome shapes stability landscapes. Over-all, our results suggest that the virome acts as key regula-tors of resilience, invasion resistance, and recovery in gut microbial ecosystems. The ecological principles identified here may extend beyond the gut microbiome. Virome-mediated control could inform intervention strategies in soil or aquatic microbiomes. 
+
+> V. MATERIALS AND METHODS A. Dynamical model of microbiome–phage–pathogen interactions
+
+We developed a deterministic dynamical model de-scribing interactions between commensal bacteria, bac-teriophages, and a pathogenic population representing Clostridioides difficile. The system includes three inter-acting compartments: a resident microbiome composed of bacterial populations {Bi} a virome composed of bac-teriophage populations {Pj }, and a pathogen popula-tion C. Population dynamics are governed by a gen-eralized Lotka–Volterra framework that incorporates lo-gistic growth, interspecific microbial interactions, and phage adsorption dynamics. The full model consists of 
+
+N + M + 1 coupled ordinary differential equations de-scribing the abundances of bacterial strains Bi, phages 
+
+Pj , and the pathogen C. The resulting system captures the combined effects of bottom–up resource limitation, microbial competition, and top–down viral predation in shaping microbiome stability and pathogen invasion dy-namics. The coarse-grained Bacteria-C. difficile model reads as: 
+
+ε dB dt = rbB
+
+(
+
+1 − B + CK
+
+)
+
++ αbB2 − γbc BC, (39) 
+
+ε dC dt = rcC
+
+(
+
+1 − B + CK
+
+)
+
+− γcb BC. (40) Here, the effective rates growth rb, r c, interaction coeffi-cient αb, and bacterial suppression rates γbc , γ cb are ob-tained by averaging over the original species-specific rates (see SM). The virus-mediated model reads as: 
+
+dP dt = P (βbφbB + βcφcC − θ) ,
+
+(41) 
+
+ε dB dt = rbB
+
+(
+
+1 − B + CK
+
+)
+
++ aB 2 − γbc BC − φbP B, 
+
+(42) 
+
+ε dC dt = rcC
+
+(
+
+1 − B + CK
+
+)
+
+− γcb BC − φcP C, 
+
+(43) where the bacteriophages P exert top-down control of C. difficile and Bacteria with the effective adsorption rates 
+
+φc and φb together with the effective burst rates of βc ans 
+
+βb. The full model formulation and parameter definitions are provided in the Supplementary Materials. 
+
+> B. Invasion probability and recurrence susceptibility
+
+In our model, the resident microbiome and the pathogen compete for a shared resource (carrying capac-ity, K), which introduces nonlinear feedbacks between bacterial and pathogen populations leading to multi-ple stable states. In particular, the system admits two alternative attractors corresponding to pathogen clear-ance ( C∗ = 0) and pathogen persistence ( C∗ > 0), which depend on the initial conditions of the system leading to path-dependence. To quantify how pathogen invasion depends on initial microbiome states, we ana-lyzed the basins of attraction of the coarse-grained mod-els. For each parameter combination, we generated 
+
+N = 10 4 random initial conditions for the resident micro-biome ( B0), pathogen ( C0), and phage ( P0) densities by sampling uniformly within biologically feasible bounds: 
+
+B0, C 0, P 0 ∼ U (0 , K ). The system of ordinary differential equations was numerically integrated until convergence (B∗, C ∗, P ∗). Each trajectory was classified according to the long-term pathogen outcome: clearance if C∗ = 0 and persistence if C∗ > 0. 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.06.02.729649 doi: bioRxiv preprint
+
+11 The invasion probability was quantified as the fraction of sampled initial conditions that converge to pathogen persistence. Then, we quantified recurrence susceptibil-ity of the system as the area of state space lying near the basin boundary separating pathogen clearance from persistence. This region represents microbiome states for which small perturbations in initial bacterial or pathogen densities can change the long-term outcome. Let Iclear 
+
+and Ipersist denote the sets of initial conditions leading to these two attractors. Recurrence susceptibility is defined as the normalized measure of the intersection between these basins, 
+
+O = |I clear ∩ I persist |
+
+N , (44) where N is the total number of sampled initial conditions. Basin boundaries were approximated by computing con-vex hulls of the sampled initial conditions in the ( B0, C 0)state space that lead to each outcome. The intersec-tion of these hulls defines the recurrence-susceptibility region, representing the set of microbiome states from which both pathogen clearance and persistence are pos-sible depending on small perturbations (see more details in SM). 
+
+C. Multi-strain simulations 
+
+To investigate the effect of microbial diversity on in-vasion dynamics, we extended the coarse-grained mod-els to include multiple bacterial and viral strains. Com-munities were simulated with varying numbers of strains 
+
+n = {5, 10 , 30 }, where n represents the number of bac-terial and viral strains in the system. Interaction coef-ficients and growth rates were sampled from lognormal distributions centered around the coarse-grained parame-ter values to capture ecological variability among taxa. A sparse host-range matrix was imposed on phage-host in-teractions to represent limited viral host specificity. Sim-ulations of these multi-strain systems were used to eval-uate how increasing bacterial and viral diversity modifies invasion probability. Full details of the multi-strain pa-rameterization and sampling procedures are provided in the Supplementary Materials. 
+
+REFERENCES 
+
+[1] Anderson, R. M. and May, R. M. (1991). Infectious dis-eases of humans: dynamics and control . Oxford univer-sity press. [2] Bashan, A., Gibson, T. E., Friedman, J., Carey, V. J., Weiss, S. T., Hohmann, E. L., and Liu, Y.-Y. (2016). Universality of human microbial dynamics. Nature ,534(7606):259–262. [3] Breitbart, M., Bonnain, C., Malki, K., and Sawaya, N. A. (2018). Phage puppet masters of the marine microbial realm. Nature Microbiology , 3(7):754–766. [4] Bucci, V. and Xavier, J. B. (2014). Towards predictive models of the human gut microbiome. Journal of Molec-ular Biology , 426(23):3907–3916. [5] Buffie, C. G. and Pamer, E. G. (2013). Microbiota-mediated colonization resistance against intestinal pathogens. Nature Reviews Immunology , 13(11):790–801. [6] B¨ ackhed, F., Fraser, C. M., Ringel, Y., Sanders, M. E., Sartor, R. B., Sherman, P. M., Versalovic, J., Young, V., and Finlay, B. B. (2012). Defining a healthy human gut microbiome: current concepts, future directions, and clinical applications. Cell Host & Microbe , 12(5):611–622. [7] Chehoud, C., Dryga, A., Hwang, Y., Nagy-Szakal, D., Hollister, E. B., Luna, R. A., Versalovic, J., Kellermayer, R., and Bushman, F. D. (2016). Transfer of Viral Com-munities between Human Individuals during Fecal Mi-crobiota Transplantation. mBio , 7(2):e00322. [8] Corral L´ opez, R., Bonachela, J. A., Dominguez-Bello, M. G., Manhart, M., Levin, S. A., Blaser, M. J., and Mu˜ noz, M. A. (2026). Imbalance in gut microbial in-teractions as a marker of health and disease. Science ,391(6788):890–895. [9] Coyte, K. Z., Schluter, J., and Foster, K. R. (2015). The ecology of the microbiome: Networks, competition, and stability. Science , 350(6261):663–666. [10] Cryan, J. F., O’Riordan, K. J., Cowan, C. S. M., Sandhu, K. V., Bastiaanssen, T. F. S., Boehme, M., Codagnone, M. G., Cussotto, S., Fulling, C., Golubeva, A. V., Guzzetta, K. E., Jaggar, M., Long-Smith, C. M., Lyte, J. M., Martin, J. A., Molinero-Perez, A., Moloney, G., Morelli, E., Morillas, E., O’Connor, R., Cruz-Pereira, J. S., Peterson, V. L., Rea, K., Ritz, N. L., Sherwin, E., Spichak, S., Teichman, E. M., van de Wouw, M., Ventura-Silva, A. P., Wallace-Fitzsimons, S. E., Hyland, N., Clarke, G., and Dinan, T. G. (2019). The Microbiota-Gut-Brain Axis. Physiological Reviews , 99(4):1877–2013. [11] Deng, J., Cordero, O. X., Fukami, T., Levin, S. A., Pringle, R. M., Sol´ e, R., and Saavedra, S. (2024). The development of ecological systems along paths of least resistance. Current biology: CB , 34(20):4813–4823.e14. [12] Fassarella, M., Blaak, E. E., Penders, J., Nauta, A., Smidt, H., and Zoetendal, E. G. (2021). Gut micro-biome stability and resilience: elucidating the response to perturbations in order to modulate gut health. Gut ,70(3):595–605. [13] Faust, K. and Raes, J. (2012). Microbial interactions: from networks to models. Nature Reviews Microbiology ,10(8):538–550. [14] Fishbein, S. R. S., Mahmud, B., and Dantas, G. (2023). Antibiotic perturbations to the gut microbiome. Nature Reviews Microbiology , 21(12):772–788. [15] Foster, K. R., Schluter, J., Coyte, K. Z., and Rakoff-Nahoum, S. (2017). The evolution of the host microbiome as an ecosystem on a leash. Nature , 548(7665):43–51. [16] Fujita, H., Ushio, M., Suzuki, K., Abe, M. S., Ya-mamichi, M., Iwayama, K., Canarini, A., Hayashi, I., Fukushima, K., Fukuda, S., Kiers, E. T., and Toju, H. (2023). Alternative stable states, nonlinear behavior, and predictability of microbiome dynamics. Microbiome ,11(1):63. [17] Fukami, T. (2015). Historical Contingency in Commu-nity Assembly: Integrating Niches, Species Pools, and Priority Effects. Annual Review of Ecology, Evolution, and Systematics , 46(Volume 46, 2015):1–23. 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.06.02.729649 doi: bioRxiv preprint
+
+12 
+
+[18] Guittar, J., Shade, A., and Litchman, E. (2019). Trait-based community assembly and succession of the infant gut microbiome. Nature Communications , 10(1):512. [19] Ji, S., Ahmad, F., Peng, B., Yang, Y., Su, M., Zhao, X., and Vatanen, T. (2025). Engrafting gut bacteriophages have potential to modulate microbial metabolism in fecal microbiota transplantation. Microbiome , 13(1):149. [20] Jones, E. W., Carlson, J. M., Sivak, D. A., and Lud-ington, W. B. (2022). Stochastic microbiome assembly depends on context. Proceedings of the National Academy of Sciences , 119(7):e2115877119. [21] Karimi, M., Shirsalimi, N., Hashempour, Z., Salehi Om-ran, H., Sedighi, E., Beigi, F., and Mortezazadeh, M. (2024). Safety and efficacy of fecal microbiota trans-plantation (FMT) as a modern adjuvant therapy in var-ious diseases and disorders: a comprehensive literature review. Frontiers in Immunology , 15. [22] Karlsson, F. H., Nookaew, I., Petranovic, D., and Nielsen, J. (2011). Prospects for systems biology and modeling of the gut microbiome. Trends in Biotechnol-ogy , 29(6):251–258. [23] Khoruts, A., Dicksved, J., Jansson, J. K., and Sadowsky, M. J. (2010). Changes in the composition of the hu-man fecal microbiome after bacteriotherapy for recurrent Clostridium difficile-associated diarrhea. Journal of Clin-ical Gastroenterology , 44(5):354–360. [24] Khoruts, A. and Sadowsky, M. J. (2016). Understanding the mechanisms of faecal microbiota transplantation. Na-ture Reviews. Gastroenterology & Hepatology , 13(9):508– 516. [25] Kim, S.-K., Guevarra, R. B., Kim, Y.-T., Kwon, J., Kim, H., Cho, J. H., Kim, H. B., and Lee, J.-H. (2019). Role of Probiotics in Human Gut Microbiome-Associated Diseases. Journal of Microbiology and Biotechnology ,29(9):1335–1340. [26] Knowles, B., Silveira, C. B., Bailey, B. A., Barott, K., Cantu, V. A., Cobi´ an-G¨ uemes, A. G., Coutinho, F. H., Dinsdale, E. A., Felts, B., Furby, K. A., George, E. E., Green, K. T., Gregoracci, G. B., Haas, A. F., Haggerty, J. M., Hester, E. R., Hisakawa, N., Kelly, L. W., Lim, Y. W., Little, M., Luque, A., McDole-Somera, T., Mc-Nair, K., de Oliveira, L. S., Quistad, S. D., Robinett, N. L., Sala, E., Salamon, P., Sanchez, S. E., Sandin, S., Silva, G. G. Z., Smith, J., Sullivan, C., Thompson, C., Vermeij, M. J. A., Youle, M., Young, C., Zgliczynski, B., Brainard, R., Edwards, R. A., Nulton, J., Thompson, F., and Rohwer, F. (2016). Lytic to temperate switching of viral communities. Nature , 531(7595):466–470. [27] Koskella, B., Hall, L. J., and Metcalf, C. J. E. (2017). The microbiome beyond the horizon of ecological and evolu-tionary theory. Nature Ecology & Evolution , 1(11):1606– 1615. [28] Kuziel, G. A. and Rakoff-Nahoum, S. (2022). The gut microbiome. Current biology: CB , 32(6):R257–R264. [29] Lahti, L., Saloj¨ arvi, J., Salonen, A., Scheffer, M., and de Vos, W. M. (2014). Tipping elements in the human intestinal ecosystem. Nature Communications , 5(1):4344. [30] Long, C., Deng, J., Nguyen, J., Liu, Y.-Y., Alm, E. J., Sol´ e, R., and Saavedra, S. (2024). Structured commu-nity transitions explain the switching capacity of micro-bial systems. Proceedings of the National Academy of Sciences , 121(6):e2312521121. [31] Lozupone, C. A., Stombaugh, J. I., Gordon, J. I., Jans-son, J. K., and Knight, R. (2012). Diversity, stability and resilience of the human gut microbiota. Nature ,489(7415):220–230. [32] Lusiak-Szelachowska, M., Weber-Dabrowska, B., ˙Zaczek, M., Borysowski, J., and G´ orski, A. (2020). The Presence of Bacteriophages in the Human Body: Good, Bad or Neutral? Microorganisms , 8(12):2012. [33] Manrique, P., Dills, M., and Young, M. J. (2017). The Human Gut Phage Community and Its Implications for Health and Disease. Viruses , 9(6):141. [34] Maull, V. and Sol´ e, R. (2024). Biodiversity as a firewall to engineered microbiomes for restoration and conservation. 
+
+Royal Society Open Science , 11(6):231526. [35] Modi, S. R., Lee, H. H., Spina, C. S., and Collins, J. J. (2013). Antibiotic treatment expands the re-sistance reservoir and ecological network of the phage metagenome. Nature , 499(7457):219–222. [36] Moya, A. and Ferrer, M. (2016). Functional Redundancy-Induced Stability of Gut Microbiota Subjected to Distur-bance. Trends in Microbiology , 24(5):402–413. [37] Nood, E. v., Vrieze, A., Nieuwdorp, M., Fuentes, S., Zoetendal, E. G., Vos, W. M. d., Visser, C. E., Kuijper, E. J., Bartelsman, J. F. W. M., Tijssen, J. G. P., Speelman, P., Dijkgraaf, M. G. W., and Keller, J. J. (2013). Duodenal Infusion of Donor Feces for Recurrent Clostridium difficile. New Eng-land Journal of Medicine , 368(5):407–415. eprint: https://www.nejm.org/doi/pdf/10.1056/NEJMoa1205037. [38] Ott, S. J., Waetzig, G. H., Rehman, A., Moltzau-Anderson, J., Bharti, R., Grasis, J. A., Cassidy, L., Tho-ley, A., Fickenscher, H., Seegert, D., Rosenstiel, P., and Schreiber, S. (2017). Efficacy of Sterile Fecal Filtrate Transfer for Treating Patients With Clostridium difficile Infection. Gastroenterology , 152(4):799–811.e7. [39] Pepper, J. W. and Rosenfeld, S. (2012). The emerging medical ecology of the human gut microbiome. Trends in Ecology & Evolution , 27(7):381–384. [40] Rasmussen, T. S., Mao, X., Forster, S., Larsen, S. B., Von M¨ unchow, A., Tranæs, K. D., Brunse, A., Larsen, F., Mejia, J. L. C., Adamberg, S., Hansen, A. K., Adamberg, K., Hansen, C. H. F., and Nielsen, D. S. (2024). Over-coming donor variability and risks associated with fecal microbiota transplants through bacteriophage-mediated treatments. Microbiome , 12:119. [41] Rinninella, E., Raoul, P., Cintoni, M., Franceschi, F., Miggiano, G. A. D., Gasbarrini, A., and Mele, M. C. (2019). What is the Healthy Gut Microbiota Composi-tion? A Changing Ecosystem across Age, Environment, Diet, and Diseases. Microorganisms , 7(1):14. [42] Schmidt, T. S. B., Li, S. S., Maistrenko, O. M., Akanni, W., Coelho, L. P., Dolai, S., Fullam, A., Glazek, A. M., Hercog, R., Herrema, H., Jung, F., Kandels, S., Orakov, A., Thielemann, R., von Stetten, M., Van Rossum, T., Benes, V., Borody, T. J., de Vos, W. M., Ponsioen, C. Y., Nieuwdorp, M., and Bork, P. (2022). Drivers and de-terminants of strain dynamics following fecal microbiota transplantation. Nature Medicine , 28(9):1902–1912. [43] Seekatz, A. M., Aas, J., Gessert, C. E., Rubin, T. A., Saman, D. M., Bakken, J. S., and Young, V. B. (2014). Recovery of the gut microbiome following fecal micro-biota transplantation. mBio , 5(3):e00893–00814. [44] Shade, A., Peter, H., Allison, S. D., Baho, D. L., Berga, M., B¨ urgmann, H., Huber, D. H., Langenheder, S., Lennon, J. T., Martiny, J. B. H., Matulich, K. L., Schmidt, T. M., and Handelsman, J. (2012). Funda-
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 4, 2026. ;https://doi.org/10.64898/2026.06.02.729649 doi: bioRxiv preprint
+
+13 
+
+mentals of microbial community resistance and resilience. 
+
+Frontiers in Microbiology , 3:417. [45] Shkoporov, A. N. and Hill, C. (2019). Bacteriophages of the Human Gut: The “Known Unknown” of the Micro-biome. Cell Host & Microbe , 25(2):195–209. [46] Sol´ e, R. and Elena, S. F. (2018). Viruses as complex adaptive systems . Princeton University Press. [47] van den Berg, N. I., Machado, D., Santos, S., Rocha, I., Chac´ on, J., Harcombe, W., Mitri, S., and Patil, K. R. (2022). Ecological modelling approaches for predicting emergent properties in microbial communities. Nature Ecology & Evolution , 6(7):855–865. [48] Vidiella, B. and Sol´ e, R. (2022). Ecological firewalls for synthetic biology. iScience , 25(7):104658. [49] Weitz, J. S. (2015). Quantitative Viral Ecology: Dynam-ics of Viruses and Their Microbial Hosts . Princeton Uni-versity Press. [50] Weitz, J. S. and Wilhelm, S. W. (2012). Ocean viruses and their effects on microbial communities and biogeo-chemical cycles. F1000 Biology Reports , 4:17. [51] Widder, S., Allen, R. J., Pfeiffer, T., Curtis, T. P., Wiuf, C., Sloan, W. T., Cordero, O. X., Brown, S. P., Momeni, B., Shou, W., Kettle, H., Flint, H. J., Haas, A. F., Laroche, B., Kreft, J.-U., Rainey, P. B., Freilich, S., Schuster, S., Milferstedt, K., van der Meer, J. R., Grokopf, T., Huisman, J., Free, A., Picioreanu, C., Quince, C., Klapper, I., Labarthe, S., Smets, B. F., Wang, H., and Soyer, O. S. (2016). Challenges in mi-crobial ecology: building predictive understanding of community function and dynamics. The ISME Journal ,10(11):2557–2568. [52] Wolff, R., Shoemaker, W., and Garud, N. (2023). Eco-logical Stability Emerges at the Level of Strains in the Human Gut Microbiome. mBio , 14(2):e02502–22. [53] Xiao, Y., Angulo, M. T., Lao, S., Weiss, S. T., and Liu, Y.-Y. (2020). An ecological framework to understand the efficacy of fecal microbiota transplantation. Nature Communications , 11(1):3329. [54] Yu, Y., Wang, W., and Zhang, F. (2023). The Next Gen-eration Fecal Microbiota Transplantation: To Transplant Bacteria or Virome. Advanced Science , 10(35):e2301097.

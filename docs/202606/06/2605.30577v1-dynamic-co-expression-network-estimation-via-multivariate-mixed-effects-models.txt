@@ -1,0 +1,468 @@
+Title: Dynamic Co-Expression Network Estimation via Multivariate Mixed-Effects Models
+
+URL Source: https://arxiv.org/pdf/2605.30577v1
+
+Published Time: Mon, 01 Jun 2026 00:20:25 GMT
+
+Number of Pages: 47
+
+Markdown Content:
+# Dynamic Co-Expression Network Estimation via Multivariate Mixed-Effects Models 
+
+## Samuel Ozminkowski Department of Statistics and Data Science, Northwestern University Lifang Hou Department of Preventative Medicine, Feinberg School of Medicine, Northwestern University David R. Jacobs, Jr. Division of Epidemiology and Community Health, School of Public Health, University of Minnesota and Hongmei Jiang Department of Statistics and Data Science, Northwestern University June 1, 2026 
+
+Abstract High-throughput sequencing technologies have enabled the collection of large-scale longitudinal -omics data, providing new opportunities for studying co-expression net-works among molecular nodes such as genes and proteins. However, the high dimen-sionality and temporal dependence inherent in such data require specialized statisti-cal methods. We propose a novel approach to infer dynamic co-expression networks among features over time (DCENt), where each node (feature) is modeled with a mixed-effects model, and dependencies among nodes are captured through correlated random effects. We develop two innovative penalized algorithms which harness the state of the art of threshold covariance estimators to estimate the random-effects covariance structure. Simulation studies show improved performance over existing approaches in terms of both mean square error and mean absolute error. We further apply the methods to data from the CARDIA study to investigate how the protein co-expression networks evolve over time as well as the association between protein trajectory patterns. 
+
+Keywords: Mixed-models, dynamic co-expression network, thresholding estimator, covari-ance estimation 1
+
+> arXiv:2605.30577v1 [stat.ME] 28 May 2026
+
+# 1 Introduction 
+
+The last decades have seen an explosion in research into human -omics such as microbiomics and proteomics, driven largely by advances in high-throughput sequencing technology (Pro-haska & Stadler 2011). For example, in medical practice, protein levels are often used to di-agnose disease, and many studies have been conducted to find associations between protein abundance and disease (Greber et al. 1999, Harper & Bennett 2016, Erez et al. 2017, Tarca et al. 2019, Deshmukh et al. 2021, Libiger et al. 2021, Kandpal et al. 2024). Despite the large number of existing studies, there is still work to be done improving methods for these areas due to the complexity of the data. In -omics data, the relationships between nodes such as proteins, genes, or other features are generally believed to be sparse - most nodes are not connected to most other nodes (Saeys et al. 2007). For cross-sectional data, many methods have been proposed to study the co-expression networks between these nodes. For example, for the proteome, Hasman et al. (2023) provide a thorough overview of current tools for protein co-expression networks such as WGCNA, MIDER, and SEC (Langfelder & Horvath 2008, Villaverde et al. 2014, Cui et al. 2016). Another great overview of protein co-expression network estimation is given in Vella et al. (2017). Of these, WGCNA is the most popular tool. Though the G stands for gene, it can be used with any -omics data to estimate co-expression networks. Each of these methods utilizes the assumption that only one sample is taken from each subject. When longitudinal data is used, where multiple samples are taken from each subject over a period of time, new methods are required. Mixed-effects methods allow for more complex variance structures than ordinary least squares regression models, and are thus particularly useful for modeling longitudinal relationships (Laird & Ware 1982). These models allow handling of irregular and missing timepoints naturally. They can be used for prediction and to estimate covariance between proteins or genes. These models can 2be fit via (restricted) maximum likelihood methods, such as with the popular R package lme4 (Bates et al. 2015). However, adding random effects also introduces new complexities, especially when data is high dimensional ( 𝑝 ≫ 𝑛 ), which is typical in -omics data (Saeys et al. 2007). Various forms of high-dimensional mixed effects models have been studied in the literature. Broadly speaking, these methods can be split into three categories: methods that penalize the fixed effect coefficients but assume the random effects are not high dimensional (Schell-dorfer et al. 2011, Ghosh & Thoresen 2018, Gorstein et al. 2025), methods that penalize the random effect coefficients but assume the fixed effects are not high dimensional (Huang et al. 2006, Bondell et al. 2010, Wang et al. 2010, Peng & Lu 2012), and methods that penalize both fixed and random effects coefficients (Krishna 2008, Ibrahim et al. 2011, Fan & Li 2012, Lin et al. 2013, Li et al. 2018). The most similar work to ours comes from Ahn et al. (2012), who present two methods for univariate random effect selection in mixed mod-els. However, these methods differ from ours in a few key ways. First and foremost, each of these methods is focused on univariate models, whereas we utilize a system of models for a multivariate outcome, Furthermore, each of these methods only penalize the diagonal elements of the covariance matrix. Our method is able to penalize both the diagonal and off-diagonal elements of the covariance matrix, which is pivotal in the -omics data space. This gets to the crux of the matter as far as this paper is concerned. Fieuws & Verbeke (2004) first introduced a joint modelling framework using mixed effects models for the case where there are only two nodes. Here, each node is described by the linear mixed model. The bivariate linear mixed model is constructed by linking the two nodes via a joint distribution of random effects. Expanding into an arbitrary number of nodes, Fieuws & Verbeke (2006) introduced the pairwise estimation technique for high dimensional data. Instead of maximizing the log-likelihood of the joint mixed model, log-3likelihoods of this form are maximized separately. In this paper, we propose new algorithms to estimate the interactions among all nodes simultaneously. The major difference between our work and previous mixed-effects estimation methods is that we are not focused solely on variable selection. Rather, we propose a system of mixed-effects models to infer dynamic co-expression networks. In our models, each node is modeled with a random intercept (subject-specific variability) and a random slope (tem-poral variability), and dependencies among nodes are captured through correlated random effects. Our method focuses on estimating the variance-covariance matrix of the random effects, which is assumed to be sparse with a large number of nodes, for the multivariate mixed-effects model. In this context, sparse refers to the presence of many zero pairwise associations, rather than any specific block-diagonal or modular structure. The goal of this paper is to estimate the parameters of this joint multivariate mixed-effects model so that the correlations between trajectory patterns and marginal correlations between nodes over time can be derived. We introduce two algorithms for mixed model estimation with high-dimensional random effects utilizing thresholding methods for covariance matrix sparsifica-tion. Through simulation studies we show the strengths and weaknesses of each algorithm, and show that both outperform pairwise estimation in terms of both MSE and 𝐿 1 error. Both algorithms are much faster than the pairwise approach (using lme4), especially at high dimension and/or large sample size. Finally, we apply these methods to proteomics data from the CARDIA study to investigate how the protein co-expression networks evolve over time as well as the association between protein trajectory patterns. R code for both algorithms is available on github at https://github.com/samozm/DCENt. 42 Methods 
+
+An overview of the proposed work is presented in Figure 1. The data are longitudinal in nature, consisting of repeated measurements of multiple features, such as proteins, collected from the same set of subjects over time. Throughout this paper, we use the terms features and nodes interchangeably. A multivariate mixed-effects model is employed to model these data, allowing for subject-specific variability and the dependence structure among features. Based on the estimated covariance matrix of the random effects, we quantify two aspects of dependence: the association of feature trajectories, reflecting the association among their slopes, and the evolution of association, which captures how the relationships between features vary over time. Before introducing the proposed model and algorithms, we briefly review the relevant literature on covariance estimation. Association of Evolution Evolution of Association                        
+
+> aibiaibi
+> ~
+> Time 1
+> Time 2
+> Time t
+> ...
+> t
+> t
+> =ai+ b it+𝛽 0+𝛽 1t+𝜀 t
+> #
+> =ai+ b it+𝛽 0+𝛽 1t+𝜀 t
+> #
+> ...Time 1
+> Time 2
+> Time t
+> ...
+> ...
+
+Figure 1: The pipeline starts by obtaining measurements of multiple features (e.g., proteins or genes) from the same group of subjects repeatedly over time. A multivariate mixed-effects model is fit to the data and the covariance matrix between the random effects is estimated. These estimates characterize the (time-independent) association of evolution and the (time-dependent) evolution of association. 52.1 Covariance estimation 
+
+A good overview of unconstrained covariance estimation is provided by Fan et al. (2015). One of the most important ideas in large covariance matrix estimation is thresholding, first presented by Bickel & Levina (2008). In this framework, some cells in the covariance matrix are systematically reduced or set to zero. The most basic form of thresholding is hard thresholding, where all values below the threshold in the matrix are set to zero. This could be done by setting one threshold for the entire matrix, as in Bickel & Levina (2008) or it could be done by adaptive thresholding, which takes into account that each cell in the matrix may have different scales. These methods use the standard error of each cell to set different cell-specific thresholds (Cai & Liu 2011). Generalized thresholding methods smooth the thresholding function around the threshold. These methods generally follow basic rules established by Antoniadis & Fan (2001). Thresholds of this type include SCAD (Fan & Li 2001) and MCP (Zhang 2010). Further adaptive thresholding methods have been presented by Lam (2020), Fan et al. (2013), and Fang et al. (2024). The major benefit of this type of threshold is that the estimates produced from these methods tend to be continuous in the maximum likelihood estimates, which is not true when hard thresholding is used (Fan et al. 2015). 
+
+## 2.2 Multivariate mixed-effects model 
+
+Fieuws & Verbeke (2004) first introduced a joint modelling framework using mixed effects model for a longitudinal study with only two nodes. Here, each node is described by a linear mixed model. We follow their subsequent work (Fieuws & Verbeke 2006) and extend the model to an arbitrary number of nodes. For each node 𝑗 = 1, ..., 𝐾 , we have the linear mixed effects model 
+
+𝑌 𝑖𝑗 (𝑡) = 𝛼 𝑗 + 𝑎 𝑖𝑗 + 𝛾 ⊤𝑊 𝑖 + (𝛽 𝑗 + 𝑏 𝑖𝑗 )𝑡 + 𝜀 𝑖𝑗𝑡 (1) 6• 𝑌 𝑖𝑗 (𝑡) is the measurement of the 𝑗 th node of subject 𝑖 at time 𝑡 .• 𝛼 𝑗 , 𝛽 𝑗 are the fixed intercept and slope associated with node 𝑗 (respectively). Denote the vector 𝛽 ⊤ = (𝛼 1, 𝛽 1, ..., 𝛼 𝐾 , 𝛽 𝐾 ),• 𝑎 𝑖𝑗 , 𝑏 𝑖𝑗 are the random intercept and slope associated with node 𝑗 for subject 𝑖 
+
+(respectively). Denote the vector b ⊤ = (𝑎 11 , 𝑏 11 , ..., 𝑎 1𝐾 , 𝑏 1𝐾 , 𝑎 21 , 𝑏 21 , ..., 𝑎 𝑁𝐾 , 𝑏 𝑁𝐾 ).• 𝑊 𝑖 is an optional row-vector of additional fixed effect factors for subject 𝑖 , with 𝛾 ⊤
+
+being the column-vector of corresponding coefficients. The full model is constructed by linking the system of 𝐾 models via a joint distribution of random effects (Eq. 2) plus error terms 𝜀 𝑖𝑗𝑡 ∼ 𝑁 (0, 𝜎 2𝑗 ) independent of each other and of the random effects. 
+
+⎡⎢⎢⎢⎣𝑎 𝑖1 
+
+𝑏 𝑖1 
+
+⋮𝑎 𝑖𝐾 
+
+𝑏 𝑖𝐾 
+
+⎤⎥⎥⎥⎦∼ 𝑁 ( 0, 𝐷) , 𝐷 = ⎛⎜⎜⎜⎝𝜎 2𝑎 1 𝜎 𝑎 1𝑏 1 … 𝜎 𝑎 1𝑏 𝐾 
+
+⋱⋱𝜎 2𝑏 𝐾 
+
+⎞⎟⎟⎟⎠,[𝜀 𝑖1𝑡 
+
+⋮𝜀 𝑖𝐾𝑡 
+
+] ∼ 𝑁 (0, 𝐸), 𝐸 = ( 𝜎 1 0
+
+⋱
+
+0 𝜎 𝐾 
+
+) . (2) The full covariance matrix for 𝑌 is defined as 𝑉 ≔ 𝑍𝐷𝑍 ⊤ + 𝐸 , where 𝑌 contains the protein (or other outcome) measurements vectorized in a nested order, with observations arranged so that all timepoints for node 1 for subject 1 appear first, then all timepoints for node 2 for subject 1 appear, and so on, this pattern repeating for each subject. That is, we model 𝑌 ∼ 𝑁 (𝑋𝛽, 𝑉 ) . We define Z as the random effect model matrix and 𝑋 as the fixed effect model matrix. However, for ease of explanation we ignore the additional fixed effects factors 𝑊 . Denoting 𝑇 𝑖 the number of timepoints for subject 𝑖 and [Ti] ≔ [1, ..., 𝑇 𝑖 ]⊤, we have 
+
+𝑍 = ⎡⎢⎢⎣
+
+1𝑇 1 [T1] 0
+
+⋱ ⋱
+
+0 1𝑇 𝑛 [Tn]⎤⎥⎥⎦𝑁𝐾𝑇 ×2𝐾 
+
+, 𝑋 = ⎡⎢⎢⎣
+
+1𝑇 1 [T1] 1𝑇 1 0 0
+
+⋮ ⋮ 0 ⋱ 01𝑇 𝑛 [Tn] 0 0 1𝑇 𝑛 
+
+⎤⎥⎥⎦𝑁𝐾𝑇 ×𝐾+2 
+
+.
+
+7We describe the estimated relationships between the nodes via the “association of evolution” and the “evolution of association”, previously described for bivariate models by Gao et al. (2017). We extend these concepts to the case with an arbitrary number of nodes. The association of evolution “summarizes how the evolution of [node j] is associated with the evolution of [node k]” (Gao et al. 2017, p.4). In the statistical verbiage, this would be described as the correlation between random intercepts, which estimates the association between the nodes at time 0, and the correlation between random slopes, which estimates the association between the longitudinal trajectories of the nodes: 
+
+𝜌 𝑗𝑘 𝑖𝑛𝑡𝑒𝑟𝑐𝑒𝑝𝑡 = 𝜎 𝑎 𝑗 𝑎 𝑘 
+
+√𝜎 2𝑎 𝑗 √𝜎 2𝑎 𝑘 
+
+and 𝜌 𝑗𝑘 𝑠𝑙𝑜𝑝𝑒 = 𝜎 𝑏 𝑗 𝑏 𝑘 
+
+√𝜎 2𝑏 𝑗 √𝜎 2𝑏 𝑘 
+
+. (3) When 𝜎 2𝑎 𝑗 or 𝜎 2𝑎 𝑘 is zero (for intercept, or the corresponding slope values) we say 𝜌 𝑗𝑘 ⋅ = 0 .The evolution of association summarizes how the association between node j and node k evolves over time, and is given by the marginal correlation which is a function of time 𝑡 :
+
+𝜌 𝑚𝑎𝑟𝑔𝑖𝑛𝑎𝑙 (𝑡) 𝑗𝑘 = 𝜎 𝑎 𝑗 𝑎 𝑘 + 𝑡𝜎 𝑎 𝑗 𝑏 𝑘 + 𝑡𝜎 𝑎 𝑘 𝑏 𝑗 + 𝑡 2𝜎 𝑏 𝑗 𝑏 𝑘 
+
+√𝜎 2𝑎 𝑗 + 2𝑡𝜎 𝑎 𝑗 𝑏 𝑗 + 𝑡 2𝜎 2𝑏 𝑗 + 𝜎 2𝜀 𝑗 √𝜎 2𝑎 𝑘 + 2𝑡𝜎 𝑎 𝑘 𝑏 𝑘 + 𝑡 2𝜎 2𝑏 𝑘 + 𝜎 2𝜀 𝑘 
+
+. (4) Advantages of the mixed-effects model include that the nodes do not need to be measured at the same time points, and that the number of repeated measurements does not need to be the same for all subjects or nodes. For simplicity and considering applications in -omics data, in describing our algorithms and in our simulations we assume without loss of generality that all nodes are measured at the same time points, such as 𝑡 ∈ {1, 2, ..., 𝑇 } ,where 𝑇 is the number of repeated measurements. However, our algorithms are able to easily handle irregularly spaced timepoints. 
+
+## 2.3 Algorithms 
+
+We propose two algorithms for estimating the fixed and random effects in the mixed-effects framework as described in equation (Eq. 1), i.e. the variance-covariance matrix for all 8pairs of nodes simultaneously. We refer to these algorithms as DCENt 1 and DCENt 2, acronyms for Dynamic Co-Expression Network estimation over Time. For DCENt 1 (algorithm 1), we estimate the covariance using two distinct steps. First, we iterate between estimating the fixed effects coefficients 𝛽 (fixed intercepts and slopes for all nodes) and the full covariance matrix 𝑉 = 𝑍𝐷𝑍 ⊤ + 𝐸 . We threshold 𝑉 so that it is sparse, which induces sparsity in 𝐷 . Then, we solve for 𝐷 and 𝐸 from ̂ 𝑉 (the estimator of V), again iterating between estimating the two values until the estimates ̂ 𝐷 and ̂ 𝐸 converge. For DCENt 2 (algorithm 2), we use a five-step expectation-maximization style procedure. We repeatedly estimate the fixed effects coefficients, random effects coefficients (conditional on the data), random effect covariance, realized error, and error variance, each conditional on the others. In order to sparsify the random effect covariance, we use the adaptive thresholding procedure as described in Cao et al. (2019). For estimating the random effects, we use the maximum likelihood estimator for the random effect coefficient conditional on the data. See online Appendix A for complete details on the derivation of this estimator. Both algorithms iterate between estimating the fixed effects coefficients and the random effects (RE) and error covariance. DCENt 1 estimates the entire marginal covariance (𝑉 = 𝑍𝐷𝑍 ⊤ + 𝐸 for random effect covariance matrix 𝐷 and error covariance matrix 𝐸 )at each step, while DCENt 2 estimates the RE covariance matrix 𝐷 separately from the error covariance matrix 𝐸 . DCENt 1 thus has the additional step of estimating 𝐷 and 𝐸 
+
+from the estimated 𝑉 . DCENt 1 requires no distributional assumptions, whereas DCENt 2 relies on the normality assumption because it utilizes maximum likelihood estimators in multiple steps. DCENt 2 utilizes adaptive thresholding of the random effects covariance matrix 𝐷 , while DCENt 1 relies on hard thresholding for the 𝐷 matrix (though adaptive thresholding is used on the overall covariance matrix 𝑉 ). If each subject is only measured at one timepoint ( 𝑇 = 1 ) then DCENt 2 should be used, as the relation 𝑍𝐷𝑍 ⊤ + 𝐸 = 𝑉 
+
+9Algorithm 1 Estimation algorithm of DCENt 1, based on full 𝑉 
+
+Output: ̂ 𝐷 and ̂ 𝐸 are the estimated random-effect covariance and error variance, respec-tively Require: 𝐾 is number of nodes, 𝑇 is number of timepoints, 𝑁 is number of subjects, 𝑌 
+
+is the data, vectorized in a nested order Require: 𝑋, 𝑍 are the fixed- and random-effects design matrices (respectively). Initialization: ̂ 𝐷 ← 1𝐾𝑇 𝐼 𝐾𝑇 
+
+Initialization: ̂ 𝛽 ← (𝑋 ⊤𝑋) −1 𝑋 ⊤𝑌 
+
+Initialization: ̂ 𝑟 ← 𝑌 − 𝑋̂𝛽 
+
+while ̂ 𝛽 and ̂ 𝑉 are not converged do ▷ estimating fixed effects and overall covariance 𝑉̂ 𝑅 ← re-arranged (̂𝑟) ▷ vector 𝑟 is re-arranged to be an N x KT matrix ̂𝐷 0 ← 𝑐𝑜𝑣(̂𝑅)̂ 𝑉 ← diag ([̂𝐷 0 …̂ 𝐷 0]) ▷ Block diagonal matrix with ̂ 𝐷 0 repeated 𝑁 times ̂𝛽 ← (𝑋 ⊤̂ 𝑉 −1 𝑋) −1 𝑋 ⊤̂ 𝑉 −1 𝑌̂ 𝑟 ← 𝑌 − 𝑋̂𝛽 
+
+end while ̂𝑉 ← threshold (̂𝑉 ) ▷ adaptive thresholding of ̂ 𝑉 
+
+while ̂ 𝐷 and ̂ Ω are not converged do ̂𝐷 ← (𝑍 ⊤𝑍) −1 𝑍 ⊤(̂𝑉 −̂ Ω)𝑍(𝑍 ⊤𝑍) −1 ▷ estimating 𝐷 
+
+if ̂ 𝐷 ⪯ 0 then ̂𝐷 ←̂ 𝐷+ offset end if ̂Ω ← diag (̂𝑉 ) − diag (𝑍̂𝐷𝑍 ⊤) ▷ estimating 𝐸 
+
+end while ̂𝐷 ← threshold (̂𝐷) ▷ hard threshold 𝐷 so it has the same proportion of 0s as ̂ 𝑉 
+
+for 𝑘 ∈ {1, ..., 𝐾} do ̂𝐸 (𝑘,𝑘) ← mean (̂Ω ((𝑘−1)𝑇 +1,(𝑘−1)𝑇 +1) , ...,̂ Ω (𝑘𝑇 ,𝑘𝑇 ) )
+
+end for 10 Algorithm 2 Estimation algorithm of DCENt 2, based on 𝐷 and 𝐸 
+
+Output: Same as Algorithm 1 Require: Same as Algorithm 1 Initialization: Same as Algorithm 1 Initialization: ̂ Λ𝐷 ← 𝐶ℎ𝑜𝑙𝑒𝑠𝑘𝑦(̂𝐷 + 𝐼 𝑘𝑡 )
+
+while ̂ 𝐷 not converged do ̂𝑉 ← 𝑍̂𝐷𝑍 ⊤ +̂ 𝐸̂ 𝛽 ← (𝑋 ⊤̂ 𝑉 −1 𝑋) −1 𝑋 ⊤̂ 𝑉 −1 𝑌 ▷ estimate fixed effect coefficients ̂𝑏 ←̂ Λ 𝐷 (̂Λ ⊤𝐷 𝑍 ⊤̂ 𝐸 −𝑇 ̂ 𝐸 −1 𝑍̂Λ 𝐷 + 𝐼 𝑘 )−1 ▷ random effect coefficient conditional on the data 
+
+×̂Λ ⊤𝐷 𝑍 ⊤̂ 𝐸 −𝑇 ̂ 𝐸 −1 (𝑌 − 𝑋̂𝛽) 𝑟 𝐸 ← 𝑌 − 𝑋̂𝛽 − 𝑍̂𝑏 .̂𝐸 𝑖𝑖 ← var (̂𝑟 𝐸𝑖 ) ▷ error term variance ̂𝑀 ≔̂ Λ −1 𝐷 (𝑍 ⊤𝑍) −1 𝑍 ⊤ ▷ temporary matrix for ease of notation ̂𝜀 ←̂ Λ 𝐸 𝑛𝑡 (̂Λ ⊤𝐸 𝑛𝑡 ̂ 𝑀 ⊤̂ 𝑀̂ Λ 𝐸 𝑛𝑡 + 𝐼 𝑘 )−1 ▷ error term conditional on the data 
+
+×̂Λ ⊤𝐸 𝑛𝑡 ̂ 𝑀 ⊤̂ 𝑀(𝑌 − 𝑋̂𝛽)̂ 𝑟 ← 𝑌 − 𝑋̂𝛽 −̂ 𝜀 .̂𝑅 𝑖 ← (𝑍 ⊤𝑖 𝑍 𝑖 )−1 𝑍 ⊤𝑖 ̂ 𝑟 𝑖 ▷ ith row of ̂ 𝑅 so ̂ 𝑅 ∈ ℝ 𝑛×2𝑘 ̂𝐷 ← 𝑡ℎ𝑟𝑒𝑠ℎ𝑜𝑙𝑑(̂𝑅) ▷ adaptive thresholding of ̂ 𝑅̂ Λ𝐷 ← 𝐶ℎ𝑜𝑙𝑒𝑠𝑘𝑦(̂𝐷 + 𝐼 𝑘𝑡 ) ▷ Cholesky decomposition of ̂ 𝐷 + 𝐼 𝑘𝑡 
+
+end while ̂𝜎 2 ← 1𝑛𝑘𝑡 ‖̂Λ −1 𝑉 (𝑌 − 𝑋̂𝛽)‖ 2 ▷ estimate of the variance kernel ̂𝐷 ←̂ 𝜎 2̂ Λ𝐷 ̂ Λ⊤𝐷 ▷ adjust 𝐷 by the variance kernel ̂𝐸 ←̂ 𝜎 2̂ Λ𝐸 ̂ Λ⊤𝐸 ▷ adjust 𝐸 by the variance kernel 11 utilized by DCENt 1 is non-identifiable. 
+
+## 2.4 Notes on theoretical guarantees 
+
+In the Frobenius norm the thresholding operator has been shown to have optimal properties under certain regularity conditions. For example, when the input (R) to the thresholding function has some tail-bounding properties (such as sub-Exponential tails) with covariance in the uniformity class of covariance matrices invariant under permutations: 
+
+𝒰 𝜏 (𝑞, 𝑐 0(𝐾), 𝑀 ) = {Σ ∶ 𝜎 𝑖𝑖 ≤ 𝑀 , 
+
+> 𝐾
+
+∑
+
+> 𝑗=1
+
+|𝜎 𝑖𝑗 |𝑞 ≤ 𝑐 0(𝐾) for all 𝑖} for 0 ≤ 𝑞 ≤ 1 
+
+the Frobenius error of the thresholding estimator has been shown to follow 
+
+𝑂 𝑃 (𝐾𝑐 0(𝐾) ( log 𝐾 𝑁 )
+
+> 1−𝑞/2
+
+) , 
+
+and a similar rate has been shown for a weighted class of covariance matrices (Bickel & Levina 2008, Cai & Liu 2011). However, it is an open question whether our input to the thresholding estimator can be guaranteed to follow these regularity conditions, due to the fact that in both of our algorithms our input to the thresholding estimator is not the data itself but rather an estimation of the residuals for the intermediate model. 
+
+# 3 Simulation studies 
+
+To evaluate these algorithms we perform comprehensive simulation studies. We generate simulated data using the set of mixed effects models (Eq. 1) directly (section 3.1) and using more general forms for the total covariance matrix 𝑉 which may not fit directly into the mixed effects framework, such as autoregressive and Toeplitz structures (online Appendix B). This allows us to evaluate both how the model performs when the assumed true model is correct as well as to establish a baseline when the model is mis-specified. For each of the models described below, and each combination of 𝑁 ∈ {30, 50, 100} subjects, 12 𝐾 ∈ {5, 10, 20, 40, 100} nodes, 𝑇 ∈ {5, 10} timepoints, we generate the mean and variance parameters. From each set of parameters, we generate 10 datasets for testing. All simu-lations were generated with Julia version 1.10.2 (Bezanson et al. 2017) and the analysis was performed with R version 4.3.0 (R Core Team 2023) on Northwestern’s Quest system (Intel Xeon Gold 6338 CPUs running Red Hat Enterprise Linux 8). DCENt 1 step 1 is considered to have converged when the average percent change of the 𝛽 estimate and the 𝑉 
+
+estimate is less than 0.01% (‖𝛽 − 𝛽 prev ‖2/‖𝛽 prev ‖2 + ‖𝑉 − 𝑉 prev ‖𝐹 /‖𝑉 prev ‖𝐹 < 10 −4 ) for two subsequent iterations. DCENt 1 step 2 is considered to have converged when the average percent change between the current and previous 𝐷 and 𝐸 estimates are below 10 −4 for two subsequent iterations. For DCENt 2 the same threshold is used and Λ𝐷 , Λ𝐸 , and 𝛽 
+
+are considered. These thresholds were chosen arbitrarily based on preliminary runs, where the differences were seen to asymptote around these values. In each case, we compare the results of our algorithms to that of the pairwise method suggested by Fieuws & Verbeke (2006) based on 𝐿 1 error, Frobenius error, and the percentage of matrix entries estimated in the correct direction (positive, negative, or zero). While we would ideally compare to the method of Ahn et al. (2012) as well, there is no publicly available code for this method. 
+
+## 3.1 Simulations based on mixed-effects models 
+
+We begin by generating the data from the set of mixed effects models as described in Eq. (1). We use two different settings for D, the random effect coefficient matrix: unstructured or compound symmetry. For the unstructured coefficient matrix, we don’t impose any structure on the matrix. To generate these covariance matrices we draw the diagonal entries as 𝜎 𝑎 𝑗 ∼ 𝑈 (2.5, 3) and 𝜎 𝑏 𝑗 ∼ 𝑈 (2, 2.5) , and the off-diagonals as 𝜎 𝑎 𝑗 𝑏 𝑘 ∼ 𝑈 (0.2, 0.6)× 
+
+Rademacher (0.5) .The compound symmetry (CS) covariance structure assumes constant variance and equal 13 correlation between all time points within a variable, and constant cross-variable correla-tions. Our goal is for the overall covariance matrix 𝑉 to have the compound symmetry struc-ture. We can achieve this by setting each row and column associated with the time-varying random effect to zero, setting each random slope variance to 𝜎 2𝑎 𝑖 (for node 𝑖 ), and setting the covariance between each pair of random intercepts to 𝜌 𝑖𝑗 𝜎 𝑎 𝑖 𝜎 𝑎 𝑗 (for nodes 𝑖 and 𝑗 ). To generate these matrices we draw 𝜎 𝑎 𝑗 ∼ 𝑈 (2, 3) and 𝜌 𝑖𝑗 ∼ 𝑈 (0.2, 0.8) × Rademacher (0.5) .For both settings, we draw the error variance values as 𝜎 𝑘 ∼ 𝑈 (5, 10) . The outcome Y 𝑖 for subject 𝑖 is calculated directly according to the mixed effects model described above. The 
+
+𝛽 and 𝛼 are drawn as 𝛼 𝑗 ∼ 𝑁 (1, 0.2) and 𝛽 𝑗 ∼ 𝑁 (0, 0.2) .
+
+## 3.2 Results 
+
+Our main goal is the estimation of the 𝐷 matrix - the matrix describing the covariance of the random effects, so we begin there. Because we do not generate true 𝐷 matrices for the AR and Toeplitz models, we restrict this analysis to the compound symmetry and unstructured covariance matrix types. In practice, we find that both algorithms converge relatively quickly, in fewer than 10 iterations. 3.2.1 Estimation of the Covariance Matrix of the Random Effects We first examine the 𝐷 matrix, which is the covariance matrix of the random effect coef-ficients. In terms of Frobenius error, both algorithms outperform the pairwise estimation except potentially when there are very few nodes. This is especially true when the sample size is large (Figure 2, top panels). In terms of 𝐿 1 error, all algorithms improve with the number of nodes. The two proposed DCENt algorithms perform similarly, both better than the pairwise approach (see online Appendix C). We also look at whether the algorithms can correctly identify the sign of the relationship between each pairs of nodes (Figure 3). For the data with unstructured covariance matrix, both algorithms are able to identify approx-14 imately 75% of the relationship directions, though at low sample size DCENt 1 appears to lose accuracy as the number of nodes increases. For the data with compound symmetry co-variance matrix, DCENt 1 slightly outperforms DCENt 2, though as the number of nodes increases, each algorithm appears to be able to identify nearly 100% of the relationship directions. This is a task that the pairwise estimation procedure is particularly ill-suited to, never exceeding 25% in any case. 
+
+Figure 2: The Frobenius error in estimating the covariance of the random effect coefficients for each of the three algorithms. Panels are split between number of timepoints and number of subjects, increasing from bottom left to top right. 3.2.2 Estimation of the Overall Covariance Next we look at the overall covariance matrix, 𝑉 . Here again we see both algorithms outperform the pairwise procedure in both the Frobenius (Figure 4) and the 𝐿 1 error (online Appendix C), for unstructured and compound symmetric covariance matrices. Again this is especially noticeable at low sample sizes and low number of timepoints. For the AR and Toeplitz matrices under model 1, DCENt 1 outperforms both DCENt 2 and the pairwise procedure in terms of Frobenius error, but the performance for the two algorithms is similar 15 Figure 3: Percentage of pairwise relationships whose direction was correctly identified. Panels are split between number of timepoints and number of subjects, increasing from bottom left to top right. in terms of 𝐿 1 error (see online Appendix C). 3.2.3 Computational Time In terms of algorithm runtime, in general both algorithms are faster than the pairwise approach, especially when there are many nodes and many subjects (Figure 5). This is at least partially due to the fact that the running time of the two algorithms is greatly reduced by taking advantage of the block structure of the covariance matrices (see online Appendix D for details). Both algorithms scale much better than the pairwise approach in terms of the number of subjects and number of nodes. 
+
+# 4 Real Data Analysis 
+
+We analyze the dynamic co-expression network based on participants in the CARDIA study. This dataset contains normalized protein abundances for 5346 proteins at 4 timepoints 16 Figure 4: The Frobenius error in estimating the overall covariance for each of the three algorithms, unstructured and compound symmetric true covariance matrices. Panels are split between number of timepoints and number of subjects, increasing from bottom left to top right. across 15 years (years 15, 20, 25, and 30 of the study) for 3123 subjects. Timepoints are t-normalized before beginning, and so take on values -1.6, -0.39, 0.39, and 1.16. We remove any subjects who do not have complete data for at least two timepoints, resulting in 2529 remaining. Because the number of proteins at each timepoint is so large and most of them are assumed to be unimportant, we work on a pre-specified set of proteins of interest. While computationally this is not necessary with our methods, it makes the results more inter-pretable and allows us to focus on proteins with more interesting trajectories. We selected a panel of 35 proteins previously implicated in cardiovascular disease and related outcomes, including inflammatory markers (IL6, TNF, IL1B, and CCL2), anti-inflammatory markers (IL10, IL19, IL20, IL22, and IL24), cardiac injury and stress markers (TNNI3, TNNT2, NT-proBNP, BNP/NPPB, and GDF15), lipid-related proteins (APOB, APOA1, LPA, and PCSK9), coagulation factors (FGA, FGG, SERPINE1, and VWF), markers of fibrosis and 17 Figure 5: Average run time (in seconds) across all covariance types and data generation models. Panels are split between number of timepoints and number of subjects, increasing from bottom left to top right. extracellular matrix remodeling (LGALS3, IL1RL1, MMP9, and TIMP1), endothelial and vascular function markers (VEGFA, ICAM1, VCAM1, and SELE), and emerging multi-system biomarkers (ADM, ANGPT2, PLAUR, FGF23, and IGFBP7). These proteins have been consistently associated with cardiovascular risk, disease progression, and mortality in large cohort studies and comprehensive proteomics and biomarker reviews (Hwang et al. 1997, Ridker et al. 2000, Whincup et al. 2002, Yusuf et al. 2004, Huang 2004, Vaughan 2005, Fibrinogen Studies Collaboration* 2005, Braunwald 2008, Ouyang et al. 2011, Lukasz et al. 2013, Mathew et al. 2014, Hodges et al. 2015, Gandhi et al. 2016, Chow et al. 2017, Ridker et al. 2017, Sabatine et al. 2017, Ho et al. 2018, Braile et al. 2020, Kronenberg et al. 2022, Licordari et al. 2024, Ridker et al. 2024). We fit the DCENt 1 and DCENt 2 algorithms to this data and find that the results are very similar between the two algorithms, so we focus on the results from DCENt 2. For means of comparison, we also look at the func-18 tional association network from FunCoup 6 based on protein expression data (Buzzao et al. 2025). We do note, however, that these two networks are not expected to be exactly the same. While both are protein co-expression networks, the association of evolution network is based on the similarity of the trajectories of the proteins across time, while the FunCoup 6 network is a cross-sectional network based on the similarity of the expression levels of the proteins across subjects at one timepoint. Additionally, the edges represent different types of relationships: the FunCoup network is based on a Bayesian method and the edges represent probability of association. We consider an edge to be present in the association of evolution network if the absolute value of the correlation is greater than 0.3, the standard for fair strength of relationship established in Akoglu (2018). We consider an edge to be present in the FunCoup 6 network if the probability of association is greater than 0.5. Thus we take a somewhat liberal approach to defining edges in both networks. The association of evolution of the slopes (Figure 6) is the greatest between Fibrinogen gamma chain (FGG; UniProt ID P02679) and Fibrinogen alpha chain (FGA; UniProt ID P02671), followed by Natriuretic peptides B (NPPB; UniProt ID P16860) and N-terminal prohormone of brain natriuretic peptide (NT-proBNP). These relationships are not present in the FunCoup 6 network, which may be due to the fact that these proteins have similar trajectories across time but not necessarily similar expression levels across subjects at a given timepoint. As seen in Figure 6, our association of evolution network does share many edges with the FunCoup 6 network. We also investigate the connectivity of the association of evolution network. Figure 7 shows each of proteins in the network, with bubbles sized by their degree (left: association of evolution, right: FunCoup 6). In the FunCoup 6 network, the major hub nodes are IL6 (P05231), TNF (P01375), IL1B (P01584), CCL2 (P13500), and GDF15 (Q99988). In our association of evolution network, the major hub nodes are IGFBP7 (Q16270), PLAUR 19 (Q03405), SELE (P16581), TIMP1 (P01033), and VCAM1 (P19320). GDF15, and CCL2 have high degrees as well. Interestingly, the three most connected nodes in the FunCoup network (IL6, TNF, IL1B) are completely unconnected in our network. Also, all of our nodes with very strong correlation (FGG, FGA, NT-proBNP, NPPB) have low degree – they are connected very strongly to each other, but not to much else. In terms of the mechanisms these proteins have been previously implicated in, the FunCoup network hub nodes are all inflammatory markers except GDF15 (cardiac injury and stress), whereas the association of evolution network hub nodes range across emerging multi-system biomarkers (IGFBP7, PLAUR), fibrosis and extracellular matrix remodelling (TIMP1), and endothelial and vascular function markers (SELE, VCAM1). Of our very strongly connected nodes, FGA and FGG are coagulation factors and NT-proBNP is a cardiac injury and stress marker. 
+
+Figure 6: Left: Association of evolution for the slope, with edges colored and sized by the absolute value of the edge weight. Right: Functional association network from FunCoup 6 based on protein expression data. Note that the two networks are not expected to be the same, as they are based on different data and methods, and edges represent different types of evidence. 20 Figure 7: Node degree for association of evolution for the slope (left) and FunCoup 6 (right). Note that node colors here are not meaningful, and are only used to visually separate the nodes. 
+
+# 5 Conclusion and Future work 
+
+In this paper, we employ a system of mixed-effects models to characterize dynamic co-expression networks between high-dimensional nodes arising from longitudinal data. Each node is specified through a mixed-effects model that explicitly accounts for between-subject heterogeneity as well as variability in temporal trajectories. Dependence among high-dimensional nodes is modeled via correlated random effects. The proposed method outputs variance-covariance matrices that capture dynamic co-expression patterns. Users can eval-uate edge strength and stability to identify robust protein-protein associations and use node-level measures (e.g., degree or centrality) to detect hub proteins. To this end, we introduce two thresholding-based algorithms for multivariate mixed-effects estimation with high-dimensional random effects methods. Via simulation studies, we show these methods outperform the pairwise approach, especially at small sample sizes. We also show that both of our algorithms are much faster than the pairwise approach. In DCENt 1 21 the overall covariance matrix is first fit and then decomposed into random effect and model error. In DCENt 2 the random effect error and model error matrices are optimized directly. Both algorithms are limited by the assumption of a linear relationship between the nodes and across time, though this is a common assumption in the literature. Furthermore, our modeling approach cannot handle the case where protein A at time t is correlated with protein B at time t+1, but not at time t. However, our approach has the advantage of allow-ing irregularly spaced timepoints and handling subjects with missing timepoints naturally. Additionally, both algorithms are much faster than the current standard approaches. Finally, we use both algorithms to analyze the dynamic protein co-expression networks of patients in the CARDIA study, and identify proteins with closely related co-expression patterns. In the future, this model should be extended to allow for variable selection of fixed effects, as well as random effects for which variable selection should not be applied. 
+
+# 6 Disclosure statement 
+
+The authors report there are no competing interests to declare. 
+
+# 7 Data Availability Statement 
+
+Simulation data have been made available at the following url: https://github.com/samoz m/DCENt_supplement. CARDIA data can be requested via https://sites.uab.edu/card ia/. 22 8 Acknowledgements 
+
+The Coronary Artery Risk Development in Young Adults Study (CARDIA) is conducted and supported by the National Heart, Lung, and Blood Institute (NHLBI) in collaboration with the University of Alabama at Birmingham (75N92023D00002 & 75N92023D00005), Northwestern University (75N92023D00004), University of Minnesota (75N92023D00006), and Kaiser Foundation Research Institute (75N92023D00003). This manuscript has been reviewed by CARDIA for scientific content. 23 References 
+
+Ahn, M., Zhang, H. H. & Lu, W. (2012), ‘Moment-Based Method for Random Effects Selection in Linear Mixed Models’, Statistica Sinica 22(4), 1539–1562. URL: https://www.jstor.org/stable/24310186 Akoglu, H. (2018), ‘User’s guide to correlation coefficients’, Turkish Journal of Emergency Medicine 18(3), 91–93. Antoniadis, A. & Fan, J. (2001), ‘Regularization of Wavelet Approximations’, Journal of the American Statistical Association 96(455), 939–967. Bates, D., Alday, P. M. & Kokandakar, A. H. (2025), ‘Mixed-model Log-likelihood Evalu-ation Via a Blocked Cholesky Factorization’, arXiv . Bates, D., Mächler, M., Bolker, B. & Walker, S. (2015), ‘Fitting Linear Mixed-Effects Models Using lme4’, Journal of Statistical Software 67, 1–48. URL: https://doi.org/10.18637/jss.v067.i01 Bezanson, J., Edelman, A., Karpinski, S. & Shah, V. B. (2017), ‘Julia: A fresh approach to numerical computing’, SIAM Review 59(1), 65–98. URL: https://epubs.siam.org/doi/10.1137/141000671 Bickel, P. J. & Levina, E. (2008), ‘Covariance regularization by thresholding’, The Annals of Statistics 36(6), 2577–2604. Bondell, H. D., Krishna, A. & Ghosh, S. K. (2010), ‘Joint Variable Selection for Fixed and Random Effects in Linear Mixed-Effects Models’, Biometrics 66(4), 1069–1077. URL: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2895687/ Braile, M., Marcella, S., Cristinziano, L., Galdiero, M. R., Modestino, L., Ferrara, A. L., 24 Varricchi, G., Marone, G. & Loffredo, S. (2020), ‘VEGF-A in Cardiomyocytes and Heart Diseases’, International Journal of Molecular Sciences 21(15), 5294. Braunwald, E. (2008), ‘Biomarkers in Heart Failure’, New England Journal of Medicine 358(20), 2148–2159. Buzzao, D., Persson, E., Guala, D. & Sonnhammer, E. L. L. (2025), ‘FunCoup 6: Advancing functional association networks across species with directed links and improved user experience’, 53(D1), D658–D671. Cai, T. & Liu, W. (2011), ‘Adaptive Thresholding for Sparse Covariance Matrix Estima-tion’, Journal of the American Statistical Association 106(494), 672–684. Cao, Y., Lin, W. & Li, H. (2019), ‘Large Covariance Estimation for Compositional Data Via Composition-Adjusted Thresholding’, Journal of the American Statistical Association 114(526), 759–772. URL: https://doi.org/10.1080/01621459.2018.1442340 Chow, S. L., Maisel, A. S., Anand, I., Bozkurt, B., de Boer, R. A., Felker, G. M., Fonarow, G. C., Greenberg, B., Januzzi, J. L., Kiernan, M. S., Liu, P. P., Wang, T. J., Yancy, C. W., Zile, M. R. & On behalf of the American Heart Association Clinical Pharmacology Committee of the Council on Clinical Cardiology; Council on Basic Cardiovascular Sci-ences; Council on Cardiovascular Disease in the Young; Council on Cardiovascular and Stroke Nursing; Council on Cardiopulmonary, Critical Care, Perioperative and Resusci-tation; Council on Epidemiology and Prevention; Council on Functional Genomics and Translational Biology; and Council on Quality of Care and Outcomes Research (2017), ‘Role of Biomarkers for the Prevention, Assessment, and Management of Heart Failure: A Scientific Statement From the American Heart Association’, Circulation 135(22), e1054– e1091. 25 Cui, Y., Leng, C. & Sun, D. (2016), ‘Sparse estimation of high-dimensional correlation matrices’, Computational Statistics & Data Analysis 93, 390–403. Deshmukh, A. S., Steenberg, D. E., Hostrup, M., Birk, J. B., Larsen, J. K., Santos, A., Kjøbsted, R., Hingst, J. R., Schéele, C. C., Murgia, M., Kiens, B., Richter, E. A., Mann, M. & Wojtaszewski, J. F. P. (2021), ‘Deep muscle-proteomic analysis of freeze-dried human muscle biopsies reveals fiber type-specific adaptations to exercise training’, Nature Communications 12(1), 304. Erez, O., Romero, R., Maymon, E., Chaemsaithong, P., Done, B., Pacora, P., Panaitescu, B., Chaiworapongsa, T., Hassan, S. S. & Tarca, A. L. (2017), ‘The prediction of late-onset preeclampsia: Results from a longitudinal proteomics study’, PLOS ONE 12(7), e0181468. Fan, J. & Li, R. (2001), ‘Variable Selection via Nonconcave Penalized Likelihood and its Oracle Properties’, Journal of the American Statistical Association 96(456), 1348–1360. Fan, J., Liao, Y. & Liu, H. (2015), ‘An Overview on the Estimation of Large Covariance and Precision Matrices’, arXiv . URL: http://arxiv.org/abs/1504.02995 Fan, J., Liao, Y. & Mincheva, M. (2013), ‘Large Covariance Estimation by Thresholding Principal Orthogonal Complements’, Journal of the Royal Statistical Society Series B: Statistical Methodology 75(4), 603–680. Fan, Y. & Li, R. (2012), ‘Variable selection in linear mixed effects models’, The Annals of Statistics 40(4), 2043–2068. Fang, Q., Guo, S. & Qiao, X. (2024), ‘Adaptive Functional Thresholding for Sparse Co-variance Function Estimation in High Dimensions’, Journal of the American Statistical Association 119(546), 1473–1485. 26 Fibrinogen Studies Collaboration* (2005), ‘Plasma Fibrinogen Level and the Risk of Ma-jor Cardiovascular Diseases and Nonvascular MortalityAn Individual Participant Meta-analysis’, JAMA 294(14), 1799–1809. Fieuws, S. & Verbeke, G. (2004), ‘Joint modelling of multivariate longitudinal profiles: Pitfalls of the random-effects approach’, Statistics in Medicine 23(20), 3093–3104. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.1885 Fieuws, S. & Verbeke, G. (2006), ‘Pairwise Fitting of Mixed Models for the Joint Modeling of Multivariate Longitudinal Profiles’, Biometrics 62(2), 424–431. Gandhi, P. U., Gaggin, H. K., Redfield, M. M., Chen, H. H., Stevens, S. R., Anstrom, K. J., Semigran, M. J., Liu, P. & Januzzi, J. L. (2016), ‘Insulin-Like Growth Factor–Binding Protein-7 as a Biomarker of Diastolic Dysfunction and Functional Capacity in Heart Failure With Preserved Ejection Fraction’, JACC: Heart Failure 4(11), 860–869. Gao, F., Philip Miller, J., Xiong, C., Luo, J., Beiser, J. A., Chen, L. & Gordon, M. O. (2017), ‘Estimating correlation between multivariate longitudinal data in the presence of heterogeneity’, BMC Medical Research Methodology 17(1), 124. Ghosh, A. & Thoresen, M. (2018), ‘Non-concave penalization in linear mixed-effect mod-els and regularized selection of fixed effects’, AStA Advances in Statistical Analysis 102(2), 179–210. URL: https://doi.org/10.1007/s10182-017-0298-z Gorstein, E., Aghdam, R. & Solís-Lemus, C. (2025), ‘HighDimMixedModels.jl: Robust high-dimensional mixed-effects models across omics data’, PLOS Computational Biology 21(1), e1012143. Greber, S., Lubec, G., Cairns, N. & Fountoulakis, M. (1999), ‘Decreased levels of synapto-27 somal associated protein 25 in the brain of patients with Down syndrome and Alzheimer’s disease’, Electrophoresis 20(4–5), 928–934. Harper, J. W. & Bennett, E. J. (2016), ‘Proteome complexity and the forces that drive proteome imbalance’, Nature 537(7620), 328–338. Hasman, M., Mayr, M. & Theofilatos, K. (2023), ‘Uncovering Protein Networks in Cardio-vascular Proteomics’, 22(8), 100607. URL: https://linkinghub.elsevier.com/retrieve/pii/S1535947623001184 Ho, J. E., Lyass, A., Courchesne, P., Chen, G., Liu, C., Yin, X., Hwang, S.-J., Massaro, J. M., Larson, M. G. & Levy, D. (2018), ‘Protein Biomarkers of Cardiovascular Disease and Mortality in the Community’, Journal of the American Heart Association: Cardio-vascular and Cerebrovascular Disease 7(14), e008108. Hodges, G. W., Bang, C. N., Wachtell, K., Eugen-Olsen, J. & Jeppesen, J. L. (2015), ‘suPAR: A New Biomarker for Cardiovascular Disease?’, The Canadian Journal of Car-diology 31(10), 1293–1302. Huang, C.-M. (2004), ‘Comparative proteomic analysis of human whole saliva’, Archives of Oral Biology 49(12), 951–962. Huang, J. Z., Liu, N., Pourahmadi, M. & Liu, L. (2006), ‘Covariance matrix selection and estimation via penalised normal likelihood’, Biometrika 93(1), 85–98. Hwang, S.-J., Ballantyne, C. M., Sharrett, A. R., Smith, L. C., Davis, C. E., Gotto, A. M. & Boerwinkle, E. (1997), ‘Circulating Adhesion Molecules VCAM-1, ICAM-1, and E-selectin in Carotid Atherosclerosis and Incident Coronary Heart Disease Cases’, Circula-tion 96(12), 4219–4225. Ibrahim, J. G., Zhu, H., Garcia, R. I. & Guo, R. (2011), ‘Fixed and Random Effects Selection in Mixed Effects Models’, Biometrics 67(2), 495–503. 28 Kandpal, M., Varshney, N., Rawal, K. S. & Jha, H. C. (2024), Gut Dysbiosis and Neuro-logical Modalities: An Engineering Approach via Proteomic Analysis of Gut-Brain Axis, Vol. 140 of Immunology for Engineers, Academic Press, pp. 199–248. Krishna, A. (2008), ‘Shrinkage-Based Variable Selection Methods for Linear Regression and Mixed-Effects Models’, Ph.D. Thesis . URL: http://www.lib.ncsu.edu/resolver/1840.16/3508 Kronenberg, F., Mora, S., Stroes, E. S. G., Ference, B. A., Arsenault, B. J., Berglund, L., Dweck, M. R., Koschinsky, M., Lambert, G., Mach, F., McNeal, C. J., Moriarty, P. M., Natarajan, P., Nordestgaard, B. G., Parhofer, K. G., Virani, S. S., von Eckardstein, A., Watts, G. F., Stock, J. K., Ray, K. K., Tokgözoğlu, L. S. & Catapano, A. L. (2022), ‘Lipoprotein(a) in atherosclerotic cardiovascular disease and aortic stenosis: A European Atherosclerosis Society consensus statement’, European Heart Journal 43(39), 3925–3946. Laird, N. M. & Ware, J. H. (1982), ‘Random-Effects Models for Longitudinal Data’, Bio-metrics 38(4), 963–974. URL: https://www.jstor.org/stable/2529876 Lam, C. (2020), ‘High-dimensional covariance matrix estimation’, WIREs Computational Statistics 12(2), e1485. Langfelder, P. & Horvath, S. (2008), ‘WGCNA: An R package for weighted correlation network analysis’, BMC Bioinformatics 9(1), 559. Li, Y., Wang, S., Song, P. X. K., Wang, N., Zhou, L. & Zhu, J. (2018), ‘Doubly regularized estimation and selection in linear mixed-effects models for high-dimensional longitudinal data’, Statistics and Its Interface 11(4), 721–737. Libiger, O., Shaw, L. M., Watson, M. H., Nairn, A. C., Umaña, K. L., Biarnes, M. C., Canet-Avilés, R. M., Jack Jr., C. R., Breton, Y.-A., Cortes, L., Chelsky, D., Spellman, 29 D. S., Baker, S. A., Raghavan, N., Potter, W. Z., (ADNI), A. D. N. I. & Foundation for the National Institutes of Health (FNIH) Biomarkers Consortium, L. C. P. P. T. (2021), ‘Longitudinal CSF proteomics identifies NPTX2 as a prognostic biomarker of Alzheimer’s disease’, Alzheimer’s & Dementia 17(12), 1976–1987. Licordari, R., Correale, M., Bonanno, S., Beltrami, M., Ciccarelli, M., Micari, A., Palaz-zuoli, A. & Dattilo, G. (2024), ‘Beyond Natriuretic Peptides: Unveiling the Power of Emerging Biomarkers in Heart Failure’, Biomolecules 14(3), 309. Lin, B., Pang, Z. & Jiang, J. (2013), ‘Fixed and Random Effects Selection by REML and Pathwise Coordinate Optimization’, Journal of Computational and Graphical Statistics 22(2), 341–355. Lukasz, A., Beutel, G., Kümpers, P., Denecke, A., Westhoff-Bleck, M., Schieffer, B., Bauer-sachs, J., Kielstein, J. T. & Tutarel, O. (2013), ‘Angiopoietin-2 in Adults with Congenital Heart Disease and Heart Failure’, PLOS ONE 8(6), e66861. Mathew, J. S., Sachs, M. C., Katz, R., Patton, K. K., Heckbert, S. R., Hoofnagle, A. N., Alonso, A., Chonchol, M., Deo, R., Ix, J. H., Siscovick, D. S., Kestenbaum, B. & de Boer, I. H. (2014), ‘Fibroblast Growth Factor-23 and Incident Atrial Fibrillation’, Circulation 130(4), 298–307. Ouyang, W., Rutz, S., Crellin, N. K., Valdez, P. A. & Hymowitz, S. G. (2011), ‘Regulation and Functions of the IL-10 Family of Cytokines in Inflammation and Disease’, Annual Review of Immunology 29(Volume 29, 2011), 71–109. Peng, H. & Lu, Y. (2012), ‘Model selection in linear mixed effect models’, Journal of Multivariate Analysis 109, 109–129. Prohaska, S. J. & Stadler, P. F. (2011), The Use and Abuse of -Omes, Humana Press, Totowa, NJ. 30 R Core Team (2023), R: A Language and Environment for Statistical Computing, R Foun-dation for Statistical Computing, Vienna, Austria. URL: https://www.R-project.org/ Ridker, P. M., Everett, B. M., Thuren, T., MacFadyen, J. G., Chang, W. H., Ballantyne, C., Fonseca, F., Nicolau, J., Koenig, W., Anker, S. D., Kastelein, J. J. P., Cornel, J. H., Pais, P., Pella, D., Genest, J., Cifkova, R., Lorenzatti, A., Forster, T., Kobalava, Z., Vida-Simiti, L., Flather, M., Shimokawa, H., Ogawa, H., Dellborg, M., Rossi, P. R. F., Troquay, R. P. T., Libby, P. & Glynn, R. J. (2017), ‘Antiinflammatory Therapy with Canakinumab for Atherosclerotic Disease’, New England Journal of Medicine 377(12), 1119–1131. Ridker, P. M., Moorthy, M. V., Cook, N. R., Rifai, N., Lee, I.-M. & Buring, J. E. (2024), ‘Inflammation, Cholesterol, Lipoprotein(a), and 30-Year Cardiovascular Outcomes in Women’, New England Journal of Medicine 391(22), 2087–2097. Ridker, P. M., Rifai, N., Pfeffer, M., Sacks, F., Lepage, S. & Braunwald, E. (2000), ‘Eleva-tion of Tumor Necrosis Factor-𝛼 and Increased Risk of Recurrent Coronary Events After Myocardial Infarction’, Circulation 101(18), 2149–2153. Sabatine, M. S., Giugliano, R. P., Keech, A. C., Honarpour, N., Wiviott, S. D., Murphy, S. A., Kuder, J. F., Wang, H., Liu, T., Wasserman, S. M., Sever, P. S. & Pedersen, T. R. (2017), ‘Evolocumab and Clinical Outcomes in Patients with Cardiovascular Disease’, New England Journal of Medicine 376(18), 1713–1722. Saeys, Y., Inza, I. & Larrañaga, P. (2007), ‘A review of feature selection techniques in bioinformatics’, Bioinformatics 23(19), 2507–2517. URL: https://doi.org/10.1093/bioinformatics/btm344 Schelldorfer, J., Bühlmann, P. & De Geer, S. V. (2011), ‘Estimation for High-Dimensional Linear Mixed-Effects Models Using ℓ1-Penalization’, Scandinavian Journal of Statistics 31 38(2), 197–214. Tarca, A. L., Romero, R., Benshalom-Tirosh, N., Than, N. G., Gudicha, D. W., Done, B., Pacora, P., Chaiworapongsa, T., Panaitescu, B., Tirosh, D., Gomez-Lopez, N., Draghici, S., Hassan, S. S. & Erez, O. (2019), ‘The prediction of early preeclampsia: Results from a longitudinal proteomics study’, PLOS ONE 14(6), e0217273. Vaughan, D. E. (2005), ‘PAI-1 and atherothrombosis’, Journal of Thrombosis and Haemostasis 3(8), 1879–1883. Vella, D., Zoppis, I., Mauri, G., Mauri, P. & Di Silvestre, D. (2017), ‘From protein-protein interactions to protein co-expression networks: A new perspective to evaluate large-scale proteomic data’, 2017(1), 6. Villaverde, A. F., Ross, J., Morán, F. & Banga, J. R. (2014), ‘MIDER: Network Inference with Mutual Information Distance and Entropy Reduction’, PLOS ONE 9(5), e96732. Wang, S., Song, P. X. & Zhu, J. (2010), ‘Doubly Regularized REML for Estimation and Selection of Fixed and Random Effects in Linear Mixed-Effects Models’, The University of Michigan Department of Biostatistics Working Paper Series . Whincup, P., Danesh, J., Walker, M., Lennon, L., Thomson, A., Appleby, P., Rumley, A. & Lowe, G. (2002), ‘Von Willebrand factor and coronary heart disease. Prospective study and meta-analysis’, European Heart Journal 23(22), 1764–1770. Yusuf, S., Hawken, S., Ôunpuu, S., Dans, T., Avezum, A., Lanas, F., McQueen, M., Budaj, A., Pais, P., Varigos, J. & Lisheng, L. (2004), ‘Effect of potentially modifiable risk factors associated with myocardial infarction in 52 countries (the INTERHEART study): Case-control study’, The Lancet 364(9438), 937–952. Zhang, C.-H. (2010), ‘Nearly unbiased variable selection under minimax concave penalty’, The Annals of Statistics 38(2), 894–942. 32 Appendix A Conditional Random Effect Coefficient Estimates 
+
+We want to estimate the random effects using the conditional mean (mean of effect condi-tioned on the data 𝑦 ). Here we introduce the kernel variable 𝑢 (what Bates et al. (2015) refer to as the ”spherical random effect”) for estimating ̂ 𝑏 and the kernel variable 𝑣 for estimating ̂ 𝜀 . Using this variable allows us to essentialize the random parts of 𝑦 and ℬ
+
+using the same variance parameter, which makes the calculations easier and allows the random effect matrices to be singular. These calculations follow loosely from Bates et al. (2015, 2025). First we define the following: 
+
+Λ𝐸 𝑡 ≔⎡⎢⎢⎢⎢⎣𝜎 1𝐼 𝑘 
+
+⋱𝜎 𝑘 𝐼 𝑘 
+
+⎤⎥⎥⎥⎥⎦Λ𝐸 𝑛𝑡 ≔⎡⎢⎢⎢⎢⎣Λ𝐸 𝑡 
+
+⋱Λ𝐸 𝑡 
+
+⎤⎥⎥⎥⎥⎦
+
+Appendix A.0.0.1 Estimating 𝜀 given 𝑦 , 𝐷 , and 𝐸 
+
+33 𝑦 − 𝑋𝛽 − 𝜀 𝑡 ∼ 𝑁 (0, 𝑍𝐷𝑍 𝑇 ) where 𝜀 𝑡 ≔⎡⎢⎢⎢⎢⎢⎢⎢⎢⎣𝜀 1
+
+⋮𝜀 1
+
+⋮𝜀 𝑘 
+
+⎤⎥⎥⎥⎥⎥⎥⎥⎥⎦𝑍 𝑇 (𝑦 − 𝑋𝛽 − 𝜀 𝑡 ) ∼ 𝑁 (𝑍 𝑇 𝑍𝐷𝑍 𝑇 𝑍) (𝑍 𝑇 𝑍) −1 𝑍 𝑇 (𝑦 − 𝑋𝛽 − 𝜀 𝑡 ) ∼ 𝑁 (0, 𝐷) 𝐷 = 𝜎 2Λ𝐷 Λ𝑇 𝐷 
+
+Λ−1 𝐷 (𝑍 𝑇 𝑍) −1 𝑍 𝑇 (𝑦 − 𝑋𝛽 − 𝜀 𝑡 ) ∼ 𝑁 (0, 𝐼 2𝑘 𝜎 2)𝜀 𝑡 ∼ 𝑁 (0, 𝜎 2Λ𝐸 𝑛𝑡 Λ𝑇 𝐸 𝑛𝑡 )
+
+Let 𝜀 𝑡 ≕ Λ 𝐸 𝑛𝑡 𝑣 for 𝑣 ∼ 𝑁 (0, 𝜎 2𝐼 𝑘 )
+
+Let 𝑀 ≔Λ −1 𝐷 (𝑍 𝑇 𝑍) −1 𝑍 𝑇 
+
+𝑓 𝑌 |𝑉 (𝑦|𝑣) = 1(2𝜋𝜎 2)2𝑘/2 exp {− 12𝜎 2 ‖𝑀 (𝑦 − 𝑋𝛽 − Λ 𝐸 𝑛𝑡 𝑣)‖ 2}𝑓 𝑉 (𝑣) = 1(2𝜋𝜎 2)𝑛𝑡𝑘/2 exp {− 12𝜎 2 ‖𝑣‖ 2}𝑓 𝑉 |𝑌 (𝑣|𝑦) ∝ exp {− 12𝜎 2 (‖𝑀 (𝑦 − 𝑋𝛽 − Λ 𝐸 𝑛𝑡 𝑣)‖ 2 + ‖𝑣‖ 2)} 
+
+Let 𝑄 𝑀 (𝑣) ≔ ‖𝑀(𝑦 − 𝑋𝛽 − Λ 𝐸 𝑛𝑡 𝑣)‖ 2 + ‖𝑣‖ 2̂𝑣 = 𝔼[𝑉 |𝑌 = 𝑦] = arg min 
+
+> 𝑣
+
+𝑄 𝑀 (𝑣) 𝜕 𝜕𝑣 𝑄 𝑚 (𝑣) = −Λ 𝑇 𝐸 𝑛𝑡 𝑀 𝑇 𝑀(𝑦 − 𝑋𝛽 − Λ 𝐸 𝑛𝑡 𝑣) + 𝑣 ≔ 0 (Λ 𝑇 𝐸 𝑛𝑡 𝑀 𝑇 𝑀Λ 𝐸 𝑛𝑡 + 𝐼 𝑛𝑘𝑡 )𝑣 = Λ 𝑇 𝐸 𝑛𝑡 𝑀 𝑇 𝑀(𝑦 − 𝑋𝛽)̂ 𝑣 = (Λ 𝑇 𝐸 𝑛𝑡 𝑀 𝑇 𝑀Λ 𝐸 𝑛𝑡 + 𝐼 𝑛𝑘𝑡 )−1 Λ𝑇 𝐸 𝑛𝑡 𝑀 𝑇 𝑀 (𝑦 − 𝑋𝛽)̂ 𝜀 = Λ 𝐸 𝑛𝑡 (Λ 𝑇 𝐸 𝑛𝑡 𝑀 𝑇 𝑀 Λ 𝐸 𝑛𝑡 + 𝐼 𝑛𝑘𝑡 )−1 Λ𝑇 𝐸 𝑛𝑡 𝑀 𝑇 𝑀(𝑦 − 𝑋𝛽) 
+
+34 Appendix A.0.0.2 Estimating 𝑏 given 𝑦 , 𝐷 , and 𝐸 𝑦|ℬ = 𝑏 ∼ 𝑁 (𝑋𝛽 + 𝑍𝑏, 𝐸 𝑛𝑡 )(𝑦 − 𝑋𝛽 − 𝑍𝑏) ∼ 𝑁 (0, 𝐸 𝑛𝑡 )
+
+Let 𝐸 𝑛𝑡 ≕ 𝜎 2Λ𝐸 𝑛𝑡 Λ𝑇 𝐸 𝑛𝑡 
+
+Λ−1 𝐸 𝑛𝑡 (𝑦 − 𝑋𝛽 − 𝑍𝑏) ∼ 𝑁 (0, 𝐼 𝑛𝑘𝑡 )ℬ ∼ 𝑁 (0, 𝜎 2Λ𝐷 Λ𝑇 𝐷 )
+
+Let 𝑏 ≕ Λ 𝐷 𝑢 for 𝑢 ∼ 𝑁 (0, 𝜎 2𝐼 2𝑘 )𝑓 𝑌 |𝑈 (𝑦|𝑢) = 1(2𝜋𝜎 2)𝑛𝑘𝑡/2 exp {− 12𝜎 2 ‖Λ −1 𝐸 𝑛𝑡 (𝑦 − 𝑋𝛽 − 𝑍Λ 𝐷 𝑢)‖ 2}𝑓 𝑈 (𝑢) = 1(2𝜋𝜎 2)2𝑘 exp {− 12𝜎 2 ‖𝑢‖ 2}𝑓 𝑈|𝑌 (𝑢|𝑦) ∝ exp {− 12𝜎 2 (‖Λ −1 𝐸 𝑛𝑡 (𝑦 − 𝑋𝛽 − 𝑍Λ 𝐷 𝑢)‖ 2 + ‖𝑢‖ 2)} 𝑄 𝐸 (𝑢) ≔ ‖Λ −1 𝐸 𝑛𝑡 (𝑦 − 𝑋𝛽 − 𝑍Λ 𝐷 𝑢)‖ 2 + ‖𝑢‖ 2̂𝑢 = arg min 
+
+> 𝑢
+
+𝑄 𝐸 (𝑢)̂ 𝑢 = (Λ 𝑇 𝐷 𝑍 𝑇 Λ−𝑇 𝐸 𝑛𝑡 Λ−1 𝐸 𝑛𝑡 𝑍Λ 𝐷 + 𝐼 2𝑘 )−1 Λ𝑇 𝐷 𝑍 𝑇 Λ−𝑇 𝐸 𝑛𝑡 Λ−1 𝐸 𝑛𝑡 (𝑦 − 𝑋𝛽)̂ 𝑏 = Λ 𝐷 (Λ 𝑇 𝐷 𝑍 𝑇 Λ−𝑇 𝐸 𝑛𝑡 Λ−1 𝐸 𝑛𝑡 𝑍Λ 𝐷 + 𝐼 2𝑘 )−1 Λ𝑇 𝐷 𝑍 𝑇 Λ−𝑇 𝐸 𝑛𝑡 Λ−1 𝐸 𝑛𝑡 (𝑦 − 𝑋𝛽) 
+
+Appendix A.0.0.3 Estimating 𝜎 2
+
+35 𝑉 ⋆ ≔ 𝑍𝐷𝑍 𝑇 + 𝐸 𝑛𝑡 
+
+= 𝑍(𝜎 2Λ𝐷 Λ𝑇 𝐷 )𝑍 𝑇 + 𝜎 2Λ𝐸 Λ𝑇 𝐸 
+
+𝑉 ⋆ ≕ 𝜎 2𝑉 𝑉 ≔ 𝑍Λ 𝐷 Λ𝑇 𝐷 𝑍 𝑇 + Λ 𝐸 Λ𝑇 𝐸 
+
+𝑌 ∼ 𝑁 (𝑋𝛽, 𝜎 2𝑉 ) 𝑓 𝑌 (𝑦) = 1√2𝜋𝜎 2𝑛𝑘𝑡/2 |𝑉 | −1/2 
+
+exp {− 12𝜎 2 (𝑦 − 𝑋𝛽) 𝑇 𝑉 −1 (𝑦 − 𝑋𝛽)} ℓ(𝜎 2|𝑉 ) ∝ − 𝑛𝑘𝑡 2 log 𝜎 2 − 12𝜎 2 ‖Λ −1 𝑉 (𝑦 − 𝑋𝛽)‖ 2
+
+𝜕 𝜕𝜎 2 ℓ(𝜎 2|𝑉 ) = − 𝑛𝑘𝑡 2𝜎 2 + 12(𝜎 2)2 ‖Λ −1 𝑉 (𝑦 − 𝑋𝛽)‖ 2
+
+≔ 0 𝑛𝑘𝑡 2𝜎 2 = 12(𝜎 2)2 ‖Λ −1 𝑉 (𝑦 − 𝑋𝛽)‖ 2̂𝜎 2 = 1𝑛𝑘𝑡 ‖Λ −1 𝑉 (𝑦 − 𝑋𝛽)‖ 2
+
+36 Appendix B Simulation 𝐿 1 Error Results 
+
+Figure 8: The 𝐿 1 error in estimating the covariance of the random effect coefficients for each of the three algorithms. Panels are split between number of timepoints and number of subjects, increasing from bottom left to top right. 37 Figure 9: The 𝐿 1 error in estimating the overall covariance for each of the three algorithms, unstructured and compound symmetric true covariance matrices. Panels are split between number of timepoints and number of subjects, increasing from bottom left to top right. 38 Appendix C Additional Simulations 
+
+## Appendix C.1 Simulations based on general covariance structures 
+
+Following Cao et al. (2019), the outcome for subject 𝑖 is given by one of two models: 1. Y 𝑖 ∼ 𝑁 (𝜇 𝑖 , R𝑖 )
+
+2. Y 𝑖 = ￿ + 𝐹 𝑖 𝑈 𝑘 √10 where 𝐹 𝑖 𝐹 𝑇 𝑖 = 𝑅 𝑖 and the components of 𝑈 𝑘 are drawn from Γ(10, 1) 
+
+In the covariance matrix 𝐾 ⋆ is the number of connected nodes, chosen to impose sparsity. Without loss of generality, we choose the first 𝐾 ⋆ nodes to be connected, and choose 
+
+𝐾 ⋆ = [ 𝐾 2 ]. We draw the mean for each subject as 𝜇 𝑖 ∼ 𝑈 (0, 10) . We use three different settings for the general covariance matrices: autoregressive, Toeplitz, and unstructured. For the unstructured covariance matrix, we draw the diagonals as 𝜎 2𝑖 ∼ 𝑈 (0.8, 1.2) and the off-diagonals as 𝜎 𝑖𝑗 ∼ 𝑈 (0.2, 0.8) × Rademacher (0.5) .The covariance matrix 𝑅 looks like: 
+
+𝑅 = ⎛⎜⎜⎜⎜⎜⎜⎜⎜⎜⎜⎜⎜⎜⎜⎜⎜⎜⎝Σ1 Σ12 … Σ1𝐾 ⋆ 0 ... 0
+
+Σ2 … Σ2𝐾 ⋆ 0 ... 0
+
+⋱ 0 ... 0
+
+Σ𝐾 ⋆ 0 ... 0
+
+Σ𝐾 ⋆ +1 0 0
+
+⋱ 0
+
+Σ𝐾 
+
+⎞⎟⎟⎟⎟⎟⎟⎟⎟⎟⎟⎟⎟⎟⎟⎟⎟⎟⎠
+
+.Appendix C.1.1 Autoregressive The autoregressive (AR(1)) covariance structure assumes correlations decay exponentially with time lag within variables and between variables. The within-variable covariance matrix 39 is 
+
+Σ𝑣 =⎛⎜⎜⎜⎜⎜⎜⎜⎜⎜⎜⎝𝜎 2𝑣 𝜌 𝑣 𝜎 𝑣 𝜌 2𝑣 𝜎 𝑣 … 𝜌 𝑇 −1 𝜎 𝑣 
+
+𝜎 2𝑣 𝜌 𝑣 𝜎 𝑣 … 𝜌 𝑇 −2 𝑣 𝜎 𝑣 
+
+𝜎 2𝑣 … 𝜌 𝑇 −3 𝑣 𝜎 2𝑣 
+
+⋮ ⋮ ⋮ ⋱ ⋮𝜎 2𝑣 
+
+⎞⎟⎟⎟⎟⎟⎟⎟⎟⎟⎟⎠
+
+.The between-variable covariance matrix is 
+
+Σ𝑣𝑤 =⎛⎜⎜⎜⎜⎜⎜⎜⎝𝜌 𝑣𝑤 𝜎 𝑣 𝜎 𝑤 𝜌 𝑣 𝜌 𝑤 𝜌 𝑣𝑤 𝜎 𝑣 𝜎 𝑤 … 𝜌 𝑇 −1 𝑣 𝜌 𝑇 −1 𝑤 𝜌 𝑣𝑤 𝜎 𝑣 𝜎 𝑤 
+
+𝜌 𝑣𝑤 𝜎 𝑣 𝜎 𝑤 … 𝜌 𝑇 −2 𝑣 𝜌 𝑇 −2 𝑤 𝜌 𝑣𝑤 𝜎 𝑣 𝜎 𝑤 
+
+⋱ ⋮𝜌 𝑣𝑤 𝜎 𝑣 𝜎 𝑤 
+
+⎞⎟⎟⎟⎟⎟⎟⎟⎠
+
+.We draw 𝜎 𝑣 ∼ 𝑈 (0.8, 1.2) , 𝜌 𝑣 ∼ 𝑈 (0.2, 0.8) × Rademacher (0.5) , and 𝜌 𝑣𝑤 ∼ 𝑈 (0.2, 0.8) × 
+
+Rademacher (0.5) .Appendix C.1.2 Toeplitz The Toeplitz covariance structure assumes each matrix diagonal is equal. Additionally, for our simulations a time 𝑡 ⋆ is chosen as the maximum time for which a node is correlated with itself. In practice we choose 𝑡 ⋆ = 710 𝑇 . For our simulations on the Toeplitz covariance matrix we use the same parameters as the AR simulation. The within-variable covariance matrix ( Σ𝑣 ) and between-variable covariance matrix ( Σ𝑣𝑤 )are 
+
+Σ𝑣 = ( Σ0𝑣 00 Σ1𝑣 
+
+) Σ𝑣𝑤 = ( Σ0𝑣𝑤 00 Σ1𝑣𝑤 
+
+)
+
+for 
+
+Σ0𝑣 =⎛⎜⎜⎜⎜⎜⎜⎜⎜⎜⎜⎝𝜎 2𝑣 𝜌 𝑣 𝜎 𝑣 𝜌 𝑣  
+
+> 2
+
+𝜎 𝑣 … 𝜌 𝑣  
+
+> 𝑡 ⋆
+
+𝜎 𝑣 
+
+𝜎 2𝑣 𝜌 𝑣 𝜎 𝑣 … 𝜌 𝑣   
+
+> 𝑡 ⋆−1
+
+𝜎 𝑣 
+
+𝜎 2𝑣 … 𝜌 𝑣   
+
+> 𝑡 ⋆−2
+
+𝜎 𝑣 
+
+⋱ ⋮𝜎 2𝑣 
+
+⎞⎟⎟⎟⎟⎟⎟⎟⎟⎟⎟⎠Σ1𝑣 =⎛⎜⎜⎜⎜⎜⎜⎜⎝𝜎 2𝑣 0 … 0𝜎 2𝑣 0 0⋱ 0𝜎 2𝑣 
+
+⎞⎟⎟⎟⎟⎟⎟⎟⎠
+
+40 Σ0𝑣𝑤 = 𝜌 𝑣𝑤 𝜎 𝑣 𝜎 𝑤 
+
+⎛⎜⎜⎜⎜⎜⎜⎜⎝1 𝜌 𝑣 𝜌 𝑤 … 𝜌 𝑣   
+
+> 𝑡 ⋆−1 𝜌 𝑤
+> 𝑡 ⋆−1
+
+1 … 𝜌 𝑣   
+
+> 𝑡 ⋆−2 𝜌 𝑤
+> 𝑡 ⋆−1
+
+⋱ ⋮1⎞⎟⎟⎟⎟⎟⎟⎟⎠Σ1𝑣𝑤 = 𝜌 𝑣𝑤 𝜎 𝑣 𝜎 𝑤 𝐼 𝑡−𝑡 ⋆ .
+
+## Appendix C.2 Simulation Frobenius Error 
+
+Figure 10: The Frobenius error in estimating the overall covariance for each of the three algorithms, AR and Toeplitz true covariance matrices with data generation model 1. Panels are split between number of timepoints and number of subjects, increasing from bottom left to top right. 41 Figure 11: The Frobenius error in estimating the overall covariance for each of the three algorithms, AR and Toeplitz true covariance matrices with data generation model 2. Panels are split between number of timepoints and number of subjects, increasing from bottom left to top right. 
+
+## Appendix C.3 Simulation 𝐿 1 Error 
+
+42 Figure 12: The 𝐿 1 error in estimating the overall covariance for each of the three algorithms, AR and Toeplitz true covariance ma”trices with data generation model 1. Panels are split between number of timepoints and number of subjects, increasing from bottom left to top right. 43 Figure 13: The 𝐿 1 error in estimating the overall covariance for each of the three algorithms, AR and Toeplitz true covariance matrices with data generation model 2. Panels are split between number of timepoints and number of subjects, increasing from bottom left to top right. 44 Appendix D Matrix Multiplication Efficiency Calculations 
+
+For even moderately large datasets (50 samples, 20 nodes, 5 timepoints) the matrix mul-tiplication necessary to estimate 𝜀 for DCENt 2 becomes prohibitively slow. Luckily, the block structure of the matrices allows us to break down these operations into manageable chunks. We start by splitting the Z matrix into blocks with one block per subject: 𝑍 ≔ ⎡⎢⎢⎢⎢⎣𝑍 1
+
+⋮𝑍 𝑛 
+
+⎤⎥⎥⎥⎥⎦
+
+.Next, we break down the calculation of the matrix 𝑀 :
+
+𝑀 = Λ −1 𝐷 
+
+⎛⎜⎜⎜⎜⎜⎜⎜⎝[𝑍 𝑇 1 ... 𝑍 𝑇 𝑛 ]⎡⎢⎢⎢⎢⎣𝑍 1
+
+⋮𝑍 𝑛 
+
+⎤⎥⎥⎥⎥⎦⎞⎟⎟⎟⎟⎟⎟⎟⎠
+
+> −1
+
+[𝑍 𝑇 1 ... 𝑍 𝑇 𝑛 ]= Λ −1 𝐷 (𝑍 𝑇 1 𝑍 1 + ... + 𝑍 𝑇 𝑛 𝑍 𝑛 )−1 [𝑍 𝑇 1 ... 𝑍 𝑇 𝑛 ]𝐵 ≔ (𝑍 𝑇 1 𝑍 1 + ... + 𝑍 𝑇 𝑛 𝑍 𝑛 )−1 
+
+𝑀 = [Λ −1 𝐷 𝐵𝑍 𝑇 1 ... Λ−1 𝐷 𝐵𝑍 𝑇 𝑛 ]
+
+The most significant bottleneck is the calculation of the inverse (Λ 𝑇 𝐸 𝑛𝑡 𝑀 𝑇 𝑀Λ 𝐸 𝑛𝑡 + 𝐼 𝑛𝑘𝑡 )−1 .This is a 𝑛𝑘𝑡×𝑛𝑘𝑡 matrix, so inverting it becomes very slow at even relatively small sample sizes. Instead, we use the Woodbury matrix identity to instead invert two 2𝑘 × 2𝑘 matrices. 
+
+𝐴 −1 ≔(Λ 𝑇 𝐸 𝑛𝑡 𝑀 𝑇 𝑀Λ 𝐸 𝑛𝑡 + 𝐼 𝑛𝑘𝑡 )−1 
+
+= (Λ 𝑇 𝐸 𝑛𝑡 𝑍𝐵 𝑇 Λ−𝑇 𝐷 Λ−1 𝐷 𝐵𝑍 𝑇 Λ𝐸 𝑛𝑡 + 𝐼 𝑛𝑘𝑡 )−1 
+
+= 𝐼 𝑛𝑘𝑡 − Λ 𝑇 𝐸 𝑛𝑡 𝑍((𝐵 𝑇 Λ−𝑇 𝐷 Λ−1 𝐷 𝐵) −1 + 𝑍 𝑇 Λ𝐸 𝑛𝑡 Λ𝑇 𝐸 𝑛𝑡 𝑍) −1 𝑍 𝑇 Λ𝐸 𝑛𝑡 
+
+There is also a bottleneck of multilplying this 𝑛𝑘𝑡 × 𝑛𝑘𝑡 matrix 𝐴 −1 by the 𝑛𝑘𝑡 × 𝑛𝑘𝑡 
+
+matrices Λ𝐸 𝑛𝑡 and then multiplying this by the 𝑛𝑘𝑡 × 𝑛𝑘𝑡 matrix 𝑀 𝑇 𝑀 . We break these 45 down by taking advantage of the block structure of 𝑍 . First, we define the following variables to ease the notation: 
+
+𝑟 ≔ 𝑦 − 𝑋𝛽 𝐻 ≔ Λ 𝐸 𝑛𝑡 𝑍((𝐵 𝑇 Λ−𝑇 𝐷 Λ−1 𝐷 𝐵) −1 + 𝑍 𝑇 Λ𝐸 𝑛𝑡 Λ𝐸 𝑛𝑡 𝑍) −1 =⎡⎢⎢⎢⎢⎣𝐻 1
+
+⋮𝐻 𝑛 
+
+⎤⎥⎥⎥⎥⎦
+
+46 Next, we break down the ̂ 𝜀 calculation: ̂𝜀 = Λ 𝐸 𝑛𝑡 (Λ 𝑇 𝐸 𝑛𝑡 𝑀 𝑇 𝑀Λ 𝐸 𝑛𝑡 + 𝐼 𝑛𝑘𝑡 )−1 Λ𝑇 𝐸 𝑛𝑡 𝑀 𝑇 𝑀𝑟 = Λ 𝐸 𝑛𝑡 (Λ 𝐸 𝑛𝑡 𝑀 𝑇 𝑀 − Λ 𝐸 𝑛𝑡 𝑍((𝐵 𝑇 𝐷 −𝑇 𝐵) −1 + 𝑍 𝑇 Λ𝐸 𝑛𝑡 𝐼 𝑛𝑘𝑡 Λ𝐸 𝑛𝑡 𝑍) −1 𝑍 𝑇 Λ𝐸 𝑛𝑡 Λ𝐸 𝑛𝑡 𝑀 𝑇 𝑀)𝑟 = Λ 𝐸 𝑛𝑡 (Λ 𝑇 𝐸 𝑛𝑡 (Λ −1 𝐷 (𝑍 𝑇 𝑍) −1 𝑍 𝑇 )𝑇 Λ−1 𝐷 (𝑍 𝑇 𝑍) −1 𝑍 𝑇 Λ𝐸 𝑛𝑡 + 𝐼 𝑛𝑘𝑡 )−1 
+
+× Λ 𝑇 𝐸 𝑛𝑡 (Λ −1 𝐷 (𝑍 𝑇 𝑍) −1 𝑍 𝑇 )𝑇 Λ−1 𝐷 (𝑍 𝑇 𝑍) −1 𝑍 𝑇 𝑟 = Λ 𝐸 𝑛𝑡 (Λ 𝑇 𝐸 𝑛𝑡 𝑍(𝑍 𝑇 𝑍) −𝑇 Λ−𝑇 𝐷 Λ−1 𝐷 (𝑍 𝑇 𝑍) −1 𝑍 𝑇 Λ𝐸 𝑛𝑡 + 𝐼 𝑛𝑘𝑡 )−1 
+
+× Λ 𝑇 𝐸 𝑛𝑡 (𝑍(𝑍 𝑇 𝑍) −𝑇 Λ−𝑇 𝐷 )(Λ −1 𝐷 (𝑍 𝑇 𝑍) −1 𝑍 𝑇 )𝑟 = Λ 𝐸 𝑛𝑡 (𝐼 𝑛𝑘𝑡 − Λ 𝐸 𝑛𝑡 𝑍((𝐵 𝑇 Λ−𝑇 𝐷 Λ−1 𝐷 𝐵) −1 + 𝑍 𝑇 Λ𝐸 𝑛𝑡 Λ𝐸 𝑛𝑡 𝑍) −1 𝑍 𝑇 Λ𝐸 𝑛𝑡 )× Λ 𝑇 𝐸 𝑛𝑡 (𝑍(𝑍 𝑇 𝑍) −𝑇 Λ−𝑇 𝐷 )(Λ −1 𝐷 (𝑍 𝑇 𝑍) −1 𝑍 𝑇 )𝑟 = Λ 𝐸 𝑛𝑡 (𝐼 𝑛𝑘𝑡 − 𝐻𝑍 𝑇 Λ𝐸 𝑛𝑡 )Λ 𝑇 𝐸 𝑛𝑡 𝑍𝐵 𝑇 Λ−𝑇 𝐷 Λ−1 𝐷 𝐵𝑍 𝑇 𝑟 = Λ 𝐸 𝑛𝑡 (Λ 𝑇 𝐸 𝑛𝑡 𝑍 − 𝐻𝑍 𝑇 Λ𝐸 𝑛𝑡 Λ𝑇 𝐸 𝑛𝑡 𝑍)𝐵 𝑇 Λ−𝑇 𝐷 Λ−1 𝐷 𝐵𝑍 𝑇 𝑟 = Λ 𝐸 𝑛𝑡 
+
+⎛⎜⎜⎜⎜⎜⎜⎜⎝⎡⎢⎢⎢⎢⎣Λ𝐸 𝑡 𝑍 1
+
+⋮Λ𝐸 𝑡 𝑍 𝑛 
+
+⎤⎥⎥⎥⎥⎦−⎡⎢⎢⎢⎢⎣𝐻 1 (∑ 𝑛 𝑖=1 𝑍 𝑇 𝑖 Λ𝐸 𝑡 Λ𝐸 𝑡 𝑍 𝑖 )⋮𝐻 𝑛 (∑ 𝑛 𝑖=1 𝑍 𝑇 𝑖 Λ𝐸 𝑡 Λ𝐸 𝑡 𝑍 𝑖 )⎤⎥⎥⎥⎥⎦⎞⎟⎟⎟⎟⎟⎟⎟⎠𝐵 𝑇 Λ−𝑇 𝐷 Λ−1 𝐷 𝐵𝑍 𝑇 𝑟 = Λ 𝐸 𝑛𝑡 
+
+⎡⎢⎢⎢⎢⎣Λ𝐸 𝑡 𝑍 1 − 𝐻 1 (∑ 𝑛 𝑖=1 𝑍 𝑇 𝑖 Λ𝐸 𝑡 Λ𝐸 𝑡 𝑍 𝑖 )⋮Λ𝐸 𝑡 𝑍 𝑛 − 𝐻 𝑛 (∑ 𝑛 𝑖=1 𝑍 𝑇 𝑖 Λ𝐸 𝑡 Λ𝐸 𝑡 𝑍 𝑖 )⎤⎥⎥⎥⎥⎦𝐵 𝑇 Λ−𝑇 𝐷 Λ−1 𝐷 𝐵 [𝑍 𝑇 1 ... 𝑍 𝑇 𝑛 ] 𝑟 =⎡⎢⎢⎢⎢⎣Λ𝐸 𝑡 (Λ 𝐸 𝑡 𝑍 1 − 𝐻 1 (∑ 𝑛 𝑖=1 𝑍 𝑇 𝑖 Λ𝐸 𝑡 Λ𝐸 𝑡 𝑍 𝑖 )) ⋮Λ𝐸 𝑡 (Λ 𝐸 𝑡 𝑍 𝑛 − 𝐻 𝑛 (∑ 𝑛 𝑖=1 𝑍 𝑇 𝑖 Λ𝐸 𝑡 Λ𝐸 𝑡 𝑍 𝑖 )) ⎤⎥⎥⎥⎥⎦𝐵 𝑇 Λ−𝑇 𝐷 Λ−1 𝐷 𝐵 
+
+𝑛 
+
+∑
+
+𝑖=1 
+
+𝑍 𝑇 𝑖 𝑟 𝑖 
+
+This transforms the four 𝑛𝑘𝑡 × 𝑛𝑘𝑡 matrix multiplication operations into a series of multi-plications with dimensions less than or equal to 𝑘𝑡 .47

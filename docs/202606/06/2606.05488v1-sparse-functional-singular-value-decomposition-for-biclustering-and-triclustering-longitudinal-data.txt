@@ -1,0 +1,4684 @@
+Title: Sparse Functional Singular Value Decomposition for Biclustering and Triclustering Longitudinal Data
+
+URL Source: https://arxiv.org/pdf/2606.05488v1
+
+Published Time: Fri, 05 Jun 2026 00:26:54 GMT
+
+Number of Pages: 75
+
+Markdown Content:
+# Sparse Functional Singular Value Decomposition for Biclustering and Triclustering Longitudinal Data 
+
+Yue Zhao, Thierry Chekouo ∗, and Sandra E. Safo ∗
+
+Division of Biostatistics and Health Data Science University of Minnesota 2221 University Avenue SE Minneapolis, MN 55414, United States 
+
+E-mail address for correspondence: tchekouo@umn.edu, ssafo@umn.edu 
+
+Abstract 
+
+Identifying subtypes of complex conditions, such as Inflammatory Bowel Disease (IBD), often requires capturing latent patterns in longitudinal omics data. However, these data are typically high-dimensional, sparsely sampled, and irregularly observed over time, posing substantial challenges for conventional (bi)clustering and functional data analysis methods. We propose Tri-SfSVD, a unified sparse functional Singular Value Decomposition framework for discovering biclusters and triclusters in longitudinal data. Unlike existing functional bi-clustering methods that rely on ad hoc imputation or enforce restrictive shape-homogeneity assumptions, Tri-SfSVD integrates continuous trajectory estimation with simultaneous sub-ject, feature, and temporal selection within a single optimization framework. By imposing sparse penalties across subjects, variables, and temporal subregions, the proposed method works directly on observed data to uncover localized structures at the subject, subject-feature, and subject-feature-time levels. Extensive simulations demonstrate that Tri-SfSVD outperforms existing approaches in high-dimensional settings. Applied to IBD multi-omics data, the method identified three biclusters linking sample clusters with distinct IBD-related clinical characteristics to microbial pathway groups associated with specific bacterial taxa, providing interpretable subject-pathway associations for characterizing disease heterogeneity. Applied to multi-channel EEG data, the method identified three triclusters linking sample clusters with distinct alcohol-related phenotypes to localized brain activity patterns, includ-ing subgroup differences separated by temporal subregions within the same spatial region. 
+
+Keywords: Biclustering, Functional data analysis, Sparse group lasso, Sparse functional SVD, Triclustering 1
+
+> arXiv:2606.05488v1 [stat.ML] 3 Jun 2026
+
+## 1 Introduction 
+
+In modern biomedical studies, high-throughput technologies frequently generate longitudinal mea-surements across a large number of features. In practice, these data are often sparsely and irreg-ularly observed over time, where each subject is observed at only a limited, highly variable set of time points rather than a discrete, uniform grid. A prominent example is the Integrative Hu-man Microbiome Project (iHMP), which established the Inflammatory Bowel Disease Multi-omics Database (IBDMDB). This is a large-scale resource for longitudinal profiling of the gut micro-biome in individuals with inflammatory bowel disease (IBD), including Crohn’s disease (CD) and ulcerative colitis (UC), as well as non-IBD controls (Lloyd-Price et al., 2019). Many efforts have been made to better understand the biological mechanisms underlying IBD (Chen et al., 2020; Yu et al., 2023). However, these studies typically treat the data cross-sectionally by analysing a single time point, thereby failing to leverage the temporal structure of longitudinal measurements. To overcome this limitation, functional data analysis (FDA) has emerged as a powerful framework, treating longitudinal observations as functions over time to capture continuous-time trajectories. While useful for supervised group discrimination, IBD is a highly heterogeneous disease. Existing supervised approaches cannot capture latent, localized sub-structures where a specific patient subgroup exhibits a unique co-expression pattern across only a subset of features. To discover such localized patterns, biclustering methods have been extensively developed for matrix-valued data to simultaneously cluster samples and features (Zhang et al., 2022; Chekouo and Murua, 2015; Lee et al., 2010; Sill et al., 2011). Recently, this concept has been extended to continuous-time profiles via functional biclustering (Galvani et al., 2021; Slimen et al., 2018). However, existing functional biclustering methods face four distinct methodological challenges in high-dimensional biomedical applications: i) Rectrictive Shape Homogeneity . Most methods assume trajectories within a bicluster share a similar geometric shape over time. This assump-tion is overly restrictive for heterogeneous diseases like IBD, where different biological indicators may collectively characterize a patient subgroup but exhibit entirely different trajectory shapes. ii) Sensitivity to Preprocessing: When functional data are extremely sparse, existing functional biclustering methods rely on a two-step procedure; first imputing missing values or smoothing trajectories (e.g., via principal analysis by conditional expectation [PACE]; Yao et al. (2005)) and then applying biclustering. This separate estimation makes the resulting biclusters highly sen-sitive to the choice of preprocessing. iii) High-dimensionality setting. Current frameworks offer limited discussion or empirical evaluation when the number of functional variables outnumbers subjects. This high-dimensional regime is increasingly common in modern biomedical studies, including the IBDMDB data. iv) Lack of Temporal Subregion Selection. Biological signals are often temporally localized, concentrating within narrow windows of the time domain. Because current functional biclustering approaches select variables globally across all time points, they cannot isolate these brief, localized effects, necessitating a unified framework that simultaneously handles subject, feature, and temporal selection (i.e., triclustering). To address these challenges, we propose a sparse functional singular value decomposition (SVD) framework and develop a novel functional triclustering method, Tri-SfSVD. Functional SVD pro-2vides a natural extension of matrix factorization to functional data. For univariate functional data, Huang et al. (2008) proposed a functional SVD framework where the left singular vector contains subjects’ principal component (PC) scores and the right singular function represents a smooth functional loading over time. Zhao (2024) extended this framework to multivariate functional data by introducing a multivariate right singular function across multiple time domains. Building upon this formulation, Tri-SfSVD introduces three sparsity-inducing penalties to capture structure at multiple levels: a sample-level sparsity penalty on the left singular vector, a variable-level sparsity penalty on the multivariate right singular function, and a within-variable subregion-level sparsity penalty. Together, these penalties enable simultaneous selection of subjects, variables, and in-formative time-localized subregions, thereby allowing recovery of subject-variable-time structure. Each sparse rank-one approximation defines a sparse layer corresponding to a tricluster. Tri-SfSVD offers several key advantages over existing frameworks. First, unlike traditional biclus-tering methods, Tri-SfSVD does not force trajectories within a cluster to share a common shape between features. Instead, it extracts sparse latent layers that capture dominant, coordinated vari-ation, utilizing data-driven sparsity to identify the participating subjects, variables, and temporal subregions. Second, it jointly estimates trajectories and identifies clusters, operating directly on sparse, irregularly observed data using penalized least squares without ad hoc imputation. Third, the proposed framework applies to high-dimensional functional data and is designed to maintain computational feasibility as the number of functional variables increases. Finally, the proposed framework allows the data to determine whether biclustering is sufficient or whether additional time-localized triclustering structure is supported. We demonstrate the utility of Tri-SfSVD through extensive simulation studies and two distinct real-world applications. In the motivating application to the IBDMDB data, our method parti-tions microbial features into three interpretable groups. The three feature groups exhibit clear taxonomic patterns: two are predominantly associated with Alistipes putredinis and Ruminococcus torques , respectively, while the third is primarily composed of pathways labeled as unclassified in the dataset. Each microbial feature group is mapped to a distinct clinically meaningful subject subgroup, yielding interpretable subject–feature associations. In this application, full-domain bi-clusters are supported without any within-variable subregion shrinkage to zero. To illustrate the method’s unique ability to recover time-localized triclustering structure, we present an additional analysis of a multi-channel electroencephalography (EEG) dataset (Zhang et al., 1997; Begleiter, 1995a) in section C of the Supplementary Material. Conversely, the EEG analysis reveals clear triclustering structures, partitioning channels into three interpretable groups: a frontal scalp pat-tern spanning the entire time domain, and two posterior scalp patterns localized within distinct temporal windows. These isolated spatio-temporal signatures are strongly associated with specific alcohol-related phenotypes, demonstrating the method’s ability to uncover multi-level, localized structures. The remainder of the paper is organized as follows. Section 2 introduces the theoretical foundations and presents the proposed Tri-SfSVD framework. Section 3 evaluates the performance of Tri-SfSVD through simulation studies and compares it with existing approaches. Section 4 illustrates the practical utility of the proposed method through real data applications. A concise summary of the methods considered in these analyses is provided in Table 1 of Section B.5 in the Supplementary 3Material. Section 5 concludes the paper with a discussion and future directions. 
+
+## 2 Methodology 
+
+2.1 Theoretical Foundation and Rank-One Approximation 
+
+We consider multivariate functional data where each observation consists of p ≥ 2 functional variables f1, . . . , f p, possibly defined on different domains T1, . . . , Tp. For each j = 1 , . . . , p , the domain Tj is a compact subset of R with finite Lebesgue measure. We assume each functional variable fj : Tj → R belongs to the Hilbert space Hj := L2(Tj ) of square-integrable functions on 
+
+Tj .Following the framework of Haghbin et al. (2026) and Happ and Greven (2018), we define the Cartesian product Hilbert space H = H1 × · · · × Hp. We equip the Hilbert space H with the inner product 
+
+⟨fff , g gg⟩H =
+
+> p
+
+X
+
+> j=1
+
+⟨fj , g j ⟩Hj =
+
+> p
+
+X
+
+> j=1
+
+Z
+
+> Tj
+
+fj (tj )gj (tj ) d tj .
+
+where fff = ( f1, · · · , f p) and ggg = ( g1, · · · , g p) ∈ H with fj , g j ∈ Hj are two multivariate functions. Given n multivariate functional samples xxxi = ( xi, 1, · · · , x i,p ) ∈ H, i = 1 , . . . , n , we define the cen-tralized bounded linear data operator X : Rn → H as X a = Pni=1 ai xxxi for aaa = ( a1, . . . , a n)⊤ ∈ Rn.The corresponding adjoint operator X ∗ : H → Rn is given by X ∗zzz = ( ⟨xxx1, z zz⟩H, ⟨xxx2, z zz⟩H, . . . , ⟨xxxn, z zz⟩H)⊤, z zz ∈
+
+H. We denote X := [ xxxi]ni=1 ∈ Fp×n, where Fp×n denotes the space of all linear operators Z : Rn →
+
+H. We equip Fp×n with the inner product ⟨Z1, Z2⟩F := Pni=1 ⟨z(1)  
+
+> i
+
+, z(2)  
+
+> i
+
+⟩H where Z1 = [ z(1)  
+
+> i
+
+]ni=1 
+
+and Z2 = [ z(2)  
+
+> i
+
+]ni=1 are in Fp×n. The associated norm is defined as ∥Z∥F = p⟨Z, Z⟩F.
+
+Under this operator formulation, we adopt the multivariate functional singular value decomposi-tion (SVD) framework through the rank-one approximation problem: min  
+
+> s≥0, u uu:∥uuu∥2=1 , ϕ ϕϕ:∥ϕϕϕ∥H=1
+
+∥X − s (uuu ⊗ ϕϕϕ)∥2 
+
+> F
+
+. (2.1) where s ≥ 0 is the scale of the rank-one component, uuu ∈ Rn is the unit left singular vector, and 
+
+ϕϕϕ = ( ϕ1, . . . , ϕ p) ∈ H is the unit multivariate functional right singular function. The outer product 
+
+uuu⊗ϕϕϕ is a rank-one linear operator from Rn to H defined by ( uuu⊗ϕϕϕ)( aaa) = ⟨aaa, u uu⟩Rn ϕϕϕ, for every aaa ∈ Rn.
+
+The key conceptual shift is that while each variable j has its own temporal shape ϕj (t), all p
+
+variables are linked by a common subject direction uuu. This shared direction forces the model to identify subject clusters that are consistent across all observed features. While (2.1) is defined in infinite-dimensional space, trajectories in practice are observed on discrete grids. Let Yj =  xij (tjℓ )  
+
+> 1≤i≤n, 1≤ℓ≤dj
+
+∈ Rn×dj denote the discretized observation matrix for the 
+
+jth variable, where the ith row contains measurements for subject i at time points {tj1, . . . , t jd j }.By expanding the squared norm in (2.1) and incorporating roughness penalties to ensure the smoothness of each ϕj , we derive the multivariate functional SVD objective function for discretized data: 4Lemma 2.1. The discretized implementation of the scaled rank-one operator approximation prob-lem (2.1) is given by the following finite-dimensional optimization problem: 
+
+min   
+
+> s, u uu, {φφφj}pj=1
+> p
+
+X
+
+> j=1
+
+Yj − s u uuφ φφ⊤
+
+> j
+> 2
+> F
+
+| {z }
+
+> Reconstruction Error
+
++
+
+> p
+
+X
+
+> j=1
+
+αj (sφ φφj )⊤Ωj (sφ φφj )
+
+| {z }
+
+> Roughness Penalty
+
+subject to s ≥ 0, ∥uuu∥2 = 1 , ∥φφφ∥2 = 1 , where φφφ =  φφφ⊤ 
+
+> 1
+
+, . . . , φ φφ⊤
+
+> p
+
+⊤ .
+
+(2.2) 
+
+Here φφφj ∈ Rdj denotes the discretized vector for the jth functional variable, obtained by evaluating the right singular functions ϕj (·) on {tj1, . . . , t jd j }. The matrix Ωj is the corresponding roughness penalty matrix for the jth functional variable. The norm ∥ · ∥ F denotes the Frobenius norm. The proof is provided in Section B.1 of the Supplementary Material. 
+
+As similarly introduced in (Huang et al., 2008) for the univariate functional SVD, the matrix Ω ΩΩj is a non-negative definite roughness penalty matrix introduced such that φφφ⊤ 
+
+> j
+
+ΩΩΩj φφφj approximates the squared L2-norm of the second derivative R {ϕ′′  
+
+> j
+
+(t)}2 dt , thereby enforcing smoothness of the loading function. Here αj ≥ 0 controls the strength of the roughness penalty. In (Huang et al., 2008), the roughness penalty is multiplied by the squared norm of the non-normalized left singular vector, 
+
+uuu⊤uuu, to ensure scale invariance. In our formulation, the non-normalized left vector is written as 
+
+su uu, with s ≥ 0 and ∥uuu∥2 = 1. Thus, the roughness penalty is equivalently applied to the scaled loading vector sφ φφj : ( sφ φφj )⊤ΩΩΩj (sφ φφj ) = s2φφφ⊤ 
+
+> j
+
+ΩΩΩjφφφj .
+
+In formulation 2.2, the first term aggregates the univariate reconstruction errors across all p
+
+variables, and the second term imposes individual smoothness constraints on each scaled loading function sφ φφj . This multivariate objective serves as the foundation for the Tri-SfSVD framework, enabling us to subsequently introduce sparsity penalties for simultaneous subject, feature, and temporal selection. 
+
+2.2 Biclustering via Sparse Functional SVD 
+
+2.2.1 Integrated Selection of Subjects, Variables, and Temporal Subregions 
+
+To move beyond global pattern recognition and identify localized structures within high-dimensional longitudinal data, we propose a unified framework that incorporates three layers of sparsity. By augmenting the multivariate functional SVD objective 2.2 with specific penalties, we formulate the Tri-SfSVD optimization problem: min   
+
+> s, u uu, {φφφj}pj=1
+> p
+
+X
+
+> j=1
+
+YYY j − s u uu φ φφ⊤ 
+
+> j
+> 2
+> F
+
++ Pγ (su uu) + Pθ(sφ φφ) + Pλλλ(sφ φφ) + 
+
+> p
+
+X
+
+> j=1
+
+αj (sφ φφj )⊤ΩΩΩj (sφ φφj )subject to s ≥ 0, ∥uuu∥2 = 1 , ∥φφφ∥2 = 1 , φφφ = ( φφφ⊤ 
+
+> 1
+
+, . . . , φ φφ⊤ 
+
+> p
+
+)⊤.
+
+(2.3) Here Pγ (su uu), Pθ(sφ φφ), and Pλλλ(sφ φφ) are sparsity-inducing penalty terms, and γ, θ, and λλλ := {λj }pj=1 
+
+are tuning parameters that control the degree of sparsity at the subject, variable, and within-variable subregion levels, respectively. We specifically define the following penalty structures: 51. Subject Selection for Subgroup Discovery: Pγ (su uu). To identify clusters of subjects that exhibit a specific latent trajectory, we apply an adaptive lasso penalty to the subject score vector: Pγ (su uu) = 
+
+γ Pni=1 w1,i |su i|. This encourages sparsity at the subject level, effectively grouping individuals with 
+
+ui = 0 as ”inactive” for a particular component, thereby isolating a specific disease subtype or phenotype. Here w1,i are data-driven weights defined by w1,i = |ˆsˆui|−κ, where ˆ sˆui denotes the unpenalized least-squares estimate of su i, obtained by minimizing the reconstruction loss in (2.3) with {φφφj }pj=1 fixed. The exponent κ is a fixed nonnegative parameter, with typical values chosen from κ ∈ { 0.5, 1, 2} as suggested by Zou (2006) and Lee et al. (2010). These adaptive weights allow different coefficients to be penalized unequally, so that coefficients with larger initial estimates receive less shrinkage, whereas those with smaller initial estimates receive stronger shrinkage. In the special case where w1,i = 1 for all i, the penalty reduces to the standard lasso. 
+
+2. Variable Selection for Feature Relevance: Pθ(sφ φφ). In multivariate settings, only a subset of variables (e.g., specific metabolites) may contribute to a latent pattern. We employ a group-lasso-style penalty on the multivariate loading functions: Pθ(sφ φφ) = θ Ppj=1 w2,j ∥sφ φφj ∥2. This penalty shrinks the entire loading vector φj to zero for irrelevant variables, ensuring that the identified biclusters are defined only by a parsimonious set of features. The w2,j ’s are data-driven weights defined as w2,j = ∥ˆsˆφφφj ∥−κ 
+
+> 2
+
+with the same κ, and ˆ sˆφφφj denotes the unpenalized least squares estimate of sφ φφj , defined as the minimizer of the reconstruction loss in (2.3) with uuu fixed. 
+
+3. Temporal Selection for Triclustering: Pλ(sφ φφ). A key innovation of Tri-SfSVD is the ability to identify “triclusters”- patterns that exist only within specific temporal subregions. We introduce an element-wise adaptive lasso penalty on the loading functions: Pλ(sφ φφ) = Ppj=1 λj ∥www3,j ⊙ sφ φφj ∥1,
+
+where www3,j = ( w3,j 1, . . . , w 3,jd j )⊤ is a vector of data-driven adaptive weights, and ⊙ denotes the Schur (element-wise) product. The weights are defined by w3,jℓ := |ˆs ˆφjℓ |−κ. By inducing sparsity within the loading functions φj , the model can “zero out” segments of the timeline. This allows the framework to distinguish between: i) Biclusters, where a subject-variable association persists across the entire observation period; and ii) Triclusters, where a subject-variable association is localized to a specific time window (e.g., an early-stage vs. late-stage disease signature). Specifically, the estimated s, sparse uuu, and {φφφj }pj=1 together form a sparse rank-1 approximation to the original data. In this representation, samples corresponding to nonzero entries of uuu, variables corresponding to nonzero vectors φφφj , and informative subregions within the selected variables corresponding to nonzero elements of φφφj are jointly selected. Hence, each layer simultaneously links a subset of samples, a subset of functional variables, and localized subregions within those variables, thereby revealing a tricluster structure in the data. When λj = 0 for all j = 1 , . . . , p ,(2.3) reduces to a biclustering formulation that simultaneously identifies sample and variable clusters. Thus, the biclustering method is nested within the proposed Tri-SfSVD framework as a special case. 
+
+2.2.2 Extension to Sparse and Irregular Sampling 
+
+The formulation in (2.3) assumes a regularly sampled design, where each subject is observed on a common grid of time points for every functional variable j. In many longitudinal and biomedical studies, however, functional trajectories are observed sparsely and at irregular time points. For instance, in the IBD dataset analyzed in Section 4, each subject is observed at only a subset of time points, with observation schedules varying across subjects and variables. Under such 6designs, the matrix can not be represented as a complete matrix, rendering the formulation in (2.3) inapplicable in its original form. To accommodate sparse and irregular sampling, we reformulate the Tri-SfSVD objective to operate directly on the observed evaluation points, thereby avoiding the need for pre-smoothing or impu-tation. Let ttti,j := [ ti,j,k ]mi,j  
+
+> k=1
+
+denote the observation time points for subject i on variable j, where 
+
+mi,j is the number of observed measurements for subject-variable pair, and k indexes the observed time points. Let yyyi,j := ( yi,j, 1, . . . , y i,j,m i,j )⊤ collect the corresponding observed measurements. The sparse-data extension of (2.3) is then defined as min   
+
+> s, u uu, {φφφj}pj=1
+
+( nX
+
+> i=1
+> p
+
+X
+
+> j=1
+> mi,j
+
+X
+
+> k=1
+
+yi,j,k − su iφj (ti,j,k )2 + γ
+
+> n
+
+X
+
+> i=1
+
+w1,i |su i|
+
++ θ
+
+> p
+
+X
+
+> j=1
+
+w2,j ∥sφ φφj ∥2 +
+
+> p
+
+X
+
+> j=1
+
+λj ∥www3,j ⊙ (sφ φφj )∥1 +
+
+> p
+
+X
+
+> j=1
+
+αj (sφ φφj )⊤ΩΩΩj (sφ φφj )
+
+)
+
+, (2.4) subject to s ≥ 0, ∥uuu∥2 = 1, and ∥φφφ∥2 = 1. Here φφφj =  φj (t∗
+
+> j1
+
+), ..., φ j (t∗ 
+
+> jd j
+
+)⊤ ∈ Rdj represents the loading function evaluated on a common grid for variable j, {t∗
+
+> j1
+
+, ..., t ∗ 
+
+> jd j
+
+}, obtained by different time points of the set {ti,j,k ; i = 1 , ..., n ; k = 1 , ..., m i,j }. This point-wise reconstruction loss can be interpreted as a masked matrix optimization: Ppj=1 IIIj ⊙ (XXXj − su uu φ φφ⊤ 
+
+> j
+
+) 2 
+
+> F
+
+, where IIIj ∈ { 0, 1}n×dj
+
+is the indicator matrix such that Ij (i, ℓ ) = 1 if the data point for subject i is observed at time t∗
+
+> jℓ
+
+and 0 otherwise, and Xj =  xij (t∗
+
+> jℓ
+
+) 
+
+> i,ℓ
+
+∈ Rn×dj is the hypothetical complete matrix with missing entries masked. The formulation remains applicable even when some trajectories are observed at only a few time points. Moreover, because the objective is defined directly on the observed evaluation points, it does not require explicit modeling of the missingness mechanism. 
+
+2.2.3 Alternating Iterative Estimation Procedure 
+
+Following the scaled-variable sparse SVD strategy of Lee et al. (2010), we estimate the sparse rank-one layer by alternating penalized regressions on the scaled working variables euuu = su uu and 
+
+eφφφ = sφ φφ, followed by normalization. Specifically, we fix the normalized loading direction and update euuu, then fix the normalized subject direction and update eφφφ.
+
+First stage: update euuu. The normalized loading functions {φφφj }pj=1 are held fixed, and the scaled subject-specific scores euuu are updated by solving min 
+
+> euuu
+
+( nX
+
+> i=1
+> p
+
+X
+
+> j=1
+> mi,j
+
+X
+
+> k=1
+
+yi,j,k − euiφj (ti,j,k )2 + γ
+
+> n
+
+X
+
+> i=1
+
+w1,i |eui|
+
+)
+
+, (2.5) For notational convenience, define yyyi := ( yyy⊤
+
+> i, 1
+
+, . . . , y yy⊤
+
+> i,p
+
+)⊤ and φφφ∗ 
+
+> i·
+
+:= φφφ∗
+
+> i, 1⊤
+
+, . . . , φ φφ∗
+
+> i,p ⊤
+
+⊤, where φφφ∗ 
+
+> ij
+
+=
+
+ φj (ti,j, 1), · · · , φ j (ti,j,m ij ) collects the evaluations of the jth loading function at the observation times for subject i. Since (2.5) can be rewritten by grouping terms according to each subject i,the minimization over euuu decouples into n independent scalar problems, min 
+
+> eui
+
+n
+
+∥yyyi − φφφ∗ 
+
+> i·
+
+eui∥22 + γw 1,i |eui|
+
+o
+
+, i = 1 , . . . , n. (2.6) 7Each subproblem in (2.6) is a one-dimensional quadratic loss with an ℓ1 penalty, and therefore admits a closed-form solution via the soft-thresholding operator: 
+
+eui = sign  φφφ∗
+
+> i·⊤
+
+yyyi
+
+
+
+φφφ∗
+
+> i·⊤
+
+φφφ∗
+
+> i·
+
+
+
+φφφ∗
+
+> i·⊤
+
+yyyi − γw 1,i 
+
+2
+
+
+
+> +
+
+, i = 1 , . . . , n. (2.7) where ( a)+ = max {a, 0} denotes the positive-part operator for any real number a ∈ R. The resulting vector euuu is a scaled subject-score vector. We normalized it by setting uuu = euuu/ ∥euuu∥2. This thresholding step effectively induces sparsity at the subject level, allowing the model to identify specific subjects belonging to a latent cluster. 
+
+Second stage: Update eφφφj . We fix the normalized uuu and update {eφφφj }pj=1 by solving min  
+
+> {eφφφj}pj=1
+
+( nX
+
+> i=1
+> p
+
+X
+
+> j=1
+> mi,j
+
+X
+
+> k=1
+
+yi,j,k − ui eφj (ti,j,k )2 + θ
+
+> p
+
+X
+
+> j=1
+
+w2,j ∥eφφφj ∥2 +
+
+> p
+
+X
+
+> j=1
+
+λj ∥www3,j ⊙ eφφφj ∥1 +
+
+> p
+
+X
+
+> j=1
+
+αj eφφφ⊤ 
+
+> j
+
+ΩΩΩj eφφφj
+
+)
+
+.
+
+(2.8) This objective decouples into p independent subproblems: min 
+
+> eφφφj
+
+( nX
+
+> i=1
+> mi,j
+
+X
+
+> k=1
+
+yi,j,k − ui eφj (ti,j,k )2 + θw 2,j ∥eφφφj ∥2 + λj ∥www3,j ⊙ eφφφj ∥1 + αj eφφφ⊤ 
+
+> j
+
+ΩΩΩj eφφφj
+
+)
+
+. (2.9) This decomposition provides an important computational advantage in high-dimensional settings: instead of solving one large coupled optimization problem, we only need to solve p smaller indepen-dent subproblems. As a result, the optimization is more scalable and can be efficiently parallelized across variables. To facilitate an efficient estimation of the functional components, we first introduce a more compact notation. Let ˜ yyyj := yyy⊤ 
+
+> 1,j
+
+, . . . , y yy⊤
+
+> n,j
+
+⊤ ∈ RMj represent the concatenated vector of measurements for variable j across all subjects, where Mj = Pni=1 mi,j . We define the mapping matrix BBBi,j ∈ Rmi,j ×dj
+
+which maps φφφj to φφφ∗ 
+
+> i,j
+
+(that is BBBi,j φφφj = φφφ∗ 
+
+> i,j
+
+) such that Bi,j (k, ℓ ) = 1 if ti,j,k = t∗ 
+
+> jℓ
+
+and 0 otherwise for 
+
+k = 1 , ..., m i,j and ℓ = 1 , ..., d j . By constructing the design matrix UUU j = [ u1BBB⊤ 
+
+> 1,j
+
+, . . . , u nBBB⊤ 
+
+> n,j
+
+]⊤ ∈
+
+RMj ×dj , the subproblem (2.9) can be expressed as min 
+
+> eφφφj
+
+n
+
+∥˜yyyj − UUU j eφφφj ∥22 + θw 2,j ∥eφφφj ∥2 + λj ∥www3,j ⊙ eφφφj ∥1 + αj eφφφ⊤ 
+
+> j
+
+ΩΩΩj eφφφj
+
+o
+
+. (2.10) Motivated by the standard Fast Iterative Shrinkage-Thresholding Algorithm (FISTA) framework (Beck and Teboulle, 2009), we develop a modified FISTA to solve (2.10). When λj = 0, the triclustering penalty reduces to the biclustering penalty, and the details of the modified FISTA algorithm, including this biclustering special case, are provided in the Supplementary Material (Section A and Algorithm A.1). After obtaining {eφφφj }pj=1 , normalize eφφφ where eφφφ = ( eφφφ⊤ 
+
+> 1
+
+, . . . , eφφφ⊤ 
+
+> p
+
+)⊤.For model selection, we adopt a computationally efficient tuning strategy for the hyperparame-ters. While the subject-level ( γ) and feature-level ( θ) sparsity parameters are treated as global, we select the variable-specific roughness ( αj ) and temporal sparsity ( λj ) parameters indepen-dently for each scaled-loading subproblem in (2.9). This localized tuning significantly reduces the 8high-dimensional search space without sacrificing the ability to capture variable-specific temporal dynamics. The selection of all tuning parametersis guided by the Extended Bayesian Informa-tion Criterion (EBIC; Chen and Chen, 2008), which provides a principled balance between model complexity and data fidelity. Comprehensive details of the tuning procedure and the complete Tri-SfSVD algorithm are provided in the Supplementary Material (Sections B.2 and Algorithm B.1). In addition, strategies for selecting the number of tri/biclusters, K, are discussed in Section B.4 in the Supplementary Material. In our simulation and real data analyses, we adopt the cumulative explained variance (CEV) strategy. 
+
+2.3 Flexibility for Non-Overlapping and Overlapping Estimation 
+
+In real data analysis, users may have varying preferences regarding the structure of the estimated bi- and triclusters. For instance, some may prefer non-overlapping results, where the clusters are disjoint, ensuring that samples, features, or subregions are assigned to only one cluster. Conversely, others may desire overlapping clusters to capture more complex relationships where elements can belong to multiple groups. To accommodate these diverse needs and enhance the flexibility of our method, we incorporate a weighting mechanism for non-overlapping scenarios, following the idea of Zhang et al. (2022): after identifying a bicluster or tricluster, we assign zero weights to the involved samples or features, thereby enforcing zero coefficients for them in subsequent estimations. This approach allows users to seamlessly switch between non-overlapping and overlapping modes based on their specific requirements. 
+
+## 3 Simulation Study 
+
+3.1 Simulation Setup 
+
+We evaluate the empirical performance of the Tri-SfSVD framework through a series of numer-ical experiments designed to mimic the complexities of longitudinal high-dimensional data. We generate a p-dimensional functional object XXX(ttt) = ( X1(t), . . . , X p(t)) defined on the unit interval [0 , 1]. To evaluate the model’s ability to recover multi-component signals, data are generated from a rank-K functional model: 
+
+Xi(t) = 
+
+> K
+
+X
+
+> k=1
+
+λ(k)u(k) 
+
+> i
+
+φ(k)(t) + ϵi(t)where λ(k) denotes the k-th singular value, u(k) ∈ Rn represents the k-th left singular vector (sub-ject scores), and φ(k)(t) = ( φ(k)1 (t), . . . , φ (k) 
+
+> p
+
+(t)) ⊤ are the p-dimensional right singular functions. The noise term ϵi(t) is assumed to follow a multivariate normal distribution Np(0, 0.52Ip). Fol-lowing standard functional SVD conventions, we enforce identifiability by setting {u(k)}Kk=1 to be orthonormal in Rn and {φ(k)}Kk=1 to be orthonormal in the product Hilbert space H, such that 
+
+∥u(k)∥ = 1 and ∥φ(k)∥H = 1 for all k. Each variable is initially observed on a dense grid of d = 40 equally spaced time points before we introduce varying levels of artificial missingness to test the framework’s robustness to the irregular sampling common in clinical studies. 9We fix the rank K = 4 and the sample size n = 100. We vary the number of functional variables to three settings p ∈ { 60 , 200 , 1000 }. For each setting, the proportion of active variables, those possessing a non-zero loading function in at least one latent component, is fixed at approximately 70% (corresponding to 40, 140, and 700 variables, respectively). The remaining 30% of variables are inactive, with trajectories identically zero across the entire domain. The p-dimensional right singular functions {φ(k)}Kk=1 are constructed to test the model’s ability to distinguish between biclusters and triclusters. For each active variable, we assign a functional shape by sampling from a dictionary of ten candidate curves (see Supplementary Figure E.1). These curves are categorized into two structural types: i) Full-domain continuous functions, representing global patterns defined over the entire interval [0 , 1], and ii) Subregion-localized functions, which are restricted to either the left or right half of the discrete grid with the remaining domain set to zero. This dual-type design specifically evaluates whether Tri-SfSVD can distinguish between features with global support and those with time-domain sparsity in a data-driven manner. Regarding the left singular vectors {u(k)}Kk=1 , which represent subject-specific scores, we select a subset of indices Sk ⊂ { 1, . . . , n } for each component. Entries for indices in Sk are drawn from 
+
+N (1 , 0.32) and set to zero otherwise, thereby inducing subject-level sparsity. The singular values are fixed at ( λ(1) , λ (2) , λ (3) , λ (4) ) = (10 , 8, 6, 4) to represent a decreasing signal-to-noise ratio across components. Finally, we simulate the challenges of irregular longitudinal sampling by imposing missing rate levels of 40% and 60% on the observed grid. For each setting, we consider both nonoverlapping and overlapping configurations, in which the nonzero supports of {uuu(k)}Kk=1 and {φφφ(k)}Kk=1 are either disjoint or overlapping, respectively. De-tails on how orthogonality is handled under the overlapping setting are given in Section E.2 in the Supplementary Material. We performed 100 independent simulation replicates for each con-figuration. Figure E.2 in the supplementary material illustrates nonoverlapping and overlapping bicluster structures, along with the estimated results from our approach, for the setting with 
+
+p = 60 and a missing rate of 60%. In nonoverlapping cases, biclusters form disjoint rectangular blocks that do not share samples or features. In contrast, overlapping cases allow biclusters to share a subset of samples or features, leading to intersecting block structures. We therefore eval-uate performance under both configurations. This design is motivated by real data applications, where the underlying structure is typically unknown, and assessing both configurations provides a more comprehensive evaluation of robustness. Figure E.5 in the Supplementary Material shows the detailed tricluster results from a randomly selected nonoverlapping dataset simulated with 
+
+p = 60 and a missing rate of 40%. To quantify clustering performance, we adopt the similarity framework from Sill et al. (2011) to compute F -scores at multiple levels, including subject, variable, subregion, bicluster, and triclus-ter; see Appendix E.4 for the detailed definitions and formulas. 
+
+3.2 Simulation Results 
+
+We applied our proposed method alongside five competing approaches. The first is a two-step procedure based on multivariate functional principal component analysis (MFPCA) (Happ and Greven, 2018). Specifically, we first apply MFPCA to the multivariate functional data to obtain low-dimensional subject-level score vectors, and then apply k-means clustering to these scores to 10 obtain sample clusters. We refer to this method as MFPCA-Kmean. The second is a two-stage baseline approach, denoted by FPCA-BC. Specifically, for each feature, we first applied functional principal component analysis (FPCA) (Yao et al., 2005) and extracted its first left singular vector. We then concatenated these vectors across features to form an n × p matrix, to which a standard biclustering algorithm (Chekouo and Murua, 2015) was applied to obtain biclusters. The third competing approach is a well-known triclustering method (Zhao and Zaki, 2005), referred to as TriCluster, which is designed to identify joint patterns across the sample, feature, and time di-mensions in three-dimensional datasets. The remaining two competing approaches are existing functional biclustering methods: funLBM (Slimen et al., 2018) and funCC (Galvani et al., 2021). Since TriCluster, funLBM and funCC require complete input data, we first applied PACE, which is well suited for recovering the functional trajectories and then applied these methods to the result-ing completed data. The simulation results are presented in Figure 1 for the nonoverlapping and overlapping settings. Each figure contains three boxplots summarizing F -scores for recovery on the sample, sample-feature, and sample-feature-time dimensions. Here, the sample-level F -score is computed from the sample clustering induced by each method’s estimated tricluster structure, rather than from a separately performed sample clustering analysis. The second boxplot sum-marizes recovery of sample-feature bicluster assignments, and the third summarizes recovery of sample-feature-time tricluster assignments. For the sample-level recovery, we compare all meth-ods. For bicluster recovery, we compare UFPCA, TriCluster, funLBM, funCC and Tri-SfSVD, since MFPCA produces sample-level clustering but does not output feature clusters or bicluster assignments. For tricluster recovery, we also compare only Tri-SfSVD and TriCluster, since other approaches do not produce tricluster output. In general, the results demonstrate the superior performance of Tri-SfSVD across all evaluated cases, achieving higher F -scores and showing strong robustness, particularly in highly sparse and high-dimensional settings. In particular, TriCluster exhibits consistently low F -scores under this simulation design. TriCluster is designed to group features primarily based on the similarity of functional shapes. In our simulations, however, a tricluster may contain features with hetero-geneous shapes, provided that they jointly capture the dominant variation within the selected samples. Under such heterogeneous shape settings, shape-driven methods, such as TriCluster, tend to underperform because they do not prioritize contributory patterns when within-cluster shapes differ. In contrast, Tri-SfSVD directly targets the contributory structure under subregion sparsity, enabling it to recover coherent triclusters even when within-cluster shapes vary substan-tially. 11 Missing Rate: 0.4 Missing Rate: 0.6      
+
+> Nonoverlap Case  Overlap Case
+> 60 200 1000 60 200 1000
+> 0.00 0.25 0.50 0.75 1.00
+> 0.00 0.25 0.50 0.75 1.00
+
+Tri−SfSVD MFPCA−Kmean FPCA−BC 
+
+TriCluster funLBM funCC (a) Sample cluster Missing Rate: 0.4 Missing Rate: 0.6      
+
+> Nonoverlap Case  Overlap Case
+> 60 200 1000 60 200 1000
+> 0.00 0.25 0.50 0.75 1.00
+> 0.00 0.25 0.50 0.75 1.00
+
+Tri−SfSVD FPCA−BC TriCluster 
+
+funLBM funCC (b) Bicluster Missing Rate: 0.4 Missing Rate: 0.6      
+
+> Nonoverlap Case  Overlap Case
+> 60 200 1000 60 200 1000
+> 0.00 0.25 0.50 0.75 1.00
+> 0.00 0.25 0.50 0.75 1.00
+
+Tri−SfSVD 
+
+TriCluster 
+
+(c) Tricluster 
+
+Figure 1: F -scores for simulation studies under non-overlapping and overlapping tricluster struc-tures. Panels (a)–(c) summarize recovery performance at the sample, sample–feature bicluster, and sample–feature–time tricluster levels, respectively, over 100 simulation replications. Results are reported across different numbers of variables and missing rates. Larger F -scores indicate better agreement between the estimated and true clustering structures. 12 4 Real Data Analysis 
+
+In this section, we analyze the IBDMDB dataset, which tracks longitudinal microbial functional profiles from 130 participants over a 50-week period. The primary scientific objective is to identify clusters of subjects and microbial pathways that exhibit different longitudinal patterns in IBD. We use the preprocessed metagenomic data from Liu et al. (2025). Specifically, we focus on the top 200 species-stratified metagenomic pathways identified in that study from an initial set of 1,622 candidates. Details of the preprocessing and feature selection procedure can be found in the same study. Each feature represents a microbial functional pathway associated with a particular bacterial species. Therefore, these features jointly encode pathway-level functional information and the bacterial species in which that function is observed. More details on the retained pathway functions and their bacterial-species distribution are provided in Table 8 in the Supplementary Material. Before applying our method, each retained feature was standardized by subtracting its mean and dividing by its standard deviation across all observed values. The number of sparse layers, denoted by K, was determined using a cumulative explained variance criterion (see Section B.4 of the Supplementary Material. We selected K = 3, which together account for over 90% of the total variance. These three extracted layers effectively encompass all 130 participants and identify a subset of 151 metabolic pathways, providing an interpretable representation of the longitudinal disease signatures. 
+
+4.1 Clinical Interpretation of the Identified Feature Clusters 
+
+Each sparse layer selected a subset of pathways through nonzero functional loadings. We there-fore defined the pathway group FFF k (k = 1 , 2, 3) as the set of pathways with nonzero functional loadings in the kth sparse layer. Notably, the pathways within each group were mainly associ-ated with the same bacterial label, suggesting that each FFF k captures a functionally coherent set of microbial pathways associated with a dominant bacterium. Specifically, FFF 1 contains 65 path-ways primarily associated with Alistipes putredinis , FFF 2 contains 49 pathways primarily associated with Ruminococcus torques , and FFF 3 contains 26 pathways primarily labeled as unclassified in this dataset. Detailed information on the pathways included in each FFF k is provided in Section D of the Supplementary Material. In this application, the data-driven tuning procedure did not produce meaningful subregion-level sparsity in the estimated functional loadings across pathways, suggest-ing that the dominant pattern was better captured by subject–feature clustering over the full time domain. Figure D.3 in the Supplementary Material displays the estimated functional loadings for all pathways across the three sparse layers. 
+
+4.2 Sample Cluster Refinement and Bicluster Association Analysis 
+
+In our initial analysis, the EBIC/BIC-based selection tended toward conservative sparsity esti-mates (i.e., low sparsity) for the subject scores, a phenomen previously observed in Lee et al. (2010). This resulted in layers that retained a large proportion of subjects, leading to substantial overlap across components and obscuring the boundaries between distinct biological subtypes. Similar challenges in achieving clear sample separability through sparse matrix decompositions alone have been noted by Sill et al. (2011). 13 To enhance the separability and biological interpretability of the sample clusters, we adopted a two-step refinement strategy to delineate clear bicluster structures. First, we refined the sample clusters by applying k-means clustering to the left singular matrix estimated by our method. In this matrix, each column corresponds to the left singular vector uuu from a specific layer, while each row contains the latent scores for a given sample across all identified layers. By applying k-means to these row-vectors, we partitioned the n = 130 samples into three disjoint sample clusters, denoted by {SSSj }3
+
+> j=1
+
+, where the choice of k = 3 was aligned with the number of detected feature clusters. Let CCC ∈ { 0, 1}130 ×3 denote the resulting sample cluster indicator matrix, where Cij = 1 if sam-ple i ∈ SSSj and Cij = 0 otherwise. Second, to characterize the functional behavior within these groups, we derived a low-dimensional representation of each pathway group by adapting the mod-ule eigengene farmework from Weighted Gene Co-expression Network Analysis (Langfelder and Horvath, 2008). Specifically, for each pathway group FFF k, we defined its module eigengene as the first principal component of the data matrix restricted to the pathways in that group, denoted by mmmk ∈ R130 . Thus, mmmk captures the dominant variation pattern shared by the pathways in FFF k
+
+across the 130 samples. We then quantified the association between sample cluster SSSj and pathway group FFF k using dis-tance correlation, rjk = dCor( CCC·j , m mmk). Distance correlation ranges from 0 to 1, with larger values indicating stronger dependence. Unlike ordinary correlation, which mainly captures linear asso-ciation, distance correlation can detect both linear and nonlinear dependence, making it useful for measuring association between a binary sample-cluster indicator and a continuous module eigengene. In our setting, a relatively large value of rjk indicates a strong association between membership in sample cluster SSSj and the pathway pattern summarized by mmmk. Accordingly, pairs (SSSj , F FF k) with relatively large values of rjk were interpreted as representative biclusters, reflecting the core associations between sample clusters and pathway groups. 
+
+4.3 Clinical Characterization of the Identified Sample Clusters 
+
+Following the procedure described above, we obtained three sample clusters {SSSj }3
+
+> j=1
+
+, which were compared across clinical phenotypes using Fisher’s exact test for binary variables and the Kruskal– Wallis test for continuous variables; the results are summarized in Table 1. A significant association was observed between the sample clusters and IBD type ( P = 0 .0019), whereas the updated sex association did not reach the 0.05 significance level ( P = 0 .0845). Specifically, SSS1 was enriched for CD (57.6%) and females (63.6%), with lower proportions of UC (18.2%) and non-IBD individuals (24.2%). In contrast, SSS2 contained the largest proportion of non-IBD subjects among the three clusters (35.6%) and was predominantly male (62.2%). Finally, SSS3 was dominated by IBD subjects (94.2%; CD 57.7%, UC 36.5%) and showed a balanced sex distribution (50.0% female, 50.0% male), suggesting an IBD-associated profile spanning both CD and UC. 
+
+4.4 Interpretation of Identified Biclusters 
+
+Table 2 summarizes the associations between the identified subject clusters {SSSj }3 
+
+> j=1
+
+and the path-way groups {FFF k}3
+
+> k=1
+
+. Based on the largest distance correlation values, we identified five primary 14 Sample clusters (N) P-value 
+
+SSS1 (33) SSS2 (45) SSS3 (52) IBD type Non-IBD 8(24.2%) 16 (35.6%) 3 (5.8%) 0.0019 CD 19 (57.6%) 16 (35.6%) 30 (57.7%) UC 6(18.2%) 13 (28.9%) 19 (36.5%) Sex Female 21 (63.6%) 17 (37.8%) 26 (50.0%) 0.0845 Male 12 (36.4%) 28 (62.2%) 26 (50.0%) Age at diagnosis, mean (SD) 21.12 (12.08) 20.96 (14.92) 21.63 (10.65) 0.5637 CRP (C-Reactive Protein), mean (SD) 60.33 (241.90) 63.18 (234.15) 49.68 (203.66) 0.3789 ESR (Erythrocyte Sedimentation Rate), mean (SD) 18.65 (19.81) 21.61 (17.51) 23.96 (20.82) 0.3588 Race 
+
+> American Indian or Alaska Native
+
+0 0 10.8205  
+
+> Black or African American
+
+1 5 4 
+
+> More than one race
+
+1 3 1 
+
+> Other
+
+1 1 2 
+
+> White
+
+30 36 44 
+
+Table 1: Associations between sample clusters and clinical phenotypes in the IBD dataset. Entries are counts (percentages) for categorical variables and mean (SD) for continuous variables. P -values are from Fisher’s exact tests for categorical variables and Kruskal–Wallis tests for continuous variables. The table shows that the identified sample clusters differ significantly in IBD type, whereas no significant differences are observed for sex, age at diagnosis, CRP, ESR, or race. biclusters: ( SSS1, F FF 1), ( SSS3, F FF 1), ( SSS2, F FF 2), ( SSS3, F FF 2), and ( SSS3, F FF 3). Figure 2 provides a visual summary of these identified biclusters by displaying three randomly selected pathways from each pathway group, with full longitudinal profiles for all pathways provided in the Supplementary Figures D.4– D.8. Pathway group FFF 1 is dominated by pathway features stratified to Alistipes putredinis . Based on the distance-correlation criterion in Table 2, FFF 1 contributes to two selected biclusters, ( SSS1, F FF 1)and ( SSS3, F FF 1). Figure 2 visualizes these biclusters using representative pathways from FFF 1, showing diverging temporal trajectories between the two subject clusters. The mean curves for these 
+
+Alistipes -stratified pathways, representing functional activity levels rather than simple bacterial abundance, show a general decline over time in S1, while exhibiting an increasing trend in S3.This divergence indicates that ( S1, F1) and ( S3, F1) represent two distinct functional signatures involving the same microbial species. This longitudinal contrast aligns with the clinical phenotypic composition of the two subject groups. While both S1 and S3 contain similar proportions of subjects with Crohn’s Disease (CD), S1 is enriched with non-IBD (control) individuals, whereas 15 S3 includes a significantly larger proportion of subjects with Ulcerative Colitis (UC). Our findings are consistent with existing literature reporting that Alistipes putredinis is a hallmark of a healthy gut microbiome and is typically depleted in UC patients (Nomura et al., 2021; de Meij et al., 2018). Collectively, these results suggest that F1 serves as an overlapping pathway group that distinguishes the relatively “healthy” profiles of S1 from the UC-enriched profiles of S3, highlighting that microbial functional signals are heterogeneous across different IBD subtypes. For space considerations, additional interpretations of the biclusters involving FFF 2 and FFF 3 are provided in Section D.1.1 of the Supplementary Material. 
+
+FFF 1 FFF 2 FFF 3
+
+SSS1 0.705 0.705 0.705 (0.049) 0.270 (0.053) 0.263 (0.057) 
+
+SSS2 0.164 (0.046) 0.845 0.845 0.845 (0.029) 0.357 (0.063) 
+
+SSS3 0.689 0.689 0.689 (0.048) 0.602 0.602 0.602 (0.051) 0.553 0.553 0.553 (0.057) Table 2: Bootstrap mean (SD) of rjk between sample clusters {SSSj }3 
+
+> j=1
+
+and pathway groups 
+
+{FFF k}3
+
+> k=1
+
+. Bootstrap replicates were obtained by resampling subjects with replacement and re-computing rjk in each replicate. Larger values indicate stronger dependence between a sample cluster and a pathway group, and therefore provide stronger evidence for interpreting that pair as a bicluster. The table indicates an overlapping association structure: FFF 1 is strongly associated with both SSS1 and SSS3, FFF 2 is most strongly associated with SSS2 but also shows a relatively strong association with SSS3, and FFF 3 is most strongly associated with SSS3.
+
+4.5 Comparison with Alternative Methods 
+
+To assess the practical performance of the proposed method, we compared it with MFPCA, FPCA-BC, funLBM and funCC on the same IBD dataset. Detailed results are reported in section D.1.2 in the Supplementary Material. Briefly, MFPCA yielded sample clusters that were significantly associated with IBD type ( P < 0.001); however, because it does not perform pathway selection, it cannot identify interpretable pathway groups. FPCA-BC did not identify sample clusters with sig-nificant associations with either IBD type or sex in this application. Although funLBM identified meaningful sample clusters, it returned 15 feature clusters and a total of 45 biclusters, making the resulting structure less interpretable. funCC did not produce clearly meaningful bicluster struc-tures. Overall, these comparisons suggest that the proposed method provides a more structured and biologically interpretable sample–pathway representation. 
+
+## 5 Conclusion 
+
+We propose a triclustering framework for high-dimensional multivariate functional data to identify structured associations among samples, variables, and time. Built on a functional SVD formula-tion with sparse regularization, the method lets the data determine the underlying structure across samples, features, and time, rather than imposing a triclustering pattern a priori. The framework also accommodates sparse functional data with irregularly missing observations and is compu-tationally scalable, since the optimization over functional loadings decomposes into independent 16 F1 Pathway 9Pathway 27 Pathway 151 
+
+F2 Pathway 110 Pathway 143 Pathway 174 
+
+F3 Pathway 12 Pathway 13 Pathway 116 
+
+S1 
+
+S2 
+
+S3                           
+
+> 00.4 0.9 1.3 1.8
+> −0.6 0.1 0.7 1.3 2
+> −1.7 −1 −0.3 0.4 1.2 020 40 020 40 020 40 020 40 020 40 020 40 020 40 020 40 020 40
+
+Bicluster 1 (S1−F1) Bicluster 4 (S3−F2) Bicluster 2 (S2−F2) Bicluster 5 (S3−F3) Bicluster 3 (S3−F1) Figure 2: Visual summary of the identified sample–pathway bicluster structure. Rows correspond to the sample clusters SSS1, S SS2, S SS3, and column groups correspond to the pathway groups FFF 1, F FF 2, F FF 3,with three randomly selected pathways from each pathway group shown for illustration. Each SSSi-
+
+FFF j block represents one sample–pathway combination. Combinations identified as biclusters are shown as colored blocks, whereas combinations not identified are left blank. Within each colored block, colored points represent raw sample mean measurements for the selected pathway among samples in the corresponding sample cluster, computed after omitting missing observations at each time point, and colored solid curves represent the reconstructed mean trajectories from our method. subproblems that enable parallel implementation. We illustrated the method through two real data applications. In the IBD dataset, it identified three pathway groups linked to sample clusters with distinct clinical and demographic profiles. In the EEG dataset, it identified three channel groups with distinct spatial and temporal patterns: one frontal channel group with signals over almost the full time domain and two posterior channel groups with signals concentrated in different localized temporal windows. These EEG patterns 17 were associated with subject clusters enriched for alcoholic or control participants, suggesting that alcoholism-related electrophysiological differences may be reflected in region-specific and time-localized brain activity. A computational limitation of the proposed method is that, as a regularized framework with multiple tuning parameters, it requires careful specification of candidate tuning ranges. In high-dimensional settings, evaluation over a large number of tuning combinations can be computation-ally demanding and less efficient than unregularized alternatives. Future work could therefore focus on developing more scalable strategies for tuning-parameter selection. Methodologically, another promising direction is to extend the proposed framework to nonlin-ear functional SVD. For example, neural-network-based representations could be incorporated to capture nonlinear functional patterns while retaining sparse subject, feature, and time-subregion selection for interpretability. The method could also be extended to multi-omics functional data by jointly modeling multiple longitudinal omics layers, enabling the identification of shared or omics-specific bicluster and tricluster structures across data modalities. Overall, the proposed framework provides a flexible and interpretable approach for uncovering meaningful structures in complex functional data. 
+
+## Funding and Acknowledgments 
+
+The project was supported by the Award Numbers 1R35GM142695 and 1R35GM150537 of the National Institute of General Medical Sciences of the National Institutes of Health. The content is solely the responsibility of the authors and does not represent the official views of the National Institutes of Health. 
+
+## Data Availability Statement 
+
+The data used were obtained from https://ibdmdb.org. We provide an R package, TriSfsvd , to facilitate the use of our method. Its source codes, along with a README file, are available at: https://github.com/YueZhao512/TriSfSVD. 18 Supplementary Materials for Sparse Functional Singular Value Decomposition for Biclustering and Triclustering Longitudinal Data 
+
+## A FISTA Details 
+
+A.1 FISTA details for the eφφφj update 
+
+For the variable-specific scaled-loading subproblem in (2.10) of the main manuscript, we use a modified Fast Iterative Shrinkage-Thresholding Algorithm (FISTA) (Beck and Teboulle, 2009). FISTA is applied to the scaled-loading subproblem for eφφφj = sφ φφj ; the normalized loading direction is obtained after concatenating the variable-specific scaled loadings. Specifically, we solve min 
+
+> eφφφj
+
+n
+
+∥˜yyyj − UUU j eφφφj ∥22 + αj eφφφ⊤ 
+
+> j
+
+ΩΩΩj eφφφj + θw 2,j ∥eφφφj ∥2 + λj ∥www3,j ⊙ eφφφj ∥1
+
+o
+
+. (A.1) We decompose the objective as f (eφφφj ) + g(eφφφj ), where 
+
+f (eφφφj ) = ∥˜yyyj − UUU j eφφφj ∥22 + αj eφφφ⊤ 
+
+> j
+
+ΩΩΩj eφφφj
+
+is continuously differentiable and convex, with gradient 
+
+∇f (eφφφj ) = −2UUU ⊤
+
+> j
+
+ ˜yyyj − UUU j eφφφj
+
+ + 2 αjΩΩΩj eφφφj .
+
+The nonsmooth component is 
+
+g(eφφφj ) = θw 2,j ∥eφφφj ∥2 + λj ∥www3,j ⊙ eφφφj ∥1,
+
+which contains the variable-level group penalty and the temporal adaptive-lasso penalty. Given the current iterate eφφφj , FISTA forms the gradient-descent point 
+
+zzz = eφφφj − η∇f (eφφφj ),
+
+where η > 0 is the step size, and updates 
+
+eφφφnew  
+
+> j
+
+= prox ηg (zzz).
+
+Lemma A.1 (Proximal operator for the Tri-SfSVD eφφφj -update) . For 
+
+g(eφφφj ) = θw 2,j ∥eφφφj ∥2 + λj ∥www3,j ⊙ eφφφj ∥1,
+
+the proximal operator 
+
+prox ηg (zzz) = arg min 
+
+> eφφφj
+
+12∥eφφφj − zzz∥22 + ηg (eφφφj )
+
+
+
+A1 has the closed-form expression 
+
+prox ηg (zzz) = 
+
+
+
+1 − ηθw 2,j 
+
+∥S(zzz, ηλ jwww3,j )∥2
+
+
+
+> +
+
+S(zzz, ηλ jwww3,j ), (A.2) 
+
+where S(zzz, a aa) is the component-wise soft-thresholding operator, 
+
+S(zzz, a aa)ℓ = sign( zℓ)( |zℓ| − aℓ)+.
+
+If S(zzz, ηλ jwww3,j ) = 0 00, then prox ηg (zzz) = 0 00.
+
+The proof follows from the proximal mapping of a sparse-group penalty and is included here to keep the derivation of the FISTA update self-contained. 
+
+Proof of Lemma A.1. In FISTA, at each iteration with Lipschitz constant L > 0, we form the quadratic approximation 
+
+M (eφφφj ) = f (eφφφ0) + ⟨eφφφj − eφφφ0, ∇f (eφφφ0)⟩ + L
+
+2 ∥eφφφj − eφφφ0∥22 + θw 2,j ∥eφφφj ∥2 + λj ∥www3,j ⊙ eφφφj ∥1
+
+at current point eφφφ0. Minimizing M (·) is equivalent to ˜M (eφφφj ) = 12η ∥eφφφj − zzz∥22 + θw 2,j ∥eφφφj ∥2 + λj ∥www3,j ⊙ eφφφj ∥1,
+
+where η = 1 /L is the step size and 
+
+zzz = eφφφ0 − η∇f (eφφφ0).
+
+Define the nonsmooth penalty term as 
+
+g(eφφφj ) = θw 2,j ∥eφφφj ∥2 + λj ∥www3,j ⊙ eφφφj ∥1.
+
+Then minimizing ˜M (eφφφj ) is equivalent, after multiplying the objective by the positive constant η,to solving arg min 
+
+> eφφφj
+
+12∥eφφφj − zzz∥22 + ηg (eφφφj )
+
+
+
+.
+
+Therefore, this minimizer is the proximal operator of ηg at zzz:prox ηg (zzz) = arg min 
+
+> eφφφj
+
+12∥eφφφj − zzz∥22 + ηθw 2,j ∥eφφφj ∥2 + ηλ j ∥www3,j ⊙ eφφφj ∥1
+
+
+
+.
+
+Following (Noah Simon, 2013; Tibshirani, 2010), the subgradient equation for the minimizer eφφφj is 000 ∈ eφφφj − zzz + ηθw 2,j ∂∥eφφφj ∥2 + ηλ j ∂∥www3,j ⊙ eφφφj ∥1,
+
+where 
+
+∂∥eφφφj ∥2 =
+
+
+
+www : www = eφφφj
+
+∥eφφφj ∥2
+
+if eφφφj̸ = 0 00, ∥www∥2 ≤ 1 if eφφφj = 0 00
+
+
+
+,
+
+A2 and 
+
+∂∥www3,j ⊙ eφφφj ∥1 = {www3,j ⊙ vvv : vi = sign( eφj,i ) if eφj,i ̸ = 0 , |vi| ≤ 1 if eφj,i = 0 } .
+
+Thus, the subgradient equation can be rewritten as 000 ∈ eφφφj − zzz + ηθw 2,j www + ηλ j (www3,j ⊙ vvv).
+
+The necessary condition for eφφφj = 0 00 to be the minimizer is that there exist www and vvv satisfying the subgradient equation with ∥www∥2 ≤ 1 and |vi| ≤ 1 for all i. This is equivalent to checking whether the minimum of 
+
+J(vvv) = 1(ηθw 2,j )2 ∥zzz − ηλ j (www3,j ⊙ vvv)∥22 = ∥www∥22,
+
+subject to |vi| ≤ 1 for all i, is at most 1. The minimizer vvv is obtained component-wise as 
+
+vi =
+
+
+
+zi
+
+ηλ j w3,j,i 
+
+, if zi
+
+ηλ j w3,j,i 
+
+≤ 1,
+
+sign 
+
+ zi
+
+ηλ j w3,j,i 
+
+
+
+, if zi
+
+ηλ j w3,j,i 
+
+> 1.
+
+This vvv aligns with the soft-thresholding operator, such that 
+
+zzz − ηλ j (www3,j ⊙ vvv) = S(zzz, ηλ jwww3,j ),
+
+where 
+
+S(zzz, ηλ jwww3,j ) = 
+
+
+
+sign( zi) |zi| − ηλ j w3,j,i 
+
+
+
+> +
+
+dj
+
+> i=1
+
+.
+
+Thus, eφφφj = 0 00 if 
+
+∥S(zzz, ηλ jwww3,j )∥2 ≤ ηθw 2,j .
+
+Otherwise, for eφφφj̸ = 0 00, the subgradient equation simplifies to 
+
+
+
+1 + ηθw 2,j 
+
+∥eφφφj ∥2
+
+eφφφj = S(zzz, ηλ jwww3,j ),
+
+since www = eφφφj /∥eφφφj ∥2 and vvv corresponds to the subgradient for the ℓ1 term post-soft-thresholding. Taking the ℓ2-norm of both sides yields 
+
+∥eφφφj ∥2 = ∥S(zzz, ηλ jwww3,j )∥2 − ηθw 2,j .
+
+Substituting back gives 
+
+eφφφj =
+
+
+
+1 − ηθw 2,j 
+
+∥S(zzz, ηλ jwww3,j )∥2
+
+
+
+S(zzz, ηλ jwww3,j ).
+
+Combining the zero and non-zero cases, the proximal operator is prox ηg (zzz) = 
+
+
+
+1 − ηθw 2,j 
+
+∥S(zzz, ηλ jwww3,j )∥2
+
+
+
+> +
+
+S(zzz, ηλ jwww3,j ).
+
+When S(zzz, ηλ jwww3,j ) = 0 00, define prox ηg (zzz) = 0 00. This completes the proof. A3 When λj = 0, the triclustering penalty reduces to the biclustering penalty g(eφφφj ) = θw 2,j ∥eφφφj ∥2,and the proximal operator becomes the standard group-lasso thresholding update: prox ηg (zzz) = 
+
+
+
+1 − ηθw 2,j 
+
+∥zzz∥2
+
+
+
+> +
+
+zzz. 
+
+The derivation of this biclustering special case is as follows. 
+
+Proof of Bicluster Proximal Operator. In FISTA, at each iteration with Lipschitz constant L > 0, we form the quadratic approximation 
+
+M (eφφφj ) = f (eφφφ0) + ⟨eφφφj − eφφφ0, ∇f (eφφφ0)⟩ + L
+
+2 ∥eφφφj − eφφφ0∥22 + θw 2,j ∥eφφφj ∥2
+
+at current point eφφφ0. Minimizing M (·) is equivalent to ˜M (eφφφj ) = 12η ∥eφφφj − zzz∥22 + θw 2,j ∥eφφφj ∥2,
+
+where η = 1 /L is the step size and zzz = eφφφ0 − η∇f (eφφφ0). The proximal operator is thus prox ηg (zzz) = arg min 
+
+> eφφφj
+
+12∥eφφφj − zzz∥22 + ηθw 2,j ∥eφφφj ∥2,
+
+where g(eφφφj ) = θw 2,j ∥eφφφj ∥2. The subgradient condition at the minimizer eφφφj is 
+
+0 ∈ eφφφj − zzz + ηθw 2,j www, (A.3) where www is a subgradient of ∥eφφφj ∥2:
+
+www =
+
+( eφφφj  
+
+> ∥eφφφj∥2
+
+if eφφφj̸ = 0,
+
+∈ { vvv : ∥vvv∥2 ≤ 1} if eφφφj = 0.
+
+The condition eφφφj = 0 holds if ∥zzz∥2 ≤ ηθw 2,j . Otherwise, for eφφφj̸ = 0,
+
+zzz = eφφφj
+
+
+
+1 + ηθw 2,j 
+
+∥eφφφj ∥2
+
+
+
+. (A.4) Taking the ℓ2-norm on both sides yields 
+
+∥eφφφj ∥2 = ∥zzz∥2 − ηθw 2,j .
+
+Substituting back into (A.4) gives 
+
+eφφφj =
+
+
+
+1 − ηθw 2,j 
+
+∥zzz∥2
+
+
+
+zzz. 
+
+Combining both cases completes the proof. A4 With the proximal updates for both Tri-SfSVD and Bi-SfSVD established above, Algorithm A.1 summarizes the resulting modified FISTA update with backtracking. Step 2 displays the triclus-tering update and its biclustering special case separately. 
+
+Algorithm A.1: FISTA with Backtracking 
+
+Initialization: Set eφφφ(0)  
+
+> j
+
+= v(1) = 0 and t(1) = 1. Given L > 0, τ > 1, and tolerance ε.
+
+Repeat until convergence: 
+
+1. Set η = 1 /L , and compute: 
+
+z(k) = v(k) − η∇f (v(k)).
+
+2. Compute the proximal update using one of the following two cases: Tri-SfSVD: eφφφ(k) 
+
+> j
+
+=
+
+
+
+1 − ηθw 2,j  
+
+> ∥S(z(k),ηλ jwww3,j )∥2
+
+
+
+> +
+
+S(z(k), ηλ jwww3,j ),
+
+Bi-SfSVD ( λj = 0) : eφφφ(k) 
+
+> j
+
+=
+
+
+
+1 − ηθw 2,j 
+
+> ∥z(k)∥2
+
+
+
+> +
+
+z(k).
+
+For the Tri-SfSVD update, set eφφφ(k) 
+
+> j
+
+= 0 00 when S(z(k), ηλ jwww3,j ) = 0 00. 3. If f (eφφφ(k) 
+
+> j
+
+) > f (v(k)) + ∇f (v(k))⊤(eφφφ(k) 
+
+> j
+
+− v(k)) + L 
+
+> 2
+
+∥eφφφ(k) 
+
+> j
+
+− v(k)∥22, then set L ← τ L and repeat from step 1. 4. Momentum Update: 
+
+v(k+1) = eφφφ(k) 
+
+> j
+
++ t(k) − 1
+
+t(k+1) (eφφφ(k) 
+
+> j
+
+− eφφφ(k−1)  
+
+> j
+
+), where t(k+1) = 1 + p1 + 4( t(k))2
+
+2 .
+
+5. Stop if ∥eφφφ(k) 
+
+> j
+
+− eφφφ(k−1)  
+
+> j
+
+∥2 ≤ ε.
+
+Output: eφφφj .A5 To connect the variable-specific FISTA update with the full estimation scheme, Algorithm A.2 records the basic alternating procedure used when the tuning parameters are held fixed. This fixed-tuning version serves as the computational template for the conditional one-dimensional tuning searches described in Section B.2; the complete EBIC-based procedure is summarized later in Algorithm B.1. 
+
+Algorithm A.2: Iterative method without tuning selection 
+
+1. Initialize uuui, {φφφj }pj=1 
+
+2. Repeat until convergence: 
+
+(a) euuu-subproblem :
+
+eui = sign  φφφ∗
+
+> i·⊤
+
+yyyi
+
+
+
+φφφ∗
+
+> i·⊤
+
+φφφ∗
+
+> i·
+
+
+
+φφφ∗
+
+> i·⊤
+
+yyyi − 12γw 1,i 
+
+
+
+> +
+
+.
+
+Then normalize 
+
+uuu ← euuu/ ∥euuu∥2.
+
+(b) eφφφj -subproblem :For each variable j, apply Algorithm A. 1 to obtain eφφφj .
+
+Concatenate eφφφ = ( eφφφ⊤ 
+
+> 1
+
+, . . . , eφφφ⊤ 
+
+> p
+
+)⊤, φφφ ← eφφφ/ ∥eφφφ∥2.
+
+3. Final scale: 
+
+s ←
+
+P 
+
+> i,j,k
+
+yi,j,k uiφj (ti,j,k )
+
+P 
+
+> i,j,k
+
+u2 
+
+> i
+
+φj (ti,j,k )2 .
+
+Return s, u uu, {φφφj }pj=1 .A6 B More on Methods 
+
+B.1 Proofs 
+
+Proof of Lemma 2.1. Under the scaled rank-one formulation in (2.1), the rank-one operator is 
+
+s(uuu ⊗ ϕϕϕ), where s ≥ 0, ∥uuu∥2 = 1, and ∥ϕϕϕ∥H = 1. For aaa = ( a1, . . . , a n)⊤ ∈ Rn,
+
+s(uuu ⊗ ϕϕϕ)( aaa) = s⟨aaa, u uu⟩Rnϕϕϕ =
+
+> n
+
+X
+
+> i=1
+
+aisu i ϕϕϕ. 
+
+Thus s(uuu ⊗ ϕϕϕ) ∈ Fp×n is represented by [ su iϕϕϕ]ni=1 . Therefore, 
+
+∥X − s(uuu ⊗ ϕϕϕ)∥2 
+
+> F
+
+=
+
+> n
+
+X
+
+> i=1
+
+⟨xxxi − su iϕϕϕ, x xxi − su iϕϕϕ⟩H
+
+=
+
+> p
+
+X
+
+> j=1
+> n
+
+X
+
+> i=1
+
+∥xij − su iϕj ∥2 
+
+> Hj
+
+.
+
+In practice, the functional trajectories xij (·) are observed on discrete grids {tj1, . . . , t jd j } ⊂ T j .Let YYY j ∈ Rn×dj collect the sampled values xij (tjℓ ), and let 
+
+φφφj =  ϕj (tj1), . . . , ϕ j (tjd j )⊤ .
+
+Then, up to the usual grid-weighting convention, 
+
+> n
+
+X
+
+> i=1
+
+∥xij − su iϕj ∥2 
+
+> Hj
+
+≈ YYY j − su uuφ φφ⊤ 
+
+> j
+> 2
+> F
+
+.
+
+To enforce smoothness of the loading functions, we penalize the roughness of the scaled loading functions sϕ j . In the discretized representation, this yields 
+
+> p
+
+X
+
+> j=1
+
+αj (sφ φφj )⊤ΩΩΩj (sφ φφj ),
+
+where Ω ΩΩj is a non-negative definite roughness penalty matrix and αj ≥ 0 controls the smoothness strength for variable j. Combining the discretized reconstruction loss and the roughness penalty, together with the constraints s ≥ 0, ∥uuu∥2 = 1, and ∥φφφ∥2 = 1, gives (2.2). 
+
+B.2 Tuning Parameter Selection 
+
+The tuning parameters are selected by minimizing an extended Bayesian information criterion (EBIC) Chen and Chen (2008). The EBIC extends the classical BIC with an additional penalty term on model complexity, weighted by a parameter σ ∈ [0 , 1]. When σ = 0, the EBIC reduces to the standard BIC. The resulting selection rules are incorporated into the complete procedure summarized below in Algorithm B.1. A7 In the first step of our method, with the normalized loading directions {φφφj }pj=1 fixed, the EBIC is defined as EBIC( γ) = N log 
+
+RSS 
+
+N
+
+
+
++ df( γ) log( N ) + 2 σ df( γ) log n, (B.1) where N denotes the number of observed data points in the dataset and RSS is the residual sum of squares between the observed data and their corresponding fitted values. The effective degrees of freedom for the subject-score update is taken as the number of active scaled subject scores, df( γ) = 
+
+> n
+
+X
+
+> i=1
+
+I(beui̸ = 0) ,
+
+where beuuu is obtained from the euuu-update in Algorithm A.2. In the second step of our method, with the normalized uuu fixed, three types of tuning parameters, 
+
+{αj }pj=1 , θ, and {λj }pj=1 , are introduced simultaneously for the scaled-loading subproblems. Ajoint optimization over a multi-dimensional tuning grid would be computationally intensive. To alleviate this burden, we adopt a conditional, sequential tuning strategy that updates the three types of tuning parameters one at a time. Specifically, when tuning {αj }pj=1 , θ, or {λj }pj=1 , we hold the other two types of tuning parameters fixed at their current values and optimize the corresponding conditional criterion. We initialize {αj }pj=1 , θ, and {λj }pj=1 at the midpoint of their respective candidate ranges. After selecting an updated value for the tuning parameter currently under consideration, we carry it forward as the fixed value in subsequent tuning steps. We repeat this procedure until {αj }pj=1 , θ, and {λj }pj=1 have each been updated. Since the scaled φφφ-update decouples over variables, we select the smoothing parameter αj independently for each variable by minimizing EBIC( αj) = Nj log 
+
+RSS j
+
+Nj
+
+
+
++ df( αj ) log( Nj ) + 2 σ df( αj ) log dj , (B.2) where Nj denotes the number of observed data points for variable j, and RSS j is the residual sum of squares between the observed values and their corresponding fitted values for that variable. Here df( αj ) = tr 
+
+
+
+UUU Aj
+
+
+
+UUU ⊤ 
+
+> Aj
+
+UUU Aj + αjΩΩΩj
+
+−1
+
+UUU ⊤
+
+> Aj
+
+
+
+,
+
+where Aj denotes the active set of nonzero coefficients in the scaled loading vector eφφφj , and UUU Aj
+
+is the corresponding submatrix of UUU j that keeps only the columns indexed by Aj . This one-dimensional search is nested within Algorithm A.2, while keeping θ and {λj }pj=1 fixed at values obtained from an initial tuning stage. Next, given the selected {αj }pj=1 , we update the sparsity parameters {λj }pj=1 by minimizing, for each variable j,EBIC( λj ) = Nj log 
+
+RSS j
+
+Nj
+
+
+
++ df( λj ) log( Nj ) + 2 σ df( λj ) log dj , (B.3) where df( λj ) is taken to be the number of nonzero elements in the scaled loading vector eφφφj . This one-dimensional search is again nested within Algorithm A.2 with θ kept fixed at its value from the initial tuning stage. A8 Finally, with {αj }pj=1 and {λj }pj=1 fixed at their selected values, we choose the global tuning parameter θ by minimizing EBIC( θ) = 
+
+> p
+
+X
+
+> j=1
+
+
+
+Nj log 
+
+RSS j
+
+Nj
+
+
+
++ df( θ) log( Nj ) + 2 σ df( θ) log dj
+
+
+
+, (B.4) where df( θ) is given by proposition 1 in Liang et al. (2024) as df( θ) = 
+
+> p
+
+X
+
+> j=1
+
+tr 
+
+
+
+UUU Aj
+
+
+
+UUU ⊤ 
+
+> Aj
+
+UUU Aj + θK KKj
+
+−1
+
+UUU ⊤
+
+> Aj
+
+
+
+,
+
+where KKKj = 1 
+
+> ∥eφφφAj∥2
+
+
+
+I − eφφφAj eφφφ⊤Aj 
+
+> ∥eφφφAj∥22
+
+
+
+and eφφφAj is the subvector of the scaled loading vector eφφφj con-taining only the coefficients indexed by Aj .
+
+B.3 Bi-SfSVD/Tri-SfSVD with EBIC-based tuning 
+
+Combining the alternating updates with the EBIC criteria above gives the full estimation pro-cedure. In this algorithm, γ and θ are selected as global tuning parameters, whereas αj and λj
+
+are selected within the variable-specific scaled-loading subproblems. This organization avoids an exhaustive joint search over all tuning parameters while preserving the update structure described in Section A. 
+
+Algorithm B.1: Bi-SfSVD/Tri-SfSVD with EBIC-based tuning 
+
+Input: Observed data {YYY j }pj=1 ; candidate grids for γ, {αj }pj=1 , θ, and {λj }pj=1 .
+
+Initialize: uuu and {φφφj }pj=1 .
+
+Repeat until convergence: (a) euuu-update: update euuu componentwise using the soft-thresholding solution in (2.7), and select γ from the candidate grid by minimizing EBIC( γ) defined in (B.1). Set 
+
+uuu ← euuu/ ∥euuu∥2.
+
+(b) eφφφ-update: for j = 1 , . . . , p , update eφφφj independently using Algorithm A.1 in Section A. The tuning parameters {αj }pj=1 , {λj }pj=1 , and θ are selected over their respective candidate grids by minimizing the EBIC criteria defined in (B.2), (B.3), and (B.4), respectively. Concatenate eφφφ = ( eφφφ⊤ 
+
+> 1
+
+, . . . , eφφφ⊤ 
+
+> p
+
+)⊤ and set 
+
+φφφ ← eφφφ/ ∥eφφφ∥2.
+
+Final scale: after convergence, compute 
+
+s ←
+
+P 
+
+> i,j,k
+
+yi,j,k uiφj (ti,j,k )
+
+P 
+
+> i,j,k
+
+u2 
+
+> i
+
+φj (ti,j,k )2 .
+
+Output and deflation: return ( s, u uu, {φφφj }pj=1 ); subtract the fitted rank-one component 
+
+su iφj (ti,j,k ) from the observed data and repeat the above steps to extract subsequent sparse layers. A9 B.4 Selection of the Number of Clusters K
+
+In this section, we discuss three strategies to guide the selection of the number of clusters, denoted by K.First, we select K using a sequential stopping rule. We estimate sparse layers one at a time and stop when the newly estimated layer is empty, meaning that either the estimated sample scores 
+
+uuu(K) or the estimated feature loadings φφφ(K) are all zero. Second, we use the singular-value spectrum. Since each cluster corresponds to a rank-one compo-nent, we choose K at the elbow of the cumulative explained variance (CEV) curve, CEV( K) = 
+
+Pkr=1 d2
+
+> r
+
+PKr=1 d2
+
+> r
+
+,
+
+and take the smallest K beyond which the incremental explained variance becomes negligible. Third, we employ the BIC to select K, defined as BIC( K) = log 
+
+ 1 
+
+> N
+
+∥X − ˆXK ∥22
+
+
+
++ log( N )
+
+N
+
+> K
+
+X
+
+> k=1
+
+df k,
+
+where ˆXK denotes the rank-K reconstruction of X, and df k is the effective degrees of freedom for the kth layer, approximated by the total number of nonzero entries in uuu(k) and φφφ(k). In our simulation studies and real data analyses, we adopt the cumulative explained variance (CEV) strategy for selecting K. For comparison, we also evaluate the performance of the CEV and BIC strategies in the simulation settings, as shown in Figures E.4 and E.3 in Section E.4. In practice, users may choose the strategy according to the goal of the analysis: the sequential stopping rule is useful for identifying sparse and interpretable layers until no additional nonempty structure is detected; the CEV strategy is appropriate for retaining the dominant low-rank structure; and the BIC strategy provides a model-selection-oriented alternative that balances reconstruction accuracy and model complexity. 
+
+B.5 Methods Comparison 
+
+Based on the simulation results presented above, we summarize the capabilities of each method across the tasks considered in Table 1, highlighting their relative strengths and limitations. Specif-ically, the first five columns indicate whether a method is able to produce sample clusters, variable clusters, subregion clusters, biclusters, and triclusters. The “Missing Data” column indicates whether a method can directly handle sparse functional data with irregularly missing observa-tions. “In-Cluster Shape Diversity” reflects whether a method can accommodate heterogeneous trajectory shapes within the same cluster rather than enforcing identical within-cluster shapes. Finally, “Parameter Tuning” indicates whether the method provides an automatic or data-driven mechanism to select tuning parameters. A10 Method Sample Cluster Variable Cluster Subregion Cluster Bicluster Tricluster Sparse/Irregular Data In-Cluster Heterogeneity Parameter Tuning MFPCA ✓ ✗ ✗ ✗ ✗ ✓ ✗ ✓                                        
+
+> FPCA-BC ✓✓✗✓✗✓✗✓
+> funCC ✓✓✗✓✗✗✗✓
+> funLBM ✓✓✗✓✗✗✗✓
+> Bi/Tri-SfSVD ✓✓✓✓✓✓✓✓
+> TriCluster ✓✓✓✓✓✗✗✗
+
+Table 1: Comparison of the methods considered in the simulation and real data analyses. The table summarizes the clustering tasks each method is able to address, including sample clustering, variable clustering, subregion-level clustering, biclustering, and triclustering, as well as key data features relevant to our applications. Specifically, sparse/irregular data indicate whether the method can be applied to sparsely and irregularly observed functional data without requiring a complete functional representation for every subject–variable pair, and in-cluster heterogeneity indicates whether the method allows different temporal patterns within the same identified cluster structure. A checkmark indicates that the method supports the corresponding capability, whereas a cross indicates that it does not. 
+
+## C EEG Data Analysis 
+
+In this section, we analyze the EEG dataset obtained from Begleiter (1995b), with the scientific ob-jective of identifying subject subgroups, channel groups, and localized temporal patterns through longitudinal EEG signals. The dataset contains 122 subjects, including 77 individuals with al-coholism and 45 control subjects. For each subject, EEG signals were recorded while viewing a picture for one second at a sampling rate of 256 Hz from 64 channels, resulting in 256 time points per channel. Among these channels, 61 correspond to scalp electrodes, two channels labeled X and Y record eye-movement activity, and the remaining channel labeled ND serves as the reference electrode signal. As in the IBD analysis, each channel-specific signal was standardized before applying our method. To further illustrate the ability of our approach to handle irregularly and sparsely observed func-tional data, we additionally imposed a 50% missingness rate by randomly masking half of the observed time points. Figure C.2 displays the trajectories across all 64 channels for one randomly selected alcoholic subject and one randomly selected control subject. Similar as IBD data, before applying our method, each retained feature was standardized by subtracting its mean and dividing by its standard deviation across all observed values. 
+
+C.1 Interpretation of Feature Clusters Identified 
+
+For the EEG data, we selected the number of sparse layers using the first stopping rule described in Section B.4 of the Supplementary Material. Specifically, we estimated sparse layers sequentially and stopped when the newly estimated layer became empty, that is, when either the estimated sample scores or the estimated feature loadings were all zero. Under this rule, the procedure selected K = 3 sparse layers. Under this choice, our method extracted three sparse layers spanning A11 Figure C.1: Scalp maps of the EEG electrodes retained for each feature cluster after applying the near-zero loading filter. Retained electrodes are highlighted in blue, while non-retained electrodes are shown in gray. The eye-movement electrodes (X and Y) and the reference electrode ND are shown outside the scalp. all 122 subjects and selected a total of 51 electrodes. Figure C.1 shows the spatial layout of the EEG channels and highlights the retained electrodes in each feature cluster after applying the near-zero loading filter. Specifically, the 61 scalp electrodes are plotted within the head diagram according to their electrode locations, whereas the remaining three channels are placed outside the diagram. In each panel, retained electrodes are shown in blue, whereas electrodes not retained for the corresponding feature cluster are shown in gray. The identified feature clusters exhibit clear spatial structure. Feature cluster FFF 1 mainly involves electrodes located on the front of the head, indicating a frontal pattern. In contrast, feature clusters FFF 2 and FFF 3 both mainly involve electrodes located on the back of the head, indicating posterior patterns. Unlike the IBD results, which did not reveal meaningful localization in time subregions, the EEG analysis additionally identifies localized time-domain structure within the selected electrodes. In particular, although FFF 2 and FFF 3 involve nearly the same set of electrodes, they differ in the time subregions retained by the method: FFF 2 primarily selects the middle of the signal domain, whereas FFF 3 primarily selects the later signal domain. This pattern indicates that the EEG data yield triclusters defined jointly over samples, electrodes, and their time subregions. Figure C.6 provides the details on these temporal patterns by displaying the estimated singular functions for all 64 channels across the three sparse layers. Each sparse layer is represented by a different color. For a given electrode, a curve segment that departs from the zero baseline indicates that the corresponding time subregion of that electrode signal is selected in the corresponding sparse layer, whereas a curve that remains on the zero baseline throughout the entire domain indicates that the electrode is not selected in that layer. 
+
+C.2 Clinical Interpretation of Sample Clusters Identified 
+
+In this dataset, we encountered the same issue as in the IBD analysis: the BIC criterion yielded relatively low sparsity in sample selection, making the estimated sample structure less directly A12 interpretable. We therefore adopted the same post-processing procedure as in the IBD analysis. Specifically, we applied k-means clustering to the rows of the left singular matrix to partition the 122 subjects into three sample clusters, denoted by {SSSj }3
+
+> j=1
+
+, and then linked the resulting sample clusters to the feature clusters {FFF k}3 
+
+> k=1
+
+using the same WGCNA-based association procedure. The bootstrap results are summarized in Table 2, where each entry reports the bootstrap mean and standard deviation of rjk , obtained by resampling subjects with replacement and recomputing the association scores across bootstrap replicates.               
+
+> FFF1FFF2FFF3
+> SSS10.29 (0.08) 0.49 (0.07) 0.71 (0.06) 0.71 (0.06) 0.71 (0.06)
+> SSS20.67 (0.05) 0.67 (0.05) 0.67 (0.05) 0.33 (0.05) 0.38 (0.07)
+> SSS30.55 (0.06) 0.62 (0.06) 0.62 (0.06) 0.62 (0.06) 0.29 (0.06)
+
+Table 2: Bootstrap mean (SD) of association scores rjk between sample clusters {SSSj }3 
+
+> j=1
+
+and feature clusters {FFF k}3 
+
+> k=1
+
+in the EEG dataset. Bootstrap replicates were obtained by resampling subjects with replacement and recomputing rjk in each replicate. Similar to the IBD analysis in Section 4.3, we next examined whether the identified sample clusters were associated with the available clinical phenotype. Specifically, we applied Fisher’s exact test to compare the distribution of participant type across the three sample clusters; the results are summarized in Table 3.             
+
+> Sample clusters (N) P-value 1 (21) 2 (71) 3 (30) Type Alcoholic 15 (71%) 52 (73%) 10 (33%) <0.001 Control 6 (29%) 19 (27%) 20 (67%)
+
+Table 3: Association between sample clusters and participant type (Alcoholic vs. Control) in the EEG dataset. Entries are counts (percentages) within each sample cluster; the P -value is from Fisher’s exact test. As shown in Table 3, the identified sample clusters are significantly associated with participant type (P < 0.001), indicating that the sample structure recovered by our method is clinically meaningful in this application. In particular, SSS1 was enriched for alcoholic subjects (71%), suggesting an alcoholic-dominant subgroup. SSS2 was also enriched for alcoholic subjects (73%), indicating a second alcoholic-dominant subgroup with a distinct EEG pattern. In contrast, SSS3 was enriched for control subjects (67%), corresponding to a control-dominant subgroup. 
+
+C.3 Interpretation of Identified Triclusters 
+
+Table 2 summarizes the associations between the sample clusters {SSSj }3 
+
+> j=1
+
+and the electrode groups 
+
+{FFF k}3
+
+> k=1
+
+. To obtain an interpretable tricluster representation, we associated each sample cluster with the electrode group showing its strongest correlation. This yielded three dominant sample– electrode-group associations: ( SSS1, F FF 3), ( SSS2, F FF 1), and ( SSS3, F FF 2). Combining these pairings with the time-subregion information identified in the feature loadings gives three triclusters: the alcoholic-enriched cluster SSS1 associated with the late subregion of the posterior electrode group FFF 3, the A13 alcoholic-enriched cluster SSS2 associated with the frontal electrode group FFF 1, and the control-enriched cluster SSS3 associated with the early subregion of the posterior electrode group FFF 2.Figure C.4 provides a detailed display of the identified frontal tricluster ( SSS2, F FF 1) through the raw sample mean measurements and reconstructed mean EEG trajectories for the retained electrodes in 
+
+FFF 1. In this tricluster, SSS2, an alcoholic-enriched sample cluster, is paired with the frontal electrode group FFF 1. The reconstructed trajectories show a coherent frontal EEG pattern across the retained electrodes, suggesting that this subgroup is characterized by frontal electrophysiological variation. This interpretation is broadly consistent with prior alcoholism research, which has implicated frontal lobe dysfunction in alcohol-related brain abnormalities and reported electrophysiological abnormalities during tasks involving frontal inhibitory control in alcohol-dependent individuals (Moselhy et al., 2001; Kamarajan et al., 2004). Both SSS1 and SSS3 are linked to posterior electrode groups, but they are distinguished by their time-domain supports rather than by spatial location alone. Specifically, SSS3 is associated with FFF 2,whose selected posterior electrodes are primarily active in an intermediate time window, whereas 
+
+SSS1 is associated with FFF 3, whose selected posterior electrodes are primarily active in a later time window. The corresponding mean reconstructed trajectories in Figure C.5 and C.3 reflect this distinction: the SSS3-FFF 2 block exhibits stronger signal patterns in the middle portion of the signal domain, whereas the SSS1-FFF 3 block exhibits later posterior signal patterns. This demonstrates that the subgroup structure in the EEG data is defined jointly by subjects, spatial electrode regions, and localized time subregions, highlighting the value of a triclustering perspective beyond analyses based only on sample clusters or spatial electrode groups. Figure C.6 provides additional details on the estimated singular functions across all 64 channels. For a given electrode, a curve segment that departs from the zero baseline indicates that the corresponding time subregion is selected in that sparse layer, whereas a curve that remains on the zero baseline over the entire domain indicates that the electrode is not selected in that layer.  
+
+> (a) Alcoholic (b) Control
+
+Figure C.2: Trajectories across all 64 electrodes for two randomly selected subjects: (a) alcoholic, (b) control. A14 0 50 100 150 200 250 −2.5  −1.5  −0.5 
+
+Electrode 18 
+
+0 50 100 150 200 250 −2.0  −1.0  0.0  0.5 
+
+Electrode 19 
+
+0 50 100 150 200 250 −2.0  −1.0  0.0  0.5 
+
+Electrode 20 
+
+0 50 100 150 200 250 −2.5  −1.5  −0.5  0.5 
+
+Electrode 21 
+
+0 50 100 150 200 250 −2.0  −1.0  0.0 
+
+Electrode 22 
+
+0 50 100 150 200 250 −2.0  −1.0  0.0  0.5  1.0 
+
+Electrode 23 
+
+0 50 100 150 200 250 −1.5  −0.5  0.0  0.5 
+
+Electrode 24 
+
+0 50 100 150 200 250 −2.0  −1.0  0.0  0.5 
+
+Electrode 25 
+
+0 50 100 150 200 250 −2.0  −1.0  0.0  0.5 
+
+Electrode 26 
+
+0 50 100 150 200 250 −2.0  −1.0  0.0  0.5 
+
+Electrode 27 
+
+0 50 100 150 200 250 −1.5  −0.5  0.5 
+
+Electrode 28 
+
+0 50 100 150 200 250 −1.5  −0.5  0.0  0.5 
+
+Electrode 29 
+
+0 50 100 150 200 250 −1.5  −0.5  0.0  0.5 
+
+Electrode 30 
+
+0 50 100 150 200 250 −1.5  −1.0  −0.5  0.0  0.5 
+
+Electrode 31 
+
+0 50 100 150 200 250 −2.0  −1.0  0.0  0.5 
+
+Electrode 46 
+
+0 50 100 150 200 250 −2.0  −1.0  0.0 
+
+Electrode 47 
+
+0 50 100 150 200 250 −2.0  −1.0  0.0  0.5 
+
+Electrode 49 
+
+0 50 100 150 200 250 −2.0  −1.0  0.0  0.5 
+
+Electrode 50 
+
+0 50 100 150 200 250 −2.0  −1.0  0.0  1.0 
+
+Electrode 51 
+
+0 50 100 150 200 250 −1.5  −0.5  0.0  0.5 
+
+Electrode 52 
+
+0 50 100 150 200 250 −2.5  −1.5  −0.5  0.5 
+
+Electrode 54 
+
+0 50 100 150 200 250 −1.5  −1.0  −0.5  0.0  0.5 
+
+Electrode 55 
+
+0 50 100 150 200 250 −1.5  −1.0  −0.5  0.0  0.5 
+
+Electrode 56 
+
+0 50 100 150 200 250 −1.5  −1.0  −0.5  0.0  0.5 
+
+Electrode 58 
+
+0 50 100 150 200 250 −1.5  −1.0  −0.5  0.0  0.5 
+
+Electrode 59 
+
+0 50 100 150 200 250 −1.5  −1.0  −0.5  0.0  0.5 
+
+Electrode 60 
+
+0 50 100 150 200 250 −2.0  −1.0  0.0  1.0 
+
+Electrode 61 
+
+0 50 100 150 200 250 −2.0  −1.0  0.0  0.5 
+
+Electrode 62 Figure C.3: Detailed display of all selected electrodes within the identified EEG tricluster ( SSS1, F FF 3). Here, SSS1 denotes the corresponding sample cluster and FFF 3 denotes the corresponding electrode group. Each panel corresponds to one selected electrode in FFF 3. Black points represent raw sample mean measurements among samples in SSS1, computed after omitting missing observations at each time point. Colored solid curves represent reconstructed sample mean trajectories obtained from the rank-K reconstruction of our sparse functional SVD model. A15 0 50 100 150 200 250 0.0  0.2  0.4  0.6  0.8 
+
+Electrode 1 
+
+0 50 100 150 200 250 0.0  0.2  0.4  0.6  0.8 
+
+Electrode 2 
+
+0 50 100 150 200 250 0.0  0.2  0.4  0.6  0.8 
+
+Electrode 3 
+
+0 50 100 150 200 250 −0.2  0.0  0.2  0.4  0.6  0.8 
+
+Electrode 4 
+
+0 50 100 150 200 250 −0.2  0.0  0.2  0.4  0.6  0.8 
+
+Electrode 5 
+
+0 50 100 150 200 250 0.0  0.2  0.4  0.6  0.8 
+
+Electrode 6 
+
+0 50 100 150 200 250 0.0  0.2  0.4  0.6  0.8 
+
+Electrode 7 
+
+0 50 100 150 200 250 −0.2  0.2  0.4  0.6  0.8  1.0 
+
+Electrode 8 
+
+0 50 100 150 200 250 −0.2  0.0  0.2  0.4  0.6  0.8 
+
+Electrode 9 
+
+0 50 100 150 200 250 −0.2  0.2  0.4  0.6  0.8 
+
+Electrode 11 
+
+0 50 100 150 200 250 0.0  0.2  0.4  0.6  0.8 
+
+Electrode 12 
+
+0 50 100 150 200 250 0.0  0.2  0.4  0.6  0.8  1.0 
+
+Electrode 13 
+
+0 50 100 150 200 250 −0.2  0.2  0.4  0.6  0.8  1.0 
+
+Electrode 32 
+
+0 50 100 150 200 250 0.0  0.2  0.4  0.6  0.8 
+
+Electrode 33 
+
+0 50 100 150 200 250 0.0  0.2  0.4  0.6 
+
+Electrode 34 
+
+0 50 100 150 200 250 −0.2  0.0  0.2  0.4  0.6  0.8 
+
+Electrode 35 
+
+0 50 100 150 200 250 −0.2  0.0  0.2  0.4  0.6  0.8 
+
+Electrode 36 
+
+0 50 100 150 200 250 0.0  0.2  0.4  0.6  0.8 
+
+Electrode 39 
+
+0 50 100 150 200 250 0.0  0.2  0.4  0.6  0.8 
+
+Electrode 41 
+
+0 50 100 150 200 250 −0.2  0.2  0.4  0.6  0.8 
+
+Electrode 44 
+
+0 50 100 150 200 250 −0.2  0.0  0.2  0.4  0.6  0.8 
+
+Electrode 45 
+
+0 50 100 150 200 250 0.0  0.2  0.4  0.6  0.8 
+
+Electrode 48 
+
+0 50 100 150 200 250 0.0  0.2  0.4  0.6  0.8 
+
+Electrode 57 Figure C.4: Detailed display of the retained electrodes within the identified EEG tricluster (SSS2, F FF 1). Here, SSS2 denotes the corresponding sample cluster and FFF 1 denotes the correspond-ing electrode group. Each panel corresponds to one retained electrode in FFF 1; electrode FC6 was excluded because its loading norm was effectively zero. Black points represent raw sample mean measurements among samples in SSS2, computed after omitting missing observations at each time point. Colored solid curves represent reconstructed sample mean trajectories obtained from the rank-K reconstruction of our sparse functional SVD model. A16 0 50 100 150 200 250 −0.5  0.0  0.5  1.0  1.5 
+
+Electrode 19 
+
+0 50 100 150 200 250 −0.5  0.5  1.0  1.5  2.0 
+
+Electrode 20 
+
+0 50 100 150 200 250 −0.5  0.0  0.5  1.0  1.5 
+
+Electrode 21 
+
+0 50 100 150 200 250 −0.5  0.0  0.5  1.0  1.5  2.0 
+
+Electrode 22 
+
+0 50 100 150 200 250 −0.5  0.0  0.5  1.0  1.5 
+
+Electrode 23 
+
+0 50 100 150 200 250 −0.5  0.0  0.5  1.0  1.5 
+
+Electrode 24 
+
+0 50 100 150 200 250 −0.5  0.0  0.5  1.0  1.5  2.0 
+
+Electrode 25 
+
+0 50 100 150 200 250 −0.5  0.0  0.5  1.0  1.5  2.0 
+
+Electrode 26 
+
+0 50 100 150 200 250 −0.5  0.0  0.5  1.0  1.5  2.0 
+
+Electrode 27 
+
+0 50 100 150 200 250 −0.5  0.0  0.5  1.0  1.5  2.0 
+
+Electrode 28 
+
+0 50 100 150 200 250 −0.5  0.0  0.5  1.0  1.5  2.0 
+
+Electrode 29 
+
+0 50 100 150 200 250 −0.5  0.0  0.5  1.0  1.5  2.0 
+
+Electrode 30 
+
+0 50 100 150 200 250 −0.5  0.0  0.5  1.0  1.5 
+
+Electrode 31 
+
+0 50 100 150 200 250 −0.5  0.0  0.5  1.0  1.5 
+
+Electrode 46 
+
+0 50 100 150 200 250 −0.5  0.0  0.5  1.0  1.5 
+
+Electrode 47 
+
+0 50 100 150 200 250 −0.5  0.0  0.5  1.0  1.5 
+
+Electrode 49 
+
+0 50 100 150 200 250 −0.5  0.0  0.5  1.0  1.5 
+
+Electrode 50 
+
+0 50 100 150 200 250 −0.5  0.0  0.5  1.0  1.5  2.0 
+
+Electrode 51 
+
+0 50 100 150 200 250 −0.5  0.5  1.0  1.5  2.0 
+
+Electrode 52 
+
+0 50 100 150 200 250 −0.5  0.5  1.0  1.5  2.0 
+
+Electrode 55 
+
+0 50 100 150 200 250 −0.5  0.5  1.0  1.5  2.0 
+
+Electrode 56 
+
+0 50 100 150 200 250 −0.5  0.0  0.5  1.0  1.5  2.0 
+
+Electrode 58 
+
+0 50 100 150 200 250 −0.5  0.0  0.5  1.0  1.5 
+
+Electrode 59 
+
+0 50 100 150 200 250 −0.5  0.0  0.5  1.0  1.5  2.0 
+
+Electrode 60 
+
+0 50 100 150 200 250 −0.5  0.5  1.0  1.5  2.0 
+
+Electrode 61 
+
+0 50 100 150 200 250 0.0  0.5  1.0  1.5 
+
+Electrode 62 Figure C.5: Detailed display of all selected electrodes within the identified EEG tricluster ( SSS3, F FF 2). Here, SSS3 denotes the corresponding sample cluster and FFF 2 denotes the corresponding electrode group. Each panel corresponds to one selected electrode in FFF 2. Black points represent raw sample mean measurements among samples in SSS3, computed after omitting missing observations at each time point. Colored solid curves represent reconstructed sample mean trajectories obtained from the rank-K reconstruction of our sparse functional SVD model. A17 0 50 150 250 −0.03  −0.01 
+
+Electrode 1 
+
+0 50 150 250 −0.03  −0.01 
+
+Electrode 2 
+
+0 50 150 250 −0.020  −0.005 
+
+Electrode 3 
+
+0 50 150 250 −0.030  −0.010 
+
+Electrode 4 
+
+0 50 150 250 −0.03  −0.01 
+
+Electrode 5 
+
+0 50 150 250 −0.03  −0.01 
+
+Electrode 6 
+
+0 50 150 250 −0.025  −0.005 
+
+Electrode 7 
+
+0 50 150 250 −0.020  −0.005 
+
+Electrode 8 
+
+0 50 150 250 −0.03  −0.01 
+
+Electrode 9 
+
+0 10 30 50 −0.06  0.00  0.06  Electrode 10 
+
+0 50 150 250 −0.015  0.000 
+
+Electrode 11 
+
+0 50 150 250 −0.020  −0.005 
+
+Electrode 12 
+
+0 50 150 250 −0.03  −0.01 
+
+Electrode 13 
+
+0 10 30 50 −0.06  0.00  0.06  Electrode 14 
+
+0 10 30 50 −0.06  0.00  0.06  Electrode 15 
+
+0 10 30 50 −0.06  0.00  0.06  Electrode 16 
+
+0 10 30 50 −0.06  0.00  0.06  Electrode 17 
+
+0 50 150 250 0.00  0.02 
+
+Electrode 18 
+
+0 50 150 250 −0.005  0.015 
+
+Electrode 19 
+
+0 50 150 250 0.00  0.02 
+
+Electrode 20 
+
+0 50 150 250 0.00  0.02 
+
+Electrode 21 
+
+0 50 150 250 0.00  0.02 
+
+Electrode 22 
+
+0 50 150 250 0.00  0.02 
+
+Electrode 23 
+
+0 50 150 250 0.00  0.02 
+
+Electrode 24 
+
+0 50 150 250 0.00  0.02 
+
+Electrode 25 
+
+0 50 150 250 0.00  0.02  0.04  Electrode 26 
+
+0 50 150 250 0.00  0.02 
+
+Electrode 27 
+
+0 50 150 250 0.00  0.02 
+
+Electrode 28 
+
+0 50 150 250 0.00  0.02 
+
+Electrode 29 
+
+0 50 150 250 0.00  0.02 
+
+Electrode 30 
+
+0 50 150 250 0.00  0.02  0.04  Electrode 31 
+
+0 50 150 250 −0.03  −0.01 
+
+Electrode 32 
+
+0 50 150 250 −0.03  −0.01 
+
+Electrode 33 
+
+0 50 150 250 −0.03  −0.01 
+
+Electrode 34 
+
+0 50 150 250 −0.020  −0.005 
+
+Electrode 35 
+
+0 50 150 250 −0.020  0.000  Electrode 36 
+
+0 10 30 50 −0.06  0.00  0.06  Electrode 37 
+
+0 10 30 50 −0.06  0.00  0.06  Electrode 38 
+
+0 50 150 250 −0.03  −0.01 
+
+Electrode 39 
+
+0 10 30 50 −0.06  0.00  0.06  Electrode 40 
+
+0 50 150 250 −0.020  −0.005 
+
+Electrode 41 
+
+0 10 30 50 −0.06  0.00  0.06  Electrode 42 
+
+0 10 30 50 −0.06  0.00  0.06  Electrode 43 
+
+0 50 150 250 −0.03  −0.01 
+
+Electrode 44 
+
+0 50 150 250 −0.025  −0.005 
+
+Electrode 45 
+
+0 50 150 250 0.00  0.02 
+
+Electrode 46 
+
+0 50 150 250 −0.005  0.010 
+
+Electrode 47 
+
+0 50 150 250 −0.03  −0.01 
+
+Electrode 48 
+
+0 50 150 250 0.00  0.02 
+
+Electrode 49 
+
+0 50 150 250 0.00  0.02 
+
+Electrode 50 
+
+0 50 150 250 0.00  0.02 
+
+Electrode 51 
+
+0 50 150 250 0.00  0.02 
+
+Electrode 52 
+
+0 10 30 50 −0.06  0.00  0.06  Electrode 53 
+
+0 50 150 250 −0.005  0.015 
+
+Electrode 54 
+
+0 50 150 250 0.00  0.02 
+
+Electrode 55 
+
+0 50 150 250 0.00  0.02  0.04  Electrode 56 
+
+0 50 150 250 −0.015  0.000 
+
+Electrode 57 
+
+0 50 150 250 0.00  0.02 
+
+Electrode 58 
+
+0 50 150 250 0.00  0.02 
+
+Electrode 59 
+
+0 50 150 250 0.00  0.02 
+
+Electrode 60 
+
+0 50 150 250 0.00  0.02 
+
+Electrode 61 
+
+0 50 150 250 0.00  0.02 
+
+Electrode 62 
+
+0 10 30 50 −0.06  0.00  0.06  Electrode 63 
+
+0 10 30 50 −0.06  0.00  0.06  Electrode 64 Figure C.6: Estimated singular functions for each sparse layer after applying the same near-zero loading filter used for the electrode maps and raw/reconstruction figures. For a given feature, a curve that coincides with the zero baseline indicates that the feature is not retained for the corresponding tricluster, whereas a curve that deviates from zero indicates that the feature is retained, with the nonzero time interval identifying the selected time subregion. Panels showing only baseline at zero indicate features not retained by any layer. A18 D More on IBD Data Analysis 
+
+D.1 Additional Results in the IBD Real Data Analysis 
+
+D.1.1 Additional Interpretation of Identified Biclusters 
+
+The main text focuses on the FFF 1-related biclusters. Here we provide the additional interpretation for the remaining pathway groups involved in the identified IBD bicluster structure. A parallel pattern of heterogeneity is observed for pathway group FFF 2, which is primarily charac-terized by features stratified to Ruminococcus torques . Based on the distance-correlation criterion in Table 2 of the main manuscript, FFF 2 appears in two selected biclusters, ( SSS2, F FF 2) and ( SSS3, F FF 2). Figure 2 of the main manuscript illustrates these biclusters through representative pathways from 
+
+FFF 2, showing distinct longitudinal profiles between the two subject clusters. While the average pathway-feature levels in SSS2 show a sustained decrease over the 50-week period, the trajectories in SSS3 display a pronounced upward trend toward the end of the study duration. The observed functional contrast is consistent with the clinical phenotype distributions of these groups (Table 1 of the main manuscript). Specifically, SSS2 is characterized by a higher proportion of non-IBD con-trol subjects, whereas SSS3 is heavily enriched with IBD patients, particularly those with CD. These findings align with recent metagenomic studies that have identified R. torques as a key marker of IBD-related dysbiosis and have linked its functional activity to CD-specific metabolic shifts (Zheng et al., 2024). By capturing these non-homogeneous signals, our framework demonstrates that FFF 2
+
+serves as a bridge feature group that differentiates the relatively stable microbial states of the SSS2
+
+subgroup from the more volatile, CD-enriched profiles of SSS3. This highlights the importance of allowing features to be shared across subject clusters while still capturing group-specific temporal variations. Finally, FFF 3 is most strongly associated with SSS3, suggesting that it represents an additional aspect of microbial functional variation in this IBD-enriched subgroup. In contrast to FFF 1 and FFF 2, which are dominated by pathways sharing a common bacterial label, FFF 3 is composed primarily of pathways labeled as unclassified in this dataset. Its taxonomic interpretation is therefore less direct and remains open to further biological investigation. Nevertheless, its strong association with SSS3
+
+suggests that, in addition to the patterns represented by FFF 1 and FFF 2, this IBD-enriched subgroup is linked to a further pathway-level functional signal. 
+
+D.1.2 Comparison with Alternative Methods 
+
+To further evaluate the competing methods in the IBDMDB analysis, we examined whether the sample clusters or sample memberships obtained from each method were associated with the available clinical phenotypes. Tables 4–7 summarize the phenotype distributions for MFPCA-
+
+Kmean, FPCA-BC, funCC, and funLBM, respectively. These supplementary results focus on the clinical interpretability of the recovered sample structures and provide additional context for the comparisons reported in the main text. For MFPCA-Kmean, the resulting sample clusters were significantly associated with IBD type (P < 0.001; Table 4), indicating that MFPCA recovered some clinically relevant subject-level A19 structure. However, this approach only performs sample clustering based on MFPCA scores and does not select pathway groups. Therefore, although it can identify phenotype-associated sample clusters, it cannot provide interpretable sample–pathway biclusters. For FPCA-BC, the sample clusters were not significantly associated with either IBD type or sex in this application (Table 5). This suggests that the two-stage procedure, which first summarizes each feature using FPCA and then applies a standard biclustering algorithm, did not recover sample structures with clear clinical relevance in the IBDMDB dataset. For funCC, the resulting sample memberships also showed no significant associations with the examined clinical variables, including IBD type, sex, age at diagnosis, CRP, ESR, and race (Ta-ble 6). These results suggest that funCC did not yield a clearly clinically interpretable bicluster structure for this dataset. For funLBM, the sample clusters were significantly associated with IBD type and CRP (Table 7), suggesting that the method captured some clinically meaningful sample structure. However, model selection in funLBM is based on the integrated completed likelihood (ICL) criterion. As shown in Figure D.1, the model with the highest ICL value corresponds to 3 sample clusters and 15 feature clusters, resulting in a total of 45 biclusters. The mean-curve patterns for these 45 biclusters are displayed in Figure E.1. Although this result contains clinically associated sample clusters, the large number of biclusters makes the resulting sample–feature structure less directly interpretable. Overall, these supplementary comparisons suggest that the competing methods show more limited interpretability in this application. MFPCA-Kmean identifies clinically associated sample clusters but does not perform pathway selection; FPCA-BC and funCC do not recover clearly clinically meaningful sample structures; and funLBM yields a relatively complex bicluster representation. In contrast, the proposed method provides a more compact and biologically interpretable sample– pathway representation for the IBDMDB data.                                
+
+> Sample clusters (N) P-value
+> SSS1(22) SSS2(26) SSS3(52) SSS4(30) IBD type Non-IBD 9 (41%) 10 (38%) 2 (4%) 6 (20%)
+> <0.001 CD 12 (55%) 6 (24%) 29 (56%) 18 (60%) UC 1 (4%) 10 (38%) 21 (40%) 6 (20%) Gender Female 10 (45%) 11 (42%) 25 (48%) 18 (60%) 0.5721 Male 12 (55%) 15 (58%) 27 (52%) 12 (40%)
+
+Table 4: Associations between MFPCA-Kmean sample clusters and clinical phenotypes in the IBDMDB dataset. Entries are counts (percentages) within each sample cluster. P -values are from Fisher’s exact tests. The table shows that the sample clusters obtained from MFPCA-Kmean differ significantly in IBD type, whereas no significant difference is observed for sex. A20 Sample clusters (N) P-value 
+
+SSS1 (59) SSS2 (45) SSS3 (53) SSS4 (53) IBD type Non-IBD 9 (15%) 6 (13%) 12 (23%) 3 (6%) 0.2337 CD 31 (53%) 25 (56%) 29 (54%) 29 (54%) UC 19 (32%) 14 (31%) 12 (23%) 21 (40%) Gender Female 30 (51%) 23 (51%) 31 (58%) 29 (55%) 0.8446 Male 29 (49%) 22 (49%) 22 (42%) 24 (45%) 
+
+Table 5: Associations between FPCA-BC sample clusters and clinical phenotypes in the IBDMDB dataset. Entries are counts (percentages) within each sample cluster. P -values are from Fisher’s exact tests. The table shows that the sample clusters obtained from FPCA-BC are not significantly associated with either IBD type or sex in this application. A21 Sample clusters (N) P-value 
+
+SSS1 (80) SSS2 (80) SSS3 (50) SSS4 (50) SSS5 (50) SSS6 (50) IBD type Non-IBD 15 (18.8%) 15 (18.8%) 12 (24.0%) 12 (24.0%) 12 (24.0%) 12 (24.0%) 0.9989 CD 41 (51.2%) 41 (51.2%) 24 (48.0%) 24 (48.0%) 24 (48.0%) 24 (48.0%) UC 24 (30.0%) 24 (30.0%) 14 (28.0%) 14 (28.0%) 14 (28.0%) 14 (28.0%) Sex Female 36 (45.0%) 36 (45.0%) 28 (56.0%) 28 (56.0%) 28 (56.0%) 28 (56.0%) 0.5118 Male 44 (55.0%) 44 (55.0%) 22 (44.0%) 22 (44.0%) 22 (44.0%) 22 (44.0%) Age at diagnosis, mean (SD) 19.89 (9.82) 19.89 (9.82) 23.74 (15.19) 23.74 (15.19) 23.74 (15.19) 23.74 (15.19) 0.9120 CRP (C-Reactive Protein), mean (SD) 40.13 (179.30) 40.13 (179.30) 75.40 (261.17) 75.40 (261.17) 75.40 (261.17) 75.40 (261.17) 1.0000 ESR (Erythrocyte Sedimentation Rate), mean (SD) 54.94 (176.39) 54.94 (176.39) 19.75 (17.96) 19.75 (17.96) 19.75 (17.96) 19.75 (17.96) 0.9069 Race American Indian or Alaska Native 1 1 0 0 0 00.9421 Black or African American 7 7 3 3 3 3More than one race 3 3 2 2 2 2Other 4 4 0 0 0 0White 65 65 45 45 45 45 
+
+Table 6: Associations between funCC sample memberships and clinical phenotypes in the IB-DMDB dataset. Entries are counts (percentages) for categorical variables and mean (SD) for continuous variables. P -values are from Fisher’s exact tests and Kruskal–Wallis tests. The table shows that the funCC sample memberships are not significantly associated with the examined clinical variables in this application. A22 Sample clusters (N) P-value 
+
+SSS1 (27) SSS2 (41) SSS3 (33) SSS4 (29) IBD type Non-IBD 14 (51.9%) 2 (4.9%) 6(18.2%) 5(17.2%) < 0.001 CD 11 (40.7%) 23 (56.1%) 18 (54.5%) 13 (44.8%) UC 2 (7.4%) 16 (39.0%) 9(27.3%) 11 (37.9%) Sex Female 14 (51.9%) 20 (48.8%) 17 (51.5%) 13 (44.8%) 0.9510 Male 13 (48.1%) 21 (51.2%) 16 (48.5%) 16 (55.2%) Age at diagnosis, mean (SD) 19.42 (9.77) 21.00 (9.84) 20.70 (11.61) 23.50 (16.88) 0.8689 CRP (C-Reactive Protein), mean (SD) 1.23 (2.35) 3.81 (8.67) 78.93 (276.46) 112.92 (304.42) 0.0381 ESR (Erythrocyte Sedimentation Rate), mean (SD) 12.09 (12.95) 19.60 (16.39) 25.31 (21.34) 75.00 (218.54) 0.0925 Race American Indian or Alaska Native 0 1 0 00.3843 Black or African American 0 4 4 2More than one race 0 1 2 2Other 0 2 2 0White 27 33 25 25 
+
+Table 7: Associations between funLBM sample clusters and clinical phenotypes in the IBDMDB dataset. Entries are counts (percentages) for categorical variables and mean (SD) for continuous variables. P -values are from Fisher’s exact tests for categorical variables and Kruskal–Wallis tests for continuous variables. The table shows that the funLBM sample clusters differ significantly in IBD type and CRP, whereas no significant differences are observed for sex, age at diagnosis, ESR, or race. A23 300000 350000 400000 450000  
+
+> 510
+
+number of feature cluster 
+
+> ICL Score
+
+number of sample cluster 
+
+> 2
+> 3
+> 4
+
+Figure D.1: ICL values for funLBM model selection in the IBDMDB dataset. The selected model corresponds to the highest ICL value, which suggests 3 sample clusters and 15 feature clusters. A24 0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 
+
+0 30 −0.5  0.0  0.5  1.0 Figure D.2: Mean curves for the 45 biclusters identified by funLBM in the IBDMDB dataset. The 45 biclusters are obtained from the selected funLBM model with 3 sample clusters and 15 feature clusters. A25 D.2 Supplementary Tables and Figures 
+
+Table 8 summarizes the distribution of bacterial species labels among the 200 retained species-stratified metagenomic pathways used in the IBDMDB analysis. The most frequent species label was Alistipes putredinis , accounting for 65 features (32.5%), followed by Ruminococcus torques with 49 features (24.5%) and unclassified labels with 46 features (23.0%). This distribution provides additional context for the feature groups identified in the real data analysis, where pathway groups were largely driven by features stratified to these frequently represented species labels.                     
+
+> Species label in feature name Number of features Percentage (%)
+> Ruminococcus torques 49 24.5 Unclassified 46 23.0
+> Alistipes putredinis 65 32.5
+> Ruminococcus bicirculans 12 6.0 No explicit species label 10 5.0
+> Alistipes finegoldii 94.5
+> Bacteroides xylanisolvens 31.5 Other single-occurrence species 63.0 Total 200 100.0
+
+Table 8: Distribution of bacterial species labels among the 200 retained species-stratified metage-nomic pathways in the IBDMDB data. Species names are reported as they appear in the fea-ture names. “Unclassified” denotes features ending with an unclassified label, and “No explicit species label” denotes features without a terminal species annotation. The category “Other single-occurrence species” includes Akkermansia muciniphila , Roseburia hominis , Roseburia inulinivo-rans , Roseburia inulinivorans CAG 15, Eubacterium eligens , and Eubacterium rectale .Figure D.3 provides additional details on the estimated singular functions for the first three sparse layers in the IBDMDB analysis. For a given species-stratified pathway, a curve segment that departs from the zero baseline indicates that the pathway is selected in the corresponding sparse layer, with the nonzero segment reflecting its estimated temporal contribution. In contrast, a curve that remains on or near the zero baseline over the entire domain indicates that the pathway is not selected in that layer. A26 0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 1 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 2 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 3 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 4 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 5 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 6 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 7 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 8 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 9 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 10 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 11 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 12 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 13 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 14 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 15 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 16 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 17 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 18 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 19 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 20 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 21 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 22 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 23 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 24 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 25 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 26 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 27 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 28 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 29 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 30 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 31 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 32 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 33 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 34 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 35 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 36 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 37 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 38 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 39 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 40 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 41 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 42 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 43 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 44 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 45 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 46 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 47 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 48 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 49 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 50 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 51 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 52 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 53 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 54 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 55 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 56 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 57 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 58 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 59 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 60 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 61 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 62 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 63 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 64 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 65 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 66 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 67 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 68 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 69 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 70 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 71 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 72 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 73 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 74 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 75 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 76 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 77 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 78 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 79 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 80 
+
+IBD Pathway Curves: 1−80 Figure D.3: (continued) A27 0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 81 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 82 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 83 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 84 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 85 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 86 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 87 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 88 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 89 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 90 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 91 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 92 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 93 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 94 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 95 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 96 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 97 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 98 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 99 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 100 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 101 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 102 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 103 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 104 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 105 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 106 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 107 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 108 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 109 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 110 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 111 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 112 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 113 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 114 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 115 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 116 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 117 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 118 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 119 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 120 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 121 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 122 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 123 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 124 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 125 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 126 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 127 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 128 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 129 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 130 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 131 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 132 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 133 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 134 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 135 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 136 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 137 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 138 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 139 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 140 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 141 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 142 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 143 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 144 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 145 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 146 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 147 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 148 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 149 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 150 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 151 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 152 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 153 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 154 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 155 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 156 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 157 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 158 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 159 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 160 
+
+IBD Pathway Curves: 81−160 Figure D.3: (continued). A28 0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 161 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 162 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 163 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 164 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 165 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 166 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 167 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 168 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 169 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 170 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 171 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 172 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 173 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 174 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 175 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 176 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 177 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 178 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 179 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 180 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 181 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 182 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 183 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 184 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 185 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 186 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 187 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 188 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 189 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 190 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 191 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 192 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 193 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 194 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 195 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 196 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 197 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 198 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 199 
+
+0 10 20 30 40 50 −0.02  0.00  0.02  0.04 
+
+Pathway 200 
+
+IBD Pathway Curves: 161−200 
+
+Sparse layer 1 Sparse layer 2 Sparse layer 3 Figure D.3: Estimated pathway loading curves for the first three sparse layers. Each panel cor-responds to one microbial pathway feature, and the three colored curves represent its estimated loading function in sparse layers 1, 2, and 3, respectively. For a given pathway, a curve that remains on or very close to the zero baseline indicates that the pathway is not selected by the corresponding sparse layer, whereas a curve that deviates from zero indicates that the pathway is selected by that layer. The magnitude and sign of the deviation reflect the estimated contribution pattern of that pathway over time. Panels in which all three curves remain at or near zero indicate pathways that are not meaningfully selected by any of the first three sparse layers. A29 To provide a more complete visualization of the identified IBD biclusters, Figures D.4–D.8 display the pathway-specific longitudinal patterns for all pathways within each selected pathway group. In each supplementary figure, black points denote the raw sample mean measurements within the corresponding sample cluster, computed after omitting missing observations at each time point, while colored solid curves denote the reconstructed mean trajectories obtained from our method. Together, these plots provide detailed evidence of the temporal patterns underlying the identified biclusters. A30 0 10 20 30 40 50 0.0  1.0 
+
+Pathway 2      
+
+> 010 20 30 40 50 0.0  1.0
+
+Pathway 3      
+
+> 010 20 30 40 50 0.0  1.0
+
+Pathway 9      
+
+> 010 20 30 40 50 0.0  1.0  2.0
+
+Pathway 10      
+
+> 010 20 30 40 50 0.0  1.0
+
+Pathway 22      
+
+> 010 20 30 40 50 0.0  1.0  2.0
+
+Pathway 23      
+
+> 010 20 30 40 50 0.0  1.0
+
+Pathway 27      
+
+> 010 20 30 40 50 0.0  1.0  2.0
+
+Pathway 28      
+
+> 010 20 30 40 50 0.0  1.0  2.0
+
+Pathway 33      
+
+> 010 20 30 40 50 0.0  1.0
+
+Pathway 40      
+
+> 010 20 30 40 50 0.0  1.0  2.0
+
+Pathway 41      
+
+> 010 20 30 40 50 0.0  1.0  2.0
+
+Pathway 49      
+
+> 010 20 30 40 50 0.0  1.0
+
+Pathway 52      
+
+> 010 20 30 40 50 0.0  1.0  2.0
+
+Pathway 53      
+
+> 010 20 30 40 50 0.0  1.0
+
+Pathway 56      
+
+> 010 20 30 40 50 0.0  1.0  2.0
+
+Pathway 57      
+
+> 010 20 30 40 50 0.0  1.0
+
+Pathway 60      
+
+> 010 20 30 40 50 0.0  1.0
+
+Pathway 63      
+
+> 010 20 30 40 50 0.0  1.0  2.0
+
+Pathway 64      
+
+> 010 20 30 40 50 0.0  1.0
+
+Pathway 66      
+
+> 010 20 30 40 50 0.0  1.0  2.0
+
+Pathway 67      
+
+> 010 20 30 40 50 0.0  1.0
+
+Pathway 71      
+
+> 010 20 30 40 50 0.0  1.0  2.0
+
+Pathway 72      
+
+> 010 20 30 40 50 0.0  1.0
+
+Pathway 86      
+
+> 010 20 30 40 50 0.0  1.0  2.0
+
+Pathway 87      
+
+> 010 20 30 40 50 0.0  1.0
+
+Pathway 90      
+
+> 010 20 30 40 50 0.0  1.0  2.0
+
+Pathway 91      
+
+> 010 20 30 40 50 0.0  1.0  2.0
+
+Pathway 93      
+
+> 010 20 30 40 50 0.0  1.0
+
+Pathway 96      
+
+> 010 20 30 40 50 0.0  1.0  2.0
+
+Pathway 97      
+
+> 010 20 30 40 50 0.0  1.0
+
+Pathway 100      
+
+> 010 20 30 40 50 0.0  1.0  2.0
+
+Pathway 101      
+
+> 010 20 30 40 50 0.0  1.0
+
+Pathway 102      
+
+> 010 20 30 40 50 0.0  1.0  2.0
+
+Pathway 103      
+
+> 010 20 30 40 50 0.0  1.0
+
+Pathway 104 Figure D.4: Detailed display of all pathways within the identified bicluster ( SSS1, F FF 1). Each panel corresponds to one pathway in pathway group FFF 1. Black points represent raw sample mean mea-surements among samples in SSS1, computed after omitting missing observations at each time point. Colored solid curves represent the reconstructed mean trajectories obtained from our method. A31 0 10 20 30 40 50 0.0  1.0  2.0  Pathway 105 
+
+0 10 20 30 40 50 0.0  1.0 
+
+Pathway 106 
+
+0 10 20 30 40 50 0.0  1.0 
+
+Pathway 113 
+
+0 10 20 30 40 50 0.0  1.0  2.0  Pathway 114 
+
+0 10 20 30 40 50 0.0  1.0 
+
+Pathway 119 
+
+0 10 20 30 40 50 0.0  1.0  2.0  Pathway 120 
+
+0 10 20 30 40 50 0.0  1.0 
+
+Pathway 122 
+
+0 10 20 30 40 50 0.0  1.0  2.0  Pathway 123 
+
+0 10 20 30 40 50 0.0  1.0 
+
+Pathway 126 
+
+0 10 20 30 40 50 0.0  1.0  2.0  Pathway 127 
+
+0 10 20 30 40 50 0.0  1.0 
+
+Pathway 133 
+
+0 10 20 30 40 50 0.0  1.0 
+
+Pathway 134 
+
+0 10 20 30 40 50 0.0  1.0 
+
+Pathway 146 
+
+0 10 20 30 40 50 0.0  1.0  2.0  Pathway 147 
+
+0 10 20 30 40 50 0.0  1.0 
+
+Pathway 150 
+
+0 10 20 30 40 50 0.0  1.0 
+
+Pathway 151 
+
+0 10 20 30 40 50 0.0  1.0 
+
+Pathway 152 
+
+0 10 20 30 40 50 0.0  1.0  2.0  Pathway 153 
+
+0 10 20 30 40 50 0.0  1.0 
+
+Pathway 157 
+
+0 10 20 30 40 50 0.0  1.0 
+
+Pathway 158 
+
+0 10 20 30 40 50 0.0  1.0 
+
+Pathway 159 
+
+0 10 20 30 40 50 0.0  1.0  2.0  Pathway 160 
+
+0 10 20 30 40 50 0.0  1.0 
+
+Pathway 162 
+
+0 10 20 30 40 50 0.0  1.0  2.0 
+
+Pathway 163 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 170 
+
+0 10 20 30 40 50 0.0  1.0 
+
+Pathway 183 
+
+0 10 20 30 40 50 0.0  1.0 
+
+Pathway 184 
+
+0 10 20 30 40 50 0.0  1.0  2.0 
+
+Pathway 187 
+
+0 10 20 30 40 50 0.0  1.0 
+
+Pathway 193 
+
+0 10 20 30 40 50 0.0  1.0  2.0  Pathway 194 Figure D.4: Detailed display of all pathways within the identified bicluster ( SSS1, F FF 1) continued. A32 0 10 20 30 40 50 −1.6  −0.8 
+
+Pathway 2 
+
+0 10 20 30 40 50 −1.4  −0.6 
+
+Pathway 3 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 9 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 10 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 22 
+
+0 10 20 30 40 50 −1.4  −0.6 
+
+Pathway 23 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 27 
+
+0 10 20 30 40 50 −1.4  −0.8  −0.2  Pathway 28 
+
+0 10 20 30 40 50 −1.4  −0.6 
+
+Pathway 33 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 40 
+
+0 10 20 30 40 50 −1.4  −0.6 
+
+Pathway 41 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 49 
+
+0 10 20 30 40 50 −1.4  −0.8  −0.2  Pathway 52 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 53 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 56 
+
+0 10 20 30 40 50 −1.4  −0.8  −0.2  Pathway 57 
+
+0 10 20 30 40 50 −1.6  −0.8 
+
+Pathway 60 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 63 
+
+0 10 20 30 40 50 −1.4  −0.6 
+
+Pathway 64 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 66 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 67 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 71 
+
+0 10 20 30 40 50 −1.6  −0.8 
+
+Pathway 72 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 86 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 87 
+
+0 10 20 30 40 50 −1.4  −0.6 
+
+Pathway 90 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 91 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 93 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 96 
+
+0 10 20 30 40 50 −1.4  −0.6 
+
+Pathway 97 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 100 
+
+0 10 20 30 40 50 −1.4  −0.6 
+
+Pathway 101 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 102 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 103 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 104 Figure D.5: Detailed display of all pathways within the identified bicluster ( SSS3, F FF 1). Each panel corresponds to one pathway in pathway group FFF 1. Black points represent raw sample mean mea-surements among samples in SSS3, computed after omitting missing observations at each time point. Colored solid curves represent the reconstructed mean trajectories obtained from our method. A33 0 10 20 30 40 50 −1.4  −0.8  −0.2  Pathway 105 
+
+0 10 20 30 40 50 −1.4  −0.6 
+
+Pathway 106 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 113 
+
+0 10 20 30 40 50 −1.4  −0.6 
+
+Pathway 114 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 119 
+
+0 10 20 30 40 50 −1.4  −0.8  −0.2  Pathway 120 
+
+0 10 20 30 40 50 −1.4  −0.6 
+
+Pathway 122 
+
+0 10 20 30 40 50 −1.4  −0.8  −0.2  Pathway 123 
+
+0 10 20 30 40 50 −1.6  −0.8 
+
+Pathway 126 
+
+0 10 20 30 40 50 −1.4  −0.8  −0.2  Pathway 127 
+
+0 10 20 30 40 50 −1.4  −0.6 
+
+Pathway 133 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 134 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 146 
+
+0 10 20 30 40 50 −1.4  −0.8  −0.2  Pathway 147 
+
+0 10 20 30 40 50 −1.4  −0.6 
+
+Pathway 150 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 151 
+
+0 10 20 30 40 50 −1.4  −0.6 
+
+Pathway 152 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 153 
+
+0 10 20 30 40 50 −1.4  −0.6 
+
+Pathway 157 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 158 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 159 
+
+0 10 20 30 40 50 −1.4  −0.8  −0.2  Pathway 160 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 162 
+
+0 10 20 30 40 50 −1.4  −0.8  −0.2  Pathway 163 
+
+0 10 20 30 40 50 −1.4  −0.8  −0.2 
+
+Pathway 170 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 183 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 184 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 187 
+
+0 10 20 30 40 50 −1.5  −0.5 
+
+Pathway 193 
+
+0 10 20 30 40 50 −1.4  −0.8  −0.2  Pathway 194 Figure D.5: Detailed display of all pathways within the identified bicluster ( SSS3, F FF 1) continued. A34 0 10 20 30 40 50 −1.0  0.5 
+
+Pathway 4 
+
+0 10 20 30 40 50 −0.5  0.5  1.5 
+
+Pathway 11 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 14 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 15 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 16 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 18 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 21 
+
+0 10 20 30 40 50 0.0  1.0  2.0  Pathway 24 
+
+0 10 20 30 40 50 0.0  1.0  2.0  Pathway 29 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 31 
+
+0 10 20 30 40 50 −0.5  0.5  1.5 
+
+Pathway 34 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 36 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 43 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 46 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 50 
+
+0 10 20 30 40 50 −0.5  0.5  1.5 
+
+Pathway 54 
+
+0 10 20 30 40 50 −0.5  0.5  1.5 
+
+Pathway 58 
+
+0 10 20 30 40 50 −0.5  0.5  1.5 
+
+Pathway 61 
+
+0 10 20 30 40 50 −0.5  0.5  1.5 
+
+Pathway 65 
+
+0 10 20 30 40 50 −0.5  0.5  1.5 
+
+Pathway 68 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 73 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 75 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 80 
+
+0 10 20 30 40 50 −0.5  0.5  1.5 
+
+Pathway 84 
+
+0 10 20 30 40 50 −0.5  0.5  1.5 
+
+Pathway 88 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 94 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 98 
+
+0 10 20 30 40 50 −0.5  0.5  1.5 
+
+Pathway 107 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 108 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 110 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 115 
+
+0 10 20 30 40 50 −0.5  0.5  1.5 
+
+Pathway 121 
+
+0 10 20 30 40 50 −0.5  0.5  1.5 
+
+Pathway 124 
+
+0 10 20 30 40 50 −0.5  0.5  1.5 
+
+Pathway 128 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 135 Figure D.6: Detailed display of all pathways within the identified bicluster ( SSS2, F FF 2). Each panel corresponds to one pathway in pathway group FFF 2. Black points represent raw sample mean mea-surements among samples in SSS2, computed after omitting missing observations at each time point. Colored solid curves represent the reconstructed mean trajectories obtained from our method. A35 0 10 20 30 40 50 −0.5  0.5  1.5 
+
+Pathway 136 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 138 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 143 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 148 
+
+0 10 20 30 40 50 −0.5  0.5  1.5 
+
+Pathway 154 
+
+0 10 20 30 40 50 −0.5  0.5  1.5 
+
+Pathway 165 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 168 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 172 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 174 
+
+0 10 20 30 40 50 −0.5  0.5  1.5 
+
+Pathway 176 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 185 
+
+0 10 20 30 40 50 −0.5  1.0 
+
+Pathway 191 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 195 
+
+0 10 20 30 40 50 −0.5  1.0  2.0  Pathway 198 Figure D.6: Detailed display of all pathways within the identified bicluster ( SSS2, F FF 2) continued. A36 0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 4 
+
+0 10 20 30 40 50 −1.0  0.0  1.0  Pathway 11 
+
+0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 14 
+
+0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 15 
+
+0 10 20 30 40 50 −1.0  0.0  1.0 
+
+Pathway 16 
+
+0 10 20 30 40 50 −1.0  −0.2  0.4  Pathway 18 
+
+0 10 20 30 40 50 −1.0  0.0  1.0  Pathway 21 
+
+0 10 20 30 40 50 −1.0  0.0  1.0  Pathway 24 
+
+0 10 20 30 40 50 −1.0  0.0  1.0 
+
+Pathway 29 
+
+0 10 20 30 40 50 −1.0  0.0  1.0 
+
+Pathway 31 
+
+0 10 20 30 40 50 −1.0  0.0  1.0  Pathway 34 
+
+0 10 20 30 40 50 −1.0  0.0  1.0  Pathway 36 
+
+0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 43 
+
+0 10 20 30 40 50 −1.0  0.0  1.0 
+
+Pathway 46 
+
+0 10 20 30 40 50 −1.0  0.5  1.5  Pathway 50 
+
+0 10 20 30 40 50 −1.0  0.0  1.0 
+
+Pathway 54 
+
+0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 58 
+
+0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 61 
+
+0 10 20 30 40 50 −1.0  0.0  1.0  Pathway 65 
+
+0 10 20 30 40 50 −1.0  0.0  1.0 
+
+Pathway 68 
+
+0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 73 
+
+0 10 20 30 40 50 −1.0  −0.2  0.4  Pathway 75 
+
+0 10 20 30 40 50 −1.0  0.0  1.0 
+
+Pathway 80 
+
+0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 84 
+
+0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 88 
+
+0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 94 
+
+0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 98 
+
+0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 107 
+
+0 10 20 30 40 50 −1.0  0.5  1.5  Pathway 108 
+
+0 10 20 30 40 50 −1.0  0.0  1.0 
+
+Pathway 110 
+
+0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 115 
+
+0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 121 
+
+0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 124 
+
+0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 128 
+
+0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 135 Figure D.7: Detailed display of all pathways within the identified bicluster ( SSS3, F FF 2). Each panel corresponds to one pathway in pathway group FFF 2. Black points represent raw sample mean mea-surements among samples in SSS3, computed after omitting missing observations at each time point. Colored solid curves represent the reconstructed mean trajectories obtained from our method. A37 0 10 20 30 40 50 −1.0  0.0  1.0 
+
+Pathway 136 
+
+0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 138 
+
+0 10 20 30 40 50 −1.0  0.0  1.0  Pathway 143 
+
+0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 148 
+
+0 10 20 30 40 50 −1.0  0.0  1.0 
+
+Pathway 154 
+
+0 10 20 30 40 50 −1.0  0.5  2.0  Pathway 165 
+
+0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 168 
+
+0 10 20 30 40 50 −1.0  0.0  1.0 
+
+Pathway 172 
+
+0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 174 
+
+0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 176 
+
+0 10 20 30 40 50 −1.0  0.0  1.0 
+
+Pathway 185 
+
+0 10 20 30 40 50 −1.0  −0.4  0.2  Pathway 191 
+
+0 10 20 30 40 50 −1.0  0.0  1.0 
+
+Pathway 195 
+
+0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 198 Figure D.7: Detailed display of all pathways within the identified bicluster ( SSS3, F FF 2) continued. A38 0 10 20 30 40 50 −1.0  0.0 
+
+Pathway 12      
+
+> 010 20 30 40 50 −1.0  0.0
+
+Pathway 13      
+
+> 010 20 30 40 50 −1.5  −0.5
+
+Pathway 17      
+
+> 010 20 30 40 50 −1.5  −0.5
+
+Pathway 26      
+
+> 010 20 30 40 50 −1.5  −0.5
+
+Pathway 32      
+
+> 010 20 30 40 50 −1.5  −0.5
+
+Pathway 37      
+
+> 010 20 30 40 50 −1.0  0.0
+
+Pathway 38      
+
+> 010 20 30 40 50 −1.5  −0.5
+
+Pathway 42      
+
+> 010 20 30 40 50 −1.2  −0.4  0.2
+
+Pathway 51      
+
+> 010 20 30 40 50 −1.2  −0.6  0.0
+
+Pathway 55      
+
+> 010 20 30 40 50 −1.5  −0.5
+
+Pathway 59      
+
+> 010 20 30 40 50 −1.5  −0.5
+
+Pathway 69      
+
+> 010 20 30 40 50 −1.0  0.0
+
+Pathway 81      
+
+> 010 20 30 40 50 −1.0  0.0
+
+Pathway 85      
+
+> 010 20 30 40 50 −1.5  −0.5  0.5
+
+Pathway 92      
+
+> 010 20 30 40 50 −1.5  −0.5
+
+Pathway 95      
+
+> 010 20 30 40 50 −1.5  −0.5
+
+Pathway 99      
+
+> 010 20 30 40 50 −1.5  −0.5
+
+Pathway 109      
+
+> 010 20 30 40 50 −1.5  −0.5
+
+Pathway 116      
+
+> 010 20 30 40 50 −1.5  0.0
+
+Pathway 125      
+
+> 010 20 30 40 50 −1.5  −0.5
+
+Pathway 129      
+
+> 010 20 30 40 50 −2.0  −0.5
+
+Pathway 137      
+
+> 010 20 30 40 50 −1.0  0.0
+
+Pathway 156      
+
+> 010 20 30 40 50 −1.0  0.0
+
+Pathway 177      
+
+> 010 20 30 40 50 −1.0  0.0
+
+Pathway 186      
+
+> 010 20 30 40 50 −1.0  0.0
+
+Pathway 196 Figure D.8: Detailed display of all pathways within the identified bicluster ( SSS3, F FF 3). Each panel corresponds to one pathway in pathway group FFF 3. Black points represent raw sample mean mea-surements among samples in SSS3, computed after omitting missing observations at each time point. Colored solid curves represent the reconstructed mean trajectories obtained from our method. A39 −1 012
+
+0 10 20 30 40 50 
+
+Time 
+
+> Pathway 100
+
+Figure D.9: Trajectories for 10 randomly selected samples from Pathway 100. A40 D.3 Features Cluster details of IBD data 
+
+The lists below report the pathway features retained for display in the IBD raw-and-reconstruction figures. They use the same near-zero loading filter as the plotting code; consequently, feature cluster FFF 3 lists 26 plotted features rather than all 38 nonzero-loading features. 
+
+## Features included in feature cluster FFF 1 (65 features): 
+
+Feature cluster FFF 1
+
+• UNINTEGRATED.g__Alistipes.s__Alistipes_putredinis 
+
+• UNINTEGRATED.g__Alistipes.s__Alistipes_putredinis_CAG_67 
+
+• X1CMET2.PWY..N10.formyl.tetrahydrofolate.biosynthesis.g__Alistipes.s__Alistipes_putredinis 
+
+• X1CMET2.PWY..N10.formyl.tetrahydrofolate.biosynthesis.g__Alistipes.s__Alistipes_ putredinis_CAG_67 
+
+• COA.PWY.1..coenzyme.A.biosynthesis.II..mammalian..g__Alistipes.s__Alistipes_putredinis 
+
+• COA.PWY.1..coenzyme.A.biosynthesis.II..mammalian..g__Alistipes.s__Alistipes_putredinis_ CAG_67 
+
+• COA.PWY..coenzyme.A.biosynthesis.I.g__Alistipes.s__Alistipes_putredinis 
+
+• COA.PWY..coenzyme.A.biosynthesis.I.g__Alistipes.s__Alistipes_putredinis_CAG_67 
+
+• DTDPRHAMSYN.PWY..dTDP.L.rhamnose.biosynthesis.I.g__Alistipes.s__Alistipes_putredinis_CAG_ 67 
+
+• HISDEG.PWY..L.histidine.degradation.I.g__Alistipes.s__Alistipes_putredinis 
+
+• HISDEG.PWY..L.histidine.degradation.I.g__Alistipes.s__Alistipes_putredinis_CAG_67 
+
+• PANTO.PWY..phosphopantothenate.biosynthesis.I.g__Alistipes.s__Alistipes_putredinis_CAG_67 
+
+• PANTOSYN.PWY..pantothenate.and.coenzyme.A.biosynthesis.I.g__Alistipes.s__Alistipes_ putredinis 
+
+• PANTOSYN.PWY..pantothenate.and.coenzyme.A.biosynthesis.I.g__Alistipes.s__Alistipes_ putredinis_CAG_67 
+
+• PEPTIDOGLYCANSYN.PWY..peptidoglycan.biosynthesis.I..meso.diaminopimelate.containing..g_ _Alistipes.s__Alistipes_putredinis 
+
+• PEPTIDOGLYCANSYN.PWY..peptidoglycan.biosynthesis.I..meso.diaminopimelate.containing..g_ _Alistipes.s__Alistipes_putredinis_CAG_67 
+
+• PWY.1042..glycolysis.IV..plant.cytosol..g__Alistipes.s__Alistipes_putredinis 
+
+• PWY.3841..folate.transformations.II.g__Alistipes.s__Alistipes_putredinis 
+
+• PWY.3841..folate.transformations.II.g__Alistipes.s__Alistipes_putredinis_CAG_67 
+
+• PWY.4242..pantothenate.and.coenzyme.A.biosynthesis.III.g__Alistipes.s__Alistipes_ putredinis 
+
+• PWY.4242..pantothenate.and.coenzyme.A.biosynthesis.III.g__Alistipes.s__Alistipes_ putredinis_CAG_67 
+
+• PWY.5030..L.histidine.degradation.III.g__Alistipes.s__Alistipes_putredinis 
+
+• PWY.5030..L.histidine.degradation.III.g__Alistipes.s__Alistipes_putredinis_CAG_67 
+
+A41 Feature cluster FFF 1 (continued) 
+
+• PWY.5686..UMP.biosynthesis.g__Alistipes.s__Alistipes_putredinis 
+
+• PWY.5686..UMP.biosynthesis.g__Alistipes.s__Alistipes_putredinis_CAG_67 
+
+• PWY.5695..urate.biosynthesis.inosine.5..phosphate.degradation.g__Alistipes.s__Alistipes_ putredinis 
+
+• PWY.5695..urate.biosynthesis.inosine.5..phosphate.degradation.g__Alistipes.s__Alistipes_ putredinis_CAG_67 
+
+• PWY.6121..5.aminoimidazole.ribonucleotide.biosynthesis.I.g__Alistipes.s__Alistipes_ putredinis_CAG_67 
+
+• PWY.6122..5.aminoimidazole.ribonucleotide.biosynthesis.II.g__Alistipes.s__Alistipes_ putredinis 
+
+• PWY.6122..5.aminoimidazole.ribonucleotide.biosynthesis.II.g__Alistipes.s__Alistipes_ putredinis_CAG_67 
+
+• PWY.6123..inosine.5..phosphate.biosynthesis.I.g__Alistipes.s__Alistipes_putredinis 
+
+• PWY.6123..inosine.5..phosphate.biosynthesis.I.g__Alistipes.s__Alistipes_putredinis_CAG_67 
+
+• PWY.6124..inosine.5..phosphate.biosynthesis.II.g__Alistipes.s__Alistipes_putredinis 
+
+• PWY.6124..inosine.5..phosphate.biosynthesis.II.g__Alistipes.s__Alistipes_putredinis_CAG_67 
+
+• PWY.6126..superpathway.of.adenosine.nucleotides.de.novo.biosynthesis.II.g__Alistipes.s_ _Alistipes_putredinis 
+
+• PWY.6126..superpathway.of.adenosine.nucleotides.de.novo.biosynthesis.II.g__Alistipes.s_ _Alistipes_putredinis_CAG_67 
+
+• PWY.6147..6.hydroxymethyl.dihydropterin.diphosphate.biosynthesis.I.g__Alistipes.s_ _Alistipes_putredinis_CAG_67 
+
+• PWY.6277..superpathway.of.5.aminoimidazole.ribonucleotide.biosynthesis.g__Alistipes.s_ _Alistipes_putredinis 
+
+• PWY.6277..superpathway.of.5.aminoimidazole.ribonucleotide.biosynthesis.g__Alistipes.s_ _Alistipes_putredinis_CAG_67 
+
+• PWY.6385..peptidoglycan.biosynthesis.III..mycobacteria..g__Alistipes.s__Alistipes_ putredinis 
+
+• PWY.6385..peptidoglycan.biosynthesis.III..mycobacteria..g__Alistipes.s__Alistipes_ putredinis_CAG_67 
+
+• PWY.6386..UDP.N.acetylmuramoyl.pentapeptide.biosynthesis.II..lysine.containing..g_ _Alistipes.s__Alistipes_putredinis 
+
+• PWY.6386..UDP.N.acetylmuramoyl.pentapeptide.biosynthesis.II..lysine.containing..g_ _Alistipes.s__Alistipes_putredinis_CAG_67 
+
+• PWY.6387..UDP.N.acetylmuramoyl.pentapeptide.biosynthesis.I..meso.diaminopimelate. containing..g__Alistipes.s__Alistipes_putredinis 
+
+• PWY.6387..UDP.N.acetylmuramoyl.pentapeptide.biosynthesis.I..meso.diaminopimelate. containing..g__Alistipes.s__Alistipes_putredinis_CAG_67 
+
+• PWY.6609..adenine.and.adenosine.salvage.III.g__Alistipes.s__Alistipes_putredinis 
+
+• PWY.6609..adenine.and.adenosine.salvage.III.g__Alistipes.s__Alistipes_putredinis_CAG_67 
+
+A42 Feature cluster FFF 1 (continued) 
+
+• PWY.7219..adenosine.ribonucleotides.de.novo.biosynthesis.g__Alistipes.s__Alistipes_ putredinis 
+
+• PWY.7219..adenosine.ribonucleotides.de.novo.biosynthesis.g__Alistipes.s__Alistipes_ putredinis_CAG_67 
+
+• PWY.7220..adenosine.deoxyribonucleotides.de.novo.biosynthesis.II.g__Alistipes.s_ _Alistipes_putredinis 
+
+• PWY.7220..adenosine.deoxyribonucleotides.de.novo.biosynthesis.II.g__Alistipes.s_ _Alistipes_putredinis_CAG_67 
+
+• PWY.7221..guanosine.ribonucleotides.de.novo.biosynthesis.g__Alistipes.s__Alistipes_ putredinis 
+
+• PWY.7221..guanosine.ribonucleotides.de.novo.biosynthesis.g__Alistipes.s__Alistipes_ putredinis_CAG_67 
+
+• PWY.7222..guanosine.deoxyribonucleotides.de.novo.biosynthesis.II.g__Alistipes.s_ _Alistipes_putredinis 
+
+• PWY.7222..guanosine.deoxyribonucleotides.de.novo.biosynthesis.II.g__Alistipes.s_ _Alistipes_putredinis_CAG_67 
+
+• PWY.7229..superpathway.of.adenosine.nucleotides.de.novo.biosynthesis.I.g__Alistipes.s_ _Alistipes_putredinis 
+
+• PWY.7229..superpathway.of.adenosine.nucleotides.de.novo.biosynthesis.I.g__Alistipes.s_ _Alistipes_putredinis_CAG_67 
+
+• PWY.7234..inosine.5..phosphate.biosynthesis.III.g__Alistipes.s__Alistipes_putredinis 
+
+• PWY.7234..inosine.5..phosphate.biosynthesis.III.g__Alistipes.s__Alistipes_putredinis_CAG_ 67 
+
+• PWY.7539..6.hydroxymethyl.dihydropterin.diphosphate.biosynthesis.III..Chlamydia..g_ _Alistipes.s__Alistipes_putredinis_CAG_67 
+
+• PYRIDNUCSYN.PWY..NAD.biosynthesis.I..from.aspartate..g__Alistipes.s__Alistipes_putredinis 
+
+• PYRIDNUCSYN.PWY..NAD.biosynthesis.I..from.aspartate..g__Alistipes.s__Alistipes_putredinis_ CAG_67 
+
+• SER.GLYSYN.PWY..superpathway.of.L.serine.and.glycine.biosynthesis.I.g__Alistipes.s_ _Alistipes_putredinis_CAG_67 
+
+• TRNA.CHARGING.PWY..tRNA.charging.g__Alistipes.s__Alistipes_putredinis 
+
+• TRNA.CHARGING.PWY..tRNA.charging.g__Alistipes.s__Alistipes_putredinis_CAG_67 
+
+## Features included in feature cluster FFF 2 (49 features): 
+
+Feature cluster FFF 2
+
+• UNINTEGRATED.g__Blautia.s__Ruminococcus_torques 
+
+• X1CMET2.PWY..N10.formyl.tetrahydrofolate.biosynthesis.g__Blautia.s__Ruminococcus_torques 
+
+• ARGSYN.PWY..L.arginine.biosynthesis.I..via.L.ornithine..g__Blautia.s__Ruminococcus_torques 
+
+A43 Feature cluster FFF 2 (continued) 
+
+• ARGSYNBSUB.PWY..L.arginine.biosynthesis.II..acetyl.cycle..g__Blautia.s__Ruminococcus_ torques 
+
+• ARO.PWY..chorismate.biosynthesis.I.g__Blautia.s__Ruminococcus_torques 
+
+• BRANCHED.CHAIN.AA.SYN.PWY..superpathway.of.branched.amino.acid.biosynthesis.g__Blautia.s_ _Ruminococcus_torques 
+
+• CALVIN.PWY..Calvin.Benson.Bassham.cycle.g__Blautia.s__Ruminococcus_torques 
+
+• COA.PWY.1..coenzyme.A.biosynthesis.II..mammalian..g__Blautia.s__Ruminococcus_torques 
+
+• COA.PWY..coenzyme.A.biosynthesis.I.g__Blautia.s__Ruminococcus_torques 
+
+• COMPLETE.ARO.PWY..superpathway.of.aromatic.amino.acid.biosynthesis.g__Blautia.s_ _Ruminococcus_torques 
+
+• DTDPRHAMSYN.PWY..dTDP.L.rhamnose.biosynthesis.I.g__Blautia.s__Ruminococcus_torques 
+
+• GLUTORN.PWY..L.ornithine.biosynthesis.g__Blautia.s__Ruminococcus_torques 
+
+• ILEUSYN.PWY..L.isoleucine.biosynthesis.I..from.threonine..g__Blautia.s__Ruminococcus_ torques 
+
+• NONOXIPENT.PWY..pentose.phosphate.pathway..non.oxidative.branch..g__Blautia.s_ _Ruminococcus_torques 
+
+• PANTO.PWY..phosphopantothenate.biosynthesis.I.g__Blautia.s__Ruminococcus_torques 
+
+• PANTOSYN.PWY..pantothenate.and.coenzyme.A.biosynthesis.I.g__Blautia.s__Ruminococcus_ torques 
+
+• PEPTIDOGLYCANSYN.PWY..peptidoglycan.biosynthesis.I..meso.diaminopimelate.containing..g_ _Blautia.s__Ruminococcus_torques 
+
+• PWY.1042..glycolysis.IV..plant.cytosol..g__Blautia.s__Ruminococcus_torques 
+
+• PWY.3841..folate.transformations.II.g__Blautia.s__Ruminococcus_torques 
+
+• PWY.4242..pantothenate.and.coenzyme.A.biosynthesis.III.g__Blautia.s__Ruminococcus_torques 
+
+• PWY.5100..pyruvate.fermentation.to.acetate.and.lactate.II.g__Blautia.s__Ruminococcus_ torques 
+
+• PWY.5103..L.isoleucine.biosynthesis.III.g__Blautia.s__Ruminococcus_torques 
+
+• PWY.5304..superpathway.of.sulfur.oxidation..Acidianus.ambivalens..g__Blautia.s_ _Ruminococcus_torques 
+
+• PWY.5667..CDP.diacylglycerol.biosynthesis.I.g__Blautia.s__Ruminococcus_torques 
+
+• PWY.5686..UMP.biosynthesis.g__Blautia.s__Ruminococcus_torques 
+
+• PWY.6121..5.aminoimidazole.ribonucleotide.biosynthesis.I.g__Blautia.s__Ruminococcus_ torques 
+
+• PWY.6122..5.aminoimidazole.ribonucleotide.biosynthesis.II.g__Blautia.s__Ruminococcus_ torques 
+
+• PWY.6151..S.adenosyl.L.methionine.cycle.I.g__Blautia.s__Ruminococcus_torques 
+
+• PWY.6163..chorismate.biosynthesis.from.3.dehydroquinate.g__Blautia.s__Ruminococcus_torques 
+
+• PWY.6168..flavin.biosynthesis.III..fungi..g__Blautia.s__Ruminococcus_torques 
+
+A44 Feature cluster FFF 2 (continued) 
+
+• PWY.6277..superpathway.of.5.aminoimidazole.ribonucleotide.biosynthesis.g__Blautia.s_ _Ruminococcus_torques 
+
+• PWY.6385..peptidoglycan.biosynthesis.III..mycobacteria..g__Blautia.s__Ruminococcus_torques 
+
+• PWY.6386..UDP.N.acetylmuramoyl.pentapeptide.biosynthesis.II..lysine.containing..g_ _Blautia.s__Ruminococcus_torques 
+
+• PWY.6387..UDP.N.acetylmuramoyl.pentapeptide.biosynthesis.I..meso.diaminopimelate. containing..g__Blautia.s__Ruminococcus_torques 
+
+• PWY.6609..adenine.and.adenosine.salvage.III.g__Blautia.s__Ruminococcus_torques 
+
+• PWY.6700..queuosine.biosynthesis.g__Blautia.s__Ruminococcus_torques 
+
+• PWY.6737..starch.degradation.V.g__Blautia.s__Ruminococcus_torques 
+
+• PWY.7111..pyruvate.fermentation.to.isobutanol..engineered..g__Blautia.s__Ruminococcus_ torques 
+
+• PWY.7219..adenosine.ribonucleotides.de.novo.biosynthesis.g__Blautia.s__Ruminococcus_ torques 
+
+• PWY.7221..guanosine.ribonucleotides.de.novo.biosynthesis.g__Blautia.s__Ruminococcus_ torques 
+
+• PWY.7357..thiamin.formation.from.pyrithiamine.and.oxythiamine..yeast..g__Blautia.s_ _Ruminococcus_torques 
+
+• PWY.7400..L.arginine.biosynthesis.IV..archaebacteria..g__Blautia.s__Ruminococcus_torques 
+
+• PWY0.1061..superpathway.of.L.alanine.biosynthesis.g__Blautia.s__Ruminococcus_torques 
+
+• PWY0.1296..purine.ribonucleosides.degradation.g__Blautia.s__Ruminococcus_torques 
+
+• PWY0.1319..CDP.diacylglycerol.biosynthesis.II.g__Blautia.s__Ruminococcus_torques 
+
+• RIBOSYN2.PWY..flavin.biosynthesis.I..bacteria.and.plants..g__Blautia.s__Ruminococcus_ torques 
+
+• THISYNARA.PWY..superpathway.of.thiamin.diphosphate.biosynthesis.III..eukaryotes..g_ _Blautia.s__Ruminococcus_torques 
+
+• TRNA.CHARGING.PWY..tRNA.charging.g__Blautia.s__Ruminococcus_torques 
+
+• VALSYN.PWY..L.valine.biosynthesis.g__Blautia.s__Ruminococcus_torques 
+
+## Features included in feature cluster FFF 3 (26 features): 
+
+Feature cluster FFF 3
+
+• X1CMET2.PWY..N10.formyl.tetrahydrofolate.biosynthesis.unclassified 
+
+• ANAGLYCOLYSIS.PWY..glycolysis.III..from.glucose..unclassified 
+
+• ARO.PWY..chorismate.biosynthesis.I.unclassified 
+
+• COA.PWY.1..coenzyme.A.biosynthesis.II..mammalian..unclassified 
+
+• COMPLETE.ARO.PWY..superpathway.of.aromatic.amino.acid.biosynthesis.unclassified 
+
+• GLUTORN.PWY..L.ornithine.biosynthesis.unclassified 
+
+A45 Feature cluster FFF 3 (continued) 
+
+• GLYCOLYSIS..glycolysis.I..from.glucose.6.phosphate..unclassified 
+
+• HISTSYN.PWY..L.histidine.biosynthesis.unclassified 
+
+• PANTO.PWY..phosphopantothenate.biosynthesis.I.unclassified 
+
+• PANTOSYN.PWY..pantothenate.and.coenzyme.A.biosynthesis.I.unclassified 
+
+• PEPTIDOGLYCANSYN.PWY..peptidoglycan.biosynthesis.I..meso.diaminopimelate.containing. .unclassified 
+
+• PWY.4242..pantothenate.and.coenzyme.A.biosynthesis.III.unclassified 
+
+• PWY.5484..glycolysis.II..from.fructose.6.phosphate..unclassified 
+
+• PWY.5667..CDP.diacylglycerol.biosynthesis.I.unclassified 
+
+• PWY.5973..cis.vaccenate.biosynthesis.unclassified 
+
+• PWY.6121..5.aminoimidazole.ribonucleotide.biosynthesis.I.unclassified 
+
+• PWY.6122..5.aminoimidazole.ribonucleotide.biosynthesis.II.unclassified 
+
+• PWY.6163..chorismate.biosynthesis.from.3.dehydroquinate.unclassified 
+
+• PWY.6277..superpathway.of.5.aminoimidazole.ribonucleotide.biosynthesis.unclassified 
+
+• PWY.6386..UDP.N.acetylmuramoyl.pentapeptide.biosynthesis.II..lysine.containing. .unclassified 
+
+• PWY.6387..UDP.N.acetylmuramoyl.pentapeptide.biosynthesis.I..meso.diaminopimelate. containing..unclassified 
+
+• PWY.6703..preQ0.biosynthesis.unclassified 
+
+• PWY.7221..guanosine.ribonucleotides.de.novo.biosynthesis.unclassified 
+
+• PWY0.1319..CDP.diacylglycerol.biosynthesis.II.unclassified 
+
+• RIBOSYN2.PWY..flavin.biosynthesis.I..bacteria.and.plants..unclassified 
+
+• TRPSYN.PWY..L.tryptophan.biosynthesis.unclassified 
+
+A46 E More on Simulation 
+
+E.1 Supplementary Figures 0.0 0.2 0.4 0.6 0.8 1.0 −1.0  −0.5  0.0  0.5  1.0  Curve 1      
+
+> t
+> 0.0 0.2 0.4 0.6 0.8 1.0 −1.0  −0.5  0.0  0.5  1.0
+
+Curve 2      
+
+> t
+> 0.0 0.2 0.4 0.6 0.8 1.0 −1.0  −0.5  0.0  0.5  1.0
+
+Curve 3      
+
+> t
+> 0.0 0.2 0.4 0.6 0.8 1.0 −1.0  −0.5  0.0  0.5  1.0
+
+Curve 4      
+
+> t
+> 0.0 0.2 0.4 0.6 0.8 1.0 −1.0  −0.5  0.0  0.5  1.0
+
+Curve 5      
+
+> t
+> 0.0 0.2 0.4 0.6 0.8 1.0 −1.0  −0.5  0.0  0.5  1.0
+
+Curve 6      
+
+> t
+> 0.0 0.2 0.4 0.6 0.8 1.0 −1.0  −0.5  0.0  0.5  1.0
+
+Curve 7      
+
+> t
+> 0.0 0.2 0.4 0.6 0.8 1.0 −1.0  −0.5  0.0  0.5  1.0
+
+Curve 8      
+
+> t
+> 0.0 0.2 0.4 0.6 0.8 1.0 −1.0  −0.5  0.0  0.5  1.0
+
+Curve 9      
+
+> t
+> 0.0 0.2 0.4 0.6 0.8 1.0 −1.0  −0.5  0.0  0.5  1.0
+
+Curve 10 
+
+> t
+
+Figure E.1: Prespecified candidate functional shapes used to generate active variables in the sim-ulation study. The ten curves comprise two types of signals: full-domain continuous functions defined over the entire interval [0 , 1] (e.g., Curves 2, 4, 7, 9), and subregion-localized functions obtained by restricting the signal to either the left half (e.g., Curves 1,5,8) or the right half (e.g., Curves 3, 6, 10) of the discrete grid and setting the remaining half to zero. In each simulation replicate, the loading function for an active variable is selected from this set, while inactive vari-ables are assigned identically zero trajectories. A47 25 50 75 100 10 20 30 40 50 60 
+
+Features    
+
+> Samples
+> Cluster 1 Cluster 2 Cluster 3 Cluster 4
+
+(a) Overlap true cluster 25 50 75 100 10 20 30 40 50 60 
+
+Features     
+
+> Samples
+> Cluster 1 Cluster 2 Cluster 3 Cluster 4
+
+(b) Overlap estimated cluster 25 50 75 100 10 20 30 40 50 60 
+
+Features    
+
+> Samples
+> Cluster 1 Cluster 2 Cluster 3 Cluster 4
+
+(c) Nonoverlap true cluster 25 50 75 100 10 20 30 40 50 60 
+
+Features     
+
+> Samples
+> Cluster 1 Cluster 2 Cluster 3 Cluster 4
+
+(d) Nonoverlap estimated cluster 
+
+Figure E.2: The true and Bi-SfSVD estimated bicluster structure for the overlapping and non-overlapping settings under p = 60 and a 0 .6 missing rate. A48 E.2 Orthogonality under the overlapping setting 
+
+In the overlapping setting, different latent components are allowed to share nonzero sample indices in {uuuk}Kk=1 and nonzero functional regions in {φφφk}Kk=1 . Consequently, orthogonality is no longer automatic and must be handled separately for the sample loading vectors and the right singular functions. For the sample loading vectors, let 
+
+Sk = {i : uki̸ = 0 }, k = 1 , . . . , K, 
+
+denote the nonzero sample support of the kth component. In the nonoverlapping setting, Sj ∩Sk =
+
+∅ for j̸ = k, so 
+
+⟨uuuj , u uuk⟩ =
+
+> n
+
+X
+
+> i=1
+
+uji uki = 0 , j̸ = k. 
+
+After normalization, 
+
+∥uuuk∥2 = 1 ,
+
+the vectors are orthonormal. In the overlapping setting, however, two distinct components, say the jth and kth components, may share a subset of sample indices, 
+
+Ojk = Sj ∩ Sk̸ = ∅.
+
+To reduce the dependence induced by this overlap, we apply a localized Gram–Schmidt-type adjustment on the shared sample indices only. Specifically, restricting attention to the overlapping subset Ojk , we update the subvector uuukOjk by removing its projection onto uuujOjk :
+
+uuukOjk ← uuukOjk − ⟨uuujOjk , u uukOjk ⟩∥uuujOjk ∥22
+
+uuujOjk .
+
+Equivalently, this can be written in projection-matrix form as 
+
+uuukOjk ← III − uuujOjk (uuujOjk )⊤
+
+∥uuujOjk ∥22
+
+!
+
+uuukOjk .
+
+The matrix in parentheses is the orthogonal projector onto the complement of the span of uuujOjk .Therefore, after this update, 
+
+⟨uuujOjk , u uukOjk ⟩ = 0 ,
+
+so the overlapping portion of the kth component is orthogonal to that of the jth component on the shared sample indices. After this local projection adjustment, each loading vector is normalized to unit Euclidean norm: 
+
+uuuk ← uuuk
+
+∥uuuk∥2
+
+, k = 1 , . . . , K. 
+
+A49 For the right singular functions, orthogonality is handled differently. Let 
+
+φφφk(t) =  φk 
+
+> 1
+
+(t), . . . , φ kp (t)⊤, k = 1 , . . . , K. 
+
+In our simulation, orthogonality across components is enforced by construction: for each active variable, the component-specific loading functions are assigned from a prespecified collection of mutually orthogonal candidate functions. Therefore, for j̸ = k,
+
+⟨φφφj , φ φφk⟩H = 0 by design. Hence, unlike the sample loading vectors, the right singular functions do not require an additional overlap-adjustment step; their orthogonality is imposed directly through the function assignment in the data-generating mechanism. A50 E.3 Evaluation criteria 
+
+To quantify performance, we adopt the similarity framework from Sill et al. (2011). Let cM =
+
+{ cM1, . . . , cMk} and M = {M1, . . . , M k′ } denote the collections of index sets induced by the esti-mated and true clusters, respectively, where each set records the indices belonging to one cluster. For an estimated cluster a and a true cluster b, the Jaccard index is defined as Jac( cMa, M b) = | cMa ∩ Mb|| cMa ∪ Mb|, a = 1 , . . . , k, b = 1 , . . . , k ′
+
+.
+
+Relevance and recovery are the averages of the best Jaccard matches across predicted and true clusters, respectively: Rel = 1
+
+k
+
+> k
+
+X
+
+> a=1
+> k′
+
+max  
+
+> b=1
+
+Jac( cMa, M b), Rec = 1
+
+k′
+
+> k′
+
+X
+
+> b=1
+> k
+
+max  
+
+> a=1
+
+Jac( cMa, M b).
+
+The overall score is their harmonic mean: F = 2 · Rel · Rec Rel + Rec . In our simulation studies, we use the F score to quantify clustering performance at multiple clustering levels, including subject clustering, variable clustering, subregion clustering, biclustering, and triclustering. We use buai and 
+
+uai to denote the estimated and true values of the ith element of the singular score vector uuu in sparse layer a, respectively. Likewise, we use bψbj and ψbj to denote the estimated and true singular functions corresponding to variable j in sparse layer b, respectively. The index sets are defined at each level as follows: Sample level: cM sam a = {i : buai̸ = 0 }, M sam b = {i : ubi̸ = 0 };Variable level: cM var a = {j : ∥ bψaj ∥Hj̸ = 0 }, M var b = {j : ∥ψbj ∥Hj̸ = 0 };Subregion level: cM sub a = {(j, t ) : bψaj (t)̸ = 0 }, M sub b = {(j, t ) : ψbj (t)̸ = 0 };Bicluster level: cM bi a = cM sam a × cM var a , M bi b = M sam b × M var b ;Tricluster level: cM tri a = cM sam a × cM sub a , M tri b = M sam b × M sub b .
+
+Using the level-specific index sets in the above definition yields five F -scores, corresponding to subject, variable, subregion, bicluster, and tricluster accuracy. A51 E.4 Performance Evaluation of Cluster Number Selection 
+
+Furthermore, we report the performance of using the BIC score and variance explained to select the number of clusters K. As shown in Figure E.3, we present the distribution of BIC scores for estimating different values of K across 20 simulation repetitions for three biclustering scenarios and three triclustering scenarios. Similarly, Figure E.4 illustrates the distribution of variance explained under the same scenarios. Given that the true number of biclusters/triclusters is 4 in all simulations, both criteria demonstrate objective and reliable performance in selecting the appropriate number of biclusters/triclusters. −1 01                  
+
+> 2468
+> Number of Bi−clusters
+> BIC score
+> Bi−cluster with p = 60 −1 01
+> 2468
+> Number of Bi−clusters
+> BIC score
+> Bi−cluster with p = 200 −1 012
+> 2468
+> Number of Bi−clusters
+> BIC score
+> Bi−cluster with p = 1000 −1 01
+> 2468
+> Number of Bi−clusters
+> BIC score
+> Tri−cluster with p = 60 −1 01
+> 2468
+> Number of Bi−clusters
+> BIC score
+> Tri−cluster with p = 200 −1 012
+> 2468
+> Number of Bi−clusters
+> BIC score
+> Tri−cluster with p = 1000
+
+Figure E.3: Distribution of BIC scores for selecting the number of biclusters/triclusters K across 20 simulation repetitions. Each panel corresponds to one simulation scenario (top row: three biclustering scenarios; bottom row: three triclustering scenarios) and displays the BIC values obtained for different candidate K. The true number of biclusters/triclusters is K = 4 in all scenarios; lower BIC indicates a better fit and is used to select K.A52 0.5 0.6 0.7 0.8 0.9 
+
+2 4 6 8
+
+Number of Bi−clusters 
+
+> Variance Explained
+
+Bi−cluster with p = 60 0.5 0.6 0.7 0.8 0.9 
+
+2 4 6 8
+
+Number of Bi−clusters 
+
+> Variance Explained
+
+Bi−cluster with p = 200 0.5 0.6 0.7 0.8 0.9 
+
+2 4 6 8
+
+Number of Bi−clusters 
+
+> Variance Explained
+
+Bi−cluster with p = 1000 0.5 0.6 0.7 0.8 0.9 
+
+2 4 6 8
+
+Number of Bi−clusters 
+
+> Variance Explained
+
+Tri−cluster with p = 60 0.5 0.6 0.7 0.8 0.9 
+
+2 4 6 8
+
+Number of Bi−clusters 
+
+> Variance Explained
+
+Tri−cluster with p = 200 0.5 0.6 0.7 0.8 0.9 
+
+2 4 6 8
+
+Number of Bi−clusters 
+
+> Variance Explained
+
+Tri−cluster with p = 1000 Figure E.4: Distribution of variance explained for selecting the number of biclusters/triclusters 
+
+K across 20 simulation repetitions. Each panel corresponds to one simulation scenario (top row: three biclustering scenarios; bottom row: three triclustering scenarios) and displays the variance explained obtained for different candidate K. The true number of biclusters/triclusters is K = 4 in all scenarios; larger variance explained indicates a better fit and is used to select K.A53 Tricluster 1 (S1−F1)                     
+
+> 010 30 −0.5  1.0
+> Feature 1
+> 010 30 0.0  1.5
+> Feature 2
+> 010 30 −2  0 2 Feature 3
+> 010 30 −2  0 2 Feature 4
+> 010 30 −2  0 2 Feature 5
+> 010 30 −0.5  1.0
+> Feature 21
+> 010 30 0.0  1.5
+> Feature 22
+> 010 30 −2  0 2 Feature 23
+> 010 30 −2  0 2 Feature 24
+> 010 30 −2  0 2 Feature 25
+
+Tricluster 2 (S2−F2)                     
+
+> 010 30 −0.5  1.0
+> Feature 6
+> 010 30 0.0  1.0  2.0  Feature 7
+> 010 30 −2  0 2 Feature 8
+> 010 30 −2  0 2 Feature 9
+> 010 30 −2  0 2 Feature 10
+> 010 30 −0.5  1.0
+> Feature 26
+> 010 30 0.0  1.0  2.0  Feature 27
+> 010 30 −2  0 2 Feature 28
+> 010 30 −2  0 2 Feature 29
+> 010 30 −1  1
+> Feature 30
+
+Tricluster 3 (S3−F3)                     
+
+> 010 30 −0.5  0.5  1.5  Feature 11
+> 010 30 0.0  1.0
+> Feature 12
+> 010 30 −1.5  0.0  1.5  Feature 13
+> 010 30 −1.5  0.5
+> Feature 14
+> 010 30 −1.5  0.5
+> Feature 15
+> 010 30 0.0  1.0  Feature 31
+> 010 30 0.0  1.0
+> Feature 32
+> 010 30 −1.5  0.5
+> Feature 33
+> 010 30 −1.5  0.5
+> Feature 34
+> 010 30 −1.5  0.5
+> Feature 35
+
+Tricluster 4 (S4−F4)                      
+
+> 010 30 −0.5  0.5
+> Feature 16
+> 010 30 0.0  0.6
+> Feature 17
+> 010 30 −1.0  0.5  Feature 18
+> 010 30 −1.0  0.5
+> Feature 19
+> 010 30 −0.5  0.5
+> Feature 20
+> 010 30 −0.4  0.4
+> Feature 36
+> 010 30 −0.2  0.6  1.2  Feature 37
+> 010 30 −1.0  0.5
+> Feature 38
+> 010 30 −1.0  0.5
+> Feature 39
+> 010 30 −0.5  0.5
+> Feature 40
+> Raw sample mean Reconstructed sample mean
+
+Figure E.5: Representative sample–feature–time tricluster results from a randomly selected nonoverlapping simulated dataset with p = 60 and a missing rate of 0 .4. The four blocks cor-respond to the four true triclusters ( SSS1, F FF 1), ( SSS2, F FF 2), ( SSS3, F FF 3), and ( SSS4, F FF 4), respectively, where 
+
+SSSk denotes the sample cluster and FFF k denotes the feature cluster in the kth tricluster. For each feature in FFF k, the identified time-domain component corresponds to the nonzero support of its estimated loading function. Within each block, panels display all ten active features in the corre-sponding feature group. Black points represent raw sample mean measurements among samples in the corresponding sample group, computed after omitting missing observations at each time point. Colored solid curves represent reconstructed sample mean trajectories obtained from the corre-sponding sparse functional SVD layer. The displayed features include both full-domain signals and subregion-localized signals, showing the heterogeneous trajectory shapes and time-domain support patterns present within the simulated tricluster structure. A54 References 
+
+Beck, A. and Teboulle, M. (2009). A fast iterative shrinkage-thresholding algorithm for linear inverse problems. SIAM J. IMAGING SCIENCES , 2(1):183–202. Begleiter, H. (1995a). EEG Database. UCI Machine Learning Repository. DOI: https://doi.org/10.24432/C5TS3D. Begleiter, H. (1995b). Eeg database. UCI Machine Learning Repository, Dataset. Chekouo, T. and Murua, A. (2015). The penalized biclustering model and related algorithms. 
+
+Journal of Applied Statistics , 42(6):1255–1277. Chen, J. and Chen, Z. (2008). Extended bayesian information criteria for model selection with large model spaces. Biometrika , 95(3):759–771. Chen, L., Collij, V., et al. (2020). Gut microbial co-abundance networks show specificity in inflammatory bowel disease and obesity. Nature Communications , 11(1):4018. de Meij, T. G. J., de Groot, E. F. J., et al. (2018). Variability of core microbiota in newly diagnosed treatment-na¨ ıve paediatric inflammatory bowel disease patients. PLOS ONE , 13(8):e0197649. Galvani, M., Torti, A., Menafoglio, A., and Vantini, S. (2021). Funcc: A new bi-clustering algorithm for functional data with misalignment. Computational Statistics and Data Analysis ,160:107219. Haghbin, H., Zhao, Y., and Maadooliat, M. (2026). Regularized multivariate functional principal component analysis for data observed on different domains. Foundations of Data Science , 10:27– 52. Happ, C. and Greven, S. (2018). Multivariate functional principal component analysis for data observed on different (dimensional) domains. Journal of the American Statistical Association ,113(522):649–659. Huang, J. Z., Shen, H., Buja, A., et al. (2008). Functional principal components analysis via penalized rank one approximation. Electronic Journal of Statistics , 2:678–695. Kamarajan, C., Porjesz, B., Jones, K. A., Choi, K., Chorlian, D. B., Padmanabhapillai, A., Rangaswamy, M., Stimus, A. T., and Begleiter, H. (2004). The role of brain oscillations as functional correlates of cognitive systems: A study of frontal inhibitory control in alcoholism. 
+
+International Journal of Psychophysiology , 51(2):155–180. Langfelder, P. and Horvath, S. (2008). WGCNA: an R package for weighted correlation network analysis. BMC Bioinformatics , 9(1):559. Lee, M., Shen, H., Huang, J. Z., and Marron, J. S. (2010). Biclustering via sparse singular value decomposition. Biometrics , 66(4):1087–1095. A55 Liang, X., Cohen, A., Heinsfeld, A. S., Pestilli, F., and McDonald, D. J. (2024). sparsegl: An r package for estimating sparse group lasso. Journal of Statistical Software , 110(6):1–23. Liu, L., Wang, G., and Safo, S. E. (2025). Multivariate sparse functional linear discriminant analysis: An application to inflammatory bowel disease classification. arXiv:2503.13372. Lloyd-Price, J., Arze, C., Ananthakrishnan, A. N., et al. (2019). Multi-omics of the gut microbial ecosystem in inflammatory bowel diseases. Nature , 569(7758):655–662. Moselhy, H. F., Georgiou, G., and Kahn, A. (2001). Frontal lobe changes in alcoholism: A review of the literature. Alcohol and Alcoholism , 36(5):357–368. Noah Simon, Jerome Friedman, T. H. . R. T. (2013). A sparse-group lasso. Journal of Computa-tional and Graphical Statistics , 22(2):231–245. Nomura, K., Ishikawa, D., Okahara, K., et al. (2021). Bacteroidetes species are correlated with disease activity in ulcerative colitis. Journal of Clinical Medicine , 10(8):1749. Sill, M., Kaiser, S., Benner, A., and Kopp-Schneider, A. (2011). Robust biclustering by sparse sin-gular value decomposition incorporating stability selection. BIOINFORMATICS , 27(15):2089– 2097. Slimen, Y. B., Allio, S., and Jacques, J. (2018). Model-based co-clustering for functional data. 
+
+Neurocomputing , 291:97–108. Tibshirani, J. F. T. H. R. (2010). A note on the group lasso and a sparse group lasso. arXiv preprint arXiv:1001.0736 .Yao, F., M¨ uller, H.-G., and Wang, J.-L. (2005). Functional data analysis for sparse longitudinal data. Journal of the American Statistical Association , 100(470):577–590. Yu, S., Zhang, M., Ye, Z., et al. (2023). Development of a 32-gene signature using machine learning for accurate prediction of inflammatory bowel disease. Cell Regeneration , 12(1):8. Zhang, W., Wendt, C., Bowler, R., Hersh, C. P., and Safo, S. E. (2022). Robust integrative biclustering for multi-view data. Statistical methods in medical research , 31(11):2201–2216. Zhang, X. L., Begleiter, H., Porjesz, B., and Litke, A. (1997). Electrophysiological evidence of memory impairment in alcoholic patients. Biological Psychiatry , 42(12):1157–1171. Zhao, L. and Zaki, M. J. (2005). Tricluster: an effective algorithm for mining coherent clusters in 3d microarray data. In Proceedings of the 2005 ACM SIGMOD International Conference on Management of Data , pages 694–705. Association for Computing Machinery. Zhao, Y. (2024). Regularized Multivariate Functional Principal Component Analysis . PhD thesis, Marquette University. Zheng, J., Sun, Q., Zhang, M., et al. (2024). Noninvasive, microbiome-based diagnosis of inflam-matory bowel disease. Nature Medicine , 30(12):3555–3567. A56 Zou, H. (2006). The adaptive lasso and its oracle properties. Journal of the American Statistical Association , 101(476):1418–1429. A57
