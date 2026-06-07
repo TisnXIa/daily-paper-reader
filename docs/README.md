@@ -6,32 +6,32 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-06
-- 运行时间：2026-06-06 21:06:11 UTC
+- 最新运行日期：2026-06-07
+- 运行时间：2026-06-07 21:07:01 UTC
 - 运行状态：成功
-- 本次总论文数：3
-- 精读区：0
-- 速读区：3
+- 本次总论文数：4
+- 精读区：3
+- 速读区：1
 
 ### 今日简报（AI）
-今日检索3篇论文并完成速读，无精读。
-最值得关注的是《Dynamic Co-Expression Network Estimation via Multivariate Mixed-Effects Models》（7.0/10），以及《Virome-mediated ecological firewalls govern pathogen eradication in the gut microbiome》（6.0/10）中关于病毒组调控肠道病原体的方向。
-建议优先精读高分的动态共表达网络估计方法，再了解病毒组防火墙在微生物组中的应用。
-- 详情：[/202606/06/README](/202606/06/README)
+今日精读两篇高分文献，分别关于古菌基因组参考数据库和超快速病原体序列分类工具。最值得关注的是《ArchaeaHQ》提供的精选古菌基因组数据库，以及《TDKC》实现的极速病原体诊断分类算法。建议研究人员优先试用手头的开源工具，并关注古菌基因组在环境与健康研究中的应用潜力。
+- 详情：[/202606/07/README](/202606/07/README)
 
 ### 精读区论文标签
-- 本次无精读推荐。
+1. [ArchaeaHQ: A Curated Reference Database of Archaeal Genomes](/202606/07/biorxiv-10-64898-2026-06-02-729493-v1-archaeahq-a-curated-reference-database-of-archaeal-genomes)  
+   标签：评分：9.0/10、query:microbiome
+   evidence：用于宏基因组注释的精选古菌基因组数据库
+2. [TDKC (Target Distilled K-mer Classifier): Ultrafast and Memory-Efficient Sequence Classification for Target Pathogen Diagnostics](/202606/07/biorxiv-10-64898-2026-06-05-730319-v1-tdkc-target-distilled-k-mer-classifier-ultrafast-and-memory-efficient-sequence-classification-for-target-pathogen-diagnostics)  
+   标签：评分：9.0/10、query:microbiome
+   evidence：针对靶标病原体的宏基因组测序分类器
+3. [KBase Research Agent: Automated Multi-Agent Workflow Construction for Reproducible Genome Analysis](/202606/07/biorxiv-10-64898-2026-06-01-729336-v1-kbase-research-agent-automated-multi-agent-workflow-construction-for-reproducible-genome-analysis)  
+   标签：评分：8.0/10、query:microbiome
+   evidence：用于宏基因组分析的多智能体自动化工作流
 
 ### 速读区论文标签
-1. [Dynamic Co-Expression Network Estimation via Multivariate Mixed-Effects Models](/202606/06/2605.30577v1-dynamic-co-expression-network-estimation-via-multivariate-mixed-effects-models)  
+1. [PAG-Agent: a biologist-oriented research assistant for context-aware pathway-level analysis and interpretation](/202606/07/biorxiv-10-64898-2026-06-02-729674-v1-pag-agent-a-biologist-oriented-research-assistant-for-context-aware-pathway-level-analysis-and-interpretation)  
    标签：评分：7.0/10、query:microbiome
-   evidence：提出了从纵向数据推断动态共表达网络的统计方法DCENt，可应用于微生物组时间序列分析
-2. [Sparse Functional Singular Value Decomposition for Biclustering and Triclustering Longitudinal Data](/202606/06/2606.05488v1-sparse-functional-singular-value-decomposition-for-biclustering-and-triclustering-longitudinal-data)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：稀疏函数奇异值分解方法可用于微生物组纵向数据
-3. [Virome-mediated ecological firewalls govern pathogen eradication in the gut microbiome](/202606/06/biorxiv-10-64898-2026-06-02-729649-v1-virome-mediated-ecological-firewalls-govern-pathogen-eradication-in-the-gut-microbiome)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：细菌-噬菌体-病原体相互作用动力学模型用于肠道微生物组恢复分析
+   evidence：用于功能注释的上下文感知通路分析工具
 
 
 <div class="dpr-home-promo-card">
