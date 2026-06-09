@@ -6,52 +6,34 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-08
-- 运行时间：2026-06-08 21:04:42 UTC
+- 最新运行日期：2026-06-09
+- 运行时间：2026-06-09 22:04:39 UTC
 - 运行状态：成功
-- 本次总论文数：10
+- 本次总论文数：4
 - 精读区：2
-- 速读区：8
+- 速读区：2
 
 ### 今日简报（AI）
-今日精读2篇：差异宏蛋白质组学统计评估与蛇泄殖腔微生物多样性研究。  
-最值得关注：病毒组生态防火墙调控病原体清除（7.0分），以及半干旱植物细菌组区室特异性组装（7.0分）。  
-建议优先阅读病毒组相关论文，理解肠道病原体清除的新机制。
-- 详情：[/202606/08/README](/202606/08/README)
+1) 今日精读2篇高分文献，揭示人类口腔卟啉单胞菌位点专一性与五大湖微生物热分层群落规律。  
+2) 最值得关注：口腔菌位点特异性适应机制，以及湖泊中温度分区导致的原核与浮游植物微生物群落差异。  
+3) 建议拓展学习：定量稳定同位素探针等技术如何用于测量微生物原位生长，推动生态研究精细化。
+- 详情：[/202606/09/README](/202606/09/README)
 
 ### 精读区论文标签
-1. [Comprehensive evaluation of statistical approaches for differential metaproteomics](/202606/08/biorxiv-10-64898-2025-12-10-693402-v4-comprehensive-evaluation-of-statistical-approaches-for-differential-metaproteomics)  
+1. [Site-specialization of human oral Porphyromonas species](/202606/09/biorxiv-10-64898-2026-06-02-729646-v1-site-specialization-of-human-oral-porphyromonas-species)  
    标签：评分：8.0/10、query:microbiome
-   evidence：评估元蛋白质组学差异丰度统计方法
-2. [Microbial community profiles of the snake cloaca in the presence and absence of Chlamydiota](/202606/08/biorxiv-10-64898-2026-06-04-730152-v1-microbial-community-profiles-of-the-snake-cloaca-in-the-presence-and-absence-of-chlamydiota)  
+   evidence：使用竞争性比对和功能分析口腔位点宏基因组
+2. [Topic modeling reveals thermally partitioned and taxonomically distinct microbial subcommunities across prokaryotes and phytoplankton in the Laurentian Great Lakes](/202606/09/biorxiv-10-64898-2026-06-06-730626-v1-topic-modeling-reveals-thermally-partitioned-and-taxonomically-distinct-microbial-subcommunities-across-prokaryotes-and-phytoplankton-in-the-laurentian-great-lakes)  
    标签：评分：8.0/10、query:microbiome
-   evidence：对蛇泄殖腔微生物群进行16S rRNA扩增子测序分析
+   evidence：基于16S rRNA扩增子时间序列的LDA主题模型用于微生物亚群落分析
 
 ### 速读区论文标签
-1. [Virome-mediated ecological firewalls govern pathogen eradication in the gut microbiome](/202606/08/biorxiv-10-64898-2026-06-02-729649-v1-virome-mediated-ecological-firewalls-govern-pathogen-eradication-in-the-gut-microbiome)  
+1. [Knowledge-Inclusive Adaptive Physics-Informed Neural Network for Microbial Interaction Modelling](/202606/09/2606.07686v1-knowledge-inclusive-adaptive-physics-informed-neural-network-for-microbial-interaction-modelling)  
    标签：评分：7.0/10、query:microbiome
-   evidence：肠道微生物组细菌-噬菌体-病原体相互作用的动力学模型
-2. [Compartment-Specific Assembly and Functional Potential of the Bacteriome of Citrullus colocynthis in a Semi-Arid Ecosystem](/202606/08/biorxiv-10-64898-2026-06-05-730417-v1-compartment-specific-assembly-and-functional-potential-of-the-bacteriome-of-citrullus-colocynthis-in-a-semi-arid-ecosystem)  
-   标签：评分：7.0/10、query:microbiome
-   evidence：使用16S rRNA扩增子测序进行微生物组分析
-3. [Resolving taxonomic boundaries and revealing genetic diversity in Enterococcus casseliflavus and closely related taxa](/202606/08/biorxiv-10-1101-2024-09-16-613146-v2-resolving-taxonomic-boundaries-and-revealing-genetic-diversity-in-enterococcus-casseliflavus-and-closely-related-taxa)  
+   evidence：用于微生物相互作用建模的物理信息神经网络
+2. [Quantitative stable isotope probing to measure in situ growth of protist populations](/202606/09/biorxiv-10-64898-2026-06-04-730198-v1-quantitative-stable-isotope-probing-to-measure-in-situ-growth-of-protist-populations)  
    标签：评分：6.0/10、query:microbiome
-   evidence：使用16S rRNA序列分析进行物种分类
-4. [Reproducible and shareable bioinformatics pipelines from natural-language prompts](/202606/08/biorxiv-10-64898-2026-05-28-719125-v1-reproducible-and-shareable-bioinformatics-pipelines-from-natural-language-prompts)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：基于大语言模型的可重复生物信息学流程生成平台，可用于宏基因组分析
-5. [ROTS 2.0: A reproducibility-driven framework for robust statistical modeling across diverse high-throughput omics study designs](/202606/08/biorxiv-10-64898-2026-06-01-729164-v1-rots-20-a-reproducibility-driven-framework-for-robust-statistical-modeling-across-diverse-high-throughput-omics-study-designs)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：ROTS 2.0差异表达统计框架，可迁移至微生物组差异丰度测试
-6. [Taxonomic Composition and Predicted Functional Potential of a Commercial Microbiome-Based Fertilizer Additive and Agricultural Soils in Eastern Paraguay](/202606/08/biorxiv-10-64898-2026-06-03-729874-v1-taxonomic-composition-and-predicted-functional-potential-of-a-commercial-microbiome-based-fertilizer-additive-and-agricultural-soils-in-eastern-paraguay)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：微生物组组成和功能潜力分析
-7. [samsampleX: Distribution-aware downsampling for benchmarking next-generation sequencing data](/202606/08/biorxiv-10-64898-2026-06-03-729942-v1-samsamplex-distribution-aware-downsampling-for-benchmarking-next-generation-sequencing-data)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：适用于微生物组数据预处理的NGS下采样工具
-8. [Longitudinal RNA Seq analyses reveal the prominent role of Vagococcus in broiler meat spoilage microbiome](/202606/08/biorxiv-10-64898-2026-06-04-730080-v1-longitudinal-rna-seq-analyses-reveal-the-prominent-role-of-vagococcus-in-broiler-meat-spoilage-microbiome)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：利用宏转录组学分析肉品腐败微生物组活性
+   evidence：结合18S rRNA基因测序的定量稳定同位素探针方法用于土壤微生物组中原生生物生长测量
 
 
 <div class="dpr-home-promo-card">
