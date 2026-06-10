@@ -6,34 +6,40 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-09
-- 运行时间：2026-06-09 22:04:39 UTC
+- 最新运行日期：2026-06-10
+- 运行时间：2026-06-10 22:46:15 UTC
 - 运行状态：成功
-- 本次总论文数：4
-- 精读区：2
-- 速读区：2
+- 本次总论文数：6
+- 精读区：3
+- 速读区：3
 
 ### 今日简报（AI）
-1) 今日精读2篇高分文献，揭示人类口腔卟啉单胞菌位点专一性与五大湖微生物热分层群落规律。  
-2) 最值得关注：口腔菌位点特异性适应机制，以及湖泊中温度分区导致的原核与浮游植物微生物群落差异。  
-3) 建议拓展学习：定量稳定同位素探针等技术如何用于测量微生物原位生长，推动生态研究精细化。
-- 详情：[/202606/09/README](/202606/09/README)
+1) 今日研读6篇论文，聚焦微生物组偏差校正与湖泊生态热分区，以及高维数据压缩新方法。  
+2) 最值得关注的是《Bias-mitigated microbiome inference refines coronary artery disease signature》提出更精准的冠心病微生物标志物识别（9.0分）；《Topic modeling reveals thermally partitioned and taxonomically distinct microbial subcommunities》揭示五大湖原核与浮游植物的热分层群落结构（9.0分）。  
+3) 普通读者可留意微生物组分析偏差如何影响疾病诊断准确性，以及温度分层对水体微生物生态的塑造作用——这些对理解健康与环境变化有直观启发。
+- 详情：[/202606/10/README](/202606/10/README)
 
 ### 精读区论文标签
-1. [Site-specialization of human oral Porphyromonas species](/202606/09/biorxiv-10-64898-2026-06-02-729646-v1-site-specialization-of-human-oral-porphyromonas-species)  
+1. [Bias-mitigated microbiome inference refines coronary artery disease signature](/202606/10/biorxiv-10-64898-2026-06-04-730260-v1-bias-mitigated-microbiome-inference-refines-coronary-artery-disease-signature)  
+   标签：评分：9.0/10、query:microbiome
+   evidence：微生物组差异丰度检验的统计方法
+2. [Topic modeling reveals thermally partitioned and taxonomically distinct microbial subcommunities across prokaryotes and phytoplankton in the Laurentian Great Lakes](/202606/10/biorxiv-10-64898-2026-06-06-730626-v2-topic-modeling-reveals-thermally-partitioned-and-taxonomically-distinct-microbial-subcommunities-across-prokaryotes-and-phytoplankton-in-the-laurentian-great-lakes)  
+   标签：评分：9.0/10、query:microbiome
+   evidence：主题模型分析16S rRNA扩增子时间序列
+3. [Beyond single markers: bacterial synergies identified by Multidimensional Feature Selection reveal conserved microbiome disease signatures](/202606/10/biorxiv-10-64898-2026-04-13-718216-v3-beyond-single-markers-bacterial-synergies-identified-by-multidimensional-feature-selection-reveal-conserved-microbiome-disease-signatures)  
    标签：评分：8.0/10、query:microbiome
-   evidence：使用竞争性比对和功能分析口腔位点宏基因组
-2. [Topic modeling reveals thermally partitioned and taxonomically distinct microbial subcommunities across prokaryotes and phytoplankton in the Laurentian Great Lakes](/202606/09/biorxiv-10-64898-2026-06-06-730626-v1-topic-modeling-reveals-thermally-partitioned-and-taxonomically-distinct-microbial-subcommunities-across-prokaryotes-and-phytoplankton-in-the-laurentian-great-lakes)  
-   标签：评分：8.0/10、query:microbiome
-   evidence：基于16S rRNA扩增子时间序列的LDA主题模型用于微生物亚群落分析
+   evidence：用于宏基因组微生物组数据的统计特征选择方法
 
 ### 速读区论文标签
-1. [Knowledge-Inclusive Adaptive Physics-Informed Neural Network for Microbial Interaction Modelling](/202606/09/2606.07686v1-knowledge-inclusive-adaptive-physics-informed-neural-network-for-microbial-interaction-modelling)  
+1. [Data compression for fast dimension reduction and clustering of high-dimensional discrete data](/202606/10/2606.10593v1-data-compression-for-fast-dimension-reduction-and-clustering-of-high-dimensional-discrete-data)  
    标签：评分：7.0/10、query:microbiome
-   evidence：用于微生物相互作用建模的物理信息神经网络
-2. [Quantitative stable isotope probing to measure in situ growth of protist populations](/202606/09/biorxiv-10-64898-2026-06-04-730198-v1-quantitative-stable-isotope-probing-to-measure-in-situ-growth-of-protist-populations)  
+   evidence：适用于微生物组数据的降维聚类方法
+2. [Beyond Prompt-Based Planning: MCP-Native Graph Planning-based Biomedical Agent System](/202606/10/2606.04494v1-beyond-prompt-based-planning-mcp-native-graph-planning-based-biomedical-agent-system)  
    标签：评分：6.0/10、query:microbiome
-   evidence：结合18S rRNA基因测序的定量稳定同位素探针方法用于土壤微生物组中原生生物生长测量
+   evidence：用于自动化包括宏基因组分析在内的生物信息学工具的医学智能体系统
+3. [Conserved emergent traits enable biobank-scale prediction of community function](/202606/10/biorxiv-10-64898-2026-06-09-731074-v1-conserved-emergent-traits-enable-biobank-scale-prediction-of-community-function)  
+   标签：评分：6.0/10、query:microbiome
+   evidence：利用菌株组合的涌现特征预测微生物群落功能
 
 
 <div class="dpr-home-promo-card">
