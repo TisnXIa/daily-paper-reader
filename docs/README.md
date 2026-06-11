@@ -6,40 +6,40 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-10
-- 运行时间：2026-06-10 22:46:15 UTC
+- 最新运行日期：2026-06-11
+- 运行时间：2026-06-11 20:50:03 UTC
 - 运行状态：成功
 - 本次总论文数：6
 - 精读区：3
 - 速读区：3
 
 ### 今日简报（AI）
-1) 今日研读6篇论文，聚焦微生物组偏差校正与湖泊生态热分区，以及高维数据压缩新方法。  
-2) 最值得关注的是《Bias-mitigated microbiome inference refines coronary artery disease signature》提出更精准的冠心病微生物标志物识别（9.0分）；《Topic modeling reveals thermally partitioned and taxonomically distinct microbial subcommunities》揭示五大湖原核与浮游植物的热分层群落结构（9.0分）。  
-3) 普通读者可留意微生物组分析偏差如何影响疾病诊断准确性，以及温度分层对水体微生物生态的塑造作用——这些对理解健康与环境变化有直观启发。
-- 详情：[/202606/10/README](/202606/10/README)
+1) 今日6篇微生物组论文精读2篇高分：用稀疏自编码器破译酶功能，以及肠道菌群常态-失调的操作定义。
+2) 最值得看的是ESMC模型实现可解释酶功能预测（9.0），以及多轴分解定义菌群健康状态（9.0）。
+3) 建议普通读者优先关注第二篇：如何通过功能轴量化区分肠道健康与疾病，更贴近日常应用。
+- 详情：[/202606/11/README](/202606/11/README)
 
 ### 精读区论文标签
-1. [Bias-mitigated microbiome inference refines coronary artery disease signature](/202606/10/biorxiv-10-64898-2026-06-04-730260-v1-bias-mitigated-microbiome-inference-refines-coronary-artery-disease-signature)  
+1. [Interpretable enzyme function prediction via sparse autoencoder features of ESMC across the microbial protein universe](/202606/11/2606.12209v1-interpretable-enzyme-function-prediction-via-sparse-autoencoder-features-of-esmc-across-the-microbial-protein-universe)  
    标签：评分：9.0/10、query:microbiome
-   evidence：微生物组差异丰度检验的统计方法
-2. [Topic modeling reveals thermally partitioned and taxonomically distinct microbial subcommunities across prokaryotes and phytoplankton in the Laurentian Great Lakes](/202606/10/biorxiv-10-64898-2026-06-06-730626-v2-topic-modeling-reveals-thermally-partitioned-and-taxonomically-distinct-microbial-subcommunities-across-prokaryotes-and-phytoplankton-in-the-laurentian-great-lakes)  
+   evidence：宏基因组序列的酶功能预测
+2. [Functional multi-axis decomposition of the human gut microbiome: an operational definition of eubiosis and dysbiosis, and a clean-reference framework for disease stratification](/202606/11/biorxiv-10-64898-2026-06-09-731167-v1-functional-multi-axis-decomposition-of-the-human-gut-microbiome-an-operational-definition-of-eubiosis-and-dysbiosis-and-a-clean-reference-framework-for-disease-stratification)  
    标签：评分：9.0/10、query:microbiome
-   evidence：主题模型分析16S rRNA扩增子时间序列
-3. [Beyond single markers: bacterial synergies identified by Multidimensional Feature Selection reveal conserved microbiome disease signatures](/202606/10/biorxiv-10-64898-2026-04-13-718216-v3-beyond-single-markers-bacterial-synergies-identified-by-multidimensional-feature-selection-reveal-conserved-microbiome-disease-signatures)  
-   标签：评分：8.0/10、query:microbiome
-   evidence：用于宏基因组微生物组数据的统计特征选择方法
+   evidence：人类肠道微生物组功能多轴分解，用于定义菌群平衡与失调
+3. [Metagenomic prediction of methane emissions in sheep using single- and multi-matrix BLUP models with taxonomic and functional microbial features](/202606/11/biorxiv-10-64898-2026-06-10-731298-v1-metagenomic-prediction-of-methane-emissions-in-sheep-using-single--and-multi-matrix-blup-models-with-taxonomic-and-functional-microbial-features)  
+   标签：评分：9.0/10、query:microbiome
+   evidence：评估用于预测羊甲烷排放的宏基因组分析流程
 
 ### 速读区论文标签
-1. [Data compression for fast dimension reduction and clustering of high-dimensional discrete data](/202606/10/2606.10593v1-data-compression-for-fast-dimension-reduction-and-clustering-of-high-dimensional-discrete-data)  
+1. [Vertical stratification drives additive prokaryotic diversity in beech forest floors, while site conditions shape boundary layers](/202606/11/biorxiv-10-64898-2026-06-02-729534-v1-vertical-stratification-drives-additive-prokaryotic-diversity-in-beech-forest-floors-while-site-conditions-shape-boundary-layers)  
    标签：评分：7.0/10、query:microbiome
-   evidence：适用于微生物组数据的降维聚类方法
-2. [Beyond Prompt-Based Planning: MCP-Native Graph Planning-based Biomedical Agent System](/202606/10/2606.04494v1-beyond-prompt-based-planning-mcp-native-graph-planning-based-biomedical-agent-system)  
+   evidence：森林地板的16S rRNA扩增子测序
+2. [Skin microbiome mirrors habitat divergence in amphibious combtooth blenny fish (Teleostei, Blenniidae)](/202606/11/biorxiv-10-64898-2026-06-09-731066-v1-skin-microbiome-mirrors-habitat-divergence-in-amphibious-combtooth-blenny-fish-teleostei-blenniidae)  
+   标签：评分：7.0/10、query:microbiome
+   evidence：使用16S rRNA扩增子测序分析两栖鱼类皮肤微生物组
+3. [A complete-genome view of phylum Omnitrophota and a multi-order capacity for very long proteins](/202606/11/biorxiv-10-64898-2026-06-07-730766-v1-a-complete-genome-view-of-phylum-omnitrophota-and-a-multi-order-capacity-for-very-long-proteins)  
    标签：评分：6.0/10、query:microbiome
-   evidence：用于自动化包括宏基因组分析在内的生物信息学工具的医学智能体系统
-3. [Conserved emergent traits enable biobank-scale prediction of community function](/202606/10/biorxiv-10-64898-2026-06-09-731074-v1-conserved-emergent-traits-enable-biobank-scale-prediction-of-community-function)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：利用菌株组合的涌现特征预测微生物群落功能
+   evidence：从纳米孔宏基因组获得完整基因组
 
 
 <div class="dpr-home-promo-card">
