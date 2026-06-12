@@ -1,0 +1,54 @@
+{
+  "label": "2026-06-12",
+  "date": "2026-06-12",
+  "generated_at": "2026-06-12T20:42:54",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202606/12/biorxiv-10-64898-2026-06-08-730836-v1-divquant-estimation-of-species-richness-and-entropy-from-small-samples",
+      "section": "deep",
+      "title_en": "DivQuant: Estimation of Species Richness and Entropy from Small Samples",
+      "authors": "Schmitz, J. E., Rahmann, S.",
+      "date": "2026-06-11",
+      "pdf": "https://www.biorxiv.org/content/10.64898/2026.06.08.730836v1.full.pdf",
+      "score": "8.0",
+      "evidence": "估计微生物Alpha多样性的物种丰富度和香农熵",
+      "tldr": "从小样本估计离散分布的物种丰富度和Shannon熵是生物信息学等领域的核心难题，尤其当分布含大量稀有元素时。现有方法（如RichnEst、iNext、PreSeq）存在置信区间校准差、问题规模大等局限。本文提出DivQuant，利用凸二次规划优化上采样问题，通过Neyman χ2检验反演获得校准良好的95%置信区间；采用Valiant的稀有/丰富指纹分割缩小问题规模，并用最优指纹计算熵。实验表明，在6个模拟分布族、Tara Oceans微生物组和10X Genomics scRNA-seq数据上，DivQuant的置信区间覆盖率接近名义水平，而竞争方法在高达80%的实例中漏估真值；熵估计优于Miller-Madow、CAE和iNext。DivQuant运行仅需秒级，已开源。",
+      "tags": "query:microbiome",
+      "abstract_en": "Estimating diversity properties of discrete distributions from a small observed sample is a fundamental problem in algorithmic statistics that has applications in many fields, in particular bioinformatics, but also in ecology or linguistics. The two most common diversity measures are the number of distinct elements in a multiset, also referred to as species richness in ecology or alpha diversity in microbial analysis, and the Shannon entropy, also referred to as evenness. Estimating these properties from a small sample is particularly challenging for distributions with many rare elements. Thus, many estimators have been proposed in the past that, in practice, work well for different types of distributions. We present DivQuant, an optimization-based, extrapolating richness and entropy estimator with three contributions. First, we formulate the upsampling problem as a convex quadratic program with a Neyman {chi}2 objective. Unlike the linear program of its predecessor RichnEst, DivQuant admits confidence intervals via {chi}2 test inversion that are empirically well-calibrated. Second, we replace RichnEst's fixed-threshold fingerprint truncation with the rare/abundant fingerprint split of Valiant and Valiant, which strongly reduces problem size and preserves enough degrees of freedom for the confidence-interval program to remain valid and feasible. Third, we plug the optimal population fingerprint returned by the program into Shannon's entropy formula to obtain an entropy estimate. DivQuant attains close-to-nominal 95% confidence intervals in essentially all tested regimes, including six simulated distribution families, Tara Oceans microbiome data, and 10X Genomics scRNA-seq data, while competing state-of-the-art methods (RichnEst, iNext, PreSeq) miss the true richness in up to 80% of instances, well above the nominal 5%. In addition, DivQuant outperforms classical asymptotic entropy estimators (Miller-Madow, CAE) and the extrapolating iNext estimator. Running times remain competitive, with DivQuant typically completing in seconds. DivQuant is available as a command-line tool at https://gitlab.com/rahmannlab/divquant.",
+      "source": "biorxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/12/biorxiv-10-1101-2025-08-29-671515-v2-microbial-named-entity-recognition-and-normalisation-for-ai-assisted-literature-review-and-meta-analysis",
+      "section": "quick",
+      "title_en": "Microbial Named Entity Recognition and Normalisation for AI-assisted Literature Review and Meta-Analysis",
+      "authors": "Patel, D., Lain, A. D., Vijayaraghavan, A., Faghih Mirzaei, N., Mweetwa, M. N., Wang, M., Beck, T., Posma, J. M.",
+      "date": "2026-06-09",
+      "pdf": "https://www.biorxiv.org/content/10.1101/2025.08.29.671515v2.full.pdf",
+      "score": "7.0",
+      "evidence": "用于文献挖掘的微生物组专属命名实体识别与归一化工具",
+      "tldr": "微生物文献的手动标注耗时且易错，现有大语言模型缺乏领域专业知识。本研究构建了首个微生物组特定文本语料库，训练基于Transformer的深度学习模型进行命名实体识别（NER）和归一化（NEN），在人工标注的测试集上BioBERT模型取得96%的F1分数（NER）和91%的准确率（NEN），远超规则方法。模型可快速处理整篇文献，用于大规模元分析，识别不同领域显著相关的微生物分类群。该方法显著提升了文献综述的效率和准确性。",
+      "tags": "query:microbiome",
+      "abstract_en": "Motivation: Manual curation of biomedical literature is slow and error-prone and while large language models (LLMs) trained on general texts have shown to be useful for text summarisation, these methods lack the domain- specific expertise required to perform this task accurately. Here we describe the creation of the first microbiome- specific text corpus, use this to train deep learning algorithms for named-entity recognition (NER) and normalisation (NEN), and demonstrate their use to meta-analyse microbiome literature. Methods: We developed an automated pipeline to annotate all mentions of bacteria, archaea, and fungi in 1,410 full-text microbiome articles. We manually annotated (gold-standard) a separate test set of 288 documents. We trained different transformer-based language models for microbiome recognition and normalisation to taxonomic identifiers and evaluate their performance using the precision, recall, F1-score, and accuracy on the test set. The best models were used to automatically annotate all available Open Access, full-text microbiome articles (n=6,927) and unpick taxa significantly reported more often across 14 domains. Results: The training and validation set contained a total of 90,150 annotations (both full text and abbreviations). Using the gold-standard test set, with an inter-annotator agreement rate of 99.52% for NER and 88.31% for NEN, the models trained were evaluated and our fine-tuned BioBERT model achieved an F1-score of 96% for NER surpassing a rule- and dictionary-based annotation pipeline (94%). For NEN the accuracy obtained by the deep learning models greatly surpassed that of the pipeline (91% vs 69%). Evaluated across the entire available literature, our models annotate an entire full-text document in only 7 seconds. Conclusion: Our algorithms have near perfect precision and greatly speed up the process of annotating microbes in full-text articles. We demonstrated the capabilities of these methods by analysing the entire available literature and describe the taxa associated with each of the domains in our meta-analysis, and exemplify how these methods can be integrated into literature review workflows improving both the speed and accuracy of results.",
+      "source": "biorxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/12/biorxiv-10-64898-2026-06-07-730742-v1-phylogenetic-coherence-in-microbiome-composition-across-environmental-gradients",
+      "section": "quick",
+      "title_en": "Phylogenetic coherence in microbiome composition across environmental gradients",
+      "authors": "Chakraverti-Wuerthwein, M. S., Domenig, A., Kuehn, S.",
+      "date": "2026-06-11",
+      "pdf": "https://www.biorxiv.org/content/10.64898/2026.06.07.730742v1.full.pdf",
+      "score": "6.0",
+      "evidence": "使用典型相关分析进行微生物群落谱系的统计方法",
+      "tldr": "全球微生物组调查发现环境变量决定群落组成，但未知进化保守性如何驱动模式。本研究利用土壤和海洋大尺度数据，用典型相关分析推断环境梯度与组成变化。结果显示主要环境梯度上物种响应具有强系统发育信号，而次要梯度无此特征。这揭示了深度保守的性状主导主要环境驱动下的群落重组，其他变化反映更易变的性状。",
+      "tags": "query:microbiome",
+      "abstract_en": "Global surveys of microbial communities across biomes have shown that environmental variables such as depth and pH are strong determinants of community composition. However, we do not understand how the traits of individual taxa, and their evolutionary conservation, conspire to give rise to these patterns. Exploiting large-scale surveys of top soil and marine microbiomes, we use canonical correlation analysis (CCA) to concurrently infer directions of environmental variation and the associated compositional changes. We find that the primary canonical direction, capturing the dominant environmental gradient, exhibits a strong phylogenetic signal: individual species' responses to environmental shifts along this direction are similar among taxa with shared evolutionary history. In contrast, secondary canonical directions show weak or no phylogenetic structure. Together, these results suggest a two-scale view of microbial community assembly. Deeply evolutionarily conserved traits govern community reorganization along the main environmental driver of community composition. Additional environmentally driven changes in community composition then reflect traits that are more evolutionarily labile.",
+      "source": "biorxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
