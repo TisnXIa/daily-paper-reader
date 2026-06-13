@@ -1,0 +1,2752 @@
+Title: PHI-Reason: evidence-grounded species-level phage-host prediction from structured biological text profiles
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.06.10.727770v1.full.pdf
+
+Number of Pages: 36
+
+Markdown Content:
+# PHI-Reason: evidence-grounded species-level 1
+
+# phage-host prediction from structured biological 2
+
+# text profiles 3
+
+## Yao-zhong Zhang 1* †, Long Xu 2† and Seiya Imoto 1* 
+
+4
+
+> 1
+
+Division of Health Medical Intelligence, Human Genome Center, the 5
+
+Institute of Medical Science, the University of Tokyo, Shirokanedai 6
+
+4-6-1, Minato-ku, Tokyo, 108-0071, Japan. 7
+
+> 2
+
+School of Computer Science and Technology, Harbin Institute of 8
+
+Technology, West Dazhi Street, Harbin, 150001, Heilongjiang, China. 9
+
+*Corresponding author(s). E-mail(s): yaozhong@ims.u-tokyo.ac.jp; 10 
+
+imoto@hgc.jp; 11 
+
+Contributing authors: xulong@stu.hit.edu.cn; 12 
+
+> †
+
+These authors contributed equally to this work. 13 
+
+Abstract 14 
+
+Phage–host interaction (PHI) prediction is a fundamental problem in micro-15 
+
+biology. Existing approaches typically encode phage and host information as 16 
+
+numerical representations derived from sequence similarity, protein content or 17 
+
+reference databases, and use them to score candidate hosts or train predic-18 
+
+tion models. Although effective, this design obscures which biological evidence 19 
+
+supports a prediction. Here, we present PHI-Reason, a species-level PHI predic-20 
+
+tion framework that reformulates host prediction as inference over structured 21 
+
+biological text. PHI-Reason converts heterogeneous genomic, functional and con-22 
+
+textual evidence into modular natural-language profiles, which a frozen large 23 
+
+language model integrates at inference time for candidate-host ranking or pair-24 
+
+wise PHI assessment. Across species-level benchmarks, PHI-Reason achieved 25 
+
+competitive performance and complementary correct assignments relative to 26 
+
+established methods. Its explicit profile design enables evidence perturbation 27 
+
+and rationale-grounding analyses, making prediction support and hallucination 28 
+
+risk operationally measurable. PHI-Reason provides an interpretable evidence-29 
+
+integration approach and demonstrates how large language models can support 30 
+
+evidence-grounded PHI prediction. 31 
+
+1
+
+.CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint 1 Introduction 32 
+
+Bacteriophages are the most abundant biological entities on Earth and are major 33 
+
+drivers of microbial mortality, horizontal gene transfer and microbial community 34 
+
+dynamics [1]. Beyond their ecological roles, phages are increasingly explored as tar-35 
+
+geted antibacterial agents for phage therapy, microbiome engineering and biological 36 
+
+control. A central challenge underlying these applications is phage–host interaction 37 
+
+(PHI) prediction: given a phage genome, which bacterial hosts fall within its host 38 
+
+range? 39 
+
+Existing computational approaches to PHI prediction operate primarily in sequence 40 
+
+space. Sequence-similarity and genome-composition methods infer hosts from exact k-41 
+
+mer matches, similarity scores or composition profiles [2–4], whereas integrated tools 42 
+
+combine heterogeneous signals such as CRISPR spacer matches, tRNA similarity, 43 
+
+prophage evidence and reference-database lookups [5, 6]. Machine-learning approaches 44 
+
+further learn genome-level representations, protein embeddings or graph-based rela-45 
+
+tionships for host prediction [7–10]. These methods have achieved strong performance 46 
+
+at species or genus resolution when reference coverage is sufficient. However, many 47 
+
+of these methods share a common representational premise: PHI-relevant biology is 48 
+
+compressed into numerical features, similarity scores or latent embeddings before pre-49 
+
+diction. This design is powerful for statistical learning, but it makes it difficult to 50 
+
+inspect how distinct biological evidence sources—such as receptor-binding proteins, 51 
+
+host surface structures, defence systems or reference-neighbour associations—support, 52 
+
+contradict or mislead a prediction. This limitation is particularly important because 53 
+
+PHI prediction is not governed by a single type of signal: host associations can rest on 54 
+
+genome-wide similarity, protein homology or shared evolutionary context, but also on 55 
+
+more mechanistic and reference-derived evidence that varies in coverage and reliability 56 
+
+across phage–host pairs. A useful PHI prediction framework should therefore not only 57 
+
+assign a host label, but also expose which supplied evidence makes the assignment 58 
+
+plausible, uncertain or unsupported. 59 
+
+Large language models offer a route for integrating heterogeneous biological evi-60 
+
+dence, and recent systems have linked DNA or protein foundation-model embeddings 61 
+
+with LLMs to support biological inference and generate prediction rationales or rea-62 
+
+soning traces [11, 12]. For PHI prediction, however, this use of LLMs must address two 63 
+
+task-specific requirements. First, host assignment depends on heterogeneous signals 64 
+
+with different coverage and reliability, including sequence similarity, receptor-binding 65 
+
+or adsorption-related evidence, host-surface and defence features, and reference-based 66 
+
+host associations. These signals should remain explicit enough to be inspected and 67 
+
+perturbed, rather than being represented only as latent or aggregated features. Sec-68 
+
+ond, LLM-generated explanations must be grounded in the supplied evidence: missing 69 
+
+receptor, host-surface or defence annotations should not be converted into plausible 70 
+
+but unsupported claims of compatibility. PHI prediction therefore requires a con-71 
+
+strained formulation in which the model integrates explicit evidence records rather 72 
+
+than freely generating biological claims from pretraining knowledge alone. 73 
+
+Here we introduce PHI-Reason , a structured-profile framework that reformulates 74 
+
+PHI prediction as constrained evidence-grounded inference over biological text profiles. 75 
+
+Instead of representing phages and hosts as numerical vectors or latent embeddings, 76 
+
+2
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+PHI-Reason converts heterogeneous PHI-related information into modular structured 77 
+
+text profiles. These profiles contain explicit textual records of functional annotations, 78 
+
+receptor-binding protein evidence, nucleotide- and protein-level homology, host sur-79 
+
+face features, defence systems, ecological context and reference-neighbour associations. 80 
+
+A frozen large language model then integrates the supplied records at inference time 81 
+
+to rank hosts over a supplied species-level candidate catalogue or to assess nominated 82 
+
+phage–host pairs. In contrast to conventional supervised classifiers, reference informa-83 
+
+tion is incorporated as visible contextual evidence rather than absorbed into fitted 84 
+
+model parameters. This design makes the evidence interface of prediction inspectable 85 
+
+and perturbable. 86 
+
+We evaluated PHI-Reason at species-level resolution, formulating host prediction as 87 
+
+profile-based ranking over supplied candidate host catalogues. Across RefSeq-derived 88 
+
+and metagenomic proximity-ligation benchmarks, PHI-Reason achieved competi-89 
+
+tive host-prediction performance relative to established sequence- and reference-90 
+
+based methods and recovered complementary correct assignments. More importantly, 91 
+
+because evidence is represented as named text fields, individual evidence layers can 92 
+
+be removed, scrambled or recombined without retraining. We used this property to 93 
+
+test whether predictions were supported by coherent biological evidence or instead 94 
+
+driven by shortcut behaviour such as nearest-neighbour label copying, corrupted ref-95 
+
+erence labels, model-specific idiosyncrasies or unconstrained biological narration. The 96 
+
+same structured-profile representation also supports direct pairwise PHI assessment. 97 
+
+Pairwise scoring evaluates whether a nominated phage–host hypothesis is supported 98 
+
+by the available evidence, complementing host-list ranking when candidate hosts have 99 
+
+already been proposed by database search, sequence similarity, embedding retrieval 100 
+
+or experimental context. We focus the present study on species-level resolution and 101 
+
+discuss the distinct evidence requirements of strain-level prediction separately. 102 
+
+Overall, PHI-Reason illustrates a constrained evidence-integration paradigm for 103 
+
+LLM-based biological prediction. Its contribution is threefold. First, it introduces 104 
+
+a PHI prediction formulation based on explicit biological text profiles rather than 105 
+
+numerical feature compression alone. Second, it provides a perturbable framework for 106 
+
+analysing how LLMs use, compensate for or are misled by different PHI evidence 107 
+
+sources. Third, it makes evidence-interface hallucination risk operationally measur-108 
+
+able by testing whether generated rationales remain grounded in the supplied profile, 109 
+
+while separating rationale faithfulness from prediction correctness. These analyses 110 
+
+characterize when species-level PHI prediction becomes evidence-limited rather than 111 
+
+model-limited. These findings suggest a practical principle for applying LLMs to 112 
+
+annotation-rich biological interaction tasks: language models can integrate explicit 113 
+
+biological evidence and expose when that evidence is insufficient, but they cannot 114 
+
+reliably recover missing compatibility determinants from incomplete or underspecified 115 
+
+profiles. 116 
+
+3
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+# 2 Results 117 
+
+## 2.1 Overview of PHI-Reason 118 
+
+PHI-Reason reformulates phage–host interaction prediction as constrained evidence 119 
+
+integration over genome-derived text profiles, with the language model used as an 120 
+
+inference layer rather than a task-specific host classifier. Instead of compressing phage 121 
+
+and host information into numerical feature vectors or latent embeddings, PHI-Reason 122 
+
+represents infection-relevant evidence as modular natural-language records that pre-123 
+
+serve the identity of distinct biological evidence sources, making the input both 124 
+
+human-readable and experimentally perturbable. 125 
+
+Each phage or host profile is constructed as a modular document composed 126 
+
+of named biological fields. Phage profiles summarize adsorption-related machinery, 127 
+
+gene-level functional annotations, receptor-binding protein evidence and homology-128 
+
+based reference context, including confirmed hosts of nucleotide- and protein-level 129 
+
+homologous reference phages. Host profiles summarize bacterial surface features, 130 
+
+receptor-associated functions, defence repertoires and ecological or isolation-source 131 
+
+information when available. Labelled training data are not used to update model 132 
+
+parameters; instead, related reference phages are retrieved through nucleotide- and 133 
+
+protein-level homology searches, and their known phage–host associations are inserted 134 
+
+into the query phage profile as explicit contextual evidence (Fig.1a). To reduce 135 
+
+identifier- and name-based shortcuts, query phage accessions and phage names were 136 
+
+replaced with opaque hash codes in the base phage profile, and phage identifiers in all 137 
+
+reference-context entries were masked in the same way before inference. 138 
+
+This design separates biological evidence representation from model training. Pro-139 
+
+files remain explicit, updateable and perturbable, whereas the frozen language model 140 
+
+integrates the supplied records at inference time. Individual profile blocks can there-141 
+
+fore be removed, scrambled or recombined without retraining, enabling direct tests of 142 
+
+whether a prediction depends on receptor-binding evidence, nucleotide-level reference 143 
+
+context, protein-level homology, corrupted labels or unsupported free-form reasoning. 144 
+
+PHI-Reason thus predicts hosts while exposing the evidence conditions under which 145 
+
+a prediction is supported, uncertain or misleading. 146 
+
+PHI-Reason supports two complementary inference settings within the same 147 
+
+structured-profile pipeline. In the host-list setting, a query phage is evaluated against 148 
+
+a predefined candidate host catalogue, and the language model ranks all candidates in 149 
+
+a single inference call within a shared evidence context (Fig.1b), providing a controlled 150 
+
+formulation for closed-set species-level host prediction that separates evidence inte-151 
+
+gration from open-ended candidate-host discovery. In the pairwise setting, the same 152 
+
+profile representation is used to evaluate a nominated phage–host pair and assign an 153 
+
+infection-plausibility score (Fig. 1b); this mode is suited to settings in which candidate 154 
+
+hosts have already been proposed by database search, sequence similarity, embedding 155 
+
+retrieval or experimental context. 156 
+
+We organize the study around three questions. First, can PHI-relevant biology rep-157 
+
+resented as structured text profiles support competitive species-level host prediction 158 
+
+without training a task-specific classifier? Second, when a language model makes a PHI 159 
+
+prediction from these profiles, does it integrate multiple supplied evidence sources, or 160 
+
+4
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+does it rely on shortcut signals such as nearest-neighbour labels, phage names, iden-161 
+
+tifiers or model-specific priors? Third, when LLM-based PHI inference fails, are the 162 
+
+failures better explained by model capacity, or by missing, conflicting or underspec-163 
+
+ified biological evidence? We address these questions by evaluating PHI-Reason on 164 
+
+species-level host-ranking benchmarks, perturbing individual evidence layers and ref-165 
+
+erence labels, comparing multiple LLM backbones and inference modes, and applying 166 
+
+the same profile framework to pairwise PHI assessment. 167 
+
+## 2.2 Structured text profiles are sufficient for species-level PHI 168 
+
+## prediction without a task-specific classifier 169 
+
+We use PHI prediction benchmarks to test whether structured biological text pro-170 
+
+files are sufficient to support species-level host prediction and to expose how the 171 
+
+framework integrates evidence, rather than to rank PHI-Reason against existing 172 
+
+tools. Head-to-head accuracy is therefore reported as feasibility evidence under each 173 
+
+method’s native evidence regime, not as a controlled superiority claim. For infer-174 
+
+ence efficiency in species-level benchmarking, we use the host-list inference setting, 175 
+
+in which each query phage is ranked against a predefined benchmark-specific set of 176 
+
+candidate host species in a single inference call. In this setting, query-phage evidence 177 
+
+and candidate-host information are represented as explicit text profiles, and a large 178 
+
+language model, Qwen3-Coder-Next [13] by default, with pretraining data extending 179 
+
+through 30 September 2025, ranks all candidate species jointly. For more detailed 180 
+
+assessment, the same structured-profile framework can also be applied in a pairwise 181 
+
+setting, where each nominated phage–host candidate pair is evaluated separately using 182 
+
+a detailed host-side profile. 183 
+
+We evaluated PHI-Reason on two single-host RefSeq-derived benchmarks and 184 
+
+a metagenomic Hi-C (HiC) benchmark. RefSeq-634 is the held-out partition of 185 
+
+CHERRY [7] (1,306 training / 634 evaluation pairs). VHDB-3150 is drawn from the 186 
+
+larger VHDB collection [14] (1,280 CHERRY-overlapping training / 3,150 evalua-187 
+
+tion pairs). The Hi-C set is the proximity-ligation HiC data of Bignaud et al. [15] 188 
+
+restricted to species-level taxa (52 host species, 406 phages, 46 multi-host), split into 189 
+
+a multi-host-only Sp-1 and a host-number-stratified Sp-2. Phage profiles combined 190 
+
+Prodigal/eggNOG/PHROG base annotations [16–18] with three evidence layers— 191 
+
+RBP homology against 19,081 structure-predicted sequences [19], BLASTN nucleotide 192 
+
+context and BLASTP protein context—with the known hosts of labelled reference 193 
+
+phages inserted as explicit context, without LLM fine-tuning. 194 
+
+We compared against PHIST [2], WIsH [3], PHP [4], DeepHost [10] and 195 
+
+PhaBOX2 [6], retraining the trainable methods and running PhaBOX2 in its updated 196 
+
+ready-to-use configuration, abstentions and out-of-catalogue predictions counted as 197 
+
+errors. We report top-1 accuracy (sp@1) for the RefSeq benchmarks and multi-host 198 
+
+accuracy (MHA-sp) for HiC data. Other evaluation metrics are reported in the Sup-199 
+
+plementary Note. iPHoP [5] predicts and calibrates host assignments at the genus level 200 
+
+only, and deriving a species-level call from its output would require an uncalibrated 201 
+
+post-hoc step the method is not designed for. We therefore compared against it sep-202 
+
+arately at its native genus resolution (Supplementary Table 1a). PHI-Reason reached 203 
+
+5
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+competitive species-level accuracy relative to established sequence- and reference-204 
+
+based methods (Fig. 2a; Supplementary Table 1a,b,e): sp@1 = 61.2% on RefSeq-634 205 
+
+(PhaBOX2 49.2%, PHP 46.1%, PHIST 23.3%, WIsH 19.7%) and 49.8% on VHDB-206 
+
+3150 (PhaBOX2 45.4%, PHP 32.8%, PHIST 17.6%, WIsH 14.4%), using a frozen LLM 207 
+
+without task-specific training. 208 
+
+Because the evaluated methods differ in evidence access, these comparisons should 209 
+
+be interpreted by evidence regime rather than as a fully controlled test of model 210 
+
+class alone. PHI-Reason uses labelled reference phages as explicit profile context, 211 
+
+with evaluation sequences excluded from the reference corpus before profile genera-212 
+
+tion. PhaBOX2 was evaluated in its ready-to-use setting with the complete default 213 
+
+database, PHP and DeepHost use supervised labels where applicable, and PHIST and 214 
+
+WIsH rely on sequence similarity or composition without labelled phage–host refer-215 
+
+ence records. These results therefore show that structured text profiles provide a useful 216 
+
+and inspectable interface for integrating available PHI evidence, rather than proving 217 
+
+that a language-model inference layer is intrinsically superior under exactly matched 218 
+
+evidence access. 219 
+
+On HiC the advantage was evidence-dependent (Supplementary Table 1c). PHI-220 
+
+Reason gave the best MHA-sp on the multi-host-only Sp-1 split (0.442 vs PHP 0.425, 221 
+
+DeepHost 0.383, WIsH 0.342, PHIST 0.304) but trailed on the stratified Sp-2 split 222 
+
+(0.480 vs PHIST 0.565 and PHP 0.510, tying WIsH at 0.480 and beating DeepHost 223 
+
+0.357). The decline tracked reference coverage: a ≥95% identity BLASTN neigh-224 
+
+bour was available for 82.6% of Sp-1 ( n = 46) but only 58.5% of Sp-2 ( n = 82) 225 
+
+phages, whereas PHP’s k-mer evidence was stable across splits (RBP coverage was low 226 
+
+throughout, 4.3% vs 17.1%). PHI-Reason thus performs best when the profile carries 227 
+
+specific, coherent reference- or adsorption-related evidence. 228 
+
+Gains were taxonomically structured (Fig. 2b). On RefSeq-634, PHI-Reason per-229 
+
+formed similarly to the strongest baselines on Gram-positive hosts (59.8% vs PhaBOX2 230 
+
+60.9% and PHP 57.8%), but showed a larger advantage on Gram-negative hosts (62.2% 231 
+
+vs PhaBOX2 34.8% and PHP 30.4%), where structured profile evidence contributed 232 
+
+most. Family-level advantages (Supplementary Table 12) over the best baseline were 233 
+
+largest in Enterobacteriaceae (+43.0 pp) and Pseudomonadaceae (+16.7 pp), with 234 
+
+smaller gains in Bacillaceae (+9.5 pp), Streptococcaceae (+2.9 pp) and the pooled 235 
+
+sparse-family group (+2.2 pp). PHI-Reason was comparable to the best baseline in 236 
+
+Mycobacteriaceae ( −1.0 pp), but underperformed in Propionibacteriaceae ( −5.1 pp) 237 
+
+and Gordoniaceae ( −35.0 pp), where reference context was less specific or less informa-238 
+
+tive for species-level discrimination. Per-phage concordance (Fig. 2c; Supplementary 239 
+
+Table 1f) showed PHI-Reason correctly assigning 388 RefSeq-634 phages and produc-240 
+
+ing more method-unique correct calls than every baseline (155 vs 59 for PHP, 171 vs 241 
+
+95 for PhaBOX2, 304 vs 64 for PHIST, 316 vs 53 for WIsH), with the same pattern on 242 
+
+VHDB-3150. Non-zero baseline-only sets (notably PhaBOX2 on VHDB-3150) confirm 243 
+
+that PHI-Reason captures partly distinct host signals rather than subsuming existing 244 
+
+methods. 245 
+
+These benchmarks show that structured text profiles can support competitive 246 
+
+species-level PHI prediction without training a task-specific classifier. Here, we did not 247 
+
+perform leave-one-genus-out (LOGO) evaluation, which tests whether a trained model 248 
+
+6
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+generalizes to host taxa unseen during fitting and thus probes a parametric inductive 249 
+
+bias. PHI-Reason performs no training and integrates only the evidence provided in 250 
+
+each profile at inference time, so this protocol does not properly apply. The relevant 251 
+
+axis of difficulty is therefore not a train/test genus split, but the extent to which a 252 
+
+prediction depends on each supplied evidence field, which we probe directly in the 253 
+
+next sections. 254 
+
+## 2.3 Evidence perturbation distinguishes grounded inference 255 
+
+## from shortcut use 256 
+
+Beyond competitive species-level prediction performance, a key advantage of repre-257 
+
+senting PHI evidence as structured text is that individual evidence components can 258 
+
+be systematically perturbed without retraining the model. Because evidence is orga-259 
+
+nized into named profile blocks and the model can return field-referenced rationales, 260 
+
+these components can be removed, scrambled or recombined, allowing us to probe 261 
+
+whether predictions depend on the supplied biological evidence or on shortcut-like 262 
+
+cues. We decomposed each phage profile into an annotation-only Base condition and 263 
+
+three layers—RBP evidence, nucleotide-level (BLASTN) and protein-level (BLASTP) 264 
+
+reference context—evaluating each against the same candidate list and prompt and 265 
+
+adding it to Base to estimate its increment over Base under the same prompt and 266 
+
+candidate set. 267 
+
+On RefSeq-634, all three layers carried substantial signal beyond the annotation-268 
+
+only Base profile (sp@1 = 16.9%; Fig. 3a; Supplementary Table 2a): adding BLASTN 269 
+
+raised sp@1 to 53.9% (+37.0 pp), BLASTP to 53.5% (+36.6 pp) and RBP to 40.9% 270 
+
+(+24.0 pp). The combined Full profile was non-additive—its gain did not equal 271 
+
+the sum of the individual layers—consistent with nucleotide-level, protein-level and 272 
+
+receptor-binding evidence capturing overlapping but non-identical host signal. Multi-273 
+
+ple converging layers thus reinforce a prediction, while an intact layer can still carry 274 
+
+it when another is sparse, missing or misleading. 275 
+
+Evidence layers contribute differently across Gram types. The Full profile was most 276 
+
+balanced across envelope types (61.2% overall, 59.8% Gram-positive, 62.2% Gram-277 
+
+negative; Fig. 3b), but individual layers were taxonomically biased. RBP evidence 278 
+
+helped Gram-negative hosts most (+37.4 vs +14.1 pp), pointing to a host-lineage-279 
+
+associated adsorption signal rather than direct strain-level receptor matching, and 280 
+
+mirroring the Gram-negative-dominated RBP database (80.6% of proteins and 73.5% 281 
+
+of source phages, vs 15.5% and 22.4% Gram-positive). In contrast, BLASTN and 282 
+
+BLASTP helped Gram-positive hosts most (+47.0 and +48.1 vs +23.7 and +21.1 283 
+
+pp), indicating that Gram-positive signal was captured more strongly by broader ref-284 
+
+erence context than by RBP alone. Gram-type behaviour thus reflects taxonomically 285 
+
+complementary evidence usage rather than one uniformly dominant signal. 286 
+
+Reference-neighbour availability marks a higher-accuracy, evidence-rich regime. 287 
+
+Using labelled BLASTN-neighbour availability as a coverage split (BLASTP coverage 288 
+
+being near-saturated), the 458 of 634 phages (72.24%) with a neighbour (Group A) 289 
+
+reached sp@1 = 73.6%, versus 29.0% for the 176 (27.8%) without (Group B; −44.6 290 
+
+pp; Fig. 3c, Supplementary Note S1). Group B was not an isolated loss of nucleotide 291 
+
+context but a broadly evidence-poor regime, also showing weaker BLASTP support 292 
+
+7
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+(median bitscore 1,802 vs 22,497), lower RBP coverage (72.2% vs 92.1%) and lower 293 
+
+BLASTP same-genus support (25.1% vs 84.3%). Neighbour availability is therefore 294 
+
+best read as a proxy for overall profile-evidence richness: when nucleotide-level neigh-295 
+
+bours are absent, multiple supporting fields degrade together, leaving PHI-Reason 296 
+
+with fewer concordant signals. 297 
+
+Reference labels provide a major, perturbable source of host signal. Because ref-298 
+
+erence context is stored as structured profile fields, host labels in the BLASTN and 299 
+
+BLASTP blocks can be perturbed while keeping the retrieved neighbours, similarity 300 
+
+scores, hit ordering and non-label annotations unchanged (Supplementary Note S2; 301 
+
+Fig. 3d). This directly separates reference similarity from labelled host context. 302 
+
+Removing all reference host labels reduced sp@1 from 61.2% to 40.7%, approximately 303 
+
+the RBP-only level of 40.9% (Supplementary Table 6, 7). This deliberately label-304 
+
+deprived condition also fell below the PHP baseline reported in the same benchmark, 305 
+
+whereas PHP retains host-label information through its fitted training models. Thus, 306 
+
+PHI-Reason’s species-level advantage is not achieved by the language model from 307 
+
+similarity records alone. It depends substantially on labelled reference context being 308 
+
+available as explicit, perturbable evidence. 309 
+
+Label scrambling further shows how this reference dependence should be inter-310 
+
+preted. Scrambling BLASTN labels reduced sp@1 to 50.8%, BLASTP-label scrambling 311 
+
+had a smaller effect (59.3%), and scrambling both blocks reduced performance to 312 
+
+38.0%, below both the RBP-only and label-free controls. Correct labels therefore 313 
+
+strengthen prediction, label removal eliminates much of the reference-derived gain, 314 
+
+and corrupted labels actively mislead the model. At the same time, dual-label scram-315 
+
+bling did not collapse performance toward the random top-1 level expected for a 316 
+
+223-candidate catalogue, indicating that residual RBP, annotation and similarity-317 
+
+derived signals still carried substantial host information even when both labelled 318 
+
+reference channels were corrupted. Labelled reference records are therefore best inter-319 
+
+preted as explicit contextual evidence integrated with other profile fields, rather than 320 
+
+as nearest-neighbour answers copied mechanically from retrieved phages. 321 
+
+Across these perturbations, PHI-Reason used profile evidence conditionally rather 322 
+
+than additively: reference-derived context and receptor-binding evidence each carried 323 
+
+host signal, but the contribution of any one layer depended on whether the others were 324 
+
+available, coherent or corrupted. This behavioural profile—graceful degradation to a 325 
+
+non-retrieval floor, cross-channel compensation and sensitivity to label corruption— 326 
+
+is consistent with labelled reference records acting as explicit, integrable contextual 327 
+
+evidence rather than as deterministic nearest-neighbour lookups. 328 
+
+## 2.4 PHI-Reason is robust across different LLM backbones and 329 
+
+## inference settings 330 
+
+We tested whether structured-profile inference is backbone-robust or driven by model-331 
+
+specific behaviour, inference mode or trace length. Alongside the default Qwen3-Coder-332 
+
+Next (no-thinking), we evaluated QwQ-32B, Qwen3-4B and GPT-oss-120B under their 333 
+
+supported inference settings—six backbone–mode configurations spanning ≈4–120B 334 
+
+parameters (Supplementary Table 4). Above a capacity threshold performance was 335 
+
+backbone-robust: for models ≥32B, RefSeq-634 sp@1 stayed within a 3.5-pp band 336 
+
+8
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+(57.7–61.2%) despite architecture and mode differences, whereas the 4B backbone 337 
+
+dropped to 42.4–43.1% (Fig. 4a). PHI-Reason is therefore not tied to a single backbone 338 
+
+above this threshold. 339 
+
+Inference gains are not driven by longer reasoning traces. Enabling thinking mode 340 
+
+led PHI-Reason to cite more evidence in its field-referenced rationale, but this richer 341 
+
+rationale did not improve accuracy: sp@1 changed only marginally for large backbones 342 
+
+and slightly decreased for the 4B model (Fig. 4b; Supplementary Note S4), and the 343 
+
+configuration that cited the most evidence did not achieve the highest sp@1. Compute 344 
+
+showed the same pattern: thinking raised the 120B cost from 4.7 to 5.3 GPU-h for 345 
+
+negligible accuracy gain, the most expensive configuration (QwQ-32B, thinking, 8.7 346 
+
+GPU-h) was not the most accurate, and the strongest setting (default Qwen3-Coder-347 
+
+Next, 2.3 GPU-h) was among the cheapest. 348 
+
+The cross-backbone-incorrect set (CBI; all six configurations wrong, n = 160, 349 
+
+25.2%) and the all-baseline-difficult set (BMD; missed by PHP, PhaBOX2, PHIST and 350 
+
+WIsH, n = 197, 31.1%) showed a significant but partial overlap (66 shared phages, 351 
+
+10.4% of the benchmark, 1.33-fold enrichment; Fisher’s exact P = 1 .05 ×10 −3; Fig. 4c). 352 
+
+Specific to neither backbone, mode nor baseline, these phages carry sequence, reference 353 
+
+and profile signals too unspecific for reliable assignment, so remaining errors reflect 354 
+
+evidence limitations as much as model limitations. 355 
+
+Rationale citations correlate with prediction correctness. PHI-Reason also returns 356 
+
+a per-prediction rationale, read as a correlational record of cited fields rather than 357 
+
+a causal explanation and grouped into five dimensions (Supplementary Note S3). 358 
+
+Consistent with the perturbation results (Fig. 4d), correct predictions cited nucleotide-359 
+
+level context 18.6 pp more often (odds ratio 2.41, Fisher’s exact P < 10 −4) whereas 360 
+
+protein-level context was over-represented among errors ( P = 0 .003), and accuracy 361 
+
+rose with breadth (43.8% for one cited dimension to 67.6% for all five; Cochran– 362 
+
+Armitage P = 0 .0036). Breadth alone was insufficient, however: high-breadth failures 363 
+
+typically lacked nucleotide anchoring, so agreement among dimensions is more infor-364 
+
+mative than citation count. The model thus acts as an evidence integrator whose errors 365 
+
+track evidence availability and direction more than backbone or mode. 366 
+
+Representative cases illustrate distinct evidence-use patterns. As shown in Fig. 4e, 367 
+
+four representative cases illustrate the main evidence-use regimes identified by field-368 
+
+referenced rationale analysis (Supplementary Table 9). In Case 1, PHI-Reason cor-369 
+
+rectly predicts Klebsiella pneumoniae despite misleading reference-neighbour context, 370 
+
+with the supporting rationale mainly citing multiple tail fibre and tail spike genes with 371 
+
+high-identity Klebsiella -associated RBP matches. In Case 2, PHI-Reason correctly 372 
+
+predicts Erwinia amylovora without BLASTN support, consistent with a proteome-373 
+
+neighbour consensus directed toward the correct host. In contrast, Case 3 represents an 374 
+
+evidence-scarcity failure: the true host is Pyrobaculum arsenaticum , but PHI-Reason 375 
+
+predicts Haloarcula californiae when BLASTN, BLASTP and RBP support for the 376 
+
+correct host is absent. Case 4 represents an evidence-weighting failure: although multi-377 
+
+gene receptor-binding evidence points toward the correct host, Cronobacter sakazakii ,378 
+
+the final prediction follows a coherent but misdirected proteome-neighbour consensus 379 
+
+9
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+supporting Aeromonas salmonicida . These examples show that field-referenced ratio-380 
+
+nales are useful for inspecting which profile fields are cited, but causal evidence use 381 
+
+still requires profile ablation and adversarial perturbation. 382 
+
+## 2.5 PHI-Reason enables pairwise PHI assessment 383 
+
+PHI-Reason can also operate in a pairwise setting, where each nominated phage–host 384 
+
+pair is evaluated independently rather than ranked against a full candidate list. This 385 
+
+formulation complements the host-list setting used above. Host-list ranking is efficient 386 
+
+for closed-set species-level benchmarking because all candidate hosts are evaluated in a 387 
+
+single LLM inference call, whereas pairwise scoring asks whether an individual phage– 388 
+
+host hypothesis receives sufficient evidence support for downstream prioritization. 389 
+
+On RefSeq-634, each phage was scored against its confirmed host and five 390 
+
+genus-balanced negatives (3,804 pairs per evidence condition) with the same Qwen3-391 
+
+Coder-Next backbone. Because this task is class-imbalanced, PR-AUC is the primary 392 
+
+metric and ROC-AUC is secondary. Scores were well separated (Fig. 5a,c; Supple-393 
+
+mentary Note S6): PR-AUC was 0.926, with F1 = 0.884 and MCC = 0.850 at the 394 
+
+F1-optimal threshold; the confirmed host scored at least as high as all five negatives 395 
+
+for 97.0% of phages (lenient Hits@1 = 0.970); positive and negative pairs had mean 396 
+
+scores of 0.869 and 0.077, respectively (Cohen’s d = 4 .67); 81.5% of pairs scoring ≥0.7 397 
+
+were true positives; and ROC-AUC was 0.984 (95% CI 0.978–0.989). These metrics 398 
+
+should be interpreted in light of the 1:5 candidate ratio used here. As the Listwise-6 399 
+
+control below shows, reducing candidate density substantially inflates apparent per-400 
+
+formance, so pairwise scoring is most appropriate when candidate hosts have already 401 
+
+been narrowed by upstream retrieval. A Listwise-6 control showed that the apparent 402 
+
+pairwise advantage was mainly a candidate-density effect rather than a benefit of the 403 
+
+pairwise formulation itself. When the host-list prompt was restricted to the same six 404 
+
+candidates used in the pairwise task, listwise and pairwise performance were nearly 405 
+
+identical (Fig. 5b). Pairwise reliability also depended on the same specialised evi-406 
+
+dence as host-list ranking: removing specialised evidence weakened score separation 407 
+
+and high-confidence precision, whereas scrambling both BLAST label sources pushed 408 
+
+performance toward the RBP-only regime (Fig. 5c,d). Pairwise assessment is therefore 409 
+
+best viewed as a complementary mode for candidate-narrowed ranking and triage. It 410 
+
+provides a continuous evidence-support score, not an absolutely calibrated probability, 411 
+
+and preserves the same evidence dependencies observed in host-list inference. 412 
+
+## 2.6 PHI-Reason operationalizes hallucination in PHI 413 
+
+## prediction 414 
+
+A central risk in applying large language models to scientific inference is that a gener-415 
+
+ated rationale can appear mechanistic while extending beyond the evidence available 416 
+
+to the model [20, 21]. PHI-Reason makes this risk inspectable by fixing the evidence 417 
+
+interface: the model receives a structured text profile and returns both a rationale and 418 
+
+a species-level ranked host prediction, allowing both to be checked against the exact 419 
+
+supplied evidence. Because hallucination has no universal operational definition, and 420 
+
+prediction error alone is insufficient to identify it, we operationalize PHI hallucination 421 
+
+10 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+from the relationship among the input profile, generated rationale and predicted host. 422 
+
+This evidence-interface definition evaluates only the evidence available to the model 423 
+
+and does not imply that supporting evidence is absent from the broader biological 424 
+
+literature. 425 
+
+We used three complementary assessments. First, following atomic fact-checking 426 
+
+and claim-level verification paradigms, a programmatic verifier extracted field-427 
+
+referenced claims from each rationale and checked whether each was entailed by the 428 
+
+supplied profile [22–24]. Second, following LLM-as-judge and semantic faithfulness 429 
+
+protocols, we used Claude Opus 4.8 [25] as a blind judge to decompose rationales into 430 
+
+semantic claims and label them as supported, contradicted or unverifiable against the 431 
+
+supplied evidence [26–28]. Third, because PHI prediction returns a species-level host 432 
+
+call, a genus-level answer-anchor analysis tested whether the final predicted host had 433 
+
+support in the host-supporting evidence fields. These assessments separate rationale 434 
+
+faithfulness, rationale-linked PHI hallucination and answer-level PHI hallucination. 435 
+
+At the rationale level, profile faithfulness is the fraction of claims entailed by the 436 
+
+input profile. For the first two assessments, we defined rationale-linked PHI hallucina-437 
+
+tion as an incorrect species-level prediction whose rationale contains at least one claim 438 
+
+not grounded in the supplied profile. Under the programmatic verifier, this means at 439 
+
+least one unsupported field-referenced claim; under the blind judge, this means at least 440 
+
+one contradicted or unverifiable semantic claim. This definition captures unsupported 441 
+
+reasoning associated with a wrong host call, but it does not require the unsupported 442 
+
+content to concern the selected host itself. 443 
+
+PHI-Reason’s rationales were generally grounded in the supplied profiles. Across 444 
+
+RefSeq-634, the programmatic verifier extracted 5,580 claims from 634 rationales and 445 
+
+found 90.3% supported under strict matching and 92.3% under a predefined lenient 446 
+
+setting that corrected two verifier artefacts (Supplementary Note S8.2). Direct refer-447 
+
+ences to named profile fields were most traceable, whereas lower support rates were 448 
+
+concentrated in more interpretive claim types. Gene-function attribution had a 69% 449 
+
+support rate (606/882), and detailed RBP descriptions had an 84% support rate under 450 
+
+the lenient setting (364/432), dropping to 62% under strict matching. These rates 451 
+
+were lower than the corresponding overall support rates, indicating that unsupported 452 
+
+content was concentrated in interpretive rather than field-identification claims. 453 
+
+The blind judge provided an orthogonal semantic check and reproduced the same 454 
+
+decoupling. Applied to all 634 phages, it found similar supported-claim rates for correct 455 
+
+and incorrect predictions (87.0% versus 86.2%), and decision-relevant contradictions 456 
+
+were not significantly enriched among errors (odds ratio for wrong versus correct 457 
+
+= 1 .32, 95% CI 0.78–2.21, Fisher’s exact p = 0 .29); 145 of 246 incorrect predictions 458 
+
+contained no detected contradiction (Supplementary Note S8.3). Thus, a rationale can 459 
+
+faithfully represent evidence that is incomplete, ambiguous or misleading. 460 
+
+Using the rationale-linked definition, the programmatic verifier identified rationale-461 
+
+linked PHI hallucination in 127 of 246 wrong predictions (52%). The blind judge 462 
+
+provided a semantic counterpart: 41% of wrong predictions contained a contradicted 463 
+
+claim, and 55% contained at least one contradicted or unverifiable claim. These quanti-464 
+
+ties measure hallucination at the rationale level. Because rationales averaged 8.8 claims 465 
+
+and approximately 46% of correct predictions also contained at least one unsupported 466 
+
+11 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+claim, we complemented this rationale-linked definition with an answer-anchored 467 
+
+definition focused on the predicted host itself. 468 
+
+For the answer-anchored assessment, a prediction was off-evidence when the pre-469 
+
+dicted genus appeared nowhere in the host-supporting fields of the supplied profile. 470 
+
+This flag is computable from the supplied profile alone: it asks whether the predicted 471 
+
+genus has an explicit evidence anchor, without using the ground-truth host. Predic-472 
+
+tion correctness is then used to determine whether an off-evidence call constitutes an 473 
+
+answer-level PHI hallucination . We therefore define answer-level PHI hallucination as 474 
+
+an off-evidence prediction that is also wrong at the species level. This conjunction is 475 
+
+retained because an off-evidence call could, in principle, be correct by coincidence or 476 
+
+by parametric knowledge not represented in the explicit profile; however, no such case 477 
+
+occurred in RefSeq-634. In this benchmark, the off-evidence flag occurred in 24/246 478 
+
+wrong predictions and in none of the 388 correct predictions. These 24 answer-level 479 
+
+hallucinations comprised 15 recoverable-profile cases, where the correct genus was 480 
+
+present but an unsupported genus was selected, and nine evidence-incomplete cases, 481 
+
+where the correct genus was absent and the predicted genus was also unsupported. The 482 
+
+broader incomplete-evidence class contained 49 errors in total: these nine off-evidence 483 
+
+cases plus 40 evidence-anchored but wrong predictions. The remaining 182 errors were 484 
+
+non-decisive cases, where the true and predicted genera were both supported but the 485 
+
+model ranked a supported competitor first (Supplementary Note S8.7). 486 
+
+We next investigated whether PHI-Reason’s own inference-time outputs were 487 
+
+consistent with these hallucination patterns. These signals were not used to define hal-488 
+
+lucination, but to provide auxiliary information about confidence and stability. The 489 
+
+top-1–top-2 score margin differed markedly between correct predictions and answer-490 
+
+level hallucinations (mean 0.137 versus 0.033) and was informative for correctness on 491 
+
+Balanced-200 (AUROC 0.855, 95% CI 0.800–0.905) and RefSeq-634 (AUROC 0.827, 492 
+
+95% CI 0.794–0.858). We therefore treat the margin as a lightweight auxiliary signal of 493 
+
+model confidence and ranking uncertainty, not as a standalone correctness or hallucina-494 
+
+tion detector. LLM resampling self-consistency provided a costlier secondary signal: it 495 
+
+was low for recoverable-profile answer-level hallucinations ( n = 15; mean 0.24, median 496 
+
+0.10, versus 0.95 for correct predictions), but higher for evidence-incomplete answer-497 
+
+level hallucinations ( n = 9; mean 0.74, with 7/9 above 0.8). Thus, self-consistency 498 
+
+is best interpreted as a more specific reference signal for recoverable-profile halluci-499 
+
+nation rather than as a general correctness screen (Supplementary Notes S8.6–S8.7, 500 
+
+Supplementary Figure 1d). 501 
+
+In all, these analyses show that PHI-Reason provides an operational framework 502 
+
+for measuring hallucination in PHI inference rather than treating it as an undifferen-503 
+
+tiated prediction error. The structured evidence interface separates three increasingly 504 
+
+specific questions: whether the rationale contains ungrounded claims, whether such 505 
+
+ungrounded reasoning appears within an incorrect host-call trace, and whether the 506 
+
+predicted host itself lacks a genus-level evidence anchor. This separation explains why 507 
+
+faithful explanations do not guarantee correct host calls and why rationale-linked hal-508 
+
+lucination is not identical to answer-level hallucination. PHI-Reason therefore turns 509 
+
+structured profiles into an inspectable evidence interface for species-level host pre-510 
+
+diction, making evidence use, failure mode and auxiliary uncertainty signals jointly 511 
+
+measurable. 512 
+
+12 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+# 3 Discussion 513 
+
+PHI-Reason reframes phage–host interaction prediction as structured biological evi-514 
+
+dence integration rather than task-specific host classification. Instead of mapping 515 
+
+genomes directly to host labels through numerical features, PHI-Reason converts 516 
+
+phage and host genomes into modular textual profiles in which receptor-binding evi-517 
+
+dence, nucleotide-level reference context, protein-level homology, host surface features 518 
+
+and defence-related information are represented as explicit biological records. A gen-519 
+
+eral language model without fine-tuning then acts as an inference layer over these 520 
+
+records, comparing and integrating heterogeneous evidence at prediction time. 521 
+
+A key distinction of PHI-Reason is that it preserves the evidence interface of 522 
+
+biological inference. Recent language-model applications in bioinformatics have often 523 
+
+treated biological sequences as language-like objects, using protein language mod-524 
+
+els or DNA foundation models to learn latent sequence representations. More recent 525 
+
+hybrid systems further connect these representations to LLM-based biological reason-526 
+
+ing, such as BioReason [11] and BioReason-Pro [12]. A related line of work has also 527 
+
+begun to translate biological relationships into language-model reasoning tasks. For 528 
+
+example, ProLLM formulates protein–protein interaction prediction as a text-to-text 529 
+
+problem by representing multi-step protein signalling pathways as Protein Chain-of-530 
+
+Thought prompts [29]. PHI-Reason differs in the structure of the prediction problem 531 
+
+it addresses. Phage–host interaction prediction requires integrating heterogeneous evi-532 
+
+dence across biological scales, including receptor-binding evidence, reference-neighbour 533 
+
+host labels, nucleotide- and protein-level homology, host surface features and defence-534 
+
+related information. Rather than adapting an LLM to reason over latent sequence 535 
+
+representations or pathway-style protein relation chains, PHI-Reason renders these dis-536 
+
+tinct evidence sources as structured textual profiles and uses a frozen LLM to integrate 537 
+
+them at inference time. By keeping the signals as named, inspectable and perturbable 538 
+
+fields, PHI-Reason allows evidence layers to be removed, scrambled or recombined 539 
+
+without retraining, making it possible to evaluate not only whether a host prediction is 540 
+
+correct, but also which evidence conditions make the prediction supported, uncertain 541 
+
+or misleading. 542 
+
+This perturbable representation also makes PHI-Reason an experimental plat-543 
+
+form for testing evidence descriptions for species-level PHI prediction. By removing, 544 
+
+isolating or corrupting individual profile layers while holding the model, prompt 545 
+
+and candidate catalogue fixed, the framework can assess evidence utility directly 546 
+
+rather than only through aggregate method performance. The strongest overall sig-547 
+
+nal was homology-derived reference context—nucleotide- and protein-level homologues 548 
+
+together with the known hosts of related phages—while RBP evidence provided 549 
+
+complementary support, especially for Gram-negative hosts. This is consistent with 550 
+
+why existing PHI tools such as PhaBOX2 and iPHoP combine sequence similarity, 551 
+
+reference-database, CRISPR/prophage, composition or related-virus signals in differ-552 
+
+ent forms: these evidence types reflect how current PHI knowledge is organized and 553 
+
+carry substantial host-discriminative information. PHI-Reason makes this principle 554 
+
+explicit and perturbable, allowing useful homology and adsorption-related signals to 555 
+
+be distinguished from misleading neighbours or corrupted labels and recombined with 556 
+
+annotation and host-profile fields. More broadly, the same platform can rapidly test 557 
+
+13 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+new evidence descriptions, such as expanded RBP resources, receptor annotations, 558 
+
+host-surface features or defence catalogues, before they are built into new species-level 559 
+
+PHI predictors. Thus, progress in PHI prediction may depend not only on stronger 560 
+
+models, but also on identifying evidence descriptions that are biologically meaningful, 561 
+
+species-discriminative and perturbable. 562 
+
+The same evidence interface reframes hallucination in PHI inference as an 563 
+
+evidential-boundary problem rather than a generic error rate or open-world fact-564 
+
+checking task. By tying predictions and rationales to named profile fields, PHI-Reason 565 
+
+separates three related but distinct quantities: rationale faithfulness, rationale-linked 566 
+
+PHI hallucination and answer-level PHI hallucination. This separation is necessary 567 
+
+because faithful or mostly grounded rationales do not necessarily imply correct host 568 
+
+calls, and unsupported explanatory content is not equivalent to unsupported answer 569 
+
+selection. The rationale-linked definition is intentionally broad, capturing unsup-570 
+
+ported reasoning that co-occurs with an incorrect prediction; however, because such 571 
+
+unsupported claims can also occur in otherwise correct predictions, this level is best 572 
+
+interpreted as a rationale-faithfulness risk rather than a host-specific answer failure. 573 
+
+The stricter answer-anchored criterion isolates the smaller subset in which the pre-574 
+
+dicted host itself lacks genus-level support in the supplied profile. Most remaining 575 
+
+failures instead reflect incomplete or non-decisive evidence, where the profile does 576 
+
+not provide enough information to distinguish among supported host candidates. 577 
+
+Auxiliary inference-time signals further helped interpret these failure modes: the top-578 
+
+1–top-2 margin summarized ranking uncertainty, whereas resampling self-consistency 579 
+
+was more specific to recoverable-profile hallucinations, but neither was used to define 580 
+
+hallucination. Thus, hallucination analysis in PHI-Reason does not claim that LLM-581 
+
+based biological reasoning is free of unsupported statements or that mechanistic claims 582 
+
+are verified against the full literature; rather, it identifies where evidence-supported 583 
+
+inference ends and unsupported narration, non-decisive evidence discrimination or 584 
+
+answer-level PHI hallucination begins. 585 
+
+PHI-Reason is currently scoped to species-level PHI prediction and is not designed 586 
+
+for strain-level host-range prediction. Although strain-level prediction may appear to 587 
+
+be a finer taxonomic version of species-level host prediction, the underlying signal shifts 588 
+
+from broad host association to isolate-level compatibility. At species resolution, infer-589 
+
+ence can often be supported by genome-wide similarity, phage–phage homology, shared 590 
+
+receptor classes and broad evolutionary context. This is because many reference sig-591 
+
+nals and mechanistic descriptions are organized at the level of species, genus, serotype 592 
+
+or receptor class, allowing the model to match supplied evidence to named biologi-593 
+
+cal categories. Strain-level discrimination instead depends on whether the adsorption 594 
+
+machinery of a particular phage matches the surface architecture of a particular iso-595 
+
+late and whether intracellular defence barriers permit productive infection. Closely 596 
+
+related strains can share more than 99% of their genome while differing at surface and 597 
+
+defence loci that determine susceptibility, so similarity signals informative at species 598 
+
+level can become uninformative or misleading within a species. 599 
+
+This shift is consequential for a language-model-based inference framework, 600 
+
+because the mechanistic knowledge available to the model is primarily category-level, 601 
+
+14 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+reflecting a literature that reports PHI at species, genus, serotype or receptor-602 
+
+class resolution. The individual-level facts required for strain discrimination—such as 603 
+
+receptor-inactivating mutations, capsule glycosyltransferase loss or replacement, val-604 
+
+idated depolymerase–capsule matches, exact CRISPR spacer–protospacer matches, 605 
+
+or strain-specific restriction and abortive-infection barriers—are sparse, often unpub-606 
+
+lished and frequently absent from upstream annotations. In their absence, a model 607 
+
+may fill the gap with plausible species-level mechanisms, producing rationales that 608 
+
+are biologically credible but unsupported for the strain being predicted—the same 609 
+
+evidence-conditioned hallucination risk that Section 2.6 makes measurable at species 610 
+
+level, but at a resolution where the supporting evidence is largely unavailable. 611 
+
+Reliable strain-resolved prediction would therefore require an evidence regime dif-612 
+
+ferent from that used here: experimentally confirmed receptor and capsule states, 613 
+
+validated RBP or depolymerase specificities, precise defence and anti-defence profiles, 614 
+
+and curated cross-infection matrices of same-species susceptible and non-susceptible 615 
+
+isolates. Such isolate-resolved resources remain scarce and unstandardised across the 616 
+
+community rather than broadly available at scale, which is itself the principal bar-617 
+
+rier to reliable strain-level inference. PHI-Reason is therefore best positioned as a 618 
+
+species-resolution prioritisation and evidence-inspection framework, whose value for 619 
+
+strain-level work lies in making explicit which isolate-specific evidence a confident pair-620 
+
+wise compatibility call would require, rather than in reporting strain-level predictions 621 
+
+directly. 622 
+
+Overall, PHI-Reason illustrates a profile-based evidence-integration paradigm for 623 
+
+biological interaction prediction, in which heterogeneous evidence is organized into 624 
+
+modular, human-readable and perturbable text profiles and integrated by a frozen 625 
+
+language model, rather than jointly encoded through task-specific model training. 626 
+
+PHI provides a representative setting because host infection is governed by multiple 627 
+
+biological determinants whose available evidence varies in coverage, specificity and 628 
+
+direction across phage–host pairs. Under current database and annotation coverage, 629 
+
+the present results support PHI-Reason primarily as a framework for species-level 630 
+
+host ranking and pairwise hypothesis testing, whereas reliable strain-level prediction 631 
+
+remains constrained by the scarcity of isolate-resolved evidence. The same principle 632 
+
+may extend to other candidate-conditioned biological inference problems, including 633 
+
+pathogen–host range prediction, drug–target prioritization and variant pathogenicity 634 
+
+interpretation. More fundamentally, PHI-Reason exemplifies a practical framework for 635 
+
+applying large language models to AI-for-science problems characterized by heteroge-636 
+
+neous, noisy and unevenly distributed evidence. By keeping that evidence explicit and 637 
+
+field-referenced, it reframes the language model as an inspectable evidence integrator 638 
+
+whose predictions can be grounded against the supplied records rather than an opaque 639 
+
+sequence-to-label predictor. Its feasibility therefore rests less on data volume than on 640 
+
+whether decision-relevant evidence can be rendered in an integrable, groundable and 641 
+
+auditable form. 642 
+
+15 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+# 4 Methods 643 
+
+## 4.1 Profile generation 644 
+
+PHI-Reason represents phage genomes and candidate host genomes as structured 645 
+
+textual profiles. Profiles were generated before benchmark inference using deter-646 
+
+ministic bioinformatics pipelines, curated lookup tables and predefined formatting 647 
+
+rules. No language model was used during profile construction. Each phage pro-648 
+
+file contained gene-level functional annotations, sequence-derived protein descriptors, 649 
+
+receptor-binding-protein evidence and optional nucleotide- and protein-level reference-650 
+
+context blocks. Each host profile contained surface-relevant proteins, anti-phage 651 
+
+defence systems [30] and curated receptor, host-range and species-discriminating infor-652 
+
+mation. These fields were represented as named biological records so that they could be 653 
+
+retained, removed, scrambled or recombined in downstream perturbation experiments. 654 
+
+4.1.1 Phage genome profiles 655 
+
+For phage profiles, open reading frames were predicted from each genome using 656 
+
+Prodigal v2.6.3 and annotated with complementary phage and orthology resources, 657 
+
+including PHROG v4 [18] searched with MMseqs2 13-45111+ds-2 [31], and eggNOG-658 
+
+mapper v2.1.13 [17] using the eggNOG v5.0.2 [32] database. PHROG product names 659 
+
+were used as the primary standardized labels when available, with non-redundant 660 
+
+eggNOG descriptions retained as qualifiers. For each annotated protein, sequence-661 
+
+derived descriptors including length, theoretical isoelectric point, molecular weight, 662 
+
+hydrophobicity and an approximate transmembrane-helix count were computed and 663 
+
+stored as profile fields. Annotated genes were grouped into functional sections relevant 664 
+
+to host inference, including tail and host adsorption, lysis, head and DNA packaging, 665 
+
+connector and head–tail junction, lysogeny, replication and metabolism, gene expres-666 
+
+sion and regulation, and accessory host-derived factors. Genes without functional 667 
+
+annotation were summarized as counts to retain information about hypothetical-gene 668 
+
+burden without exceeding the inference context budget. 669 
+
+4.1.2 Receptor-binding evidence 670 
+
+Receptor-binding evidence was generated by searching tail-associated or adsorption-671 
+
+related phage proteins against PHIStruct [19], a curated receptor-binding-protein 672 
+
+corpus comprising 19,081 phage receptor-binding protein sequences across 238 host 673 
+
+genera. The reference FASTA was indexed with DIAMOND v2.1.24 and queried using 674 
+
+proteins annotated as tail-associated by PHROG or containing adsorption-related 675 
+
+product keywords, including tail fibre, tail spike and receptor-binding protein. Hits 676 
+
+were filtered by sequence identity, query coverage and e-value thresholds, and the top 677 
+
+hits for each query protein were aggregated by host genus. 678 
+
+For each query gene–host genus pair, the profile retained the best sequence identity, 679 
+
+best query coverage and number of hits. The top host genera were then appended to 680 
+
+the corresponding tail-gene entry in the phage profile. This evidence layer therefore 681 
+
+provided coarse adsorption-related host-genus signals, rather than direct protein-to-682 
+
+host-species labels. In particular, PHIStruct-derived RBP evidence did not assign a 683 
+
+16 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+query protein to a benchmark host species or resolve species-level candidates within 684 
+
+the same genus. Species-level host assignment therefore required integration with the 685 
+
+other profile fields, including nucleotide-level reference context, protein-level reference 686 
+
+context and candidate-host information. Detailed filtering thresholds, ranking scores 687 
+
+and implementation details are provided in the released profile-generation scripts and 688 
+
+source data. 689 
+
+4.1.3 Reference-context blocks 690 
+
+Reference-context blocks were constructed by comparing query phages with a leave-691 
+
+test-out corpus of experimentally confirmed phage–host associations. Evaluation 692 
+
+sequences were excluded from this corpus before profile generation. The nucleotide-693 
+
+level block was generated using NCBI BLAST+ v2.16.0 [33] and listed qualifying 694 
+
+BLASTN neighbours together with their confirmed hosts. The protein-level block 695 
+
+was generated using DIAMOND v2.1.24 BLASTP [34], with hits aggregated at the 696 
+
+reference-phage level and top neighbours reported together with their confirmed hosts. 697 
+
+Reference phage accession identifiers were replaced by deterministic hashes before 698 
+
+inference to reduce direct identifier use. Phages without qualifying nucleotide- or 699 
+
+protein-level neighbours received no corresponding reference-context block. 700 
+
+4.1.4 Host genome profiles 701 
+
+Candidate host genomes were converted into structured profiles using three layers. 702 
+
+First, predicted proteins were annotated and filtered for surface-associated functions 703 
+
+using a curated lexicon covering outer-membrane proteins, porins, TonB-dependent 704 
+
+receptors, lipopolysaccharide and O-antigen biosynthesis, capsular polysaccharide, 705 
+
+peptidoglycan remodelling, flagella, type-IV pili, teichoic-acid biosynthesis, S-layer 706 
+
+terms and related envelope features. Second, anti-phage defence systems were detected 707 
+
+with DefenseFinder v2.0.1 and summarized as a dedicated defence field. Third, each 708 
+
+host was augmented with curated quick-profile fields describing taxonomy, Gram 709 
+
+type, ecological context, primary receptors, known infecting phage families, species-710 
+
+discriminating features and host-range boundaries where available. These curated 711 
+
+fields were compiled from primary literature and phage–host interaction resources 712 
+
+before benchmark inference. 713 
+
+4.1.5 Identifier masking 714 
+
+To reduce direct accession lookup and name-based shortcuts, query phage accessions, 715 
+
+phage names, assembly identifiers and accession-like strings were replaced with deter-716 
+
+ministic opaque hash codes before inference. The same masking was applied to phage 717 
+
+identifiers appearing in the BLASTN- and BLASTP-derived reference-context blocks. 718 
+
+Benchmark names, split labels and ground-truth host fields were not included in the 719 
+
+inference prompts. Candidate host species names were retained because they define 720 
+
+the prediction target, but no query-specific host label was provided outside the allowed 721 
+
+reference-context evidence fields. As a sanity check against host-name-driven recall, the 722 
+
+annotation-only Base condition retained the same candidate-host names but removed 723 
+
+the specialised PHI evidence layers, including RBP, BLASTN and BLASTP evidence; 724 
+
+17 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+it achieved only 16.9% sp@1 on RefSeq-634, indicating that visible candidate-host 725 
+
+names were insufficient to recover the correct assignments in the absence of specialised 726 
+
+profile evidence. 727 
+
+4.1.6 Host-list compression for inference 728 
+
+For host-list inference, candidate host profiles were compressed into a shared list placed 729 
+
+in the same context window as the query phage profile. Each host was represented 730 
+
+by a compact pipe-delimited line containing host name, habitat, receptor information 731 
+
+and known infecting phage families, with missing fields marked as “-”. Hosts were 732 
+
+grouped by broad envelope category (Gram-negative, Gram-positive or Archaea) and 733 
+
+then by taxonomic family, preserving coarse cell-envelope and phylogenetic structure 734 
+
+while allowing all candidate hosts to be ranked in a single language-model inference 735 
+
+call. 736 
+
+## 4.2 Language-model inference and computational environment 737 
+
+PHI-Reason in species level experiments used Qwen3-Coder-Next:Q4 K M served 738 
+
+locally with Ollama v0.23.2 [35]. Inference was performed with temperature 0.1, a 739 
+
+32,768-token context window and non-streaming generation. Unless otherwise stated, 740 
+
+experiments used the no-thinking prompt variant; thinking-mode runs removed the 741 
+
+/no think prefix and used a larger generation budget. Outputs were required to follow 742 
+
+predefined JSON schemas and were retried once if parsing failed. Successfully parsed 743 
+
+phage-level or pair-level outputs were cached and reused in downstream analyses. 744 
+
+Two prompt formats were used. In the host-list setting, one inference call was made 745 
+
+per query phage using the compressed 223-host catalogue, the query phage profile 746 
+
+and fixed scoring instructions; the model returned the top 30 ranked candidate hosts. 747 
+
+Hosts not returned in the top-30 output were assigned an implicit score of zero. In the 748 
+
+pairwise setting, one inference call was made per nominated phage–host pair using one 749 
+
+phage profile and one host profile; the model returned an infection-plausibility score 750 
+
+and categorical decision for that pair independently of other hosts . 751 
+
+The main experiments were run on a local workstation with two NVIDIA RTX 752 
+
+PRO 6000 Blackwell Max-Q GPUs and 96 GB GPU RAM for each GPU, using 753 
+
+NVIDIA driver/CUDA versions 570.211.01/12.8. Flash attention was enabled, and 754 
+
+model layers were offloaded to GPU memory through Ollama. GPU-hours were calcu-755 
+
+lated as wall-clock runtime multiplied by the number of active GPUs, which was fixed 756 
+
+at two for the main experiments. Full prompt templates, generation parameters and 757 
+
+output schemas are provided in Supplementary Note S7. 758 
+
+Cross-backbone and reasoning-mode configurations 759 
+
+The cross-backbone comparison in Section 2.4 used three additional open-760 
+
+weight language-model backbones served through the same local Ollama backend: 761 
+
+qwq:32b-Q4 K M [36], Qwen3:4b-Q4 K M [37] and gpt-oss:120b [38]. QwQ-32B was 762 
+
+used in its native always-thinking mode. Qwen3-4B and GPT-oss-120B were each 763 
+
+run in two configurations, with internal reasoning enabled and with internal reason-764 
+
+ing suppressed using the /no think prompt prefix. The same prompt formats, JSON 765 
+
+18 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+schemas, host catalogue and phage profiles were used across backbone comparisons, 766 
+
+so that the deliberate variables were model identity and reasoning-mode setting. 767 
+
+Sampling temperature was fixed at 0.1 and the context window at 32,768 tokens 768 
+
+for all backbone comparisons. To accommodate longer reasoning traces, the maxi-769 
+
+mum generation budget was increased from 4,096 to 16,384 tokens for thinking-mode 770 
+
+runs. Internal reasoning blocks were removed before JSON parsing. Visible-output 771 
+
+token counts, internal-reasoning token counts, wall-clock time and GPU-hours for each 772 
+
+backbone configuration are reported in Supplementary Table 4. All cross-backbone 773 
+
+experiments used the same workstation, GPU-offload configuration and GPU-hour 774 
+
+accounting convention as the primary PHI-Reason experiments. 775 
+
+## 4.3 Evaluation benchmarks 776 
+
+Benchmark datasets 777 
+
+We evaluated PHI-Reason on three datasets that differ in curation procedure, host-778 
+
+label structure and biological domain: RefSeq-634, VHDB-3150 and a metagenomic 779 
+
+HiC proximity-ligation benchmark. 780 
+
+RefSeq-634 RefSeq-634 is the held-out evaluation partition of the CHERRY-781 
+
+1940 dataset [7], which contains 1,940 phage–host pairs assembled from NCBI RefSeq 782 
+
+[39] with species-level host assignments across 223 bacterial taxa. We partitioned this 783 
+
+dataset by phage accession into a 1,306-phage reference partition and a 634-phage 784 
+
+held-out evaluation partition. The 1,306-phage partition was used only as an explicit 785 
+
+reference corpus for nucleotide- and protein-level context retrieval. 786 
+
+VHDB-3150 VHDB [14] is a larger RefSeq-derived benchmark comprising 4,698 787 
+
+phage–host pairs across 498 bacterial host species. To construct a benchmark con-788 
+
+sistent with the RefSeq-634 reference split, we used the 1,280 VHDB phages that 789 
+
+overlapped with the CHERRY-1306 training partition as the training/reference par-790 
+
+tition. These phages were used as the labelled reference corpus for nucleotide- and 791 
+
+protein-level context retrieval and for retraining applicable baseline methods. The 792 
+
+remaining VHDB test phages were used for evaluation. Among these test phages, 793 
+
+268 did not have species-level ground truth suitable for species-level evaluation, leav-794 
+
+ing 3,150 phages with confirmed species-level host labels; this subset is referred to as 795 
+
+VHDB-3150. 796 
+
+HiC The HiC benchmark is derived from MetaHiC proximity-ligation co-797 
+
+sequencing of human gut metagenomes. Viral contigs are linked to candidate host 798 
+
+metagenome-assembled genomes (MAGs) through physical co-localisation evidence; 799 
+
+MAG-level associations are then collapsed to species level using GTDB taxonomy, 800 
+
+producing species-level phage–host associations across a 52-species host universe H.801 
+
+Unlike the isolate benchmarks, a single phage contig may be associated with multi-802 
+
+ple host species; therefore, the ground truth for each phage q is a set of host species 803 
+
+Yq ⊆ H rather than a single label. We followed the evaluation protocol of [15], report-804 
+
+ing results on two complementary splits: Sp-1 ( n = 46 multi-host test phages) and Sp-2 805 
+
+(n = 82 host-number-stratified test phages). This benchmark provides a domain-shift 806 
+
+evaluation because the candidate hosts are gut metagenomic species represented by 807 
+
+selected MAG-derived reference genomes rather than RefSeq-derived isolate genomes. 808 
+
+19 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+Abstention-as-error policy 809 
+
+Unless otherwise stated, all evaluations used an abstention-as-error policy. If a method 810 
+
+produced no prediction, returned a host outside the candidate space, or failed to 811 
+
+assign a species-level host under the required output resolution, the case was counted 812 
+
+as an incorrect prediction. This policy keeps denominators fixed across methods and 813 
+
+prevents apparent performance gains from selective abstention on difficult cases. 814 
+
+## 4.4 Baseline methods 815 
+
+We compared PHI-Reason with five representative phage–host prediction meth-816 
+
+ods: PHP, PhaBOX2, PHIST, WIsH and DeepHost. Together, these baselines cover 817 
+
+composition-based probabilistic models, exact k-mer matching, hybrid multi-signal 818 
+
+reference-based pipelines and supervised sequence models. Baseline methods were 819 
+
+evaluated on a benchmark when their training requirements and output format were 820 
+
+compatible with the corresponding evaluation task. For each benchmark, baseline pre-821 
+
+dictions were mapped to the same benchmark-specific candidate host space used for 822 
+
+PHI-Reason whenever possible. Predictions assigned to hosts outside the candidate 823 
+
+set were counted as incorrect. Queries for which a method returned no host prediction 824 
+
+were treated as abstentions and counted as errors. 825 
+
+PHP is a host prediction method based on k-mer composition profiles and Gaus-826 
+
+sian mixture modelling. Query phages and candidate hosts were represented by k-mer 827 
+
+frequency features, and candidate hosts were ranked according to the likelihood 828 
+
+assigned by the fitted host models. PHP was rebuilt separately for each benchmark 829 
+
+using the corresponding training partition and candidate host set. For RefSeq-634, 830 
+
+PHP was trained using the CHERRY-1306 training partition. For VHDB-3150, PHP 831 
+
+was trained using the VHDB training partition defined by overlap with the CHERRY 832 
+
+training set. For the HiC benchmark, PHP was retrained using the corresponding 833 
+
+training split and the 52 species-level candidate hosts, with each host species repre-834 
+
+sented by one selected MAG-derived reference genome. Because PHP assigns scores 835 
+
+to all candidate hosts, it produced a complete host ranking for every query phage. 836 
+
+PhaBOX2 is a hybrid multi-signal phage analysis framework that combines host 837 
+
+prediction evidence from sequence-based comparisons, k-mer features and reference 838 
+
+databases. We ran PhaBOX2 v2.2 using its complete default database for the RefSeq-839 
+
+634 and VHDB-3150 isolate-derived benchmarks. Reported host assignments were 840 
+
+parsed, taxonomic prefixes were removed where present, and the resulting host names 841 
+
+were normalized to the benchmark taxonomy before species-level evaluation. Pre-842 
+
+dictions assigned to hosts outside the benchmark-specific candidate host space were 843 
+
+counted as incorrect. Because PhaBOX2 returns sparse host assignments rather than 844 
+
+a calibrated score or complete ranking over all candidate hosts, it was evaluated 845 
+
+using its top-ranked species-level prediction. PhaBOX2 was not evaluated on the HiC 846 
+
+benchmark because the HiC task required multi-host ranking over 52 species-level 847 
+
+candidate hosts, each represented by one selected MAG-derived reference genome, 848 
+
+whereas PhaBOX2 returns conservative sparse host assignments rather than complete 849 
+
+candidate-host rankings. 850 
+
+PHIST is an exact k-mer matching method that identifies statistically signifi-851 
+
+cant sequence similarity between query phage genomes and candidate host genomes. 852 
+
+20 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+We ran PHIST with default parameters against the benchmark-specific host genome 853 
+
+sets. Candidate hosts were ranked according to the reported significance scores, with 854 
+
+more significant matches placed higher. Queries for which PHIST returned no signifi-855 
+
+cant host prediction were treated as abstentions and counted as errors in all reported 856 
+
+metrics. 857 
+
+WIsH is a host prediction method based on homogeneous Markov models of host 858 
+
+nucleotide composition. For each benchmark, host-specific Markov models were built 859 
+
+from the corresponding candidate host genomes using the WIsH build procedure. 860 
+
+Query phage genomes were then scored against all candidate host models, and hosts 861 
+
+were ranked by log-likelihood. WIsH was evaluated on RefSeq-634, VHDB-3150 and 862 
+
+the HiC benchmark using the corresponding benchmark-specific candidate host sets. 863 
+
+Because WIsH assigns a likelihood to each candidate host, it produced a complete 864 
+
+ranking for every query phage. 865 
+
+DeepHost is a supervised deep learning method that predicts host labels from 866 
+
+one-hot encoded phage genome sequences using a convolutional neural network. As a 867 
+
+closed-set classifier, DeepHost can only predict host classes observed during training. 868 
+
+We therefore evaluated DeepHost only in settings where a compatible benchmark-869 
+
+specific host vocabulary could be defined for both training and testing. DeepHost was 870 
+
+not evaluated on the RefSeq-derived isolate benchmarks because the host classes in 871 
+
+the training and test partitions were not identical, leaving some test hosts outside 872 
+
+the model’s prediction space. For the HiC benchmark, DeepHost was retrained on the 873 
+
+training split using the 52 species-level host labels and evaluated on the corresponding 874 
+
+held-out test split. 875 
+
+## 4.5 Evidence perturbation experiments 876 
+
+We used profile-level perturbations to test how individual evidence layers contributed 877 
+
+to PHI-Reason predictions without changing the language-model backbone, prompt 878 
+
+format, candidate host list or evaluation metric. All perturbation experiments were 879 
+
+performed by modifying named fields in the input profiles before inference. No model 880 
+
+parameters were updated, and each perturbation variant was evaluated with the same 881 
+
+inference backend and decoding settings as the corresponding full-profile condition. 882 
+
+For species-level host-list experiments, the Base condition was defined as an 883 
+
+annotation-only phage profile. It retained query-genome-derived functional annota-884 
+
+tions, gene-level product labels, protein descriptors and taxonomy-derived annotation 885 
+
+signals, but removed receptor-binding evidence, nucleotide-level reference context and 886 
+
+protein-level reference context. Single-layer conditions were generated by adding one 887 
+
+specialised evidence layer back to the Base profile: receptor-binding evidence only, 888 
+
+BLASTN-derived nucleotide-level reference context only, or BLASTP-derived protein-889 
+
+level reference context only. The Full condition contained all three specialised evidence 890 
+
+layers. Independent layer gains were measured relative to the Base condition, and 891 
+
+redundancy was quantified by comparing the observed Full-profile gain with the sum 892 
+
+of the single-layer gains. 893 
+
+To test whether reference-context improvements reflected use of explicit host labels 894 
+
+rather than similarity scores alone, we generated label-perturbation controls for the 895 
+
+nucleotide- and protein-level reference blocks. In the label-scrambled conditions, host 896 
+
+21 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+labels in the corresponding reference-context block were permuted while preserving the 897 
+
+retrieved reference entries, similarity scores, hit ordering and all non-label annotations. 898 
+
+BLASTN-only scrambling, BLASTP-only scrambling and dual-channel scrambling 899 
+
+were evaluated separately. In the label-free control, host labels were removed from 900 
+
+both reference-context blocks while retaining the reference entries and similarity infor-901 
+
+mation. These controls allowed us to distinguish the contribution of labelled reference 902 
+
+associations from label-independent similarity information. 903 
+
+The same perturbation logic was applied to the pairwise evaluation experiments. 904 
+
+Each phage–host pair was evaluated under the Full profile and under matched per-905 
+
+turbation variants in which specialised evidence layers were removed, isolated or 906 
+
+label-scrambled. Pairwise perturbation results were assessed using PR-AUC, ROC-907 
+
+AUC, F1, MCC, per-phage Hits@1, log-loss and high-confidence precision. Because 908 
+
+pairwise scoring evaluates individual phage–host hypotheses rather than global candi-909 
+
+date ranking, these analyses were used to test whether the evidence layers identified 910 
+
+in host-list ranking also supported reliable pair-level scores. 911 
+
+All perturbation outputs were parsed with the same JSON validation and retry 912 
+
+rules as the primary experiments. Cached outputs were reused only when the input 913 
+
+profile, prompt template, model setting and perturbation condition were identical. 914 
+
+Numerical values for host-list perturbations are reported in Supplementary Tables 2–7, 915 
+
+and pairwise perturbation results are reported in Supplementary Table 10. 916 
+
+## 4.6 Pairwise evaluation construction and host-list comparison 917 
+
+Pairwise evaluation experiments were constructed from RefSeq-634. For each phage, 918 
+
+the experimentally confirmed host species was used as the positive pair, and five 919 
+
+negative host species were sampled from the benchmark candidate-host space while 920 
+
+excluding the confirmed host genus where possible. This yielded one positive and 921 
+
+five genus-balanced negative pairs per phage, or 3,804 phage–host pairs per evidence 922 
+
+condition. The same pair set was used across all perturbation variants. 923 
+
+Each pair was evaluated with the pairwise prompt using the same Qwen3-Coder-924 
+
+Next(with pretraining data updated through 30 September 2025) backbone, phage 925 
+
+profiles, host profiles and decoding settings as the host-list experiments. The model 926 
+
+received one phage profile and one candidate host profile, and returned an infection-927 
+
+plausibility score in [0 , 1] together with a categorical decision. Pairwise Hits@1 was 928 
+
+computed per phage by comparing the confirmed-host score with the five negative-host 929 
+
+scores. 930 
+
+To compare pairwise evaluation with host-list ranking under matched candidate 931 
+
+density, we performed a fresh Listwise-6 inference experiment. For each phage, the 932 
+
+host-list prompt was rebuilt to contain only the six hosts used in the pairwise evalu-933 
+
+ation: the experimentally confirmed host and the same five genus-balanced negative 934 
+
+hosts. The query-phage profile, compact host metadata format, scoring guide, out-935 
+
+put schema, Qwen3-Coder-Next backbone and decoding settings were kept unchanged 936 
+
+from the original Listwise-223 host-list experiment, except that the candidate cata-937 
+
+logue and the required number of returned entries were reduced from 223 and 30 to 6 938 
+
+and 6, respectively. 939 
+
+22 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+Listwise-6 Hits@1 was computed directly from these fresh six-candidate host-list 940 
+
+outputs. It was compared with pairwise Hits@1 on the same phage-level candidate sets. 941 
+
+Argmax agreement measured whether the top-scoring host selected by fresh Listwise-942 
+
+6 ranking was identical to the top-scoring host selected by pairwise scoring among 943 
+
+the same six hosts. A post-hoc restriction of the original Listwise-223 output to the 944 
+
+same six hosts was used only as an auxiliary diagnostic and was not used for the main 945 
+
+Listwise-6 result reported in Fig. 5b and Supplementary Table 11c. 946 
+
+Discordance categories were defined by crossing full-list correctness with pairwise 947 
+
+support for the confirmed host. A confirmed-host pairwise score ≥ 0.7 was treated as 948 
+
+high-confidence positive support. Phages that were listwise incorrect but had high pair-949 
+
+wise positive scores were interpreted as candidate-density displacement cases, whereas 950 
+
+phages that were incorrect in both formulations and had low pairwise positive scores 951 
+
+were treated as paradigm-independent hard cases. Genus-level divergence was com-952 
+
+puted by comparing full-list sp@1 and pairwise Hits@1 within each confirmed host 953 
+
+genus. Numerical values are reported in Supplementary Table 11 and Supplementary 954 
+
+Note S6. 955 
+
+## 4.7 Quantifying evidence-interface hallucination risk 956 
+
+Scope and definitions 957 
+
+We evaluated the frozen predictor ( Qwen-Coder-Next:Q4 K M ) in its full-evidence con-958 
+
+figuration on RefSeq-634, analysing for each phage the cached full-evidence inference 959 
+
+output: the generated rationale, the ranked host output and the verbatim input pro-960 
+
+file. Because hallucination has no universal operational definition and prediction error 961 
+
+alone is insufficient to identify it, we operationalised three related evidence-interface 962 
+
+quantities, evaluating only the evidence available to the model rather than the exter-963 
+
+nal biological literature. Profile faithfulness is a rationale-level quantity: the fraction 964 
+
+of rationale claims entailed by the input profile, with a claim considered unsup-965 
+
+ported when no profile field entails it. Rationale-linked hallucination is an incorrect 966 
+
+species-level prediction whose rationale contains at least one claim not grounded in 967 
+
+the supplied profile; this was operationalised as an unsupported field-referenced claim 968 
+
+for the programmatic verifier, and as a contradicted or unverifiable semantic claim 969 
+
+for the blind judge. Answer-level hallucination is the stricter case of an incorrect pre-970 
+
+diction whose predicted host genus appears nowhere in the host-supporting evidence 971 
+
+fields of the supplied profile. Because all candidate hosts are visible in the closed-set 972 
+
+ranking task, catalogue membership alone was not counted as supporting evidence. 973 
+
+Prediction correctness was scored at the host-species level after whitespace/underscore 974 
+
+normalisation, whereas answer-level hallucination and the error-source decomposition 975 
+
+were evaluated at the host-genus level, the resolution at which reference-neighbour 976 
+
+labels, BLASTN/BLASTP neighbour hosts and RBP signals are most consistently 977 
+
+reported. Blind atomic-claim judging was applied to all 634 phages with two judge 978 
+
+models; resampling and reliability benchmarking used a shared correctness-balanced 979 
+
+200-phage sample, and the held-out natural subset ( n = 434) was its complement 980 
+
+within RefSeq-634. 981 
+
+23 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+Rationale-grounding checks 982 
+
+The raw profile was parsed deterministically into a compact evidence digest con-983 
+
+taining per-gene annotations, BLASTN/BLASTP neighbour hosts with identities 984 
+
+and coverages, explicit RBP matches, the Gram hint and the phage family; the 985 
+
+same digest was supplied to the judges. Rationale faithfulness was assessed two 986 
+
+ways. Following source-grounded claim verification, a deterministic verifier extracted 987 
+
+six claim types—gene reference, gene function, RBP match, neighbour-host signal, 988 
+
+Gram type and phage family—and checked each against the parsed profile under 989 
+
+a strict literal setting and a predefined lenient setting that corrected two known 990 
+
+verifier artefacts (RBP near-binding within a ±2% identity tolerance and a parent-991 
+
+lineage map) [23, 24]. Following LLM-as-judge and retrieval-augmented faithfulness 992 
+
+protocols, a blind judge decomposed each trace into atomic claims, labelled each sup-993 
+
+ported /contradicted /unverifiable against the digest, flagged decision-relevant 994 
+
+claims and assigned a per-phage severity ( none /minor /major ) [22, 26–28]. The judge 995 
+
+saw neither the true host nor the correctness label; the blind protocol was applied 996 
+
+to all 634 phages and replicated across judge model (Claude Opus 4.8) as a circular-997 
+
+ity control. The digest, verifier rules, judge prompt and output schema are given in 998 
+
+Supplementary Note S8.1–S8.4. 999 
+
+Answer stability and inference-time reliability 1000 
+
+To measure answer stability we resampled the predictor on the balanced 200-phage 1001 
+
+sample ( N = 10, T = 0 .7, identical saved prompt); answer-level hallucinations that 1002 
+
+fell outside this sample were additionally resampled so that this subset had complete 1003 
+
+coverage. Resampled top-1 predictions were clustered by host genus, from which we 1004 
+
+computed genus/species self-consistency, modal consistency, semantic entropy and the 1005 
+
+number of distinct genera. To benchmark auxiliary reliability signals, we computed 1006 
+
+AUROC for predicting top-1 correctness from the top-1–top-2 score margin, the top-1007 
+
+1 score, homology-derived features, resampling self-consistency and semantic entropy. 1008 
+
+The score margin was interpreted as ranking-level decisiveness and self-consistency as 1009 
+
+whether a host call was stably reproducible from the supplied evidence. For auxiliary 1010 
+
+selective-prediction analysis, score-margin thresholds were fixed on the balanced vali-1011 
+
+dation split and applied unchanged to the held-out natural subset ( n = 434), without 1012 
+
+test-set tuning. Details are given in Supplementary Note S8.5–S8.6. 1013 
+
+Error-source decomposition and statistics 1014 
+
+Each wrong RefSeq-634 prediction was characterised by two facts from the parsed 1015 
+
+host-supporting evidence fields, defined as the union of BLASTN/BLASTP neighbour 1016 
+
+genera and RBP-matched genera: whether the true host genus was recoverable, and 1017 
+
+whether the predicted genus was itself an evidence candidate. A prediction was off-1018 
+
+evidence when its predicted genus was absent from these host-supporting fields, a flag 1019 
+
+computable without the ground-truth host. An off-evidence prediction was counted 1020 
+
+as an answer-level hallucination only when it was also wrong at the species level. For 1021 
+
+mechanism analysis, errors were partitioned in priority order into incomplete evidence 1022 
+
+(true genus absent), non-decisive evidence (true and predicted genera both present, 1023 
+
+a competitor ranked first) and recoverable-profile hallucination (true genus present 1024 
+
+24 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+but predicted genus absent). Evidence-incomplete hallucinations, in which both the 1025 
+
+true and predicted genera were absent, fall within the incomplete-evidence class; when 1026 
+
+answer-level hallucinations were reported separately, the incomplete-evidence class was 1027 
+
+split into evidence-incomplete answer-level hallucinations and evidence-anchored but 1028 
+
+wrong incomplete-evidence cases. For each class we summarised the score margin and 1029 
+
+resampling self-consistency, reporting bucket-level AUROC for the larger classes and 1030 
+
+descriptive statistics for the small hallucination subtypes, whose sample sizes make 1031 
+
+bucket-level AUROC unstable. All headline effect sizes were reported with bootstrap 1032 
+
+95% confidence intervals; categorical enrichments used Fisher’s exact test with odds 1033 
+
+ratios, correlations used point-biserial r, self-consistency and entropy differences addi-1034 
+
+tionally used permutation tests, and AUROC values were bootstrapped over phages 1035 
+
+(Supplementary Note S8.7–S8.8). 1036 
+
+## 4.8 Statistical analysis 1037 
+
+All statistical analyses were performed on fixed model outputs without model re-1038 
+
+training or parameter updating. Unless otherwise stated, denominators were kept 1039 
+
+fixed under the abstention-as-error policy. Confidence intervals for species-level met-1040 
+
+rics, including sp@1, MRR and MHA-sp, were computed by non-parametric percentile 1041 
+
+bootstrap with 1,000 phage-level resamples using random seed 42. Confidence intervals 1042 
+
+for pair-level ROC-AUC, PR-AUC and log-loss were computed by percentile bootstrap 1043 
+
+with 200 pair-level resamples. 1044 
+
+Between-method comparisons on shared phage sets were assessed using paired 1045 
+
+statistical tests. Paired per-phage success differences were tested with the two-sided 1046 
+
+Wilcoxon signed-rank test, and binary top-1 discordance tables were additionally 1047 
+
+evaluated with McNemar’s [40] test with Yates’ correction. Categorical enrichment 1048 
+
+analyses used Fisher’s exact test; related tests were adjusted using the Benjamini– 1049 
+
+Hochberg false-discovery-rate procedure. Shared-failure overlap was assessed with a 1050 
+
+one-sided Fisher’s exact test and a 10,000-resample phage-level overlap permutation 1051 
+
+null. 1052 
+
+For pairwise evaluation, F1 and MCC were reported at the threshold that max-1053 
+
+imised F1 on the pooled evaluated pair set; this threshold was used only for post hoc 1054 
+
+score evaluation and not for model selection. Log-loss was computed after clipping 1055 
+
+predicted probabilities to [10 −7, 1 − 10 −7]. Correlations between host-list and pair-1056 
+
+wise scores were computed using Spearman rank correlation, Pearson correlation and 1057 
+
+point-biserial correlation where appropriate. The relationship between reasoning-trace 1058 
+
+breadth and correctness was assessed using the Cochran–Armitage trend test and 1059 
+
+logistic regression. Analyses were implemented in Python using numpy [41], scipy [42], 1060 
+
+scikit-learn [43] and statsmodels [44]; detailed scripts and package requirements 1061 
+
+are provided with the released code. 1062 
+
+## 4.9 Performance metrics 1063 
+
+Top-k species accuracy (sp@ k). For single-host benchmarks, each test phage q has 1064 
+
+one ground-truth host species yq , and each method returns a ranked list ˆ πq over the 1065 
+
+25 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+benchmark-specific candidate host space: 1066 
+
+sp@ k = 1
+
+N
+
+> N
+
+X
+
+> q=1
+
+1
+
+h
+
+yq ∈ ˆπ(1: k)
+
+> q
+
+i
+
+. (1) For PHI-Reason listwise inference, the model returned the top 30 ranked hosts; candi-1067 
+
+dates absent from this output were treated as unranked. sp@1 was the primary metric 1068 
+
+on RefSeq-634 and VHDB-3150, with sp@5 and sp@10 reported as broader rank-1069 
+
+ing diagnostics. Genus-level accuracy (g@ k) was computed analogously after mapping 1070 
+
+predicted and true hosts to genus. 1071 
+
+Mean reciprocal rank (MRR). MRR was used as a rank-sensitive complement to 1072 
+
+top-k accuracy: 1073 
+
+MRR = 1
+
+N
+
+> N
+
+X
+
+> q=1
+
+1rank( yq | ˆπq ) . (2) If the true host was outside the candidate space or absent from the ranked output, its 1074 
+
+contribution was set to zero. 1075 
+
+Multi-host accuracy (MHA-sp and MHA-gen). For the HiC benchmark, each phage 1076 
+
+can have multiple confirmed host species Yq . We followed the MHA protocol of [15], 1077 
+
+comparing the first |Yq | predictions with the known host set: 1078 
+
+MHA-sp = 1
+
+N
+
+> N
+
+X
+
+> q=1
+
+ˆπ(1: |Yq |) 
+
+> q
+
+∩ Yq
+
+|Yq | . (3) MHA-sp reports the mean fraction of confirmed host species recovered when each 1079 
+
+method returns the same number of predictions as known hosts for that phage. MHA-1080 
+
+gen was computed after mapping host labels to genus. MHA-sp was the primary HiC 1081 
+
+metric, with MHA-gen, single-top species accuracy and MRR reported as secondary 1082 
+
+diagnostics where ranked outputs were available. 1083 
+
+Pairwise evaluation metrics. For pairwise PHI assessment, each phage was paired 1084 
+
+with one confirmed host and five genus-balanced negative hosts. Each pair received 1085 
+
+an infection-plausibility score si ∈ [0 , 1]. Because this task is class-imbalanced and 1086 
+
+intended for prioritisation, PR-AUC was the primary score-based metric and ROC-1087 
+
+AUC was retained as a secondary rank-discrimination metric. F1 and MCC were 1088 
+
+reported at the threshold that maximised F1. Log-loss was used as a calibration-1089 
+
+sensitive metric: 1090 
+
+LogLoss = − 1
+
+M
+
+> M
+
+X
+
+> i=1
+
+[yi log( si) + (1 − yi) log(1 − si)] . (4) High-confidence precision was computed among pairs with si ≥ 0.7: 1091 
+
+Precision s≥0.7 =
+
+P 
+
+> i
+
+1[si ≥ 0.7 ∧ yi = 1] 
+
+P 
+
+> i
+
+1[si ≥ 0.7] . (5) 26 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+For each phage, pairwise Hits@1 compared the confirmed-host score with the five 1092 
+
+negative-host scores. Unless otherwise stated, we used a lenient definition in which 1093 
+
+ties were counted as correct: 1094 
+
+Hits@1 pairwise = 1
+
+N
+
+> N
+
+X
+
+> q=1
+
+1
+
+
+
+sq,y q ≥ max 
+
+> h∈N q
+
+sq,h 
+
+
+
+, (6) where Nq denotes the five negative hosts. Strict Hits@1, in which ties were counted 1095 
+
+as misses, was used only as a diagnostic. Positive and negative score separation was 1096 
+
+summarized by Cohen’s d:1097 
+
+d = μ+ − μ−
+
+spooled 
+
+. (7) 
+
+Host-list versus pairwise comparison metrics. Candidate-density effects were 1098 
+
+assessed using a fresh Listwise-6 control. For each phage, the host-list prompt was 1099 
+
+rebuilt to contain the same six hosts used in pairwise evaluation: the confirmed host 1100 
+
+and five genus-balanced negatives. The phage profile, host metadata format, scoring 1101 
+
+guide, output schema, model backbone and decoding settings were unchanged from 1102 
+
+the full Listwise-223 experiment, except that the candidate catalogue and required 1103 
+
+output length were reduced from 223 and 30 to 6 and 6. 1104 
+
+Listwise-6 Hits@1 was compared with pairwise Hits@1 on the same six-host 1105 
+
+candidate sets. The candidate-density component was defined as 1106 
+
+∆density = Hits@1 Listwise-6 − sp@1 Listwise-223 ,
+
+and the residual formulation difference as 1107 
+
+∆formulation = Hits@1 pairwise − Hits@1 Listwise-6 .
+
+Argmax agreement measured the fraction of phages for which pairwise scoring and 1108 
+
+fresh Listwise-6 selected the same top-scoring host among the six candidates. 1109 
+
+# Data availability 1110 
+
+Input datasets used in this study are publicly available. The CHERRY-1111 
+
+1940 corpus from which the RefSeq-634 evaluation partition was drawn is 1112 
+
+accessible through the NCBI RefSeq database through the original release 1113 
+
+at github.com/KennthShang/CHERRY. The VHDB-3150 benchmark and its 1114 
+
+associated phage–host pair table are provided by the VHDB authors at 1115 
+
+github.com/KennthShang/HostPredictionReview. The HiC proximity-ligation 1116 
+
+dataset, including the 406 viral contigs and 52 metagenome-assembled host genomes, 1117 
+
+is available from the source study zenodo.org/records/14851637. The PHIStruct 1118 
+
+receptor-binding-protein corpus used as the RBP reference database (19,081 sequences 1119 
+
+across 238 host genera) is available from zenodo.org/records/11202338. Functional-1120 
+
+annotation reference databases were obtained from PHROG v4 (phrogs.lmge.uca.fr) 1121 
+
+and eggNOG 5 via eggnog-mapper v2. Defence-system reference profiles were obtained 1122 
+
+from DefenseFinder v2.0.1 (github.com/mdmparis/defense-finder). 1123 
+
+27 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+# Code availability 1124 
+
+Code required to reproduce this study, including the structured-profile construc-1125 
+
+tion pipeline and the host-list and pairwise inference drivers, is publicly available at 1126 
+
+github.com/yaozhong/PHI-Reason. 1127 
+
+# Competing interests 1128 
+
+The authors declare no competing interests. 1129 
+
+# Acknowledgments 1130 
+
+Computing resources were provided by the Human Genome Center, Institute of Med-1131 
+
+ical Science, University of Tokyo. This work was supported by Grant-in-Aid for 1132 
+
+Scientific Research [JSPS KAKENHI grant number JP26K15038]. L.X. acknowledges 1133 
+
+the financial support from the China Scholarship Council (CSC) under grant No. 1134 
+
+202506120217. 1135 
+
+# References 1136 
+
+[1] Suttle, C. A. Marine viruses—major players in the global ecosystem. Nature 1137 
+
+Reviews Microbiology 5, 801–812 (2007). 1138 
+
+[2] Zielezinski, A., Deorowicz, S. & Gudy´ s, A. Phist: fast and accurate prediction of 1139 
+
+prokaryotic hosts from metagenomic viral sequences. Bioinformatics 38 , 1447– 1140 
+
+1449 (2022). 1141 
+
+[3] Galiez, C., Siebert, M., Enault, F., Vincent, J. & S¨ oding, J. Wish: who is the host? 1142 
+
+predicting prokaryotic hosts from metagenomic phage contigs. Bioinformatics 1143 
+
+33 , 3113–3114 (2017). URL https://doi.org/10.1093/bioinformatics/btx383. 1144 
+
+[4] Lu, C. et al. Prokaryotic virus host predictor: a gaussian model for host prediction 1145 
+
+of prokaryotic viruses in metagenomics. BMC Biology 19 , 5 (2021). 1146 
+
+[5] Roux, S., Camargo, A. P., Coutinho, F. H. et al. iPHoP: An integrated machine 1147 
+
+learning framework to maximize host prediction for metagenome-derived viruses 1148 
+
+of archaea and bacteria. PLOS Biology 21 , e3002083 (2023). 1149 
+
+[6] Shang, J. et al. Phabox2: an enhanced web server for discovering and analyzing 1150 
+
+viral contigs in metagenomic data. Nucleic Acids Research gkag382 (2026). URL 1151 
+
+https://doi.org/10.1093/nar/gkag382. 1152 
+
+[7] Shang, J. & Sun, Y. Cherry: a computational method for accurate prediction of 1153 
+
+virus–prokaryotic interactions using a graph encoder–decoder model. Briefings 1154 
+
+in Bioinformatics 23 , bbac182 (2022). 1155 
+
+28 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+[8] Zhang, Y.-z. et al. Zero-shot-capable identification of phage–host relationships 1156 
+
+with whole-genome sequence representation by contrastive learning. Briefings in 1157 
+
+Bioinformatics 24 , bbad239 (2023). 1158 
+
+[9] Wang, W. et al. A network-based integrated framework for predicting virus– 1159 
+
+prokaryote interactions. NAR genomics and bioinformatics 2, lqaa044 (2020). 1160 
+
+[10] Ruohan, W., Xianglilan, Z., Jianping, W. & Shuai Cheng, L. I. Deephost: phage 1161 
+
+host prediction with convolutional neural network. Briefings in Bioinformatics 1162 
+
+23 , bbab385 (2022). URL https://doi.org/10.1093/bib/bbab385. 1163 
+
+[11] Fallahpour, A. et al. Bioreason: Incentivizing multimodal biological reasoning 1164 
+
+within a dna-llm model. Advances in Neural Information Processing Systems 38 ,1165 
+
+111644–111671 (2026). 1166 
+
+[12] Fallahpour, A. et al. Bioreason-pro: Advancing protein function prediction with 1167 
+
+multimodal biological reasoning. bioRxiv (2026). URL https://www.biorxiv.org/ 1168 
+
+content/early/2026/03/20/2026.03.19.712954. 1169 
+
+[13] Cao, R. et al. Qwen3-coder-next technical report. arXiv preprint 1170 
+
+arXiv:2603.00729 (2026). 1171 
+
+[14] Shang, J. et al. From genomic signals to prediction tools: a critical feature analysis 1172 
+
+and rigorous benchmark for phage–host prediction. Briefings in Bioinformatics 1173 
+
+26 , bbaf626 (2025). 1174 
+
+[15] Bignaud, A. et al. Phages with a broad host range are common across ecosystems. 1175 
+
+Nature Microbiology 10 , 2537–2549 (2025). 1176 
+
+[16] Hyatt, D. et al. Prodigal: prokaryotic gene recognition and translation initiation 1177 
+
+site identification. BMC bioinformatics 11 , 119 (2010). 1178 
+
+[17] Cantalapiedra, C. P., Hern´ andez-Plaza, A., Letunic, I., Bork, P. & Huerta-Cepas, 1179 
+
+J. eggnog-mapper v2: functional annotation, orthology assignments, and domain 1180 
+
+prediction at the metagenomic scale. Molecular biology and evolution 38 , 5825– 1181 
+
+5829 (2021). 1182 
+
+[18] Terzian, P. et al. PHROG: families of prokaryotic virus proteins clustered using 1183 
+
+remote homology. NAR Genomics and Bioinformatics 3, lqab067 (2021). 1184 
+
+[19] Gonzales, M. E. M., Ureta, J. C. & Shrestha, A. M. Phistruct: improving phage– 1185 
+
+host interaction prediction at low sequence similarity settings using structure-1186 
+
+aware protein embeddings. Bioinformatics 41 , btaf016 (2025). 1187 
+
+[20] Lanham, T. et al. Measuring faithfulness in chain-of-thought reasoning. arXiv 1188 
+
+preprint arXiv:2307.13702 (2023). 1189 
+
+29 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+[21] Cheng, J. et al. Chain-of-thought prompting obscures hallucination cues in 1190 
+
+large language models: An empirical evaluation. Findings of the Association 1191 
+
+for Computational Linguistics: EMNLP 2025 1272–1305 (2025). URL https: 1192 
+
+//aclanthology.org/2025.findings-emnlp.67/. 1193 
+
+[22] Min, S. et al. Factscore: Fine-grained atomic evaluation of factual precision in long 1194 
+
+form text generation. Proceedings of the 2023 Conference on Empirical Methods 1195 
+
+in Natural Language Processing 12076–12100 (2023). 1196 
+
+[23] Wen, B., Howe, B. & Wang, L. L. Characterizing llm abstention behav-1197 
+
+ior in science qa with context perturbations. Findings of the Association for 1198 
+
+Computational Linguistics: EMNLP 2024 3437–3450 (2024). 1199 
+
+[24] Anh-Hoang, D., Tran, V. & Nguyen, L.-M. Survey and analysis of hallucinations 1200 
+
+in large language models: attribution to prompting strategies or model behavior. 1201 
+
+Frontiers in Artificial Intelligence 8, 1622292 (2025). 1202 
+
+[25] Anthropic. Claude opus 4.8. https://www.anthropic.com/claude (2025). Large 1203 
+
+language model. Accessed via the Anthropic API, June 2026. 1204 
+
+[26] Zheng, L. et al. Judging llm-as-a-judge with mt-bench and chatbot arena. 1205 
+
+Advances in neural information processing systems 36 , 46595–46623 (2023). 1206 
+
+[27] Liu, Y. et al. G-eval: Nlg evaluation using gpt-4 with better human alignment. 1207 
+
+Proceedings of the 2023 conference on empirical methods in natural language 1208 
+
+processing 2511–2522 (2023). 1209 
+
+[28] Es, S., James, J., Anke, L. E. & Schockaert, S. Ragas: Automated evalua-1210 
+
+tion of retrieval augmented generation. Proceedings of the 18th conference of 1211 
+
+the european chapter of the association for computational linguistics: system 1212 
+
+demonstrations 150–158 (2024). 1213 
+
+[29] Jin, M. et al. ProLLM: Protein chain-of-thoughts enhanced LLM for protein-1214 
+
+protein interaction prediction. First Conference on Language Modeling (2024). 1215 
+
+URL https://openreview.net/forum?id=2nTzomzjjb. 1216 
+
+[30] Tesson, F. et al. Systematic and quantitative view of the antiviral arsenal of 1217 
+
+prokaryotes. Nature Communications 13 , 2561 (2022). 1218 
+
+[31] Steinegger, M. & S¨ oding, J. Mmseqs2 enables sensitive protein sequence searching 1219 
+
+for the analysis of massive data sets. Nature biotechnology 35 , 1026–1028 (2017). 1220 
+
+[32] Huerta-Cepas, J., Szklarczyk, D., Heller, D. et al. eggnog 5.0: a hierarchical, 1221 
+
+functionally and phylogenetically annotated orthology resource based on 5090 1222 
+
+organisms and 2502 viruses. Nucleic Acids Research 47 , D309–D314 (2019). 1223 
+
+30 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+[33] Camacho, C. et al. Blast+: architecture and applications. BMC bioinformatics 1224 
+
+10 , 421 (2009). 1225 
+
+[34] Buchfink, B., Reuter, K. & Drost, H.-G. Sensitive protein alignments at tree-of-life 1226 
+
+scale using diamond. Nature methods 18 , 366–368 (2021). 1227 
+
+[35] Ollama. Ollama: Get up and running with large language models locally. https: 1228 
+
+//ollama.com (2026). 1229 
+
+[36] Team, Q. Qwq-32b: Embracing the power of reinforcement learning (2025). URL 1230 
+
+https://qwenlm.github.io/blog/qwq-32b/. 1231 
+
+[37] Yang, A. et al. Qwen3 technical report. arXiv preprint arXiv:2505.09388 (2025). 1232 
+
+[38] Agarwal, S. et al. gpt-oss-120b & gpt-oss-20b model card. arXiv preprint 1233 
+
+arXiv:2508.10925 (2025). 1234 
+
+[39] O’Leary, N. A. et al. Reference sequence (refseq) database at ncbi: current status, 1235 
+
+taxonomic expansion, and functional annotation. Nucleic Acids Research 44 ,1236 
+
+D733–D745 (2016). URL https://doi.org/10.1093/nar/gkv1189. 1237 
+
+[40] McNemar, Q. Note on the sampling error of the difference between correlated 1238 
+
+proportions or percentages. Psychometrika 12 , 153–157 (1947). 1239 
+
+[41] Harris, C. R. et al. Array programming with numpy. Nature 585 , 357–362 (2020). 1240 
+
+[42] Virtanen, P. et al. Scipy 1.0: fundamental algorithms for scientific computing in 1241 
+
+python. Nature methods 17 , 261–272 (2020). 1242 
+
+[43] Pedregosa, F. et al. Scikit-learn: Machine learning in python. the Journal of 1243 
+
+machine Learning research 12 , 2825–2830 (2011). 1244 
+
+[44] Seabold, S., Perktold, J. et al. Statsmodels: econometric and statistical modeling 1245 
+
+with python. scipy 7, 92–96 (2010). 1246 
+
+31 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
+
+Fig. 1 Overview of the PHI-Reason framework. a , Phage and bacterial genomes are con-verted into structured textual profiles using deterministic genome-annotation pipelines. Phage profiles include functional annotations, protein descriptors, receptor-binding protein evidence and, when labelled reference data are available, BLASTN- and BLASTP-derived reference-context blocks con-taining host labels of related phages. Host profiles include surface-associated proteins or receptors, defence-system annotations and curated metadata. These evidence fields are represented as named text records that can be retained, removed or perturbed in downstream analyses. b, PHI-Reason sup-ports host-list and pairwise inference. In host-list mode, the language model ranks all candidate hosts for a query phage in one inference call. In pairwise mode, the model evaluates one phage–host pair using the full host profile and returns an infection-plausibility score and evidence rationale. Thus, host-list inference is suited to efficient closed-set screening, whereas pairwise inference is suited to detailed triage of nominated host hypotheses. Created with Biorender. 
+
+32 
+
+.CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint Fig. 2 PHI-Reason improves species-level host prediction and shows taxonomically structured gains. a , Species-level performance of PHI-Reason and baseline methods on RefSeq-634, VHDB-3150 and two HiC splits. Top-1 accuracy (sp@1) is reported for the single-host RefSeq-derived benchmarks and multi-host accuracy (MHA-sp, shown as a percentage) for the HiC splits. Perfor-mance varies across splits with the availability and coherence of supporting evidence. b, Taxonomic stratification on RefSeq-634. Left, sp@1 by Gram type for PHI-Reason, PHP and PhaBOX2. Right, family-level difference between PHI-Reason and the strongest baseline in each stratum. PHI-Reason shows its largest gains in Gram-negative hosts, especially Enterobacteriaceae, while some Gram-positive families show smaller or negative differences. c, Per-phage overlap of correct sp@1 predictions between PHI-Reason and each baseline on RefSeq-634 and VHDB-3150. Correct predictions are decomposed into baseline-only, PHI-Reason-only and shared correct assignments. PHI-Reason-only assignments exceed baseline-only assignments in all pairwise comparisons, whereas non-zero baseline-only sets indicate that some baseline-specific signals remain complementary. 
+
+33 
+
+.CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint Fig. 3 Evidence-layer perturbations reveal non-additive and label-dependent profile integration. a , Independent contribution of specialised evidence layers on RefSeq-634. Starting from the annotation-only Base profile, adding receptor-binding protein (RBP) evidence, BLASTN-derived nucleotide-level reference context or BLASTP-derived protein-level reference context each improves sp@1. The Full profile, which combines all specialised evidence layers, achieves the high-est performance. b, Gram-stratified evidence contribution on RefSeq-634. RBP evidence provides a larger gain for Gram-negative hosts, whereas BLASTN- and BLASTP-derived reference context provides stronger relative gains over the Base profile for Gram-positive hosts (Archaea were pooled with Gram-positive/non-Gram-negative hosts in this panel). c, Effect of labelled BLASTN-neighbour availability. Phages with at least one labelled BLASTN neighbour (Group A) achieve substantially higher sp@1 than phages without such neighbours (Group B). The no-BLASTN group also shows weaker BLASTP similarity, lower RBP coverage and lower BLASTP top-1 same-genus support, indi-cating a broader evidence-poor regime. d, Label scrambling and removal controls. Scrambling host labels in the BLASTN- or BLASTP-derived reference-context block reduces performance, and scram-bling both reference-context blocks reduces sp@1 below the label-free and RBP-only controls. These results show that PHI-Reason uses reference host labels as contextual evidence and can be misled by corrupted labels. 
+
+34 
+
+.CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint Fig. 4 PHI-Reason is robust across sufficiently large LLM backbones and supports evidence-use auditing. a , RefSeq-634 sp@1 across six backbone–mode configurations derived from four language-model backbones. Models above the practical capacity threshold show similar perfor-mance, whereas smaller backbones perform worse. b, Effect of reasoning mode and compute. Switching between no-think and think modes causes only small performance changes, and higher compute does not necessarily yield higher sp@1. c, Shared hard subset analysis. The cross-backbone incorrect set, CBI, and the baseline-method difficult set, BMD, partially overlap, identifying phages that are dif-ficult for both PHI-Reason backbones and conventional baselines. d, Trace composition in correct and incorrect predictions. Correct predictions cite BLASTN context more often, whereas incorrect predictions more often rely on protein-level context without sufficient nucleotide-level support. e,Representative case studies illustrating success and failure modes. Successful cases show that strong RBP evidence or coherent protein-level reference context can rescue correct host assignment when other signals are weak or misleading. Failure cases illustrate limited signal in the supplied PHI-Reason profile or cases in which protein-level reference consensus overrides more specific RBP evidence. 
+
+35 
+
+.CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint Fig. 5 Pairwise PHI evaluation separates evidence support from candidate-density effects. a , Pairwise scores for confirmed phage–host pairs and genus-balanced sampled alternative pairs under the Full evidence profile. Sampled alternatives are operational negatives and are not experimentally verified non-hosts. b, Candidate-density control with fresh Listwise-6 inference using the same six hosts as the pairwise task: the confirmed host and five sampled alternatives. c, Pair-wise performance across evidence configurations. Compared with the Base-only profile, adding RBP and BLAST-derived reference context improves score-based discrimination, especially PR-AUC, F1, MCC and high-confidence precision; Hits@1 is already near saturated in the six-candidate setting. 
+
+d, BLAST-label perturbation. PR-AUC remains high when one BLAST-derived reference source is disrupted, but decreases when both BLASTN and BLASTP host labels are scrambled, approaching the RBP-only condition. 
+
+36 
+
+.CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 12, 2026. ;https://doi.org/10.64898/2026.06.10.727770 doi: bioRxiv preprint
