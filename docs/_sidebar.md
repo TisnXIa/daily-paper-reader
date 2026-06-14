@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-06-14 <!--dpr-date:20260614-->
+    * 精读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202606/14/biorxiv-10-64898-2026-02-05-703936-v2-rdrpcatch-a-unified-resource-for-rna-virus-discovery-using-viral-rna-dependent-rna-polymerase-profile-hidden-markov-models" data-sidebar-item="{&quot;title&quot;: &quot;RdRpCATCH: A unified resource for RNA virus discovery using viral RNA-dependent RNA polymerase profile Hidden Markov models&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/biorxiv-10-64898-2026-02-05-703936-v2-rdrpcatch-a-unified-resource-for-rna-virus-discovery-using-viral-rna-dependent-rna-polymerase-profile-hidden-markov-models&quot;, &quot;score&quot;: &quot;8.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;microbiome&quot;}], &quot;evidence&quot;: &quot;用于宏基因组RNA病毒检测的新颖软件工具&quot;}">RdRpCATCH: A unified resource for RNA virus discovery using viral RNA-dependent RNA polymerase profile Hidden Markov models</a>
   * 2026-06-13 <!--dpr-date:20260613-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202606/13/2606.11646v1-tree-structured-orthonormal-decomposition-of-the-aitchison-simplex" data-sidebar-item="{&quot;title&quot;: &quot;Tree-Structured Orthonormal Decomposition of the Aitchison Simplex&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2606.11646v1-tree-structured-orthonormal-decomposition-of-the-aitchison-simplex&quot;, &quot;score&quot;: &quot;8.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;microbiome&quot;}], &quot;evidence&quot;: &quot;PolyILR为成分数据提供树状正交基，可分析具有层级分类的微生物组相对丰度数据&quot;}">Tree-Structured Orthonormal Decomposition of the Aitchison Simplex</a>
