@@ -6,28 +6,34 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-14
-- 运行时间：2026-06-14 21:10:25 UTC
+- 最新运行日期：2026-06-15
+- 运行时间：2026-06-15 22:42:43 UTC
 - 运行状态：成功
-- 本次总论文数：1
-- 精读区：1
-- 速读区：0
+- 本次总论文数：3
+- 精读区：0
+- 速读区：3
 
 ### 今日简报（AI）
-今日精读一篇利用RNA依赖RNA聚合酶特征隐马尔可夫模型进行RNA病毒发现的统一资源研究。
+今日速读3篇论文，分别聚焦北极冰川融水驱动金属抗性基因多样化、原核生物基因组快速聚类、以及eDNA宏条形码的系统发育方法创新。
 
-该工作开发了RdRpCATCH工具，为高通量病毒检测提供了高性能的序列分析方案（评分8.0/10）。
+最值得一看的是冰川融水如何促使金属抗性基因在特定物种中分化，以及eDNA宏条形码引入系统发育树来提升物种鉴定准确度。
 
-建议从事病毒组学或宏基因组研究的读者重点尝试该资源，以提升RNA病毒鉴定的效率与准确性。
-- 详情：[/202606/14/README](/202606/14/README)
+建议后续可关注环境胁迫下微生物功能基因的演化机制，以及宏条形码数据分析的新工具。
+- 详情：[/202606/15/README](/202606/15/README)
 
 ### 精读区论文标签
-1. [RdRpCATCH: A unified resource for RNA virus discovery using viral RNA-dependent RNA polymerase profile Hidden Markov models](/202606/14/biorxiv-10-64898-2026-02-05-703936-v2-rdrpcatch-a-unified-resource-for-rna-virus-discovery-using-viral-rna-dependent-rna-polymerase-profile-hidden-markov-models)  
-   标签：评分：8.0/10、query:microbiome
-   evidence：用于宏基因组RNA病毒检测的新颖软件工具
+- 本次无精读推荐。
 
 ### 速读区论文标签
-- 本次无速读推荐。
+1. [Glacial meltwater drives gene-specific diversification of metal resistance genes in High Arctic soil microbiomes](/202606/15/biorxiv-10-64898-2026-06-08-730895-v1-glacial-meltwater-drives-gene-specific-diversification-of-metal-resistance-genes-in-high-arctic-soil-microbiomes)  
+   标签：评分：7.0/10、query:microbiome
+   evidence：分析北极湖泊宏基因组数据集以研究金属抗性基因
+2. [Rapid and consistent clustering of millions of genomes highlights the diversity of prokaryotic life](/202606/15/biorxiv-10-64898-2025-12-30-695181-v2-rapid-and-consistent-clustering-of-millions-of-genomes-highlights-the-diversity-of-prokaryotic-life)  
+   标签：评分：6.0/10、query:microbiome
+   evidence：提供大规模细菌基因组/宏基因组数据的聚类工具gemsparcl
+3. [The old pipe gives the sweetest smoke: A phylogenetic turn for eDNA metabarcoding](/202606/15/biorxiv-10-64898-2026-06-11-731524-v1-the-old-pipe-gives-the-sweetest-smoke-a-phylogenetic-turn-for-edna-metabarcoding)  
+   标签：评分：6.0/10、query:microbiome
+   evidence：eDNA宏条形码中系统发育多样性度量方法，与16S rRNA扩增子分析类似
 
 
 <div class="dpr-home-promo-card">
