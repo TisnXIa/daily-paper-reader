@@ -6,34 +6,32 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-15
-- 运行时间：2026-06-15 22:42:43 UTC
+- 最新运行日期：2026-06-16
+- 运行时间：2026-06-16 21:39:32 UTC
 - 运行状态：成功
-- 本次总论文数：3
-- 精读区：0
+- 本次总论文数：4
+- 精读区：1
 - 速读区：3
 
 ### 今日简报（AI）
-今日速读3篇论文，分别聚焦北极冰川融水驱动金属抗性基因多样化、原核生物基因组快速聚类、以及eDNA宏条形码的系统发育方法创新。
-
-最值得一看的是冰川融水如何促使金属抗性基因在特定物种中分化，以及eDNA宏条形码引入系统发育树来提升物种鉴定准确度。
-
-建议后续可关注环境胁迫下微生物功能基因的演化机制，以及宏条形码数据分析的新工具。
-- 详情：[/202606/15/README](/202606/15/README)
+今日推荐4篇论文，重点精读样本量估计研究《Too Few or Too Many?》（9.0分），速读涉及序列比对、病毒聚类与相似度估算。优先关注差异丰度研究的样本量优化策略，以及ViralClust的病毒序列聚类流程。建议从样本量估算工具入手，提升实验设计的统计可靠性。
+- 详情：[/202606/16/README](/202606/16/README)
 
 ### 精读区论文标签
-- 本次无精读推荐。
+1. [Too Few or Too Many? Sample Size Estimation for Differential Abundance Studies](/202606/16/2606.16726v1-too-few-or-too-many-sample-size-estimation-for-differential-abundance-studies)  
+   标签：评分：9.0/10、query:microbiome
+   evidence：提供差异丰度研究的样本量估计方法，明确针对微生物组研究
 
 ### 速读区论文标签
-1. [Glacial meltwater drives gene-specific diversification of metal resistance genes in High Arctic soil microbiomes](/202606/15/biorxiv-10-64898-2026-06-08-730895-v1-glacial-meltwater-drives-gene-specific-diversification-of-metal-resistance-genes-in-high-arctic-soil-microbiomes)  
+1. [Fast genomic read alignment with minibwa](/202606/16/2606.15357v1-fast-genomic-read-alignment-with-minibwa)  
    标签：评分：7.0/10、query:microbiome
-   evidence：分析北极湖泊宏基因组数据集以研究金属抗性基因
-2. [Rapid and consistent clustering of millions of genomes highlights the diversity of prokaryotic life](/202606/15/biorxiv-10-64898-2025-12-30-695181-v2-rapid-and-consistent-clustering-of-millions-of-genomes-highlights-the-diversity-of-prokaryotic-life)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：提供大规模细菌基因组/宏基因组数据的聚类工具gemsparcl
-3. [The old pipe gives the sweetest smoke: A phylogenetic turn for eDNA metabarcoding](/202606/15/biorxiv-10-64898-2026-06-11-731524-v1-the-old-pipe-gives-the-sweetest-smoke-a-phylogenetic-turn-for-edna-metabarcoding)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：eDNA宏条形码中系统发育多样性度量方法，与16S rRNA扩增子分析类似
+   evidence：快速比对工具minibwa，适用于鸟枪法宏基因组数据
+2. [Reducing haystacks to needles - ViralClust: A Nextflow pipeline to cluster viral sequences](/202606/16/biorxiv-10-64898-2026-01-30-702815-v2-reducing-haystacks-to-needles---viralclust-a-nextflow-pipeline-to-cluster-viral-sequences)  
+   标签：评分：7.0/10、query:microbiome
+   evidence：用于病毒序列聚类的Nextflow流程，适用于宏基因组病毒数据
+3. [DynamicDemiLog: A Single Sketch for Ultrafast Similarity, Frequency, and Cardinality Estimation](/202606/16/biorxiv-10-64898-2026-06-12-731986-v1-dynamicdemilog-a-single-sketch-for-ultrafast-similarity-frequency-and-cardinality-estimation)  
+   标签：评分：7.0/10、query:microbiome
+   evidence：提出DynamicDemiLog单一草图结构统一基数/相似性/频率估计，在RefSeq数据库上验证，可用于宏基因组序列相似性比较等分析
 
 
 <div class="dpr-home-promo-card">
