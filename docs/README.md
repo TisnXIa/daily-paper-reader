@@ -6,35 +6,35 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-17
-- 运行时间：2026-06-17 21:28:34 UTC
+- 最新运行日期：2026-06-18
+- 运行时间：2026-06-18 22:19:38 UTC
 - 运行状态：成功
 - 本次总论文数：5
-- 精读区：2
-- 速读区：3
+- 精读区：4
+- 速读区：1
 
 ### 今日简报（AI）
-今日聚焦环境微生物组与疾病关联，精读两篇高分研究：空间混合模型评估暴露效应，及全长16S测序揭示蜱虫微生物动态。最值得关注的是空间模型精准解析环境-微生物因果关系，以及蜱虫病原菌适应机制。建议普通读者关注土壤退化与糖尿病等慢性病的共享微生物代谢趋势，并尝试理解肠道菌群失调对感染性疾病的差异化影响。
-- 详情：[/202606/17/README](/202606/17/README)
+今日精读两篇高分论文，聚焦活性污泥微生物组与尿路感染宏基因组。最值得看：微生物组标志物可指示污水厂N2O排放状态；跨研究分析揭示尿路感染特有微生物标签。建议关注微生物组作为环境与临床诊断工具的应用前景。
+- 详情：[/202606/18/README](/202606/18/README)
 
 ### 精读区论文标签
-1. [Spatial mixed models for assessing environmental exposure effects on the microbiome](/202606/17/2606.17923v1-spatial-mixed-models-for-assessing-environmental-exposure-effects-on-the-microbiome)  
+1. [Archetypal Microbiome Profiles as Indicators of Nitrous Oxide Emission States in Activated Sludge](/202606/18/2606.18295v1-archetypal-microbiome-profiles-as-indicators-of-nitrous-oxide-emission-states-in-activated-sludge)  
    标签：评分：9.0/10、query:microbiome
-   evidence：微生物组差异检验的空间混合模型
-2. [Full-length 16S ribosomal RNA gene sequencing reveals dynamics of tick-adapted and environmentally derived bacteria in the microbiome of the black-legged tick, Ixodes scapularis in Nova Scotia, Canada](/202606/17/biorxiv-10-64898-2026-06-11-731624-v1-full-length-16s-ribosomal-rna-gene-sequencing-reveals-dynamics-of-tick-adapted-and-environmentally-derived-bacteria-in-the-microbiome-of-the-black-legged-tick-ixodes-scapularis-in-nova-scotia-canada)  
+   evidence：利用16S rRNA扩增子测序分析活性污泥微生物组
+2. [Cross-study metagenomics analysis reveals distinct microbial signatures of urinary tract infections](/202606/18/biorxiv-10-64898-2026-06-17-732905-v1-cross-study-metagenomics-analysis-reveals-distinct-microbial-signatures-of-urinary-tract-infections)  
    标签：评分：8.0/10、query:microbiome
-   evidence：使用全长16S rRNA基因测序进行微生物组分析
+   evidence：整合七项鸟枪法宏基因组研究，识别微生物组标志；与宏基因组分析方法相关。
+3. [Cross-study metagenomics analysis reveals distinct microbial signatures of urinary tract infections](/202606/18/biorxiv-10-64898-2026-06-17-732905-v2-cross-study-metagenomics-analysis-reveals-distinct-microbial-signatures-of-urinary-tract-infections)  
+   标签：评分：8.0/10、query:microbiome
+   evidence：跨研究鸟枪法宏基因组分析
+4. [Ecological inference and contaminant detection from fungal microbiome data with q2-fungal-traits](/202606/18/biorxiv-10-64898-2026-06-17-732913-v1-ecological-inference-and-contaminant-detection-from-fungal-microbiome-data-with-q2-fungal-traits)  
+   标签：评分：8.0/10、query:microbiome
+   evidence：新型QIIME 2插件用于真菌性状分析
 
 ### 速读区论文标签
-1. [Shared potential metabolism trends in degraded soils and type 2 diabetes gut microbiomes](/202606/17/biorxiv-10-1101-2025-03-11-642605-v6-shared-potential-metabolism-trends-in-degraded-soils-and-type-2-diabetes-gut-microbiomes)  
+1. [Phylogenetic tree inference using generative models](/202606/18/biorxiv-10-64898-2026-06-14-732140-v1-phylogenetic-tree-inference-using-generative-models)  
    标签：评分：7.0/10、query:microbiome
-   evidence：开发将宏基因组功能通路转化为潜在代谢的方法
-2. [MetaPilot: genome-aware adaptive search-space refinement for unified DDA and DIA metaproteomics](/202606/17/biorxiv-10-64898-2026-06-12-728088-v1-metapilot-genome-aware-adaptive-search-space-refinement-for-unified-dda-and-dia-metaproteomics)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：利用MGnify宏基因组目录构建样本特异性搜索空间的软件工具，用于宏蛋白质组学
-3. [Distinct types of gut dysbiosis and oral-gut microbial signatures differentiate C. difficile, Campylobacter, and Salmonella infections: a cross-sectional study](/202606/17/biorxiv-10-64898-2026-06-15-732290-v1-distinct-types-of-gut-dysbiosis-and-oral-gut-microbial-signatures-differentiate-c-difficile-campylobacter-and-salmonella-infections-a-cross-sectional-study)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：使用16S rRNA基因测序分析肠道感染微生物组
+   evidence：从非对齐序列推断系统发育树的生成模型，适用于16S rRNA分析
 
 
 <div class="dpr-home-promo-card">
