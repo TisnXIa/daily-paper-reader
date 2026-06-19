@@ -1,0 +1,915 @@
+Title: Constrained hybrid modelling to predict microbial dynamics and organic matter turnover in soil systems
+
+URL Source: https://arxiv.org/pdf/2606.20329v1
+
+Published Time: Fri, 19 Jun 2026 01:05:51 GMT
+
+Number of Pages: 16
+
+Markdown Content:
+# Constrained hybrid modelling to predict microbial dynamics and organic matter turnover in soil systems 
+
+Paul Collart 1 2 Juergen Gall 3 4 Andrea Schnepf 1 2 Holger Pagel 1 2 Lars Doorenbos 3 4 
+
+## Abstract 
+
+Soil microorganisms control organic matter cy-cling and largely determine how soil systems can cope with and mitigate climate change and envi-ronmental threats. Representing microbial dynam-ics in process-based soil models is therefore criti-cal to predict carbon cycling in soils, albeit highly challenging to inform from data. One promis-ing approach to improve their parametrisation is the integration of genomic data, yet modelling the complex and unknown relationship between genomes and the processes the microbes are driv-ing is an unsolved problem. In this work, we present the first hybrid modeling framework for deriving biokinetic parameter values of a process-based soil organic matter turnover model from metagenome-inferred functional traits based on DNA sequencing data. Our model predicts bioki-netic parameters of the process-based model from genomic trait data with a neural network and in-tegrates constraints from ecological theory and literature to ensure realistic behavior, even of non-observed state variables. We evaluate our method on synthetic genomic trait datasets of varying complexity and on real data, showing that our approach improves performance over multi-ple baselines and learns the dynamics of unmea-surable components of the process-based model effectively, even for small training datasets. 
+
+## 1. Introduction 
+
+Soils store the largest amount of carbon (C) in the terres-trial biosphere, and, as such, understanding soil C dynamics 
+
+> 1
+
+Agrosphere (IBG-3), Forschungszentrum J ¨ulich GmbH, Ger-many 2Institute of Crop Science and Resource Conservation, Uni-versity of Bonn, Germany 3Institute of Computer Science, Univer-sity of Bonn, Germany 4Lamarr Institute for Machine Learning and Artificial Intelligence, Germany. Correspondence to: Paul Collart 
+
+<p.collart@fz-juelich.de >, Lars Doorenbos <doorenbos@iai.uni-bonn.de >.
+
+Proceedings of the 43 rd International Conference on Machine Learning , Seoul, South Korea. PMLR 306, 2026. Copyright 2026 by the author(s). 
+
+is critical for reliable climate change prediction (Bradford et al., 2016). A key factor of soil C dynamics is soil mi-croorganisms, such as bacteria, that drive the fate of carbon in soils, its storage in soils or its decomposition into carbon dioxide ( CO 2) in the atmosphere, and are involved in a num-ber of important climate feedback loops (Garc ´ıa-Palacios et al., 2021). To predict soil carbon flows and stocks changes in ecosys-tems over time, soil process-based models (PBMs) have been developed over time from theoretical frameworks (Manzoni & Porporato, 2009). They are based on a mass bal-ance of conceptual carbon pools ( state variables ) represent-ing soil organic matter fractions with different physicochem-ical properties (Manzoni & Porporato, 2009). State-of-the-art process-based models integrate the impact of microbial dynamics on carbon utilisation in order to represent the reg-ulation of soil organic C turnover by microbial community composition and activity better than simpler biochemical soil models, which only account for carbon pools (Chandel et al., 2023). Such models integrate microbial physiology (Stolpovsky et al., 2011) and distinguish functional micro-bial groups based on ecological theory (Pagel et al., 2020). However, the parametrisation of these mechanistic but more complex models remains a challenge. Biokinetic param-eters of the considered functional microbial pools cannot be measured directly, requiring inverse parameter estima-tion, which is prone to large uncertainty due to model equi-finality (Marschmann et al., 2019). Often, only time se-ries of microbial soil respiration ( CO 2) can be measured and compared with model outputs. Other outputs, such as bacterial biomass, can only be measured at a few time points at best, and represent only the total biomass rather than the abundances of individual microbial pools consid-ered in these models. Genomic data from DNA sequencing (Semenov, 2021) can inform PBMs on potential microbial functions and support their parametrisation (Marschmann et al., 2024). However, despite the increasing availability of genome datasets in soil systems, computational frame-works remain limited in their ability to represent the com-plex non-linear relationship between functional genes and biogeochemical processes (Guo et al., 2020). In this work, we propose a hybrid framework that combines 1
+
+> arXiv:2606.20329v1 [cs.LG] 18 Jun 2026 Constrained hybrid modelling to predict microbial dynamics and organic matter turnover in soil systems
+
+a process-based soil model with a neural network to learn the mapping from genomic data to biokinetic parameters of the PBM. This is a novel approach in soil science and has not been explored yet. Specifically, we propose HySoMi (HY-brid SOil MIcrobial modelling), a hybrid approach that uses covariates between metagenomic data and state variables or process rates to learn the relation between functional micro-bial traits and model parameters. Parametrisation of hybrid soil models is particularly challenging due to the equifi-nality of process-based soil models in combination with the scarcity of datasets that include both metagenome and process measurements. In practice, only time series of mi-crobial soil respiration ( CO 2) can be measured, whereas the other state variables and the biokinetic parameters, which we aim to learn, cannot be measured. To address this, we further constrain the model to realistic system behaviour of the non-observed state variables and process rates by inte-grating constraints from ecological theory and other domain knowledge. We evaluate HySoMi on a wide range of experiments on syn-thetic data, with varying degrees of complexity and dataset size, and on real data. We find that our approach outper-forms both unconstrained and non-hybrid approaches across all experiments, and show that HySoMi learns the dynamics of unmeasurable components of the model effectively. The success on small datasets, which are common in biogeo-sciences, further highlights the potential of HySoMi . In short, our main contributions are the following: • We introduce HySoMi , a hybrid modelling framework for soil carbon cycling predictions from microbial ge-nomic data. • We integrate theoretical domain knowledge into 
+
+HySoMi through a constrained loss function to predict realistic microbial dynamics in the absence of measure-ments. • We create a synthetic dataset for evaluation and show through a series of experiments that HySoMi leads to better performance, even with small training dataset sizes. 1
+
+## 2. Related Work 
+
+Hybrid models seek to combine the benefits of process-based models (PBMs) and machine learning (ML) ap-proaches. While PBMs enable interpretability of interac-tions due to physics-based equations and the capacity to predict processes under data scarcity, ML-facilitated data-driven approaches allow for representing and discovering complex relationships between system components if a full mechanistic representation is not achievable.  
+
+> 1The code and dataset are available at https://jugit. fz-juelich.de/p.collart/hysomi_publication/
+
+Advances in hybrid model frameworks that combine deep learning with process-based models achieved significant results in fields such as hydrology (Kraft et al., 2022) and ecosystem modelling (Aboelyazeed et al., 2023). Follow-ing the differentiable parameter learning framework (Tsai et al., 2021), parameters of the process-based model can be learned from large datasets and related covariates. This approach requires differentiability of the integrated PBM module within the hybrid model, and converting a PBM into a differentiable version of itself can pose a severe challenge. For instance, Aboelyazeed et al., 2023 focused on building a differentiable version of a process-based photosynthesis model. Aboelyazeed et al., 2025 further improved the hy-brid model by linking a second neural network that accounts for changes in parameters in response to environmental vari-ables. Kraft et al., 2022 used a neural network to predict a time-varying coefficient of a complex hydrological model from meteorological forcing data. The coefficients are con-strained in the loss function to promote near-zero cumula-tive soil water deficit using self-paced multitask weighting (Kendall et al., 2018). The integration of PBMs that simulate microbial dynam-ics and organic matter decomposition in soil systems into hybrid approaches is in its infancy despite their potential use. Xu et al., 2024 combine a simple two-pool soil organic matter model (bacteria and soil organic carbon) and use a Markov chain Monte Carlo sampling algorithm to generate parameter sets to train a neural network generating param-eter maps. This approach differs from ours as it trains the neural network directly on estimated parameters, rather than letting the neural network learn the relationship between the used covariates and the PBM parameters. Reduction of equifinality in models is one of the key chal-lenges in hybrid modelling. The issue of equifinality occurs when different model parameterisations or structures result in equivalent representations of the system (Schmidt et al., 2020), increasing the volume of the behavioural parameter space and reducing the number of parameters that can be efficiently learned by the neural network model (Kraft et al., 2022). ElGhawi et al., 2023 use a hybrid model inferring a single sensitive model parameter, and make use of model regularisation via constraints to reduce model equifinality. They compare two approaches: penalising the loss with an additional loss term (loss regularisation) and inferring an extra auxiliary target variable, where the auxiliary tasks help to regularise the problem objective of inferring sen-sible heat flux and aerodynamic resistance together. Our contribution builds on this concept, but aims at inferring several process-based model parameters, rather than a single one. We therefore use a more complex loss regularisation approach such that each of the considered model parameters can be learned effectively. 2Constrained hybrid modelling to predict microbial dynamics and organic matter turnover in soil systems 
+
+## 3. Method 
+
+3.1. Problem Setting 
+
+We aim to predict microbial dynamics and organic mat-ter turnover from genomic datasets. As genomic data is high-dimensional, and available data is limited, we extract relevant information into a set of T functional traits using Microtrait (Karaoz & Brodie, 2022), rather than working on the genome data directly. Microtrait uses Metagenome As-sembled Genomes (MAGs) as input and a set of rules based on expert knowledge and empirical evidence to derive in-formative quantitative genomic traits in different categories, such as resource acquisition, resource use, and stress tol-erance. These functional traits are grouped into a vector 
+
+x ∈ RT , where each element describes a property of the underlying genome present in a sample. We aim to learn the mapping from the functional traits to the parameter set 
+
+θbio of the microbial system g : RT → Θ, where θbio ∈ Θ
+
+parametrises a microbial model, which allows us to test hy-potheses and better understand and predict the behaviour of the system. However, direct measurements of these parame-ters are not possible or require extensive experimental work, which does not reflect field conditions. Instead, we need to rely on the measurable outputs of the system to infer the underlying parameters. While these sys-tems are based on different carbon pools and fluxes that output multiple different observables, which we refer to as 
+
+state variables , CO 2 is the only one that can be compared with near-time continuous measurements for model cali-bration. Other state variables, such as organic carbon and bacterial biomass, can only be measured at best at a few time points, and as a sum of the different pools of the system. As such, each trait vector x is only associated with a paired 
+
+CO 2 time series ⃗ Yobs ∈ Rt of length t, representing the measured CO 2 emission over time of the system with traits 
+
+x. Our goal then becomes to learn g from a dataset of N
+
+pairs D = {(xn,⃗ Y n,obs )}Nn=1 . This task is very challenging, as we cannot observe θbio and need to rely on a single state variable. 
+
+3.2. HySoMi 
+
+The setting described above allows for an ML approach to implicitly approximate the mapping g by predicting ⃗ Yobs 
+
+from x. However, such an approach is unable to predict 
+
+θbio , which is required to understand these systems, and ignores the large body of work on modelling microbial sys-tems, which drastically limits the search space by imposing physical constraints. We thus propose the HySoMi frame-work, which integrates PBMs with a data-driven approach to produce more accurate and realistic predictions of micro-bial dynamics in soils from genome-based data. We first adapt a state-of-the-art soil carbon PBM into a differentiable framework. Then, we use a neural network to predict its parameters, which parametrise the processes described by the ordinary differential equation system and predict the output state variables. An overview of our method is shown in Fig. 1. We now describe each component. 3.2.1. P ROCESS -BASED MODEL 
+
+Like many PBMs in soil science, we use a model com-posed of a set of ordinary differential equations (Manzoni & Porporato, 2009). The PBM uses the predicted biokinetic parameters θbio in combination with initial values and fixed physical parameters that are not derived from the genome data ( θphy ). The PBM computes time series of state vari-ables ( ⃗Ysim ). The PBM can be written as: 
+
+d⃗Y dt = f (⃗ Y0,⃗ Y , θ bio , θ phy , t ) (1) where ⃗ Y is the state variable vector, ⃗ Y0 the vector of initial values, θbio the learnable parameters, and θphy the fixed parameters, which are not learned from the input data and related to measured physical soil properties. We use a simple biogeochemical soil organic matter turnover model. The model accounts for one functional microbial pool but distinguishes between active and dormant organ-isms (Stolpovsky et al., 2011). The model represents the typical structure of other PBMs, which reflect microbial growth dynamics and physiology, such as Wieder et al., 2015, and calculates time series of six different state vari-ables. The model reflects microbial transformation of high molecular weight organic carbon to low molecular weight organic carbon and the associated microbial growth. The concentration of low molecular weight organic carbon deter-mines microbial dormancy, i.e., the mass-transfer between active and dormant microbial groups. The CO 2 is the mea-surable state variable and represents the cumulative soil respiration. It is the only state variable of the model that can be compared with near-time continuous measurements for model calibration. All model parameters and state variables are described in the Appendix. To run the PBM during the forward run, we use a differen-tiable ODE solver (Chen, 2018) that ensures compatibility with gradient descent-based optimisers. The forward inte-gration uses a fith-order Runge-Kutta method, where the gradient of each adaptive step is stored for backward flow. As the ODE solver can be thought of as a series of simple operations, it defines a dynamic computation graph that can be backpropagated through. 3.2.2. P ARAMETER ESTIMATION 
+
+The goal of our second module is to estimate the PBM pa-rameters from the functional traits. Soil microbial ecology has struggled for many years to integrate with ecosystem-scale biogeochemistry (Schimel, 2023), and very few ex-3Constrained hybrid modelling to predict microbial dynamics and organic matter turnover in soil systems 𝜃 1
+
+𝜃 2
+
+…
+
+…
+
+𝜃 𝑗 
+
+> Differentiable ODE solver
+
+𝑇 1
+
+𝑇 2
+
+…
+
+…
+
+𝑇 𝑖 
+
+𝐵 𝑎 
+
+𝐶 𝐿 
+
+> 𝑙
+
+𝐶 𝑂 2     
+
+> 𝑀𝑆𝐸 𝑌 𝑠𝑖𝑚 ,𝑌 𝑜𝑏𝑠
+> 𝑅𝐸𝐿𝑈 𝐶 𝑖
+> 𝑙𝑜𝑤 −𝐶 𝑖
+> ℎ𝑖𝑔ℎ
+> 𝐶 𝑖
+> 𝑙𝑜𝑤
+
+⋯⋯
+
+⋯ ⋯
+
+ℒ𝑡𝑜𝑡 
+
+CO2 data 
+
+Differentiable soil carbon 
+
+PBM 
+
+Parameter estimation 
+
+module 
+
+𝑔 𝑤  
+
+> 𝐶 𝑂 2𝑚𝑔 . 𝑔 −1
+> 𝑡𝑖𝑚𝑒 h
+> constraints
+> Total loss
+
+𝛿 𝐵 𝑎 
+
+𝛿 𝑡 
+
+𝛿 𝐶 𝐿 
+
+> 𝑙
+
+𝛿 𝑡 
+
+𝛿 𝐶 𝑂 2
+
+𝛿 𝑡 
+
+Figure 1. The HySoMi hybrid modelling framework for soil carbon cycling predictions. The goal is to learn a mapping gw from genomic data, aggregated into a vector of genomic traits [T1, T2, ..., Ti], to biokinetic parameters θbio . The biokinetic parameters, however, cannot be measured. Instead, time series of CO 2 are the only available measurements. To link the unknown biokinetic parameters θbio to measurable variables, we utilize a differentiable, process-based carbon soil model (PBM) that takes biokinetic parameters θbio as input and predicts state variables, which are time series of carbon pools like active bacterial pool ( Ba), low molecular weight carbon ( ClL), or carbon dioxide ( CO 2). Since the state variables as well as θbio have physical constraints, such as ranges or logical relationships, we add constraint loss terms for each parameter and state variable and combine them with the mean squared error between the predicted state variables and measured data. The task is very challenging since we do not observe θbio or more than one state variable, i.e., except for 
+
+CO 2.
+
+plicit models exist to characterise this relation in its complex-ity. For this reason, we learn this mapping with a data-driven approach. Specifically, we map the input traits x to the PBM parame-ters θbio by learning a model gw, parametrised by weights w.We implement gw as a fully-connected MLP. The parame-ters of the PBM have different ranges and scales of possible values, making learning more difficult and unstable. To remedy this, we constrain the values using a sigmoid trans-formation, followed by a projection to the specific parameter ranges 
+
+θbio,ranged = sigmoid (θ) ( θhigh − θlow ) + θlow , (2) where θhigh and θlow are obtained from literature ranges. We use the mean-squared error (MSE) between the observed 
+
+CO 2 time series ⃗ Yobs and the CO 2 time series obtained from the PBM with the predicted parameters ⃗ Ysim to opti-mise the network, 
+
+LM SE = 1
+
+t
+
+> t
+
+X
+
+> j=1
+
+⃗Ysim,j −⃗ Yobs,j 
+
+2
+
+, (3) where ⃗ Yj denotes the value of ⃗ Y at time step j, and t the number of time steps in the time series. 3.2.3. L EARNING REALISTIC CONFIGURATIONS 
+
+The modules described above can be used to learn the com-plex mapping between bacterial genomes and PBM parame-ters using the paired CO 2 time series and sequencing data. However, such combined measurements are scarce, and model equifinality further poses a challenge, as only CO 2
+
+time series and starting values for total microbial biomass and organic carbon are observable. This can result in con-verging to a state with non-realistic behaviour for the other, non-observed state variables, which severely limits the in-terpretability of the outcome. To this end, we design a loss function that integrates the theoretical and expert knowl-edge into the training by constraining the model to learn the behaviour of unobserved state variables, even when training on a dataset of limited size. Specifically, we define model constraints in the form of addi-tional loss terms to be minimised during the training process. We consider constraints applied either on parameters of the process-based model θbio or on its outputs ⃗ Ysim . Both con-straint types aim at reducing the model’s feasible parameter space by reducing its volume, and constrain the outputs to realistic behaviour for unobservable state variables. The constraints are defined as inequalities and listed in Ta-ble 1. The inequalities can have one variable or two vari-ables. For simplicity, we will discuss the general case: 
+
+αa < βb, (4) where α and β are two scalars, and a and b are two variables. For each inequality, we obtain a loss term as: 
+
+La,b = ReLU 
+
+ αa − βb αa 
+
+
+
+. (5) 4Constrained hybrid modelling to predict microbial dynamics and organic matter turnover in soil systems 
+
+Table 1. Constraints used for our loss function and synthetic dataset generation. We use typical literature values or ecological considerations. All variables are defined in the Appendix. Constraints are labeled by P if they apply to model outputs (state variables), and C if they apply to PBM parameters. 1(x) is the indicator function that is 1 if x is true. Btot and Ctot are defined as Btot = Ba + Bi,
+
+Ctot = CH + CL + CsL. j represents time step, with t the last time point of the time series.                                                                                           
+
+> Constraints Description Source Label
+> Btot,j <3.180 ∀j= 1 , . . . , t The total amount of microbial biomass is relatively small (50–3180 μg.g −1soil). Dragone et al. (2024) P1
+> Btot,j >0.05 ∀j= 1 , . . . , t The total amount of microbial biomass is relatively small (50–3180 μg.g −1soil). Dragone et al. (2024) P2
+> Ctot,j <65 ∀j= 1 , . . . , t Range of total organic matter in soils. Blanco-Canqui et al. (2013) P3
+> Ctot,j >1.5∀j= 1 , . . . , t Range of total organic matter in soils. Blanco-Canqui et al. (2013) P4
+> max j(Btot,j )>2Bini tot Bacteria population grows and doubles their biomass follow-ing a large pulse of glucose. Endress et al. (2024); Reischke et al. (2014) P5
+> Bi,t >0.5 max j(Ba,j )Most of the maximum bacterial population switches to dor-mancy when low molecular weight carbon is depleted. Hobbie & Hobbie (2013) P6
+> arg max j(Ba,j )<48 Maximum growth of the bacterial population is reached before 48h after pulse. Endress et al. (2024) P7
+> arg max j(Ba,j )>15 Maximum growth of the bacterial population is reached later than 15h after pulse. Endress et al. (2024) P8
+> Ptj=1 1(Ba,j >0.5 max j(Ba,j )) <48 Bacterial population is above 0.5 of its maximum for not more than 48h. Endress et al. (2024) P9
+> Ptj=1 1(Ba,j >0.5 max j(Ba,j )) >5Bacterial population is above 0.5 of its maximum for more than 5h. Endress et al. (2024) P10
+> CH,t >0.9Cini HIn the 7-day incubation period, only a small amount of high molecular weight carbon is degraded. Logical consideration for the system P11
+> mmax < μ max Maintenance rates are lower than growth rates. Logical consideration for the system C1
+> μmax < d Deactivation rates are higher than growth rates. Salazar et al. (2018) C2
+> d < r Reactivation rates are higher than deactivation rates. Salazar et al. (2018) C3
+
+For time series, some of the constraints include the max-imum like max( Btot,j ) or the time when the variable achieves its maximum like arg max( Ba,j ). In the case of constraints with two variables, we propagate the gradient for both variables a and b. For constraints with an argmax, we use a differentiable approximation of the argmax based on the softmax with temperature set to 1e−8.To adaptively balance the loss between the MSE (Eq. (3) )and constraint (Eq. (5) ) loss terms, we use homoscedastic uncertainty weighting during training (Kendall et al., 2018; Liebel & K ¨orner, 2018). Instead of manually tuning the weights λi for each loss term, we add the weights as learn-able parameters. The total loss is thus given by 
+
+L =
+
+> n+1
+
+X
+
+> i=1
+
+12λ2
+
+> i
+
+Li + ln(1 + λ2) (6) for n constraints, where the regularisation term ln(1 + λ2)
+
+eliminates trivial solutions of learning λ → ∞ . This ap-proach balances the loss function by prioritising the maxi-mum of easier-to-fulfill constraints over harder ones, offer-ing the maximal fulfilment of the defined constraints without compromising the data fitting. 
+
+## 4. Synthetic dataset 
+
+There is a lack of coupled CO 2 and high-quality metage-nomic sequencing data for soils. In particular, there is no dataset with biokinetic parameters that we could use for evaluation, as these parameters are, in most cases, unmea-surable. For this reason, we build a synthetic dataset cou-pling synthetic input data with realistic output state variable time series. To do so, we use Latin hypercube sampling to obtain parameter sets θbio from the possible parameter space, which we then filter for realistic model behaviour. Specifically, we simulate a pulse of 1mg of glucose in 1 gram of soil and the following microbial growth response over a period of 7 days. We keep initial conditions and θphy 
+
+constant across the dataset. To sample realistic model be-haviour, we use the set of parameters and process inequality constraints defined in Tab. 1. These constraints are built on expert knowledge, literature, and logical considerations for the modelled system in a similar approach as Sırcan et al., 2025 to constrain the model to realistic output ranges and bacterial dynamics behaviour. The PBM is run forward to generate model outputs, and only parameter sets that fulfill all required constraints are retained in the final dataset. To simulate the complex relationships between process-based parameters θbio and related hybrid model input data, we use a randomly initialised neural network, which trans-forms 13-dimensional θbio s into a larger 38-dimensional vector x, representing the aggregated genomic data used as input for the hybrid model. We use a fully connected MLP architecture with ReLU activation functions, where the number of hidden layers and neurons defines the complexity of the input data to the PBM parameters θbio , with larger random MLP models defining more complex input-output relationships. Outputs are transformed into realistic ranges 5Constrained hybrid modelling to predict microbial dynamics and organic matter turnover in soil systems 
+
+for this type of data ( [5; 200] ) with a sigmoid transformation and scaling. The network is randomly initialised using the approach from (He et al., 2015). The default dataset used was generated using a 3-layer deep network. For all experiments, we generated datasets of 973 input-output pairs. We reserve 57% of the total data for training (554 samples), and 14% for validation (139 samples). The test set is twice the size of the validation set and has 280 samples. We kept the size of the synthetic dataset relatively low, as real-life data for this kind of application is scarce and expensive to obtain, and 973 samples reflects a good-case scenario when assembling a real-world dataset. 
+
+## 5. Experiments 
+
+We compare HySoMi to multiple baselines to assess its performance in predicting realistic behavior. 
+
+Baselines. We compare HySoMi to a hybrid model without constraints ( Unconstrained ) and an unconstrained model trained on every state variable of the model ( All states ). We also compare to a pure ML model that predicts CO 2
+
+outputs directly. The Unconstrained method only uses the MSE loss LM SE and serves as a baseline that only trains on realistically available data without using constraints in the loss function. The All states model also only uses LM SE 
+
+as its loss function, but uses every state variable as training data, constituting an unrealistic reference scenario, since not all state variables can be measured in practice. This serves as a control for the “best possible performance” for the model, where every time point of each state variable can be observed. 
+
+Metrics. We use four complementary metrics to assess model performance. As we have access to the real PBM parameters θdata bio from generating the synthetic dataset, we can use the L1 norm between the parameters predicted by the models gw(x) = θbio and θdata bio , transformed to [0 , 1] 
+
+ranges, to assess the ability of different methods to retrieve the original PBM parameters. Furthermore, we report the MSE for the observed ( CO 2) time series as M SE obs , and the hidden state variables M SE Hidden to measure the ca-pabilities of the model to predict realistic behavior of non-observed microbial pools and other state variables. Finally, we report the sum of constraint penalties (constraints sum) of the model, which is the only metric, along with M SE obs ,usable in a real data scenario. M SE metrics are reported in 
+
+mg.g −1.
+
+Implementation details. For gw, we use a 38-dimensional linear layer for the input, followed by 5 linear hidden lay-ers with interleaved batch normalisation (Ioffe & Szegedy, 2015) and ReLU activations. We used the Adam opti-miser (Kingma, 2015) with a learning rate of 0.005 and a multi-step learning rate scheduler: lr epoch = γlr epoch −1
+
+every 10 epochs, with gamma set to 0.9. The batch size is set to 256. All baselines use the same settings where applicable. 
+
+5.1. Main results 
+
+We present the main results of HySoMi and the differ-ent baselines on the test dataset in Tab. 2. Among the hybrid models, HySoMi performs better by 0.0416 in 
+
+M SE Hidden compared to the unconstrained model, despite the PBM equations and parameter ranges already constrain-ing the system implicitly, showing that the constraints re-duce M SE Hidden significantly. The fact that the uncon-strained model is unable to reduce the M SE Hidden reveals that the model fits the observed CO 2 outputs but predicts them for non-realistic reasons, trapped within the high di-mensional parameter space (L1 error θdata bio ) of the uncon-strained PBM. We observe similar trends for the parameter estimation, where our model outperforms the unconstrained baseline by 0.0948 , and the constraint satisfaction, where the difference is 1.0921 in favor of HySoMi .The results of HySoMi approximate the results of the ref-erence ( All states ) model, where all six state variables are considered observable and used for training. Regarding 
+
+M SE obs and M SE Hidden performances, HySoMi results are lower by 0.0003 and 0.005 , respectively, while for the L1 error of θdata P BM and the constraints sum, results are better than the All states approach by 0.0138 and 0.2489 , respec-tively. These results show that the All states reference model performs better in the data-driven MSE metrics at the ex-pense of a poorer identification of the PBM parametrisation in comparison to HySoMi .We find that the pure ML model, which directly learns the mapping from genomic traits to CO 2, performs similarly in M SE obs as the hybrid models. However, the model contains no domain knowledge and subsequently has no pre-dictions for the other metrics, leading to an uninterpretable system. On the other hand, hybrid models directly integrate the soil model and provide a comprehensive and mechanistic view of the underlying system. An analysis of the MSE performance with respect to the six individual state variables (Fig. 2) shows that the Uncon-strained model is unable to predict realistic inactive bacteria (Bi) and high molecular weight carbon ( CH ), explaining most of the difference in M SE Hidden . On the other hand, 
+
+HySoMi reaches an MSE close to the All states reference model for these two state variables. Overall, HySoMi con-sistently predicts accurate behaviour of the six state vari-ables on the test data including realistic carbon turnover in soils, with realistic active and inactive microbial pools. This is particularly important, as this shows the model can recover realistic parametrisation by reducing the feasible pa-rameter space of the process-based model. Furthermore, the 6Constrained hybrid modelling to predict microbial dynamics and organic matter turnover in soil systems 
+
+Table 2. Performance on the test dataset. We report mean and standard deviation over 6 random seeds for 3 hybrid models: HySoMi ,
+
+Unconstrained , and All states . Best performance shown in bold. A pure ML model of the same size is added for comparison.                                               
+
+> M SE obs M SE Hidden L1 error θdata P BM Constraints sum
+> HySoMi 0.0355 ±0.0006 0.0211 ±0.0018 0.2336 ±0.0053 0.2823 ±0.1366
+> Unconstrained 0.0356 ±0.0007 0.0627 ±0.0090 0.3284 ±0.0040 1.3744 ±0.0660
+> ML model 0.0360 ±0.0001 N/A N/A N/A
+> Reference model
+> All states 0.0352 ±0.0005 0.0161 ±0.0003 0.2474 ±0.0079 0.5312 ±0.0732
+
+# CO 2 Ba Bi CL CH ClL
+
+0.00 
+
+0.05 
+
+0.10 
+
+0.15 
+
+> MSE
+> HySoMi
+> Unconstrained
+> All states
+
+Figure 2. MSE for each state variable on test data. Both 
+
+HySoMi and Unconstrained only use CO 2 during training. The 
+
+All states scenario is trained with every state variable. State vari-ables are described in Table A.3. Despite only being trained with 
+
+CO 2, HySoMi achieves comparable performance to the unrealis-tic All states model. 
+
+hybrid model retains interpretable intermediate variables, which are essential for process-based models. 
+
+5.2. Effect of dataset complexity and size 
+
+To show the generalisability of HySoMi to different combi-nations of data complexity and size, we evaluate the methods on 7 different datasets for which the transformation from input data T to θbio is generated by increasingly deeper randomly initialised networks. We test datasets generated using a randomly initialised MLP with 5, 7, . . . , 17 hidden layers and show the results in Fig. 3. Fig. 3A shows that 
+
+HySoMi keeps a consistent behavior across dataset com-plexities up to data generated with an MLP with 13 layers. For more complex datasets, the predictions worsen, which is expected since the parameter estimation network uses only 5 layers. When increasing the number of layers in the parame-ter estimation network of the hybrid models (Fig. 3B) as the complexity of the dataset increases, HySoMi shows only a slightly degrading performance and M SE Hidden remains low also for more complex datasets. The training dataset size has little effect on the behavior of our model as shown in Fig. 4. M SE Hidden increases only slightly as the training data size decreases for HySoMi . On the other hand, the constraints satisfaction gets worse for the 
+
+All states model as the size of the dataset decreases, due to the training dataset becoming too small to learn constraints 4 6 8 10 12 14 16 18            
+
+> 0.05
+> 0.10
+> A, MSE Hidden
+> 46810 12 14 16 18
+> dataset complexity
+> 0.025
+> 0.050
+> B, MSE Hidden
+> HySoMi Unconstrained All states
+
+Figure 3. Impact of varying the complexity of the dataset. A: Parameter estimation network gw of the hybrid module with constant size (5 hidden layers) while increasing the number of layers of the network for generating the dataset from 4 to 18. 
+
+B: Increasing the numbers of layers of the parameter estimation network in the same way as the network for generating the dataset. 
+
+directly from the data, even when training on all state vari-ables. In contrast, HySoMi keeps the constraint violations low under any dataset size. For the smallest dataset size, 
+
+HySoMi outperforms the All states baseline, indicating a better performance under data scarcity. Overall, all tested configurations for HySoMi keep consistent performance on smaller datasets due to the use of a hybrid model, leveraging the ability of PBMs to keep accurate predictions even un-der data scarcity. In the Appendix, we further evaluate the robustness of HySoMi to noise in the genomic traits used as input, as well as its sensitivity to its hyperparameters, showcasing similar robustness. 
+
+5.3. Realism of predicted configurations 
+
+Parameter configurations that do not obey the constraints of Tab. 1 have a higher tendency to result in invalid system behaviour. This depends on the nature of the constraints and their impact on the system. To verify that the predicted system behaviour is in line with expectations, we show the average constraint violations on the validation set in Fig. 5. 
+
+HySoMi predictions fulfill all constraints except P9 , which restricts the active bacteria population to at least 0.5 of its 7Constrained hybrid modelling to predict microbial dynamics and organic matter turnover in soil systems 200 300 400 500 600 700 
+
+0.025 
+
+0.050 
+
+MSE Hidden 
+
+200 300 400 500 600 700 
+
+training dataset size 
+
+0.5 
+
+1.0 
+
+Constraints sum   
+
+> HySoMi Unconstrained All states
+
+Figure 4. Impact of dataset size. M SE Hidden and constraints sum of the different models for different training dataset sizes. C1 
+
+> C2
+> C3
+> P1
+> P2
+> P3
+> P4
+> P5
+> P6
+> P7
+> P8
+> P9
+> P10
+> P11
+
+Constraints 
+
+0.0 
+
+0.2 
+
+0.4 
+
+0.6 
+
+> Violations  HySoMi
+> Unconstrained
+> All states
+
+Figure 5. Constraint satisfaction on validation set after training. 
+
+Only a single constraint stays active after training for HySoMi .The Unconstrained model is not informed by its training data on the P6 and C3 constraints, leading to unrealistic model behavior. Constraints are described in Table 1. 
+
+maximum over the time series. The difference in behav-ior of HySoMi compared to the Unconstrained approach is explained by the violation of several constraints by the unconstrained model, primarily related to the inactive bac-teria pool ( P6 ). This is further confirmed by Fig. 2, which shows the Unconstrained baseline struggles with predicting the inactive bacterial pool ( Bi) and high molecular weight carbon ( CH ). Fig. 6 shows that HySoMi predicts realistic behavior even when M SE hidden for a particular sample is higher than average. Compared to the Unconstrained scenario, the model shows realistic behavior for inactive bacteria ( Bi)in particular. Even when not fitting directly to this state variable, we observe a sharp transition to dormancy and a relatively stable dormant population afterwards, which is expected for the simulated experiment. The Unconstrained 
+
+model is not able to output similar dynamics, and instead shows a fast-decreasing dormant microbial pool. This high mortality for dormant bacteria is unrealistic, as microbial dormancy decreases maintenance needs and reduces decay. 0 1 2 3 4 5 6 7                                            
+
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> mg . g 1
+> Bi| MSE = 0.001
+> 01234567
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> Bi| MSE=0.019
+> 01234567
+> 0.0
+> 0.5
+> 1.0
+> Bi| MSE=0.037
+> 01234567
+> days
+> 9.75
+> 10.00
+> 10.25
+> 10.50
+> mg . g 1
+> CH| MSE = 0.001
+> 01234567
+> days
+> 9.8
+> 10.0
+> 10.2
+> CH| MSE=0.019
+> 01234567
+> days
+> 10.0
+> 10.2
+> CH| MSE=0.037
+> HySoMi True data Unconstrained All states
+
+Figure 6. Prediction of two carbon pools over a 7-day simula-tion time. Examples are from 3 different test samples representa-tive of the M SE hidden distribution over samples, with low (left), average (middle), and high (right) MSE. Two different state vari-ables are shown: Bi (Inactive Bacteria) and CH (High molecular weight carbon). 
+
+When comparing the errors of the different models over the simulation time (Fig. C.1), HySoMi shows a similar error pattern as All states baseline, with only a slow increase over time after the main pulse response. We observe a di-rect correlation between M SE hidden and the difference in a few parameters θbio used by the model. As M SE hidden 
+
+increases (Fig. 6), errors in parameters related to dormancy (ζ), High molecular weight carbon ( vmax , K H ) and growth (μmax ) increase. Less impactful PBM parameters do not show a strong correlation to higher or lower M SE hidden .The poor performance of the Unconstrained model is linked to a poor estimation of the same parameters, in addition to 
+
+τ , determining the steepness of the step function controlling dormancy dynamics. 
+
+5.4. Robustness to constraint misspecification 
+
+To analyse the impact of uncertainty in constraint conceptu-alisation, we validate HySoMi under constraint misspecifi-cation, i.e., using different constraints for data generation and model training. We generate two additional datasets where P6 and C3 are changed, which are the constraints driving a large part of the differences in performance be-tween the approaches (Fig. 5). For P6, we increased the factor from 0.5 to 0.8, while we modified C3 in two ways, from d < r to 0.7d < r and to 0.1d < r .We applied the models trained on the original data on these new datasets and show results in Tab 3. For the case with C3 set to 0.7d < r and the P6 factor to 0.8, the results remain very close to the original values. In contrast, when changing C3 to 0.1d < r , the performance starts to decrease due to a larger misspecification between the constraints used by the model and those of the data. Overall, HySoMi is robust 8Constrained hybrid modelling to predict microbial dynamics and organic matter turnover in soil systems                                               
+
+> Table 3. Performance of the HySoMi under constraint mis-specification. Despite altering two key constraints, performance remains stable when constraints are reasonably close.
+> P6 C3 M SE M SE Hidden L1 to θdata P BM
+> 0.5 1.0 0.036 ±0.0006 0.021 ±0.0018 0.234 ±0.005
+> 0.8 0.7 0.039 ±0.0014 0.023 ±0.0019 0.230 ±0.005
+> 0.8 0.1 0.041 ±0.0017 0.026 ±0.0037 0.299 ±0.006
+> Table 4. Performance with data from the LUCAS soil database (2018). HySoMi provides accurate predictions that are more real-istic than the baselines.
+> M SE obs Constraints sum
+> HySoMi 0.0003 0.0006 Unconstrained 0.0002 1.003 ML model 0.0005 N/A
+
+to constraint misspecification as long as the constraints are reasonably close to the data. 
+
+5.5. Application of HySoMi to real data 
+
+Although there are currently no datasets available with deeply sequenced metagenomic data and process rate mea-surements, we can use limited datasets to provide an initial feasibility study. We present results on data extracted from the European soil database LUCAS (Orgiazzi et al., 2018). This dataset is limited due to shallow DNA sequencing, which prohibits the assembly of MAGs and the inference of traits from metagenomes directly. The original DNA se-quences were aligned onto an existing soil MAGs database to allow for trait prediction. The associated CO 2 time series comprise only 15h (compared to 7 days in our synthetic dataset), which is too short to observe a full response from the system and represent only the growth phase of the bacte-rial pool without reaching its maximum peak. We used the data for a first test of our framework with real data, but had to adapt P11 ( CH,t > 0.95 Cini H ) and remove constraints P5-P10 that are based on the maximum response of bacterial biomass, which is not reached in this short time series. We designed an additional constraint P12, controlling that the final active bacterial population is larger than 90% of the initial inactive population ( Ba,t > 0.9 Bini i ), enforcing a dominating effect of the dormancy transition over growth over the small time frame considered. Tab. 4 shows that all models are able to fit the observed 
+
+CO 2 data. In general, the MSE values are lower than on the synthetic data, as the 15h time series is much shorter and easier to predict. As for the synthetic data, HySoMi 
+
+satisfies the constraints much better than the unconstrained model. For example, C3 (Reactivation rates are higher than deactivation rates) is violated by the unconstrained model on this real data, while HySoMi correctly takes this into account.                   
+
+> Table 5. Ablating constraint balancing. We report results over six seeds on the test set. The homoscedastic uncertainty weighting leads to the best performance.
+> M SE obs M SE Hidden L1 to θdata P BM Const.
+> HySoMi 0.036 0.021 0.234 0.282
+> Balanced 0.035 0.030 0.243 0.710
+> Normalised 0.036 0.040 0.244 0.751
+
+5.6. Ablation study 
+
+We compare the adaptive weighting loss of Eq. (6) to a fixed balanced scheme where λ is fixed to 1/14 for each con-straint, and the weight of the MSE term of the loss is fixed to 1. Additionally, we compare to a normalised approach, where each term of the loss is normalised to a norm of 1 be-fore multiplying by λ. The test performance of the adaptive weighting scheme is better than the two other approaches (Tab. 5). Furthermore, individually tuning each λi becomes increasingly time-consuming as more constraints are added. 
+
+## 6. Conclusion 
+
+We introduced HySoMi , a hybrid modelling framework that combines a neural network with a state-of-the-art soil carbon model to leverage information from metagenomic datasets for soil carbon modelling. HySoMi combines information learned from data with theoretical domain knowledge, and we show that our hybrid model can be trained on relatively small datasets common in soil sciences. It is able to learn the dynamics of unmeasurable components better than an unconstrained approach. The study, however, has some limitations. Currently, there is no real dataset with deeply enough sequenced metagenomic data and process rate mea-surements that can be used to properly evaluate the model. The increasing use of metagenomic data at larger scales, however, will present opportunities to apply this approach for soil science in the near future. Nevertheless, we be-lieve that the newly created dataset will be a challenging benchmark for hybrid models and that the presented results already demonstrate the potential of HySoMi for learning a mapping from genomic data to biokinetic parameters using 
+
+CO 2 measurements. 
+
+## Impact Statement 
+
+This paper presents a hybrid framework to leverage infor-mation from genomic datasets to parametrise soil process-based models. As bacteria drive the fate of carbon in soils, this framework could decrease the uncertainty of microbial dynamics in soil models and better predict carbon cycling under climate change. 9Constrained hybrid modelling to predict microbial dynamics and organic matter turnover in soil systems 
+
+## Acknowledgments 
+
+This work has been funded by the Deutsche Forschungs-gemeinschaft (DFG, German Research Foundation) under Germany’s Excellence Strategy, EXC2070 – 390732324 -PhenoRob. We thank Murilo dos Santos Vianna for his help and feedback on code implementation. 
+
+## References 
+
+Aboelyazeed, D., Xu, C., Hoffman, F. M., Liu, J., Jones, A. W., Rackauckas, C., Lawson, K., and Shen, C. Adifferentiable, physics-informed ecosystem modeling and learning framework for large-scale inverse problems: demonstration with photosynthesis simulations. Biogeo-sciences , 20(13):2671–2692, July 2023. ISSN 1726-4170. doi: 10.5194/bg-20-2671-2023. URL https://bg. copernicus.org/articles/20/2671/2023/ .Publisher: Copernicus GmbH. Aboelyazeed, D., Xu, C., Gu, L., Luo, X., Liu, J., Lawson, K., and Shen, C. Inferring plant accli-mation and improving model generalizability with differentiable physics-informed machine learning of photosynthesis. Journal of Geophysical Re-search: Biogeosciences , 130(7):e2024JG008552, 2025. doi: https://doi.org/10.1029/2024JG008552. URL 
+
+https://agupubs.onlinelibrary.wiley. com/doi/abs/10.1029/2024JG008552 .e2024JG008552 2024JG008552. Blanco-Canqui, H., Shapiro, C. A., Wortmann, C. S., Dri-jber, R. A., Mamo, M., Shaver, T. M., and Ferguson, R. B. Soil organic carbon: The value to soil properties. 
+
+Journal of Soil and Water Conservation , 68(5):129A– 134A, 2013. doi: 10.2489/jswc.68.5.129A. URL https: //doi.org/10.2489/jswc.68.5.129A .Bradford, M. A., Wieder, W. R., Bonan, G. B., Fierer, N., Raymond, P. A., and Crowther, T. W. Managing uncer-tainty in soil carbon feedbacks to climate change. Nature Climate Change , 6(8):751–758, August 2016. ISSN 1758-6798. doi: 10.1038/nclimate3071. URL https://www. nature.com/articles/nclimate3071 .Chandel, A. K., Jiang, L., and Luo, Y. Microbial models for simulating soil carbon dynamics: Areview. Journal of Geophysical Research: Bio-geosciences , 128(8):e2023JG007436, 2023. doi: https://doi.org/10.1029/2023JG007436. URL 
+
+https://agupubs.onlinelibrary.wiley. com/doi/abs/10.1029/2023JG007436 .e2023JG007436 2023JG007436. Chen, R. T. Q. torchdiffeq, 2018. URL https:// github.com/rtqichen/torchdiffeq .Dragone, N. B., Hoffert, M., Strickland, M. S., and Fierer, N. Taxonomic and genomic attributes of olig-otrophic soil bacteria. ISME Communications , 4(1): ycae081, 06 2024. ISSN 2730-6151. doi: 10. 1093/ismeco/ycae081. URL https://doi.org/10. 1093/ismeco/ycae081 .ElGhawi, R., Kraft, B., Reimers, C., Reichstein, M., K ¨orner, M., Gentine, P., and Winkler, A. J. Hybrid modeling of evapotranspiration: inferring stomatal and aerody-namic resistances using combined physics-based and ma-chine learning. Environmental Research Letters , 18(3): 034039, March 2023. ISSN 1748-9326. doi: 10.1088/ 1748-9326/acbbe0. URL https://doi.org/10. 1088/1748-9326/acbbe0 . Publisher: IOP Publish-ing. Endress, M.-G., Dehghani, F., Blagodatsky, S., Re-itz, T., Schl ¨uter, S., and Blagodatskaya, E. Spatial substrate heterogeneity limits microbial growth as revealed by the joint experimental quantification and modeling of carbon and heat fluxes. Soil Biology and Biochemistry , 197:109509, 2024. ISSN 0038-0717. doi: https://doi.org/10.1016/j.soilbio.2024.109509. URL https://www.sciencedirect.com/ science/article/pii/S0038071724001986 .Garc ´ıa-Palacios, P., Crowther, T. W., Dacal, M., Hartley, I. P., Reinsch, S., Rinnan, R., Rousk, J., van den Hoogen, J., Ye, J.-S., and Bradford, M. A. Evidence for large microbial-mediated losses of soil carbon under anthropogenic warming. Na-ture Reviews Earth & Environment , 2(7):507–517, July 2021. ISSN 2662-138X. doi: 10.1038/ s43017-021-00178-4. URL https://www.nature. com/articles/s43017-021-00178-4 .Guo, X., Gao, Q., Yuan, M., Wang, G., Zhou, X., Feng, J., Shi, Z., Hale, L., Wu, L., Zhou, A., Tian, R., Liu, F., Wu, B., Chen, L., Jung, C. G., Niu, S., Li, D., Xu, X., Jiang, L., Escalas, A., Wu, L., He, Z., Van Nostrand, J. D., Ning, D., Liu, X., Yang, Y., Schuur, E. A. G., Konstantinidis, K. T., Cole, J. R., Penton, C. R., Luo, Y., Tiedje, J. M., and Zhou, J. Gene-informed decomposition model pre-dicts lower soil carbon loss due to persistent microbial adaptation to warming. Nature Communications , 11(1): 4897, September 2020. ISSN 2041-1723. doi: 10.1038/ s41467-020-18706-z. URL https://www.nature. com/articles/s41467-020-18706-z . Pub-lisher: Nature Publishing Group. He, K., Zhang, X., Ren, S., and Sun, J. Delving Deep into Rectifiers: Surpassing Human-Level Performance on ImageNet Classification. In International Con-ference on Computer Vision , pp. 1026–1034, 2015. URL https://openaccess.thecvf.com/ 
+
+10 Constrained hybrid modelling to predict microbial dynamics and organic matter turnover in soil systems 
+
+content_iccv_2015/html/He_Delving_ Deep_into_ICCV_2015_paper.html .Hobbie, J. E. and Hobbie, E. A. Microbes in nature are lim-ited by carbon and energy: the starving-survival lifestyle in soil and consequences for estimating microbial rates. 
+
+Frontiers in Microbiology , Volume 4 - 2013, 2013. ISSN 1664-302X. doi: 10.3389/fmicb.2013.00324. URL 
+
+https://www.frontiersin.org/journals/ microbiology/articles/10.3389/fmicb. 2013.00324 .Ioffe, S. and Szegedy, C. Batch normalization: Accelerating deep network training by reducing internal covariate shift. In Bach, F. and Blei, D. (eds.), International Conference on Machine Learning , volume 37 of Proceedings of Ma-chine Learning Research , pp. 448–456, Lille, France, 07– 09 Jul 2015. PMLR. URL https://proceedings. mlr.press/v37/ioffe15.html .Karaoz, U. and Brodie, E. L. microtrait: A toolset for a trait-based representation of microbial genomes. 
+
+Frontiers in Bioinformatics , Volume 2 - 2022, 2022. ISSN 2673-7647. doi: 10.3389/fbinf.2022.918853. URL 
+
+https://www.frontiersin.org/journals/ bioinformatics/articles/10.3389/fbinf. 2022.918853 .Kendall, A., Gal, Y., and Cipolla, R. Multi-task learning using uncertainty to weigh losses for scene geometry and semantics. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR) , June 2018. Kingma, D. P. Adam: A method for stochastic optimization. 
+
+International Conference on Learning Representations ,2015. Kothawala, D. N., Moore, T. R., and Hendershot, W. H. Soil properties controlling the adsorption of dissolved organic carbon to mineral soils. Soil Science So-ciety of America Journal , 73(6):1831–1842, 2009. doi: https://doi.org/10.2136/sssaj2008.0254. URL 
+
+https://acsess.onlinelibrary.wiley. com/doi/abs/10.2136/sssaj2008.0254 .Kraft, B., Jung, M., K ¨orner, M., Koirala, S., and Reichstein, M. Towards hybrid modeling of the global hydrological cycle. Hydrology and Earth System Sciences , 26(6):1579–1614, 2022. doi: 10. 5194/hess-26-1579-2022. URL https://hess. copernicus.org/articles/26/1579/2022/ .Liebel, L. and K ¨orner, M. Auxiliary tasks in multi-task learning, 2018. URL https://arxiv.org/abs/ 1805.06334 .Manzoni, S. and Porporato, A. Soil carbon and nitrogen mineralization: Theory and models across scales. Soil Biology and Biochemistry , 41(7):1355–1379, 2009. ISSN 0038-0717. doi: https://doi.org/10.1016/j.soilbio.2009.02. 031. URL https://www.sciencedirect.com/ science/article/pii/S0038071709000765 .Manzoni, S., Taylor, P., Richter, A., Porporato, A., and ˚Agren, G. I. Environmental and stoichiomet-ric controls on microbial carbon-use efficiency in soils. New Phytologist , 196(1):79–91, 2012. doi: https://doi.org/10.1111/j.1469-8137.2012.04225.x. URL https://nph.onlinelibrary.wiley. com/doi/abs/10.1111/j.1469-8137.2012. 04225.x .Marschmann, G. L., Pagel, H., K ¨ugler, P., and Streck, T. Equifinality, sloppiness, and emergent structures of mechanistic soil biogeochemical models. En-vironmental Modelling and Software , 122, 2019. doi: 10.1016/j.envsoft.2019.104518. URL https: //www.scopus.com/inward/record.uri? eid=2-s2.0-85072986739&doi=10.1016% 2fj.envsoft.2019.104518&partnerID=40& md5=83a09c8443851a08f43b01848b401ca6 .Cited by: 42. Marschmann, G. L., Tang, J., Zhalnina, K., Karaoz, U., Cho, H., Le, B., Pett-Ridge, J., and Brodie, E. L. Predictions of rhizosphere microbiome dynam-ics with a genome-informed and trait-based energy budget model. Nature Microbiology , 9(2):421–433, February 2024. ISSN 2058-5276. doi: 10.1038/ s41564-023-01582-w. URL https://www.nature. com/articles/s41564-023-01582-w . Num-ber: 2 Publisher: Nature Publishing Group. Orgiazzi, A., Ballabio, C., Panagos, P., Jones, A., and Fern ´andez-Ugalde, O. Lucas soil, the largest expandable soil dataset for europe: a review. Eu-ropean Journal of Soil Science , 69(1):140–153, 2018. doi: https://doi.org/10.1111/ejss.12499. URL 
+
+https://bsssjournals.onlinelibrary. wiley.com/doi/abs/10.1111/ejss.12499 .Pagel, H., Poll, C., Ingwersen, J., Kandeler, E., and Streck, T. Modeling coupled pesticide degradation and organic matter turnover: From gene abundance to process rates. 
+
+Soil Biology and Biochemistry , 103:349–364, 2016. ISSN 0038-0717. doi: https://doi.org/10.1016/j.soilbio.2016.09. 014. URL https://www.sciencedirect.com/ science/article/pii/S0038071716302437 .Pagel, H., Kriesche, B., Uksa, M., Poll, C., Kandeler, E., Schmidt, V., and Streck, T. Spatial Control of Carbon Dy-namics in Soil by Microbial Decomposer Communities. 11 Constrained hybrid modelling to predict microbial dynamics and organic matter turnover in soil systems 
+
+Frontiers in Environmental Science , 8, 2020. ISSN 2296-665X. URL https://www.frontiersin.org/ articles/10.3389/fenvs.2020.00002 .Reischke, S., Rousk, J., and B ˚a ˚ath, E. The effects of glu-cose loading rates on bacterial and fungal growth in soil. 
+
+Soil Biology and Biochemistry , 70:88–95, 2014. ISSN 0038-0717. doi: https://doi.org/10.1016/j.soilbio.2013.12. 011. URL https://www.sciencedirect.com/ science/article/pii/S0038071713004446 .Salazar, A., Sulman, B. N., and Dukes, J. S. Micro-bial dormancy promotes microbial biomass and respi-ration across pulses of drying-wetting stress. Soil Bi-ology and Biochemistry , 116:237–244, 2018. ISSN 0038-0717. doi: https://doi.org/10.1016/j.soilbio.2017.10. 017. URL https://www.sciencedirect.com/ science/article/pii/S0038071717306120 .Schimel, J. Modeling ecosystem-scale carbon dynamics in soil: The microbial dimension. Soil Biology and Biochemistry , 178:108948, 2023. ISSN 0038-0717. doi: https://doi.org/10.1016/j.soilbio.2023.108948. URL https://www.sciencedirect.com/ science/article/pii/S003807172300010X .Schmidt, L., Heße, F., Attinger, S., and Kumar, R. Challenges in Applying Machine Learning Mod-els for Hydrological Inference: A Case Study for Flooding Events Across Germany. Water Resources Research , 56(5):e2019WR025924, 2020. ISSN 1944-7973. doi: 10.1029/2019WR025924. URL 
+
+https://onlinelibrary.wiley.com/doi/ abs/10.1029/2019WR025924 .Semenov, M. V. Metabarcoding and Metagenomics in Soil Ecology Research: Achievements, Challenges, and Prospects. Biology Bulletin Reviews , 11(1):40– 53, January 2021. ISSN 2079-0872. doi: 10.1134/ S2079086421010084. URL https://doi.org/10. 1134/S2079086421010084 .Stolpovsky, K., Martinez-Lavanchy, P., Heipieper, H. J., Van Cappellen, P., and Thullner, M. Incorporating dor-mancy in dynamic microbial community models. Eco-logical Modelling , 222(17):3092–3102, September 2011. ISSN 0304-3800. doi: 10.1016/j.ecolmodel.2011.07. 006. URL https://www.sciencedirect.com/ science/article/pii/S0304380011003760 .Stolpovsky, K., Fetzer, I., Van Cappellen, P., and Thull-ner, M. Influence of dormancy on microbial com-petition under intermittent substrate supply: insights from model simulations. FEMS Microbiology Ecol-ogy , 92(6):fiw071, 04 2016. ISSN 0168-6496. doi: 10.1093/femsec/fiw071. URL https://doi.org/ 10.1093/femsec/fiw071 .Sırcan, A. K., Streck, T., Schnepf, A., Giraud, M., Lattacher, A., Kandeler, E., Poll, C., and Pagel, H. Trait-based modeling of microbial interactions and carbon turnover in the rhizosphere. Soil Biology and Biochemistry , 202:109698, 2025. ISSN 0038-0717. doi: https://doi.org/10.1016/j.soilbio.2024.109698. URL https://www.sciencedirect.com/ science/article/pii/S0038071724003900 .Tsai, W.-P., Feng, D., Pan, M., Beck, H., Lawson, K., Yang, Y., Liu, J., and Shen, C. From calibration to parameter learning: Harnessing the scaling effects of big data in geoscientific modeling. Nature Communications , 12(1): 5988, October 2021. ISSN 2041-1723. doi: 10.1038/ s41467-021-26107-z. URL https://www.nature. com/articles/s41467-021-26107-z . Pub-lisher: Nature Publishing Group. Wieder, W. R., Grandy, A. S., Kallenbach, C. M., Taylor, P. G., and Bonan, G. B. Representing life in the earth system with soil microbial func-tional traits in the mimics model. Geoscientific Model Development , 8(6):1789–1808, 2015. doi: 10.5194/gmd-8-1789-2015. URL https://gmd. copernicus.org/articles/8/1789/2015/ .Xu, X., Wang, X., Zhou, P., Zhu, Z., Wei, L., Wang, S., Rathinapriya, P., Bei, Q., Feng, J., Fang, F., Chen, J., and Ge, T. Coupling of microbial-explicit model and machine learning improves the prediction and turnover process simulation of soil organic carbon. Climate Smart Agriculture , 1(1):100001, 2024. ISSN 2950-4090. doi: https://doi.org/10.1016/j.csag.2024.100001. URL https://www.sciencedirect.com/ science/article/pii/S2950409024000017 .12 Constrained hybrid modelling to predict microbial dynamics and organic matter turnover in soil systems 
+
+## A. Process-based model equations 
+
+Table A.1. Equations of the soil PBM. 
+
+Equation Description 
+
+δB a
+
+δt = μmax Ba
+
+KlClL
+
+μmax + KlClL
+
+− rd + ra − 1
+
+Ym
+
+ ra,B m − ra,M m
+
+ Active Bacteria 
+
+δB i
+
+δt = rd − ra − 1
+
+Ym
+
+ rd,B m − rd,M m
+
+ Inactive bacteria 
+
+δC H
+
+δt = IH + fM
+
+−→
+
+1 · (−→rB − −→rm) − vmax Ba
+
+ CH
+
+KH + CH
+
+
+
+High molecular weight organic car-bon 
+
+δC lL
+
+δt = IL + (1 − fM )−→
+
+1 · (−→rB − −→rm) + vmax Ba
+
+ CH
+
+KH + CH
+
+
+
+− 1
+
+Y μmax Ba
+
+KlClL
+
+μmax + KlClL
+
+−−→
+
+1 · −→
+
+rMm − kaClL(Csmax − CsL) + kdCsL
+
+Low molecular weight organic car-bon 
+
+δC sL
+
+δt = kaClL(Csmax − CsL) − kdCsL Sorbed low molecular weight organic carbon 
+
+δCO 2
+
+δt = 1 − YY μmax 
+
+KlClL
+
+μmax + KlClL
+
++ 1 − Ym
+
+Ym
+
+−→
+
+1 ·
+
+−→
+
+rBm − −→
+
+rMm
+
+
+
++ −→
+
+1 · −→
+
+rMm CO 2
+
+Fluxes and functions: 
+
+rd and ra are defined as: 
+
+rd =
+
+1 − 1
+
+e 
+
+> 
+
+Str − ClL
+
+τ S tr 
+
+> 
+
++ 1 
+
+ dB a ra = 1
+
+e 
+
+> 
+
+Str − ClL
+
+τ S tr 
+
+> 
+
++ 1 
+
+rB i (A1) Maintenance fluxes are defined as: 
+
+ra,B m = mmax Ba ra,M m =
+
+ mmax ClLkl
+
+mmax + ClLkl
+
+
+
+Ba (A2) 
+
+ri,B m = mmax Biζ ri,M m =
+
+ mmax ClLkl
+
+mmax + ClLkl
+
+
+
+Biζ (A3) 
+
+−→
+
+rMm =
+
+ra,M m
+
+rd,M m
+
+ −→
+
+rBm =
+
+ra,B m
+
+rd,B m
+
+
+
+(A4) Model biokinetic parameter θbio are defined in Table A.2: 13 Constrained hybrid modelling to predict microbial dynamics and organic matter turnover in soil systems  
+
+> Table A.2. Biokinetic parameters of the process-based model. Ranges are obtained from literature.
+
+Parameter Interpretation Units range Source 
+
+μmax Maximum growth rate d−1 [0 .01 , 100] (Pagel et al., 2020) 
+
+r Reactivation rate d−1 [0 .01 , 100] (Stolpovsky et al., 2011; Pagel et al., 2020) 
+
+d Deactivation rate d−1 [0 .01 , 100] (Stolpovsky et al., 2011; Pagel et al., 2020) 
+
+Y Growth yield 1 [0 .20 , 0.995] (Pagel et al., 2020; Manzoni et al., 2012) 
+
+Kl
+
+Substrate affinity for low molecular weight carbon g.mg −1.d −1 [1 , 500] (Pagel et al., 2016) 
+
+KH
+
+Substrate affinity for high molecular weight carbon g.mg −1 [10 e−6, 10] (Pagel et al., 2016) 
+
+vmax 
+
+Maximum depolymerista-tion rate d−1 [1 e−5, 1] (Sırcan et al., 2025) 
+
+Str 
+
+Threshold concentration for inactivation mg.g −1 [1 e−7, 0.3] (Stolpovsky et al., 2016; Sırcan et al., 2025) 
+
+τ Shape parameter for inac-tivation 1 [1 e−4, 1] full range 
+
+fm
+
+Distribution factor for bacterial necromass 1 [0 .2, 0.9] full range 
+
+Ym Maintenance yield 1 [0 .25 , 0.995] (Pagel et al., 2020; Manzoni et al., 2012) 
+
+mmax 
+
+Maximum maintenance rate d−1 [1 e−4, 1] (Pagel et al., 2016) 
+
+ζ Reduction factor for dor-mant bacteria 1 [1 e−4, 1] full range PBM state variables are defined in Table A.3:                
+
+> Table A.3. Each state variable is a time series of length t.Btot =Ba+Biand Ctot =CH+ClL+CsL.
+
+State variable Interpretation Unit 
+
+Ba Active bacterial pool mg.g −1
+
+Bi Inactive bacterial pool mg.g −1
+
+CH High molecular weight carbon mg.g −1
+
+ClL Low molecular weight carbon mg.g −1
+
+CsL Sorbed phase low molecular weight carbon mg.g −1
+
+CO 2 Carbon dioxyde mg.g −1
+
+Initial values for the system are kept the same across samples. Initial bacterial biomass is set to 0.25 mg. As bacteria in bulk soil are dormant under stable conditions, the vast majority of the initial biomass is dormant. Bini a = 0 .0000125 ,
+
+Bini i = 0 .2499875 , Cl,ini L = 1 , Cini H = 10 , Cs,ini L = 0 , CO ini  
+
+> 2
+
+= 0 . Soil physical parameter are set to: ka = 0 .1, k d =0.01 , C max s = 0 .5 (Kothawala et al., 2009). 
+
+## B. Hyperparameter robustness 
+
+We evaluate the robustness of our proposed approach with different network dimensions, batch sizes, and learning rates and plot M SE Hidden and constraints sum in Fig. B.1. We tested the network depth from 3 to 16 hidden layers and the hidden dimension from 20 to 90. HySoMi keeps consistent behavior across network depth and hidden layer dimensionalities. Furthermore, we test the effect of the batch size for all baselines with values 32, 64, 128, 256, and 512, finding that the behaviour of the different models stays consistent over the different batch size values. We set the default to 256. Finally, we tested the learning rate from 0.001 to 0.03 and did not find a significant effect for the different hybrid models, with HySoMi 
+
+keeping a consistent M SE Hidden over learning rates. 14 Constrained hybrid modelling to predict microbial dynamics and organic matter turnover in soil systems 2.5 5.0 7.5 10.0 12.5 15.0 
+
+0.05 
+
+0.10 
+
+MSE Hidden 
+
+2.5 5.0 7.5 10.0 12.5 15.0 
+
+NN depth 
+
+0
+
+1
+
+Constraints sum   
+
+> HySoMi Unconstrained All states
+
+20 40 60 80 
+
+0.025 
+
+0.050 
+
+0.075 
+
+MSE Hidden 
+
+20 40 60 80 
+
+NN Hidden dimention 
+
+0.5 
+
+1.0 
+
+Constraints sum   
+
+> HySoMi Unconstrained All states
+
+100 200 300 400 500 
+
+0.025 
+
+0.050 
+
+MSE Hidden 
+
+100 200 300 400 500 
+
+batch size 
+
+0.5 
+
+1.0 
+
+Constraints sum   
+
+> HySoMi Unconstrained All states
+
+0.000 0.005 0.010 0.015 0.020 0.025 0.030 
+
+0.025 
+
+0.050 
+
+0.075 
+
+MSE Hidden 
+
+0.000 0.005 0.010 0.015 0.020 0.025 0.030 
+
+Learning rate 
+
+0.5 
+
+1.0 
+
+Constraints sum   
+
+> HySoMi Unconstrained All states
+
+Figure B.1. Hyperparameter sensitivity analysis. We show the effect of different settings for network depth, hidden layer dimension, batch size, and learning rate for a single run. 
+
+## C. Performance over time 
+
+In Fig. C.1, we show how the performance of the different models evolves over the simulation time. Also here, HySoMi 
+
+outperforms the unconstrained baseline and behaves similarly to the reference model. 0 1 2 3 4 5 6 7
+
+> time (days)
+> 0.00
+> 0.02
+> 0.04
+> 0.06
+> 0.08
+> 0.10
+> MSE  mg . g 1
+> HySoMi
+> Unconstrained
+> All states
+
+Figure C.1. Mean error of the models on the test dataset as a function of the simulation time. The total MSE for each time step is summed for the 6 different state variables, with the standard deviation represented as a shaded area. HySoMi shows an MSE evolution over time similar to the All state reference. 
+
+15 Constrained hybrid modelling to predict microbial dynamics and organic matter turnover in soil systems 
+
+## D. Performance on OOD datasets 
+
+D.1. Robustness to uncertainty in genomic traits 
+
+In order to assess the effect of noise on the model, we add Gaussian noise of increasing variance centered around the original input data value to represent uncertainty of the genomic trait values. We show the mean results for HySoMi at σ=3, 6, 10, and 25 (recall the data is in the range [5, 200]) in Tab. D.1. The model shows slight degradation for increasing noise levels, but the results are stable across measured noise levels.   
+
+> Table D.1. Robustness of HySoMi to noisy inputs. Performance degrades only slightly and remains robust for noisy inputs.
+
+σ MSE M SE Hidden L1 θdata P BM Constraints sum 3 0.0353 ± 0.0006 0.0212 ± 0.0018 0.233 ± 0.005 0.280 ± 0.13 
+
+6 0.0357 ± 0.0008 0.0212 ± 0.0018 0.233 ± 0.005 0.287 ± 0.13 
+
+10 0.0362 ± 0.0013 0.0216 ± 0.0018 0.233 ± 0.005 0.293 ± 0.13 
+
+25 0.0375 ± 0.0337 0.0225 ± 0.0017 0.233 ± 0.005 0.318 ± 0.11 
+
+D.2. Generator-predictor mismatch 
+
+We test whether HySoMi is also successful when the network used for data generation has a different structure than the one used for prediction. We generated a synthetic dataset using a modified network architecture with 5 hidden layers, a hidden dimension of 42, and tanh activation functions. We show results over a single run in Tab. D.2, where all models achieve slightly worse performance compared to our main results. Still, HySoMi fits the observed data well ( M SE = 0 .0489 ), and greatly reduces the loss on unobserved state variables ( M SE Hidden = 0 .0334 ) compared to an unconstrained hybrid model trained on the same dataset ( M SE Hidden = 0 .0693 ). This shows that our approach also works well when the process of generating data uses a very different architecture.   
+
+> Table D.2. Performance with a mismatch in generator and predictor architecture. HySoMi is still able to output accurate and realistic predictions.
+
+Model M SE M SE Hidden L1 to θdata P BM Constraints sum 
+
+HySoMi 0.0489 ± 0.0091 0.0334 ± 0.0150 0.2412 ± 0.0042 0.3483 ± 0.3245 
+
+Unconstrained 0.0450 ± 0.0016 0.0693 ± 0.0094 0.3195 ± 0.0129 1.2160 ± 0.0480 
+
+All states 0.0263 ± 0.0015 0.0224 ± 0.0016 0.2484 ± 0.0071 0.5046 ± 0.0876 
+
+16

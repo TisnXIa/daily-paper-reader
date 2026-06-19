@@ -1,0 +1,23 @@
+---
+title: Global Environmental Genomics Reveals Vast Uncultivated Protist Diversity and Taxonomic Blind Spots
+title_zh: 全球环境基因组学揭示大量未培养的原生生物多样性与分类盲区
+authors: "Gutierrez, M. F. R., Krinos, A. I., Alcala, X. M., Burns, J. A., Stepanauskas, R., Woyke, T., Schulz, F."
+date: 2026-06-12
+pdf: "https://www.biorxiv.org/content/10.1101/2025.03.26.645542v4.full.pdf"
+tags: ["query:microbiome"]
+score: 6.0
+evidence: 使用18S rRNA扩增子测序，与16S rRNA扩增子分析类似
+tldr: "传统分子方法受限于引物偏好和培养困难，难以全面揭示原生生物多样性。本研究通过分析全球3万多宏基因组和单细胞基因组，结合长片段18S rRNA扩增子数据，恢复了超15万条序列，聚类发现81%的85%相似度非单例簇仅由环境序列组成，揭示了大量未培养和未分类的原生生物。构建的新分类框架显示多个类群在公共数据库中代表性严重不足，识别出13个高等分类级别的新颖谱系，并预测了与原核生物的潜在关系。该工作显著提升了原生生物多样性与分布认知，为后续生态研究奠定基础。"
+source: biorxiv
+selection_source: fresh_fetch
+motivation: 传统方法对原生生物多样性评估存在严重偏差，大量不可培养类群被忽视，亟需无培养依赖的全局视角。
+method: 分析全球3万多宏基因组和单细胞基因组，以及21个长片段18S rRNA扩增子数据，构建基于18S和28S rRNA的分类框架。
+result: "恢复15.8万条18S rRNA序列，81%的85% OTU为环境独有；发现Amoebozoa等类群数据库盲点，识别13个新高级分类谱系。"
+conclusion: 揭示了原生生物多样性与分布的全新图景，为理解其生态功能和进化提供了关键资源与参考框架。
+---
+
+## 摘要
+原生生物（定义为区别于动物、植物和真菌的真核生物）是一个多系类群，在真核生物生命树中占据主导地位，展现出显著的系统发育多样性并承担关键生态角色。历史上，研究优先关注与动物和植物相关的原生生物，尤其是那些具有医学意义的类群，从而忽略了大部分原生生物多样性。传统的分子方法（如18S rRNA基因扩增子测序）常面临限制，包括引物结合偏好和由基因长度变异引起的PCR偏好，导致对原生生物多样性的偏颇表征。此外，大多数原生生物谱系以难以培养而著称。在此，我们采用一种免培养方法，分析了来自全球各种生态系统（包括海洋、淡水和土壤环境）的超过30,000个组装的宏基因组和原生生物单细胞基因组，以及21个长片段18S rRNA基因扩增子数据集。我们恢复了157,956条18S rRNA基因序列（≥800 bp），在97%序列同源性下聚类为103,338个操作分类单元（OTU），在85%同源性下聚类为24,438个OTU。值得注意的是，在85%同源性下分类为原生生物的9,543个非单一簇中，81%完全由环境序列组成，揭示了大量新颖的、未培养的和未分类的原生生物多样性。基于串联的18S和28S rRNA基因的真核生物综合分类框架（涵盖了大多数新谱系）显示，参考数据库中变形虫门、双滴虫门和有孔虫门的代表性严重不足，许多缺乏分离株或基因组序列代表性。此外，我们鉴定出13个在较高分类等级（如纲和门水平）上具有新颖性的真核生物谱系，这些谱系在公共数据库中缺乏代表性。相应的85% OTU主要归属于古虫界，其中一些在真核生物树中分支很深。对全球原生生物分布的全面分析揭示了超群和生态系统间微生物多样性的不均匀分布，特别是在土壤和海洋环境中具有显著的新颖性。随后，我们检查了原生生物与原核生物之间的共现关系，预测了假定的共生或捕食-被捕食关系，特别是在研究不足的原生生物类群与细菌（如疣微菌门和立克次体目）之间。我们的结果显著增进了对原生生物多样性和分布的理解，揭示了分类盲区，并为未来研究这些生物的生态角色奠定了基础。
+
+## Abstract
+Protists, defined as eukaryotes distinct from animals, plants, and fungi, are a polyphyletic group that dominates the eukaryotic tree of life, exhibiting significant phylogenetic diversity and fulfilling critical ecological roles. Historically, research has prioritized protists associated with animals and plants, particularly those of medical significance, thereby overlooking the majority of protist diversity. Conventional molecular methods, such as 18S rRNA gene amplicon sequencing, frequently encounter limitations, including primer binding bias and PCR bias caused by gene length variations, resulting in a biased representation of protistan diversity. Further, most protist lineages are notoriously difficult to cultivate. Here, we apply a cultivation-independent approach in which we analyzed over 30,000 assembled metagenomes and protist single cell genomes and 21 long 18S rRNA gene amplicon data sets from various global ecosystems, including marine, freshwater, and soil environments. We recovered 157,956 18S rRNA gene sequences ([&ge;]800 bp), which clustered into 103,338 operational taxonomic units (OTUs) at 97% sequence identity and 24,438 OTUs at 85% identity. Notably, 81% of 9,543 non-singleton clusters at 85% identity classified as protists consisted exclusively of environmental sequences, uncovering a wealth of novel, uncultivated, and unclassified protist diversity. A comprehensive taxonomic framework of eukaryotes based on concatenated 18S and 28S rRNA genes that incorporated most novel lineages revealed substantial underrepresentation of Amoebozoa, Discoba, and Rhizaria in reference databases, with many lacking isolate or genome sequence representation. Further, we identified 13 eukaryotic lineages with novelty on higher taxonomic ranks, such as class and phylum-level, that lack representation in public databases. The corresponding 85% OTUs were primarily affiliated with Excavata, with some branching deeply in the eukaryotic tree. Comprehensive analysis of the global distribution of protists revealed uneven microbial diversity across supergroups and ecosystems, with notable novelty particularly in soil and marine environments. We then examined co-occurrence between protists and prokaryotes, predicting putative symbiotic or predator-prey relationships, particularly among understudied protist groups with bacteria such as Verrucomicrobia and Rickettsiales. Our results substantially enhance the understanding of protistan diversity and distribution, revealing taxonomic blind spots and laying groundwork for future studies of these organisms ecological roles.
