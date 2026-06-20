@@ -6,43 +6,38 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-19
-- 运行时间：2026-06-19 21:43:43 UTC
+- 最新运行日期：2026-06-20
+- 运行时间：2026-06-20 21:33:19 UTC
 - 运行状态：成功
-- 本次总论文数：7
-- 精读区：2
+- 本次总论文数：5
+- 精读区：0
 - 速读区：5
 
 ### 今日简报（AI）
-1) 今日精读两篇高分论文，分别聚焦鸡肉腐败微生物组贝叶斯建模与热泉采样设备效率对比，速读覆盖土壤、海洋及共生微生物。  
-2) 最值得关注：肉类冷藏腐败存在共享预测标志物（贝叶斯模型），以及不同采样设备对热泉微生物多样性的测量效率差异显著。  
-3) 建议关注样本采集标准化与预测模型在食品/环境监测中的交叉应用。
-- 详情：[/202606/19/README](/202606/19/README)
+今日速读5篇论文，聚焦肠道菌群代谢流、环境微生物组与斑马鱼基因表达图谱，其中3篇重点推荐。
+最值得关注：一篇通过13C通量比分析揭示拟杆菌与大肠杆菌的代谢差异，另一篇利用环境微生物提取物纵向追踪肠道微生物组组装与维持。
+建议优先阅读肠道菌群代谢差异研究，有助于理解不同菌种在人体中的功能角色。
+- 详情：[/202606/20/README](/202606/20/README)
 
 ### 精读区论文标签
-1. [Bayesian modeling of longitudinal metatranscriptomes of broiler meat spoilage microbiomes shows shared predictive signature associated with spoilage at refrigerated temperatures](/202606/19/biorxiv-10-64898-2026-06-11-731636-v1-bayesian-modeling-of-longitudinal-metatranscriptomes-of-broiler-meat-spoilage-microbiomes-shows-shared-predictive-signature-associated-with-spoilage-at-refrigerated-temperatures)  
-   标签：评分：8.0/10、query:microbiome
-   evidence：用于腐败微生物组纵向宏转录组数据的贝叶斯建模方法
-2. [Differential efficiency of sampling devices in the measurement of microbial diversity of Yellowstone National Park hot springs](/202606/19/biorxiv-10-64898-2026-06-15-732322-v1-differential-efficiency-of-sampling-devices-in-the-measurement-of-microbial-diversity-of-yellowstone-national-park-hot-springs)  
-   标签：评分：8.0/10、query:microbiome
-   evidence：评估采样设备和测序平台对宏基因组分析的影响
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [Constrained hybrid modelling to predict microbial dynamics and organic matter turnover in soil systems](/202606/19/2606.20329v1-constrained-hybrid-modelling-to-predict-microbial-dynamics-and-organic-matter-turnover-in-soil-systems)  
+1. [13C flux ratio analysis with FRAPPPE reveals differences in metabolic fluxes between gut Bacteroidota and Escherichia coli](/202606/20/biorxiv-10-64898-2026-05-29-728648-v2-13c-flux-ratio-analysis-with-frapppe-reveals-differences-in-metabolic-fluxes-between-gut-bacteroidota-and-escherichia-coli)  
    标签：评分：7.0/10、query:microbiome
-   evidence：利用宏基因组数据构建混合模型预测微生物动态
-2. [The ultrasmall ocean microbiome: a reservoir of microbial diversity and nitrogen fixation.](/202606/19/biorxiv-10-64898-2026-06-16-732551-v1-the-ultrasmall-ocean-microbiome-a-reservoir-of-microbial-diversity-and-nitrogen-fixation)  
+   evidence：基于机器学习的肠道细菌通量比预测工具FRAPPPE
+2. [Environmental microbial extracts for longitudinal studies of gut microbiome assembly and maintenance](/202606/20/biorxiv-10-64898-2026-06-12-732002-v1-environmental-microbial-extracts-for-longitudinal-studies-of-gut-microbiome-assembly-and-maintenance)  
    标签：评分：7.0/10、query:microbiome
-   evidence：利用宏基因组组装基因组分析超微型海洋微生物组
-3. [Multidomain triple target capture for navigating complex symbioses](/202606/19/biorxiv-10-64898-2026-06-18-733235-v1-multidomain-triple-target-capture-for-navigating-complex-symbioses)  
+   evidence：用于纵向研究的微生物组工具
+3. [RNAquarium: an archive-scale atlas of zebrafish gene expression coupled with pan-taxonomic profiling reveals diverse viral drivers of transcriptomic states](/202606/20/biorxiv-10-64898-2026-06-17-732950-v1-rnaquarium-an-archive-scale-atlas-of-zebrafish-gene-expression-coupled-with-pan-taxonomic-profiling-reveals-diverse-viral-drivers-of-transcriptomic-states)  
    标签：评分：7.0/10、query:microbiome
-   evidence：用于宏基因组靶向富集共生基因的捕获方法
-4. [Global Environmental Genomics Reveals Vast Uncultivated Protist Diversity and Taxonomic Blind Spots](/202606/19/biorxiv-10-1101-2025-03-26-645542-v4-global-environmental-genomics-reveals-vast-uncultivated-protist-diversity-and-taxonomic-blind-spots)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：使用18S rRNA扩增子测序，与16S rRNA扩增子分析类似
-5. [Soil Resistomes in a Tropical Watershed are Indirectly Structured by Bacterial Community Interactions with Soil Properties](/202606/19/biorxiv-10-64898-2026-06-18-733189-v1-soil-resistomes-in-a-tropical-watershed-are-indirectly-structured-by-bacterial-community-interactions-with-soil-properties)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：宏基因组和16S测序分析土壤抗性组
+   evidence：宏转录组分析框架，同时处理宿主和微生物数据
+4. [Coupled effects of salinity and host phylogeny on niche breadth and viral evolution from seawater to salt saturation](/202606/20/biorxiv-10-64898-2026-06-18-733169-v1-coupled-effects-of-salinity-and-host-phylogeny-on-niche-breadth-and-viral-evolution-from-seawater-to-salt-saturation)  
+   标签：评分：7.0/10、query:microbiome
+   evidence：沿盐度梯度分析宏基因组和病毒组
+5. [A framework for Polinton-like virus diversity across aquatic microbiomes reveals links to multiple viral classes and Nucleocytoviricota](/202606/20/biorxiv-10-64898-2026-06-19-733378-v1-a-framework-for-polinton-like-virus-diversity-across-aquatic-microbiomes-reveals-links-to-multiple-viral-classes-and-nucleocytoviricota)  
+   标签：评分：7.0/10、query:microbiome
+   evidence：利用宏基因组数据集分析病毒多样性
 
 
 <div class="dpr-home-promo-card">
