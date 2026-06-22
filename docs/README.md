@@ -6,34 +6,34 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-21
-- 运行时间：2026-06-21 21:18:39 UTC
+- 最新运行日期：2026-06-22
+- 运行时间：2026-06-22 21:48:36 UTC
 - 运行状态：成功
-- 本次总论文数：3
-- 精读区：0
-- 速读区：3
+- 本次总论文数：4
+- 精读区：2
+- 速读区：2
 
 ### 今日简报（AI）
-今日速读3篇论文，重点关注了杂食性害虫的微生物组与深海冷泉病毒的生物技术潜力。
-
-《多食性害虫的核心细菌与宿主果实特异性酵母微生物群》揭示了宿主-微生物互作机制，值得细读；《全球深海冷泉病毒图谱》也显示了基因组新奇性。
-
-建议优先阅读第一篇，深入理解害虫与微生物的协同进化关系，第二篇可扩展对极端环境微生物资源的认知。
-- 详情：[/202606/21/README](/202606/21/README)
+今日精选4篇论文，精读2篇高分项聚焦原核生物编码序列预测与参考基因组选择工具。  
+最值得关注：DeepCDS实现原核短读的从头编码区预测，ReSeT提供分类学感知的参考基因组筛选方案。  
+建议优先精读上述两篇，速读了解纳米孔测序错误机制与高血压肠道菌群多组学分析。
+- 详情：[/202606/22/README](/202606/22/README)
 
 ### 精读区论文标签
-- 本次无精读推荐。
+1. [DeepCDS: Ab initio coding sequence prediction in prokaryotic short reads](/202606/22/biorxiv-10-64898-2026-06-17-732633-v1-deepcds-ab-initio-coding-sequence-prediction-in-prokaryotic-short-reads)  
+   标签：评分：9.0/10、query:microbiome
+   evidence：用于宏基因组短读的深度学习编码序列预测器
+2. [ReSeT: a taxonomy-aware reference genome selection tool](/202606/22/biorxiv-10-64898-2026-06-17-732946-v1-reset-a-taxonomy-aware-reference-genome-selection-tool)  
+   标签：评分：9.0/10、query:microbiome
+   evidence：用于微生物群落谱系分析的分类感知参考基因组选择
 
 ### 速读区论文标签
-1. [Core Bacterial and Host Fruit-Specific Yeast Microbiota in a Polyphagous Fly Pest](/202606/21/biorxiv-10-64898-2026-04-24-720762-v2-core-bacterial-and-host-fruit-specific-yeast-microbiota-in-a-polyphagous-fly-pest)  
+1. [Cross-platform nanopore benchmarking reveals methylation-associated substitution errors in bacterial reads](/202606/22/biorxiv-10-64898-2026-01-14-699587-v2-cross-platform-nanopore-benchmarking-reveals-methylation-associated-substitution-errors-in-bacterial-reads)  
    标签：评分：7.0/10、query:microbiome
-   evidence：16S rRNA扩增子测序分析昆虫微生物组
-2. [A global atlas of deep-sea cold seep viruses uncovers extensive genomic novelty and biotechnological potential](/202606/21/biorxiv-10-64898-2025-12-10-692286-v2-a-global-atlas-of-deep-sea-cold-seep-viruses-uncovers-extensive-genomic-novelty-and-biotechnological-potential)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：深海病毒宏基因组分析方法
-3. [Beyond phylogeny: Genome-wide DNA sequence patterns suggest DNA physical properties associated with thermal adaptation in extremophile microbes](/202606/21/biorxiv-10-64898-2026-06-16-732181-v1-beyond-phylogeny-genome-wide-dna-sequence-patterns-suggest-dna-physical-properties-associated-with-thermal-adaptation-in-extremophile-microbes)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：结构主题模型用于从微生物基因组序列中发现功能基序
+   evidence：纳米孔测序平台细菌读段基准测试，与宏基因组数据处理相关
+2. [Integrative Multi-Omics Analysis of Gut Microbiota Dysbiosis and Host-Microbiome Interaction Mechanisms in Hypertension](/202606/22/biorxiv-10-64898-2026-06-18-733290-v1-integrative-multi-omics-analysis-of-gut-microbiota-dysbiosis-and-host-microbiome-interaction-mechanisms-in-hypertension)  
+   标签：评分：7.0/10、query:microbiome
+   evidence：在肠道微生物组高血压研究中应用差异丰度检验和共现网络分析
 
 
 <div class="dpr-home-promo-card">
