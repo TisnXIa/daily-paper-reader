@@ -1,0 +1,436 @@
+Title: PanRes: A database of latent and acquired antimicrobial resistance allowing 3D-based protein homology search
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.06.22.733705v1.full.pdf
+
+Number of Pages: 25
+
+Markdown Content:
+PanRes: A database of latent and acquired antimicrobial resistance allowing 3D-based protein homology search 
+
+Martina Vojtková 1, Martynas Baltušis 1, Hannah-Marie Martiny 1, Amulya Baral 2, Nikiforos Pyrounakis 1, Attila Beleon 1, Rebecca Freitag 1, Anna Pico-Tomàs 3, Rolf Sommer Kaas 1, Thomas N. Petersen 1, Patrick Munk 1*
+
+*Corresponding author  pmun@food.dtu.dk 
+
+1Research Group for Genomic Epidemiology, Technical University of Denmark, 2800 Kgs. Lyngby, Denmark 
+
+2 Department of Production Animal Clinical Sciences, Faculty of Veterinary Medicine, Norwegian University of Life Sciences, Norway 
+
+3Catalan Institute for Water Research (ICRA), 17003 Girona, Catalonia, Spain 
+
+.CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint Abstract 
+
+Antimicrobial resistance databases are central to genomic surveillance, but resistance determinants remain distributed across resources with different scopes, structures, and annotations. We developed PanRes, a curated resistance database of 11,717 genes integrating acquired and latent determinants of antibiotic, biocide, and metal resistance within a unified ontology. We predicted representative protein structures and clustered them by structural similarity, grouping proteins into 598 structurally conserved clusters coherent despite sequence divergence. Their structure-guided alignments were used to build Hidden Markov Models (HMMs) for remote homology search. In wastewater metagenomes from seven European cities, PanRes 3D-based HMMs expanded detection beyond high-confidence BLAST, with 35.2% of retained hits identified only by the HMMs and generally showing greater divergence from known proteins. For beta-lactamases, several proteins retained beta-lactamase-like folds and catalytic geometry despite weak sequence similarity. PanRes is available through an interactive web platform (https://panres.rambio.dk/), a structure-informed resource for exploring the whole resistome. 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+Figure 1: Graphical abstract highlighting the main steps carried out in the study. A. Curated resistance gene sequences were translated, clustered at the protein level, and represented by predicted protein structures. Structurally coherent clusters were then used to build alignments and HMM profiles for downstream AMR detection. B. Results were organised into a unified ontology and made accessible through the PanRes web service. C. The HMMs were applied to wastewater metagenomes to screen for resistance protein candidates, which were further prioritised by catalytic-residue conservation. Created with BioRender.com 
+
+# Introduction 
+
+Antimicrobial resistance (AMR) is a leading cause of global mortality, directly contributing to 1.27 million deaths each year 1. It has rapidly emerged as a major public health issue in both high-and low-income countries, driven by antibiotic overuse and highlighted by expanding surveillance programmes. Annual AMR-associated deaths are projected to reach 10 million by 2050 2. Effective surveillance of resistant pathogens therefore depends on the ability to accurately detect and interpret resistance determinants in sequencing data, which in turn requires up-to-date and well-structured AMR reference databases. 
+
+Several such resources have been developed, each with its own scope, structure, and criteria for including genes. These differences affect which resistance determinants are represented 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+and how AMR is detected in sequencing data. The Comprehensive Antibiotic Resistance Database 3 (CARD) offers a highly developed antibiotic resistance ontology (ARO) along with the Resistance Gene Identifier (RGI) tool, which performs AMR detection based on CARD’s reference sequences and Hidden Markov Models (HMMs). ResFinder 4 exclusively contains acquired and clinically relevant AMR genes, and its associated software can be utilized for AMR gene, mutation, and phenotype prediction from sequencing data. ResFinder is complemented by ResFinderFG 5, which contains AMR genes identified through functional cloning. MEGARes 6
+
+uses an acyclic annotation graph structure, which supports statistical analysis and efficient searching. Tools such as AMRFinderPlus 7 have access to the curated NCBI Reference Gene Database and HMMs to aid in AMR identification. More specialized databases have also been developed, such as BacMet 8, which focuses on biocide and metal resistance. 
+
+However, the use of multiple databases creates challenges, including overlap between entries, inconsistent annotations, and the need to search many resources for the same genes of interest. To reduce this redundancy, we previously integrated genes from several databases, including those described above, into a gene collection of 14,078 unique sequences 9. Although this collection reduced redundancy at the sequence level, it did not resolve all limitations of existing database-specific resources. Features such as a comprehensive ontology or trained HMMs remained unavailable for many AMR genes, although both are important for the detection and interpretation of resistance determinants. Ontologies standardise relationships between genes, mechanisms, antimicrobial classes, and phenotypes, while HMMs support sensitive detection of more distant homologs. 
+
+Since the release of AlphaFold 10 , its structure database has grown to contain over 214 million predicted protein structures as of 2024 11 . Tools such as ColabFold 12 and Foldseek 13 have made large-scale protein structure analysis increasingly feasible: ColabFold accelerates structure prediction through faster homology search, while Foldseek enables rapid structural searching and clustering. Together, such tools allow routine use of structural data for the identification of homologs. 
+
+Structurally homologous proteins can have large sequence variation due to structural importance and conservation of fold 14 . Because structure is more conserved than sequence, using 3D structures has been suggested as a more reliable option for protein similarity studies 14,15 . This has also been shown for AMR discovery: Ruppé et al. used comparative modelling to identify distant resistance determinants in the human gut microbiome, many with low amino acid identity to known resistance proteins 16 .
+
+The use of 3D structural data for HMM construction was explored as early as the mid-to-late 2000s through the encoding of protein backbones with a structural alphabet 17,18 . These approaches extended HMM methods originally developed for primary sequence data and enabled remote homology detection. More recently, a structural alphabet describing tertiary interactions has shown to be more accurate and information dense 13 , and has also been used to construct HMMs and look for deeper evolutionary relationships 19 .
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+Here we present PanRes, an antimicrobial resistance database with comprehensive ontology, predicted protein structures, and HMMs based on structural alignment (Figure 1). We demonstrate the use of the HMMs on large metagenomic datasets, highlighting how the resource can be applied to screen and discover putative distant AMR genes in complex 
+
+samples. PanRes is available through a web interface ( https://panres.rambio.dk/ ) that allows 
+
+users to browse, filter, visualize, and download database content while exploring interlinked data across the pan-resistome. 
+
+# Methods 
+
+# Curating the database 
+
+The new PanRes database was developed based on the gene collection distributed with ARGprofiler 9. It consisted of 14,078 unique DNA sequences from eight databases provided as a FASTA file and accompanying metadata table. 
+
+Protein-coding sequences were predicted and translated using Prodigal 20 . Because PanRes contains genes from diverse sources, including entries from metagenomic and functional cloning studies, Prodigal was run in both meta (anonymous) and single (normal) modes. 
+
+We refined the results from both modes by (i) excluding sequences with multiple translations, (ii) filtering out sequences without valid start or stop codons, (iii) removing sequences that produced proteins of unexpected length based on an expected nucleotide-to-amino-acid ratio of 3:1, and (iv) merging the remaining sequences from meta and single modes. Using the refined Prodigal output as reference, the original PanRes nucleotide sequences were filtered to retain only entries producing a single complete coding sequence. 
+
+# Sequence clustering 
+
+The nucleotide sequences were clustered with USEARCH 21 (v12.0 [b1d935b ]) using the 
+
+cluster_fast algorithm at 90% sequence identity and 90% coverage. 
+
+The protein sequences were clustered with CD-HIT 22 (v4.8.1) with the parameters set at 50% identity and 90% coverage (from here referred to as 1D clusters). Each cluster was represented by a single centroid sequence, the longest sequence in each cluster. 
+
+# Protein structure predictions 
+
+We predicted 3D protein structures for the centroid sequence of each 1D cluster using LocalColabFold (v1.5.5) 12 . Multiple sequence alignments (MSAs) were generated with 
+
+colabfold_search using environmental sequences and structural templates, and structure prediction was performed with colabfold_batch on NVIDIA Tesla V100 16GB GPUs. The 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+highest-ranking predicted structure for each protein was retained for downstream analyses. Database used and prediction parameters are described in Supplementary Methods. 
+
+# Structure-based clustering and pairwise structural comparison 
+
+The representative structures were clustered based on three-dimensional similarity using Foldseek easy-cluster 13 (release 10-941cd33), run in global alignment mode with TMalign and clustered on the alignment Template Modeling (TM) score, requiring a minimum alignment coverage of both the query and the target structures. 
+
+Several combinations of query/target coverage (75% - 90%) and alignment TM-score thresholds (0.6 - 0.7) were tested (Supplementary table 1). The TM-score threshold of 0.6 was selected as the lower bound, as indicative of shared overall protein fold and structural homology 23 . Based on cluster coherence, singleton-cluster frequency, and intra-cluster structural similarity, we selected 80% coverage and an alignment TM-score of 0.6 for downstream analyses. We further assessed cluster coherence by per-cluster Pfam-A 24 protein-family consistency (Supplementary Methods). 
+
+All-vs-all pairwise comparison was also performed using Foldseek's easy-search with exhaustive search enabled, mirroring the global TMalign clustering settings. Full Foldseek parameters are listed in Supplementary Methods. 
+
+# Clustering on primary and tertiary protein structure to inform Multiple Sequence Alignments 
+
+We combined information from both sequence-based (CD-HIT) and structure-based clustering (Foldseek) to generate broader MSAs for each protein family. First, an alignment was generated for each structural cluster using T-COFFEE 25 (v13.46). T-COFFEE was run in structure-aware alignment mode (Expresso 26 ) using the TMalign_pair method, which incorporates pairwise structural superpositions generated by TM-align to guide the sequence alignment. 
+
+Since the structural clusters were based only on the centroids of 1D clusters, the resulting MSAs were expanded back to include all proteins from the corresponding cluster. The sequences were added to the existing 3D alignments using MAFFT in add mode, ensuring the structure-guided MSA backbone remained unchanged. The final MSA for each protein family was then used to build Hidden Markov Models. 
+
+# PanRes Hidden Markov Models 
+
+HMM profiles were built from the combined protein MSAs using the hmmbuild function from HMMER 27 (v3.4) with default settings. HMMs of all individual clusters were then merged and the database was prepared with hmmpress .
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+We evaluated the performance of the PanRes HMMs by measuring how accurately each HMM recognized proteins belonging to the structural cluster from which it was built. The full PanRes protein set was searched against the HMM database using hmmscan , and predicted assignments were compared with the known structural-cluster membership. For each clustering parameter combination tested, we recorded proteins without an HMM hit as false negatives, proteins assigned to the wrong cluster as false positives, and recall as the proportion of proteins for which the correct HMM appeared as the top- or second-ranked hit (Supplementary table 2). 
+
+# An ontology for PanRes 
+
+To ensure consistent integration of information from the source databases, we developed the PanRes ontology to structure annotations for AMR genes and all their related information. Following the syntax and schematic conventions used in the ResFinder database 4, we harmonised the data structures and terminology in the other source databases. The ontology was built in Python (v3.11.2) using owlready2 28 (v0.44) and metadata translation was performed using pandas 29 (v1.5.3). 
+
+First, the PanRes 9 metadata table was parsed to extract gene identifiers and source database information. Genes removed during database curation were assigned to the DiscardedPanGene 
+
+class. These were then excluded from further annotation steps, however, remain part of the ontology to allow for comparison with past database versions. 
+
+To represent genes, proteins, structures, and their relationships, we defined core ontology classes for PanGene , PanProtein , PanStructure , and their corresponding cluster classes: 
+
+PanGeneCluster, PanProteinCluster , and PanStructureCluster (Supplementary table 3). Gene and protein cluster membership was extracted from the USEARCH and CD-HIT output files, respectively. Object properties such as member_of, translates_to, and folds_to were assigned to define relationships between ontology individuals (Supplementary table 4). Annotation properties were added from the available metadata, including original gene names, accessions, sequence length for individual genes and proteins, and member counts for clusters (Supplementary table 5). 
+
+# E. coli core gene homology identification 
+
+To identify resistance proteins that may represent housekeeping gene homologs, we compared all PanRes protein sequences against the E. coli soft-core genome published as part of an E. coli pangenome analysis based on 1,324 genomes 30 . The soft-core genome consisted of 3,058 conserved protein families (193,050 sequences) that were present in >95% analysed genomes. The soft-core and PanRes proteins were then compared using CD-HIT-2D (v4.8.1). Homology thresholds were set to 60% sequence identity, 60% alignment coverage, as these were the parameters identified as optimal by the study. The PanRes proteins that were identified as homologs, meaning clustered together with soft-core genes, were additionally annotated as 
+
+is_ecoli_homolog in the ontology. 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+# Screening for resistance with PanRes HMMs and BLASTp 
+
+To compare structure-based and sequence-based AMR detection, we applied HMMER searches using PanRes 3D-based profiles and BLASTp searches to proteins from seven previously published sewage metagenomic co-assemblies described in the Supplementary Methods. Coding regions were predicted with Prodigal 20 (v2.6.3), and only complete protein sequences were retained for downstream analysis. 
+
+The proteins were searched against the indexed PanRes HMM database without applying an e-value cutoff. The protein database used for BLAST search was built from PanRes protein sequences. Predicted proteins from the metagenome were searched against the database using BLASTp (v2.17.0+) with the following parameters: e-value threshold of 1, low-complexity filtering enabled, and maximum one high-scoring segment pair (HSP) per target. An e-value threshold of 1 was selected to retain weak sequence matches for comparison with HMM-based detections, while keeping the search computationally feasible. 
+
+# Comparison of HMM and BLASTp detection sensitivity 
+
+Hits with e-values below 1e−5 were classified as high-confidence, and a single best scoring match per query was retained for both methods. Sequences homologous to the E. coli soft core proteome (is_ecoli_homolog ) were extracted and matched to PanRes structural clusters. BLASTp hits matching these sequences and HMM hits matching structural clusters in which these homologs represented at least 50% of members were removed from downstream analyses. 
+
+We compared the results of both methods at the query level. First, we recorded whether each query protein was detected by both methods or by only one method. For HMMER, matches were assigned at the cluster level, while BLASTp targets were considered equivalent if they belonged to the same structural cluster. For queries detected by both methods, we compared the top matching targets assigned by HMMER and BLASTp. We divided the results into four categories: (i) Agreement, where both methods selected the same target; (ii) Weak disagreement, where the top targets differed but both methods still detected the other method’s top target; (iii) Strong disagreement, where only one method detected the other method’s top target; and (iv) Complete disagreement, where the top targets differed and neither method detected the other method’s top target. 
+
+To further compare method sensitivity, we used the permissive BLASTp results to place the HMM-detected proteins in sequence similarity space. For each protein, we plotted BLASTp percent identity against alignment length and compared the result with the Rost curve 31 , which estimates the sequence identity threshold for structural homology recognition. 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+# Catalytic residue mapping and scoring 
+
+Catalytic residues were mapped from the Mechanism and Catalytic Site Atlas 32 (M-CSA) to PanRes resistance proteins and their corresponding HMMs. Because M-CSA residue positions are defined in Protein Data Bank (PDB) coordinates, SIFTS 33 residue-level mappings were used to convert catalytic residue positions from PDB to UniProt/PanRes coordinates. We located the corresponding active site positions in the MSAs used for HMM construction and mapped to HMM model columns. Metagenomic hits were scored based on whether the expected catalytic residues were conserved at these columns. In addition to exact amino acid matches, we also calculated a more permissive chemistry-based score by allowing substitutions between residues with conserved functional groups: D↔E (acids), K↔R↔H (bases), N↔Q (amides), and S↔T↔Y (hydroxyl groups). 
+
+# Beta-lactamase candidate analysis 
+
+Using the PanRes ontology, we identified the beta-lactamase protein structural clusters. These were defined as clusters containing at least 80% of proteins with antibiotic resistance mechanisms annotated as Beta_lactam . The member proteins were classified to individual Ambler classes 34 using the Beta-Lactamase Database 35 (BLDB) to profile the structural clusters. Four large clusters were selected for active-site analysis: PANCL12631_struct (majority Ambler classes B1/B2), PANCL5265_struct (B3), PANCL9032_struct (A/C), and PANCL8238_struct (A/D). Putative beta-lactamase proteins with completely or chemically conserved catalytic sites were analysed further. 
+
+To identify plasmid-associated hits, contigs carrying high-confidence beta-lactamase sequences were screened with geNomad 36 (v1.12.0). Contigs with a plasmid score above 0.7 were annotated as plasmid-associated. Contigs not associated with any mobile genetic element were classified as chromosomal. MAG assignments were taken from the original study 37 . We retained contigs from metagenome-assembled genomes (MAGs) if they were at least 5 kbp in length, while discarding contigs from genome bins not satisfying medium-quality MAG criteria proposed by Bowers et al. 38 (MIMAG criteria). Unbinned contigs were only included if they exceeded 10 kbp and were plasmid-associated. 
+
+Protein sequences were grouped by HMM cluster, aligned against the corresponding HMM profiles, and used to infer phylogenetic trees with IQ-TREE 39 using ModelFinderPlus 40 . The phylogenies were visualized and annotated in iTOL 41 (Supplementary Methods). 
+
+We predicted 3D structures of selected candidates with ColabFold 12 (v1.6.1) using the same settings as for the PanRes database structures. Active-site visualizations were generated in PyMOL 42 (v3.1.6.1). 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+# Results 
+
+PanRes integrates curated latent and acquired resistance genes with protein sequences, predicted structures, structural clusters, HMM profiles, and ontology-based annotations. The database is accessible through a web interface where users can browse the ontology and 
+
+explore linked gene, protein, and structure information ( https://panres.rambio.dk/ ). 
+
+# PanRes curation and the structural resistome 
+
+We used the original PanRes component of the ARGprofiler pipeline 9 as the starting point for building our database. 2,361 sequences missing start or stop codon or containing additional flanking sequences were filtered out. These flanking regions were particularly common in entries derived from functional cloning studies. The curated set contained 11,717 gene sequences, each translated into a corresponding protein sequence. The vast majority (11,486) were identically predicted by both Prodigal’s modes, while 41 and 190 were unique to the single 
+
+and meta modes, respectively. 
+
+The proteins were clustered into high-homology groups (50% identity, 90% coverage) expected to share the same fold, yielding 1,802 distinct clusters, each with a representative centroid sequence. Predicted tertiary structures for these centroids added a structural layer to PanRes and enabled fold-based clustering of the protein families. 
+
+Across the tested coverage and alignment TM-score thresholds, 80% coverage and an alignment TM-score of 0.6 gave the best balance between cluster coherence and singleton frequency. These parameters produced 598 structural clusters of variable sizes (mean ~ 3, max = 189). 75.75% of all 3D clusters contained only a single structure representative (Supplementary table 1). 
+
+The resulting structural clusters were highly coherent. Across clusters, the mean intra-cluster alignment TM-score was 0.841 and the mean Local Distance Difference Test (LDDT) was 0.729 (Figure 2A). Even the least coherent cluster had a mean TM-score of 0.628, remaining above the clustering threshold. At the pairwise level, 99.95% of intra-cluster comparisons exceeded the 0.6 TM-score threshold (Figure 2B). In addition, the majority of clusters contained a single Pfam family. 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+Figure 2. Structural quality and database composition of structural clusters. A. 
+
+Distributions of mean intra-cluster alignment TM-score, mean LDDT, and Pfam consistency (the fraction of proteins per cluster sharing the dominant Pfam annotation) across clusters. Dashed coloured lines mark per-metric averages and the black dashed line the clustering threshold (alnTM = 0.6). B. Cumulative distribution of pairwise alnTM and LDDT values within clusters. Most pairwise scores exceed the 0.6 threshold, indicating that clusters remain structurally consistent at the individual pair level. C. Database composition. The database combinations represented within the structural clusters. D. Cluster size distribution by resistance origin: acquired (ResFinder-only), latent (functional-database-only), or mixed. The box shows the interquartile range (IQR) with the median marked by a horizontal line. Whiskers extend to the most extreme values within 1.5 × IQR, and outliers are shown as jittered points. 
+
+Structural clustering based on 3D similarity has the potential to extend protein families beyond conventional sequence-based groups. Foldseek clustering of the representative protein structures revealed that a large number of latent resistance clusters remained structurally distinct: 263 clusters contained exclusively sequences from Daruka et al. 43 (hereafter CsabaPal, the corresponding label in PanRes) and 13 clusters exclusively included ResFinderFG sequences, even after expanding the clusters to the full dataset (Figure 2C). This shows that many functionally identified resistance determinants do not share structural similarity with previously characterised AMR proteins. 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+At the same time, some clusters linked latent and acquired AMR genes. ResFinder genes co-occurred structurally with CsabaPal genes in 19 clusters and with ResFinderFG genes in 26 clusters, suggesting that some clinically known resistance genes are related to broader environmental AMR reservoirs. These links may help place acquired AMR genes in a wider evolutionary context and highlight latent genes that could become clinically relevant. Cluster sizes also differed by origin: latent-only clusters were mostly singletons or small groups (median = 1.0), showing how undersampled especially the latent resistome is. ResFinder-exclusive clusters were larger (median = 11.0), while mixed clusters were largest overall (median = 79.5) (Figure 2D). 
+
+Most structural clusters contained proteins associated with a single resistance type: antibiotic, biocide, or metal resistance. However, a smaller set of 37 clusters contained proteins annotated with more than one resistance type, dominated by broad-substrate efflux pumps (Supplementary figure 1). This highlights how PanRes can reveal shared resistance potential that is otherwise split across database annotation categories. 
+
+# The PanRes ontology 
+
+We developed a structured PanRes ontology (Figure 3) to organise sequence, structure, clustering, and resistance information in a searchable format. It includes genes, proteins, predicted structures, their clusters, and resistance terms such as mechanisms, drug classes, and phenotypes (Supplementary table 3). Defined relationships connect these entities across the resource (Supplementary table 4). Each entry also includes original gene names and accession numbers, so it can be traced back to its original source (Supplementary table 5). 
+
+To flag resistance genes that may instead represent E. coli housekeeping homologs, we compared the PanRes protein sequences to a soft-core genome dataset (proteins present in >95% of E. coli strains) and identified 239 homologs. These are annotated in the ontology with an is_ecoli_homolog property, enabling users to easily identify and exclude sequences that could bias read-based AMR detection. 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+Figure 3. Schematic representation of the PanRes ontology. A single gene (pan_1 )illustrates how information is defined through Classes (boxes) and Object/Annotation properties (arrows). The ontology connects original gene entries to the PanGene individual and links it to the corresponding resistance annotations (mechanisms, classes, and phenotypes). With the release of PanRes, genes are now also translated into proteins and predicted folds, and the information related to these individuals is likewise accessible in the ontology. 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+# Structure-based HMMs improve detection of remote homologs 
+
+To extend detection beyond conventional sequence similarity, we generated HMM profiles from the structurally coherent PanRes clusters and compared these 3D-based searches with BLASTp across seven sewage metagenomic co-assemblies, testing whether they could recover more distant homologs. We considered only high-confidence hits (e-value < 1e−5), ignored matches to E. coli core proteins, and counted each query once by its highest-scoring retained hit. 
+
+Across all seven samples, on average 54.4% of hits were shared between methods, while 35.2% were uniquely identified by HMMER. Complete disagreements between the methods were rare (<0.3%), showing that BLASTp and HMMER usually assigned proteins to the same family when both methods detected them (Supplementary figure 2). 
+
+The HMM-unique queries were generally more distant from known PanRes sequences than queries detected by both methods, as indicated by lower sequence identity over their BLAST alignments (Supplementary figure 3). Proteins below the Rost length-identity curve fall in the twilight zone of sequence similarity. HMM-unique proteins were strongly enriched in this region, while proteins detected by both HMMER and BLAST mostly fell above it. In the Copenhagen RA sample, for example, 63.3% of HMM-unique proteins fell below the curve (Figure 4A), compared with only 4.5% of proteins detected by both methods (Supplementary table 6). 
+
+To test whether HMM-unique proteins were entirely missed by BLAST or just fell below the high-confidence e-value threshold, we progressively relaxed the BLASTp threshold and examined whether these proteins could be recovered. Using the same top-hit filtering strategy as in the main comparison, some HMM-unique proteins were recovered only at more permissive thresholds, but on average over 41% remained unrecovered even at e-value ≤ 1. Allowing recovery by any non-homolog BLASTp hit reduced this fraction but did not remove it (Supplementary figure 4). Together, these analyses show that 3D-based HMMs expand the searchable homology space beyond BLAST and that many HMM-unique proteins have very weak or no detectable pairwise sequence similarity to PanRes entries. However, these additional hits should be interpreted as remote homologs or candidates, not confirmed resistance proteins. 
+
+# PanRes identifies functionally conserved putative beta-lactamases 
+
+Because the HMM search produced many candidate resistance proteins, we focused on beta-lactamases for detailed analysis. They formed some of the largest and best-described PanRes clusters, and their well-studied active sites let us test whether function was supported by conservation of the residues needed for beta-lactamase activity. 
+
+We annotated catalytic sites in four large beta-lactamase HMM clusters representing Ambler classes A-D, covering both serine beta-lactamases and metallo-beta-lactamases, which rely on 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+different catalytic mechanisms 44 . For each HMM hit, we assessed whether the catalytic positions were exactly conserved or substituted by physicochemically similar residues. This reduced the broad HMM output to 2,066 proteins with active-site patterns consistent with beta-lactamase function. 
+
+To illustrate the structural support behind these predictions, we selected representative candidates for closer inspection. The first example was a strict active-site match from the 
+
+PANCL12631_struct HMM in the Budapest sample. This protein had a significant HMM match (e-value = 4e−09), retained all catalytic residues, and was not recovered by BLASTp even with relaxed criteria (e-value ≤ 1). We aligned the predicted structure to the reference BcII beta-lactamase structure used for active-site scoring (PAN6055). The catalytic residues remained positioned around the zinc ions, preserving the metallo-beta-lactamase active-site architecture (Figure 4B). AlphaFold also independently matched this candidate to ametallo-beta-lactamase superfamily protein from Thermus thermophilus , further supporting a beta-lactamase-like fold (Supplementary figure 5A). 
+
+The second example was a chemically conserved active-site match from PANCL5265_struct in the Copenhagen RL sample. This candidate retained the full catalytic site of the reference L1-type metallo-beta-lactamase (PAN7175), although one catalytic residue differed at the sequence level. The catalytic tyrosine was replaced by threonine, a conservative substitution that preserves the hydroxyl-containing side chain involved in hydrogen bonding and electrostatic stabilization 45,46 . Structural alignment showed that this residue occupied a similar position in the catalytic pocket, while the surrounding zinc-coordinating residues remained conserved (Figure 4C). AlphaFold provided further support for a beta-lactamase-like fold by matching the candidate to a beta-lactamase domain protein from Burkholderia multivorans (Supplementary figure 5B). BLASTp detected the protein only weakly (e-value = 0.004), compared with a much stronger 3D-based match (e-value = 4.9e−15). 
+
+Together, these examples show how structure-derived HMMs can identify highly divergent beta-lactamase-like proteins, while active-site conservation helps prioritize the candidates most likely to retain resistance function. 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+Figure 4: A. Sequence identity versus alignment length distribution of proteins detected by HMMER and BLASTp in Copenhagen RA. The area under the Rost protein-identity curve (green tint) contains proteins in the “Twilight zone” of protein homology 31 . The plot is cropped to 0–500 aligned residues and 0–50% identity to highlight low-identity hits. B. 3D alignment of hit protein k127_37667511_19 (orange) to PANCL12631_struct reference structure of BcII (purple) obtained from the PDB database (1bc2). Despite differences in overall fold, the active site residues around the Zn atoms (grey spheres) stay preserved. C. 3D alignment of a chemically conserved hit k127_52446778_1 (blue) to the PANCL5265_struct reference structure (1sml) of metallo-beta-lactamase L1 type 3 (green). The active-site architecture is retained, including the Zn-coordinating residues, with a tyrosine-to-threonine substitution in place of a hydrogen donor. 
+
+We next placed the 316 best-supported candidates from medium- and high-quality MAGs (Supplementary table 7) or plasmid contigs, into the beta-lactamase phylogenies to compare them with known representatives and examine their taxonomic context. In the 
+
+PANCL12631_struct tree , these hits were distributed across the B1/B2 metallo-beta-lactamase cluster and formed several hit-rich clades (Figure 5). Within the largest cluster, 
+
+Burkholderiaceae was the most represented family among the retained hits, accounting for 50 candidates. This is notable because Burkholderia -related taxa are known for diverse secondary metabolism, including antimicrobial compounds, making them a plausible source of beta-lactamase-like diversity 47,48 . The plasmid-associated hits were distributed among 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+chromosomal hits in the tree, showing that related beta-lactamase-like proteins may occur in both contexts. 
+
+Several PANCL12631_struct hits were placed outside well-characterised clinical beta-lactamase groups and closer to latent or less characterised proteins. A similar phylogenetic spread was observed for the B3 metallo-beta-lactamase cluster (Supplementary figure 6), whereas the larger serine beta-lactamase clusters retained fewer hits after filtering (Supplementary figure 7–8). This likely reflects the difficulty of resolving highly diverse serine beta-lactamases from fragmented wastewater metagenomes. Because we only retained hits on long contigs in good quality bins, or on long plasmid-associated contigs, this conservative filtering may remove many partial or ambiguous candidates from highly diverse clusters. These results indicate that the retained candidates represent diverse beta-lactamase-like proteins with supporting active-site evidence, although experimental validation is needed to confirm resistance function. 
+
+Figure 5: Maximum-likelihood tree of the PANCL12631_struct cluster, containing Ambler class B1/B2 metallo-beta-lactamases. The tree includes both PanRes reference proteins and HMM-detected sewage proteins from the PANCL12631_struct cluster. The inner ring shows beta-lactamase family annotations; FUNCTIONAL marks unnamed beta-lactamases from 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+CsabaPal or ResFinderFG. The outer ring shows taxonomy at family level or PLASMID for plasmid-associated hits. Red circles indicate sewage hits, and blue shading marks hit-rich clades. 
+
+# Discussion 
+
+PanRes was built to connect acquired and latent resistance determinants across antibiotic, biocide, and metal resistance with ontology-based annotation, predicted protein structures, and 3D-based HMMs. 
+
+A recent WHO-authored review identified several major challenges for AMR databases: resources are fragmented and overlapping, annotations are difficult to compare, and no single resource covers the entire AMR diversity 49 . PanRes addresses these challenges by integrating acquired AMR genes, biocide and metal resistance genes, and latent determinants identified through functional metagenomics into a single non-redundant resource. Rather than replacing specialised databases, PanRes makes their content easier to use together by collapsing duplicate entries while keeping each gene traceable to its original name, accession, and source database. The shared ontology then links these across the resource. This makes it possible to ask questions that span the wider resistome rather than one database at a time. 
+
+The same review also stresses that AMR databases are limited by the diversity already known. Our results show this clearly for the latent resistome. Many functional-metagenomics genes had no close relatives among clinically recognised AMR genes, and latent-only clusters typically contained just a single sequence. This shows that much of the latent resistome remains poorly sampled, and that sequence-based searches are unlikely to capture its full diversity. Therefore, we designed the 3D-based HMMs to reach into this poorly sampled space. 
+
+Several AMR resources have already shown that HMMs can help improve detection of divergent resistance genes. BLAST-based searches work well for close homologs of known resistance genes, but lose sensitivity when proteins share only weak amino acid similarity with the available references. Resfams used curated protein-family HMMs to annotate translated metagenomic sequences and recovered resistance proteins missed by BLAST-based searches 18 . ARGs-OAP v2.0 later added SARGfam HMMs to improve detection of remote homologs in environmental metagenomes 50 , while Meta-MARC used hierarchical DNA-based HMMs built from MEGARes to classify AMR sequences directly from reads or assemblies 51 .PanRes follows the same principle, but differs in how the profiles are built. The HMMs are not defined only by sequence families, AMR gene subtypes, or gene nomenclature. They are built from MSAs guided by structurally coherent protein clusters, anchoring the search in conserved protein folds rather than sequence similarity alone. This structural layer allowed PanRes to recover distant candidates enriched in the twilight zone of protein homology, including proteins not recovered by BLASTp even at relaxed thresholds. 
+
+Current AMR databases also differ in how cautiously they represent genotype-to-phenotype evidence. Because gene presence alone does not always imply resistance 52 , PanRes includes 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+an is_ecoli_homolog annotation for 239 proteins, allowing users to exclude likely species markers from read-based analyses. 
+
+Finally, there are many usability barriers since many tools require bioinformatics expertise. The PanRes web interface lets users browse, filter, visualize and download the ontology, sequences and structures without command-line work, making the resource accessible to non-specialists. 
+
+While broader sensitivity is the main advantage of the PanRes 3D-based HMMs, it also means that the results need careful interpretation. A structural HMM hit supports remote homology, but it does not confirm resistance function. In the beta-lactamase analysis, we tried to reduce the uncertainty by adding active-site conservation as a filter. This made the candidate set more conservative, but probably also removed real beta-lactamases. Active sites can vary across large families, and metagenomic assemblies often fragment genes or place them on short contigs that failed our bin or plasmid filters. The same strategy is also difficult to apply broadly, because active-site information is sparse for most resistance families. Many mechanisms, such as efflux, target protection, or metal resistance, cannot be filtered by a small set of catalytic residues. Implementing new approaches such as Folddisco 53 could provide an additional way to prioritise candidates, by searching for conserved structural motifs corresponding to known active or binding sites, though this would require predicting structures for each candidate hit. 
+
+The profiles also differ in how much information they can capture. Many structural clusters are singletons, and HMMs built from a single protein cannot learn family-level conservation in the same way as HMMs built from diverse alignments. This makes it harder to separate true remote homologs from false positives, especially in the latent resistome where many genes are still sparsely sampled. In this case, HMM searches are therefore unlikely to provide the same advantage over pairwise sequence comparison. Expanding these clusters as new homologs are identified will therefore be crucial. As the clusters grow, the HMMs will become more robust and specific, while also revealing more of the AMR diversity that is currently represented by isolated genes. 
+
+This is also why the PanRes models are best viewed as a discovery resource rather than a direct prediction tool for epidemiology or clinical decision making. Their broader sensitivity is useful for finding distant candidates, connecting acquired and latent resistance genes, and exploring resistance-family diversity. However, broad HMM hits should still be treated as candidates and require stricter filtering or experimental support before being used for surveillance. 
+
+Future versions of PanRes should focus on making the evidence behind each gene easier to interpret. One important step would be to separate tested negative phenotypes from missing phenotype information. At the moment, many databases do not clearly distinguish between a gene that was tested against an antibiotic and showed no resistance, and a gene that was simply never tested against that antibiotic. This matters because functional studies often test only a selected set of compounds, while the same gene may affect related antibiotics, biocides, or metals that were not included in the experiment. Some untested associations could be inferred from related compounds, structural clusters, active-site similarity, or closeness to 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+characterised genes, but they should be labelled as predictions rather than evidence. Including observed positive, observed negative, not tested, and inferred phenotypes in future versions of PanRes would make the evidence behind each annotation clearer and help guide future research. 
+
+In conclusion, PanRes provides a structured resource for exploring AMR across database boundaries and supports discovery beyond close sequence matches. We hope it will serve as a useful resource for AMR researchers studying both known resistance genes and the wider, less characterised resistome. 
+
+# Data availability 
+
+The PanRes database and its related files have been added as an update to the original gene collection bundled with ARGprofiler (10.5281/zenodo.20595257). It contains the genes, 11,717 unique protein sequences, 1,802 protein folds, the newly added ontology and the HMM profiles. The code to generate the ontology is available at: 
+
+https://github.com/rambiolab/PanResOntology/ . The PanRes web interface is available at: 
+
+https://panres.rambio.dk/ . The sewage metagenomic reads, assemblies, and MAGs analysed in 
+
+this study were generated in the original wastewater metagenomics study by Becsei et al. and 
+
+are available on the European Nucleotide Archive under accession code  PRJEB68319 . The E. 
+
+coli soft-core protein data used for homolog identification were obtained from the pangenome 
+
+study by Tantoso et al. and are available at  https://github.com/biierwint/ecoli_pangenome .
+
+# Funding 
+
+This work was supported by the Novo Nordisk Foundation (Grant number: NNF24SA0094147). 
+
+# Conflict of interest 
+
+Nothing to declare. 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+# References 
+
+1.  Okeke, I. N. et al. The scope of the antimicrobial resistance challenge. The Lancet 403 ,2426–2438 (2024). 
+
+2.  Naghavi, M. et al. Global burden of bacterial antimicrobial resistance 1990–2021: asystematic analysis with forecasts to 2050. The Lancet 404 , 1199–1226 (2024). 
+
+3.  Alcock, B. P. et al. CARD 2023: expanded curation, support for machine learning,  and resistome prediction at the Comprehensive Antibiotic Resistance Database. Nucleic Acids Res. 51 , D690–D699 (2022). 
+
+4.  Bortolaia, V. et al. ResFinder 4.0 for predictions of phenotypes from genotypes. J. Antimicrob. Chemother. 75 , 3491–3500 (2020). 
+
+5.  Gschwind, R. et al. ResFinderFG v2.0: a database of antibiotic resistance genes obtained by functional metagenomics. Nucleic Acids Res. 51 , W493–W500 (2023). 
+
+6.  Bonin, N. et al. MEGARes and AMR++, v3.0: an updated comprehensive database of antimicrobial resistance determinants and an improved software pipeline for classification using high-throughput sequencing. Nucleic Acids Res. 51 , D744–D752 (2023). 
+
+7.  Feldgarden, M. et al. AMRFinderPlus and the Reference Gene Catalog facilitate examination of the genomic links among antimicrobial resistance, stress response, and virulence. Sci. Rep. 11 , 12728 (2021). 
+
+8.  Pal, C., Bengtsson-Palme, J., Rensing, C., Kristiansson, E. & Larsson, D. G. J. BacMet: antibacterial biocide and metal resistance genes database. Nucleic Acids Res. 42 ,D737–D743 (2014). 
+
+9.  Martiny, H.-M. et al. ARGprofiler—a pipeline for large-scale analysis of antimicrobial resistance genes and their flanking regions in metagenomic datasets. Bioinformatics 40 ,btae086 (2024). 
+
+10.  Jumper, J. et al. Highly accurate protein structure prediction with AlphaFold. Nature 596 ,
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+583–589 (2021). 
+
+11.  Varadi, M. et al. AlphaFold Protein Structure Database in 2024: providing structure coverage for over 214 million protein sequences. Nucleic Acids Res. 52 , D368–D375 (2024). 
+
+12.  Mirdita, M. et al. ColabFold: making protein folding accessible to all. Nat. Methods 19 ,679–682 (2022). 
+
+13.  van Kempen, M. et al. Fast and accurate protein structure search with Foldseek. Nat. Biotechnol. 42 , 243–246 (2024). 
+
+14.  Huang, I. K., Pei, J. & Grishin, N. V. Defining and predicting structurally conserved regions in protein superfamilies. Bioinformatics 29 , 175–181 (2013). 
+
+15.  Illergård, K., Ardell, D. H. & Elofsson, A. Structure is three to ten times more conserved than sequence—A study of structural response in protein cores. Proteins Struct. Funct. Bioinforma. 77 , 499–508 (2009). 
+
+16.  Ruppé, E. et al. Prediction of the intestinal resistome by a three-dimensional structure-based method. Nat. Microbiol. 4, 112–123 (2018). 
+
+17.  Camproux, A. C., Gautier, R. & Tufféry, P. A Hidden Markov Model Derived Structural Alphabet for Proteins. J. Mol. Biol. 339 , 591–605 (2004). 
+
+18.  Gibson, M. K., Forsberg, K. J. & Dantas, G. Improved annotation of antibiotic resistance determinants reveals microbial resistomes cluster by ecology. ISME J. 9, 207–216 (2015). 
+
+19.  Malik, A. J., Puente-Lelievre, C., Matzke, N. & Ascher, D. B. On use of tertiary structure characters in hidden Markov models for protein fold prediction. 2024.04.08.588419 Preprint at https://doi.org/10.1101/2024.04.08.588419 (2024). 
+
+20.  Hyatt, D. et al. Prodigal: prokaryotic gene recognition and translation initiation site identification. BMC Bioinformatics 11 , 1–11 (2010). 
+
+21.  Zhou, Y., Liu, Y. & Li, X. USEARCH 12: Open ‐source software for sequencing analysis in bioinformatics and microbiome. iMeta 3, e236 (2024). 
+
+22.  Li, W. & Godzik, A. Cd-hit: a fast program for clustering and comparing large sets of protein 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+or nucleotide sequences. Bioinformatics 22 , 1658–1659 (2006). 
+
+23.  Zhang, Y. TM-align: a protein structure alignment algorithm based on the TM-score. Nucleic Acids Res. 33 , 2302–2309 (2005). 
+
+24.  Mistry, J. et al. Pfam: The protein families database in 2021. Nucleic Acids Res. 49 ,D412–D419 (2021). 
+
+25.  Notredame, C., Higgins, D. G. & Heringa, J. T-coffee: a novel method for fast and accurate multiple sequence alignment. J. Mol. Biol. 302 , 205–217 (2000). 
+
+26.  Armougom, F. et al. Expresso: automatic incorporation of structural information in multiple sequence alignments using 3D-Coffee. Nucleic Acids Res. 34 , W604–W608 (2006). 
+
+27.  Finn, R. D., Clements, J. & Eddy, S. R. HMMER web server: interactive sequence similarity searching. Nucleic Acids Res. 39 , W29–W37 (2011). 
+
+28.  Lamy, J.-B. Owlready: Ontology-oriented programming in Python with automatic classification and high level constructs for biomedical ontologies. Artif. Intell. Med. 80 , 11–28 (2017). 
+
+29.  The pandas development team. pandas-dev/pandas: Pandas. Zenodo https://doi.org/10.5281/ZENODO.7549438 (2023). 
+
+30.  Tantoso, E. et al. To kill or to be killed: pangenome analysis of Escherichia coli strains reveals a tailocin specific for pandemic ST131. BMC Biol. 20 , 146 (2022). 
+
+31.  Rost, B. Twilight zone of protein sequence alignments. Protein Eng. Des. Sel. 12 , 85–94 (1999). 
+
+32.  Ribeiro, A. J. M. et al. Mechanism and Catalytic Site Atlas (M-CSA): a database of enzyme reaction mechanisms and active sites. Nucleic Acids Res. 46 , D618–D623 (2018). 
+
+33.  Dana, J. M. et al. SIFTS: updated Structure Integration with Function, Taxonomy and Sequences resource allows 40-fold increase in coverage of structure-based annotations for proteins. Nucleic Acids Res. 47 , D482–D489 (2019). 
+
+34.  Bush, K. & Jacoby, G. A. Updated Functional Classification of β-Lactamases. Antimicrob. 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+Agents Chemother. 54 , 969–976 (2010). 
+
+35.  Naas, T. et al. Beta-lactamase database (BLDB) – structure and function. J. Enzyme Inhib. Med. Chem. 32 , 917–919 (2017). 
+
+36.  Camargo, A. P. et al. Identification of mobile genetic elements with geNomad. Nat. Biotechnol. 42 , 1303–1312 (2024). 
+
+37.  Becsei, Á. et al. Time-series sewage metagenomics distinguishes seasonal, human-derived and environmental microbial communities potentially allowing source-attributed surveillance. 
+
+Nat. Commun. 15 , 7551 (2024). 
+
+38.  The Genome Standards Consortium et al. Minimum information about a single amplified genome (MISAG) and a metagenome-assembled genome (MIMAG) of bacteria and archaea. Nat. Biotechnol. 35 , 725–731 (2017). 
+
+39.  Nguyen, L.-T., Schmidt, H. A., Von Haeseler, A. & Minh, B. Q. IQ-TREE: A Fast and Effective Stochastic Algorithm for Estimating Maximum-Likelihood Phylogenies. Mol. Biol. Evol. 32 , 268–274 (2015). 
+
+40.  Kalyaanamoorthy, S., Minh, B. Q., Wong, T. K. F., Von Haeseler, A. & Jermiin, L. S. ModelFinder: fast model selection for accurate phylogenetic estimates. Nat. Methods 14 ,587–589 (2017). 
+
+41.  Letunic, I. & Bork, P. Interactive Tree of Life (iTOL) v6: recent updates to the phylogenetic tree display and annotation tool. Nucleic Acids Res. 52 , W78–W82 (2024). 
+
+42.  Schrödinger, LLC. The PyMOL Molecular Graphics System, Version 1.8. (2015). 
+
+43.  Daruka, L. et al. ESKAPE pathogens rapidly develop resistance against antibiotics in development in vitro. Nat. Microbiol. 10 , 313–331 (2025). 
+
+44.  Salahuddin, P., Kumar, A. & Khan, A. U. Structure, Function of Serine and Metallo-β-lactamases and their Inhibitors. Curr. Protein Pept. Sci. 19 , (2017). 
+
+45.  Ullah, J. H. et al. The crystal structure of the L1 metallo-β-lactamase from Stenotrophomonas maltophilia at 1.7 å resolution. J. Mol. Biol. 284 , 125–136 (1998). 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.22.733705 doi: bioRxiv preprint
+
+46.  Xu, D., Guo, H. & Cui, Q. Antibiotic Deactivation by a Dizinc β-Lactamase: Mechanistic Insights from QM/MM and DFT Studies. J. Am. Chem. Soc. 129 , 10814–10822 (2007). 
+
+47.  Kunakom, S. & Eustáquio, A. S. Burkholderia as a Source of Natural Products. J. Nat. Prod. 
+
+82 , 2018–2037 (2019). 
+
+48.  Rodríguez-Cisneros, M., Morales-Ruíz, L. M., Salazar-Gómez, A., Rojas-Rojas, F. U. & Estrada-de Los Santos, P. Compilation of the Antimicrobial Compounds Produced by Burkholderia Sensu Stricto. Molecules 28 , 1646 (2023). 
+
+49.  Centner, C. M. et al. Antimicrobial resistance databases: opportunities and challenges for public health. Npj Antimicrob. Resist. 4, 1 (2026). 
+
+50.  Yin, X. et al. ARGs-OAP v2.0 with an expanded SARG database and Hidden Markov Models for enhancement characterization and quantification of antibiotic resistance genes in environmental metagenomes. Bioinformatics 34 , 2263–2270 (2018). 
+
+51.  Lakin, S. M. et al. Hierarchical Hidden Markov models enable accurate and diverse detection of antimicrobial resistance sequences. Commun. Biol. 2, 294 (2019). 
+
+52.  Darby, E. M. et al. Molecular mechanisms of antibiotic resistance revisited. Nat. Rev. Microbiol. 21 , 280–295 (2023). 
+
+53.  Kim, H., Kim, R. S., Mirdita, M., Yoon, J. & Steinegger, M. Structural motif search across the protein universe with Folddisco. Nat. Biotechnol. 
+
+https://doi.org/10.1038/s41587-026-03162-9 (2026).

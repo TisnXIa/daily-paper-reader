@@ -1,0 +1,178 @@
+Title: MBRarefy: data-adaptive multi-bin rarefying for alpha diversity association analysis
+
+URL Source: https://arxiv.org/pdf/2606.21000v1
+
+Published Time: Tue, 23 Jun 2026 00:29:34 GMT
+
+Number of Pages: 6
+
+Markdown Content:
+# MBR AREFY : DATA -ADAPTIVE MULTI -BIN RAREFYING FOR ALPHA DIVERSITY ASSOCIATION ANALYSIS 
+
+Mo Li 
+
+Department of Mathematics University of Louisiana at Lafayette Lafayette, LA, USA 
+
+mo.li@louisiana.edu 
+
+## ABSTRACT 
+
+Summary : This paper presents MBRarefy , an R package that provides a reproducible workflow for alpha diversity analysis under confounding from heterogeneous library sizes. Building on the multi-bin rarefying approach in Li et al. [2024], MBRarefy supports alpha diversity association analysis with repeated rarefying, bin-wise testing, and cross-bin meta-analysis. A key new feature is automated, data-adaptive selection of library size bin thresholds via a genetic algorithm (GA), which replaces ad hoc cutpoints with an objective optimization procedure based on the rarefying-derived profiles. The package also supports routine data-management tasks, including file-based sample-wise processing and standardized output generation, enabling users to execute the full analysis pipeline from raw count files to combined inferential results. 
+
+Availability and implementation : The R package MBRarefy is freely available on GitHub at 
+
+https://github.com/mli171/MBRarefy .
+
+## 1 Introduction 
+
+Alpha diversity is widely used to summarize within-sample richness and evenness in ecology, microbiome sequencing, T-cell/B-cell receptor repertoire sequencing, and other high-throughput count-profile studies. These summaries are often tested for association with clinical, host, or environmental covariates [Willis, 2019, Kers and Saccenti, 2022, Mika et al., 2025]. However, estimated alpha diversity is sensitive to sampling effort: samples with more collected counts, reads, or sequences can appear more diverse even when underlying diversity is unchanged [Roswell et al., 2021]. In sequencing studies, per-sample total counts, often referred to as sequencing depth or library size, can vary substantially because of technical and experimental factors. As a result, alpha diversity association analyses may reflect residual depth-driven artifacts rather than biological signal, reducing interpretability and reproducibility [Willis, 2019]. A wide range of library size normalization strategies has therefore been proposed. Scaling and compositional approaches are commonly discussed for relative abundance analyses [Gloor et al., 2017, Weiss et al., 2017, McKnight et al., 2019], while rarefying, subsampling without replacement to equal library size, remains widely used for alpha diversity estimation because it produces diversity summaries on a comparable sampling scale and aligns with classical ecological sampling theory [Hurlbert, 1971, Willis, 2019]. Rarefying normalizes uneven sampling effort but does not correct feature-specific amplification or sequencing biases, including sequence-composition or GC-content effects [Benjamini and Speed, 2012, McMurdie and Holmes, 2014]. In practice, alpha diversity association analyses often rely on rarefying all samples to a single global depth, which forces a trade-off between retaining low depth samples and preserving information in higher depth samples. The chosen depth is typically selected heuristically, and different choices can yield different conclusions. Moreover, even after rarefying, alpha diversity estimates can remain correlated with the samples’ original library sizes, with multiple studies reporting positive associations between total reads and alpha diversity computed from rarefied data, indicating that single-depth rarefying may not fully eliminate depth dependence [Lang Kuhs et al., 2018, Willis, 2019, Colbert et al., 2022, Li et al., 2024]. 
+
+> arXiv:2606.21000v1 [stat.CO] 19 Jun 2026
+
+MBRarefy Our prior work [Li et al., 2024] introduced a multi-bin rarefying approach for alpha diversity association analysis under heterogeneous library sizes: samples are stratified by library size, rarefied within strata to bin-specific depths, and bin-specific association results are combined via meta-analysis. This approach can preserve substantially more information for moderate and high depth samples than single-depth rarefying, but it leaves an important practical question unresolved: how to choose bin cutpoints in a principled, reproducible, and data-adaptive way. Here we present MBRarefy , an R package that provides a workflow for alpha diversity association analysis under heterogeneous library sizes across immune repertoire, microbiome, and general ecological count datasets. The main methodological contribution is an automated, data-driven binning procedure that treats cutpoint selection as an ordered knot placement problem on grid-based rarefying diversity profiles. Conceptually, library size cutpoints play the same role as knots in piecewise regression: they define where the relationship between depth and diversity is allowed to change across strata. MBRarefy uses GA-based optimal knot placement implemented via GAReg [Li et al., 2026] (with 
+
+changepointGA as the optimization backend [Li and Lu, 2024]), searching ordered grid indices to select bin cutpoints that minimize a weighted, covariate-adjusted, depth-diversity association, using diversity values evaluated at each bin’s lower depth, subject to constraints such as a minimum number of samples per bin and optional spacing between adjacent cutpoints. The GA supports both (i) a fixed number of bins specified by the user and (ii) a varying number of bins mode that infers bin complexity from the data. The package further supports repeated rarefying [Cameron et al., 2021, Hu and Satten, 2022] for Monte Carlo stabilization, file-based sample-wise processing, and downstream bin-wise testing with cross-bin meta-analysis, enabling reproducible analyses from raw count tables to combined inferential results. 
+
+## 2 Methods 
+
+Consider N quality-controlled samples with per-sample feature-count profiles Xi = ( Xi1, . . . , X ip ), i = 1 , . . . , N ,where Xij is the count assigned to feature j = 1 , . . . , p . The corresponding library size is Li = Ppj=1 Xij . Let Ai be an alpha diversity metric computed from the original or rarefied counts (e.g., observed richness, Shannon, Simpson). Each sample has associated metadata, including an outcome of interest yi and covariates zi. The goal is to assess associations between Ai and yi while reducing confounding from heterogeneous library sizes. Figure 1 summarizes the MBRarefy workflow. MBRarefy (A) ingests per-sample count profiles, aligned metadata, and a rarefying-depth grid, (B) computes grid-based rarefying alpha diversity profiles by rarefying each sample over a user-specified depth grid, (C) selects data-adaptive library size cutpoints on the grid via a GA-based optimization criterion and assigns samples to bins, and (D) performs multi-bin inference by extracting bin-anchored diversity, conducting within-bin association tests, and combining evidence via meta-analysis, and reporting residual library-size diagnostics. 
+
+2.1 Inputs and preprocessing 
+
+MBRarefy is designed for file-based, per-sample count inputs to reduce cohort-level computational memory require-ments. It processes one sample file at a time, although memory usage during rarefying still scales with the library size of the current sample. The main entry point for grid-based rarefying profiling is multibin.rarefy.diversity() 
+
+in step (B), which takes InputDataDir , a directory containing one plain-text file per sample. Each file contains a required count column specified by CountVar (e.g., count ) and, when applicable, a feature identifier column specified by SeqVar (e.g., seq ). For sample i, MBRarefy reads the count profile Xi from disk and computes the library size 
+
+Li = P 
+
+> j
+
+Xij . Users specify the target rarefying depth grid and diversity metrics, the number of repeated rarefying replicates nRep , and optional parallel execution through parallel and nCore . The function returns replicate-resolved per-sample results, and sample metadata are aligned separately for downstream association testing. 
+
+2.2 Grid-based rarefying profiling 
+
+Given a user-specified rarefying depth grid {m1 < · · · < m M }, MBRarefy constructs grid-based rarefying pro-files by rarefying each eligible sample i to each candidate depth mj (only when Li ≥ mj , j = 1, . . . , M )via subsampling without replacement and computing the requested alpha diversity metrics at that depth. When 
+
+nRep > 1, this procedure is repeated across replicates, producing the replicate-resolved output, a nested list indexed as 
+
+x[[rep]][[sample]][[depth]][[metric]] .For downstream data-adaptive binning (Step (C)) and multibin inference (Step (D)), get_alpha_metric_matrix() 
+
+summarizes the replicate-resolved object by averaging over replicates. For each metric, it returns a samples ×depths data frame whose (i, m ) entry equals the mean alpha diversity estimate for sample i at depth m (with NA if a value is unavailable), yielding a per-sample rarefying profile over the depth grid. 2MBRarefy 
+
+Figure 1: Overview of the MBRarefy workflow (A–D). (A) Per-sample TCR, microbiome, or other count profiles are aligned with sample metadata and a rarefying-depth grid. (B) Repeated rarefying over candidate depths produces a sample-by-depth alpha-diversity matrix. (C) GA-based fixed-K or varying-K cutpoint selection defines data-adaptive library-size bins. (D) Bin-anchored alpha diversity values are used for bin-wise association testing, cross-bin meta-analysis, and residual library-size diagnostics. 
+
+2.3 GA for optimal bin cutpoints selection 
+
+Using the depth grid {m1 < · · · < m M }, MBRarefy precomputes an alpha-diversity matrix αi(mj ), where αi(mj ) is the diversity estimate for sample i at depth mj . Cutpoint selection then seeks ordered interior grid indices 2 ≤ τ1 <
+
+· · · < τ K ≤ M − 1, shared across samples, that partition the library-size range into K + 1 bins and minimize residual within-bin dependence between alpha diversity and library size. Let τ0 = 1 and τK+1 = M . The bins are 
+
+Bb = mτb−1 , m τb
+
+, b = 1 , . . . , K + 1 ,
+
+and sample i is assigned to bin b when mτb−1 ≤ Li < m τb . Denote the corresponding sample index set by Ib, with 
+
+nb = |I b|. Within each bin, diversity is evaluated at the bin’s lower grid depth, 
+
+˜αib = αi(mτb−1 ), i ∈ I b,
+
+which is defined for all assigned samples because mτb−1 ≤ Li.To quantify residual library-size dependence within bin b, MBRarefy fits 
+
+˜αib = β0b + β1bg(Li) + Z⊤ 
+
+> i
+
+γb + εib , i ∈ I b,
+
+where g(Li) is the library-size scale used in the optimization, by default log 10 (Li), and Zi contains optional adjustment covariates. The residual dependence on library size is summarized by the partial coefficient of determination 
+
+R2 
+
+> b,L |Z
+
+= t2
+
+> b
+
+t2 
+
+> b
+
++ df b
+
+,
+
+where tb is the t-statistic for testing β1b = 0 and df b is the residual degrees of freedom. Without adjustment covariates, this reduces to the squared correlation from the simple regression on g(Li).3MBRarefy Table 1: Comparison of overall rarefying and multi-bin rarefying with varying-K and fixed-K cutpoint selection in TCR and wild baboon gut microbiome applications. Values shown are P -values.                                                                                                                                                                     
+
+> Application Methods # retained samples Library size Age Gender CMV TCR CMV serostatus Overall rarefying, 10 5663 3.20 ×10 −46.88 ×10 −14 3.47 ×10 −32.95 ×10 −13
+> Overall rarefying, 10 6624 8.67 ×10 −51.52 ×10 −93.65 ×10 −32.26 ×10 −4
+> Overall rarefying, 1.8×10 6548 7.04 ×10 −23.87 ×10 −91.11 ×10 −27.07 ×10 −4
+> Varying-Kmulti-bin rarefying 663 7.08 ×10 −17.20 ×10 −10 1.27 ×10 −33.67 ×10 −4
+> Fixed-Kmulti-bin rarefying 663 6.56 ×10 −12.95 ×10 −10 1.49 ×10 −32.01 ×10 −4
+> Application Methods # retained samples Library size Age Gender Group size Wild Baboon gut microbiome Overall rarefying, 50k 530 6.85 ×10 −75.86 ×10 −21.03 ×10 −21.72 ×10 −1
+> Overall rarefying, 69k 404 1.16 ×10 −35.50 ×10 −24.21 ×10 −25.50 ×10 −2
+> Overall rarefying, 82k 289 1.35 ×10 −22.92 ×10 −11.60 ×10 −18.43 ×10 −2
+> Overall rarefying, 91k 236 8.96 ×10 −23.31 ×10 −14.39 ×10 −11.49 ×10 −2
+> Varying-Kmulti-bin rarefying 585 8.25 ×10 −11.23 ×10 −21.23 ×10 −14.90 ×10 −3
+> Fixed-Kmulti-bin rarefying 585 6.56 ×10 −15.20 ×10 −46.92 ×10 −21.14 ×10 −2
+
+The GA minimizes the weighted mean of bin-specific partial R2 values, 
+
+Q(τ ) = 
+
+PK+1  
+
+> b=1
+
+wbR2
+
+> b,L |Z
+
+PK+1  
+
+> b=1
+
+wb
+
+,
+
+where wb can be chosen as equal or sample-size weights. Candidate cutpoints that violate minimum bin-size require-ments, yield undefined statistics, or fail optional spacing constraints are penalized. The ordered cutpoint search is implemented using GA-based knot selection via GAReg [Li and Lu, 2024, Li et al., 2026]. Candidate solutions are encoded as chromosomes containing knot indices followed by a sentinel value (M + 1) to terminate decoding. In fixed-K mode, the number of interior cutpoints is specified by the user; in varying-K mode, the number of cutpoints is inferred from the data subject to the same feasibility constraints. Because GA-based cutpoint selection is stochastic, selected cutpoints may vary slightly across random seeds when multiple configurations have similar objective values. Users may repeat the GA search under several seeds and assess the stability of selected cutpoints, residual library-size diagnostics, and downstream association results. 
+
+2.4 Multibin rarefying association analysis 
+
+Following Step (D) in Figure 1, selected cutpoints are used to assign samples to bins and extract bin-anchored alpha diversity. MBRarefy performs within-bin association testing with optional covariate adjustment and combines bin-specific estimates by meta-analysis using equal, sample-size, or inverse-variance weighting [Li et al., 2024]. As a residual diagnostic, users can test the association between bin-anchored alpha diversity and original library size; a non-significant result provides evidence of reduced detectable residual library-size dependence under the specified diagnostic model. 
+
+## 3 Case Studies 
+
+We evaluated MBRarefy in two applications: a TCR immune repertoire dataset with known CMV serostatus and a wild baboon gut microbiome dataset. In each application, observed richness was used as the representative alpha diversity metric, and overall rarefying at several depths was compared with varying-K and fixed-K multi-bin rarefying. The comparison focused on residual association with original library size, retained sample size, and preservation of biologically or ecologically relevant covariate associations. Results are summarized in Table 1; reported cutpoints and 
+
+P -values correspond to fixed-seed runs. For the TCR application, we analyzed 663 eligible Cohort 1 profiles from the TCR immunosequencing dataset [Emerson et al., 2017], with known CMV serostatus. Richness was computed over a rarefying-depth grid from 10 5 to 10 7 reads with 10 repeated rarefaction replicates. Using overall rarefying, library-size association remained significant at 10 5
+
+and 10 6 reads and became non-significant only at 1.8 × 10 6 reads, where fewer samples were retained. In contrast, both varying-K and fixed-K multi-bin rarefying retained all 663 eligible samples, produced non-significant residual 4MBRarefy library-size diagnostics, and retained associations with age, sex, and CMV serostatus. For fixed-K multi-bin rarefying, the selected interior cutpoints were 1.0 × 10 6, 1.9 × 10 6, 2.6 × 10 6, 5.0 × 10 6, and 7.1 × 10 6 reads; for varying-K,they were 1.0 × 10 6, 1.9 × 10 6, 2.7 × 10 6, and 3.8 × 10 6 reads. For the microbiome application, we analyzed the wild baboon gut microbiome dataset available through 
+
+microbiomeDataSets [Lahti et al., 2025]. The full dataset contains 16,234 16S rRNA gut microbiome profiles from 585 wild baboons sampled over 14 years. To construct an independent subject-level example, we retained one profile per baboon by selecting the sample with the largest library size, yielding 585 independent samples. Overall rarefying showed a depth-dependent tradeoff: residual association between observed richness and original library size remained significant at 50k, 69k, and 82k reads, whereas the diagnostic became non-significant at 91k reads only after retaining 236 samples. Covariate associations also varied with rarefying depth; for example, sex was significant at lower depths but not at higher depths, while group size became significant only at the deepest depth. In contrast, both multi-bin rarefying modes retained all 585 samples and yielded non-significant residual library-size diagnostics. Age and group size remained associated with multi-bin-rarefied richness, while sex showed a weaker or borderline association. For fixed-K, the selected cutpoints were 40k, 54k, 61k, 99k, and 118k reads; for varying-K, they were 40k, 48k, 58k, 95k, and 113k reads. Together, the two applications show MBRarefy reduces detectable residual library size dependence while retaining more samples and preserving interpretable biological or ecological signals. 
+
+## 4 Conclusion 
+
+MBRarefy provides a practical R workflow for alpha diversity association analysis that reduces residual library size confounding without erasing biologically meaningful phenotype associations. Building on the multi-bin rarefying framework of Li et al. [2024], MBRarefy adds automated, data-adaptive library-size cutpoint selection and integrates repeated rarefying, bin-wise testing, cross-bin meta-analysis, and residual library-size diagnostics. In both applications, the overall rarefying produced depth-dependent diagnostics and sample retention, whereas the multi-bin rarefying workflow reduced detectable residual library-size dependence while retaining the full eligible sample set. Interpretable associations were retained, including CMV serostatus and sex in the TCR example and age and group size in the microbiome example. Users should report the rarefying grid, selected cutpoints, bin-size constraints, fixed random seeds, and post-MBRarefy library-size diagnostic. 
+
+## 5 Funding 
+
+This work is supported by the Louisiana Board of Regents Support Fund (BoRSF) Research Competitiveness Subpro-gram, LEQSF(2025-28)-RD-A-18. 
+
+## 6 Data availability 
+
+The TCR immune repertoire data are available from Emerson et al. [2017]. The wild baboon gut microbiome data are available through the microbiomeDataSets package [Lahti et al., 2025]. The MBRarefy source code, package vignettes, example workflows, and reproducibility scripts are available at https://github.com/mli171/MBRarefy .
+
+## 7 Conflict of interest 
+
+None declared. 
+
+## References 
+
+Mo Li, Xing Hua, Shuai Li, Michael C Wu, and Ni Zhao. A multi-bin rarefying method for evaluating alpha diversities in tcr sequencing data. Bioinformatics , 40(7):btae431, 2024. Amy D Willis. Rarefaction, alpha diversity, and statistics. Frontiers in microbiology , 10:2407, 2019. Jannigje Gerdien Kers and Edoardo Saccenti. The power of microbiome studies: some considerations on which alpha and beta metrics to use and how to report results. Frontiers in microbiology , 12:796025, 2022. Justyna Mika, Alicja Polanska, Kim RM Blenman, Lajos Pusztai, Joanna Polanska, Serge Candéias, and Michal Marczyk. A comprehensive evaluation of diversity measures for tcr repertoire profiling. BMC biology , 23(1):133, 2025. 5MBRarefy Michael Roswell, Jonathan Dushoff, and Rachael Winfree. A conceptual guide to measuring species diversity. Oikos ,130(3):321–338, 2021. Gregory B Gloor, Jean M Macklaim, Vera Pawlowsky-Glahn, and Juan J Egozcue. Microbiome datasets are composi-tional: and this is not optional. Frontiers in microbiology , 8:2224, 2017. Sophie Weiss, Zhenjiang Zech Xu, Shyamal Peddada, Amnon Amir, Kyle Bittinger, Antonio Gonzalez, Catherine Lozupone, Jesse R Zaneveld, Yoshiki Vázquez-Baeza, Amanda Birmingham, et al. Normalization and microbial differential abundance strategies depend upon data characteristics. Microbiome , 5(1):27, 2017. Donald T McKnight, Roger Huerlimann, Deborah S Bower, Lin Schwarzkopf, Ross A Alford, and Kyall R Zenger. Methods for normalizing microbiome data: an ecological perspective. Methods in Ecology and Evolution , 10(3): 389–400, 2019. Stuart H Hurlbert. The nonconcept of species diversity: a critique and alternative parameters. Ecology , 52(4):577–586, 1971. Yuval Benjamini and Terence P Speed. Summarizing and correcting the GC content bias in high-throughput sequencing. 
+
+Nucleic acids research , 40(10):e72–e72, 2012. Paul J McMurdie and Susan Holmes. Waste not, want not: why rarefying microbiome data is inadmissible. PLoS computational biology , 10(4):e1003531, 2014. Krystle A Lang Kuhs, Shih-Wen Lin, Xing Hua, Mark Schiffman, Robert D Burk, Ana Cecilia Rodriguez, Rolando Herrero, Christian C Abnet, Neal D Freedman, Ligia A Pinto, et al. T cell receptor repertoire among women who cleared and failed to clear cervical human papillomavirus infection: An exploratory proof-of-principle study. PLoS One , 13(1):e0178167, 2018. Lauren E Colbert, Molly B El, Erica J Lynn, Julianna Bronk, Tatiana V Karpinets, Xiaogang Wu, Bhavana V Chapman, Travis T Sims, Daniel Lin, Ramez Kouzy, et al. Expansion of candidate hpv-specific t cells in the tumor microenvironment during chemoradiotherapy is prognostic in hpv16+ cancers. Cancer immunology research , 10(2): 259–271, 2022. Mo Li, QiQi Lu, Robert Lund, and Xueheng Shi. GAReg: Genetic Algorithms in Regression. arXiv preprint arXiv:2603.14801 , 2026. Mo Li and QiQi Lu. changepointGA: An R package for Fast Changepoint Detection via Genetic Algorithm. arXiv preprint arXiv:2410.15571 , 2024. Ellen S Cameron, Philip J Schmidt, Benjamin J-M Tremblay, Monica B Emelko, and Kirsten M Müller. Enhancing diversity analysis by repeatedly rarefying next generation sequencing data describing microbial communities. 
+
+Scientific reports , 11(1):22302, 2021. Yi-Juan Hu and Glen A Satten. A rarefaction-without-resampling extension of permanova for testing presence–absence associations in the microbiome. Bioinformatics , 38(15):3689–3697, 2022. Ryan O Emerson, William S DeWitt, Marissa Vignali, Jenna Gravley, Joyce K Hu, Edward J Osborne, Cindy Desmarais, Mark Klinger, Christopher S Carlson, John A Hansen, et al. Immunosequencing identifies signatures of cytomegalovirus exposure history and hla-mediated effects on the t cell repertoire. Nature genetics , 49(5):659–665, 2017. Leo Lahti, Felix Ernst, and Sudarshan Shetty. microbiomeDataSets: Experiment Hub based microbiome datasets , 2025. URL https://bioconductor.org/packages/microbiomeDataSets . R package version 1.19.0. 6

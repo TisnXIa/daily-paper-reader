@@ -1,0 +1,492 @@
+Title: When do correlations reflect biological similarity in ecological dynamics?
+
+URL Source: https://arxiv.org/pdf/2606.22949v1
+
+Published Time: Tue, 23 Jun 2026 02:45:10 GMT
+
+Number of Pages: 30
+
+Markdown Content:
+# When do correlations reflect biological similarity in ecological dynamics? 
+
+# Akiva Goldberg and Nadav M. Shnerb 
+
+> Department of Physics, Bar-Ilan University, Ramat Gan 52900,
+> 1
+> arXiv:2606.22949v1 [q-bio.PE] 22 Jun 2026
+
+# Abstract 
+
+The structure of competitive ecological communities is shaped by the strength of interactions be-tween species, which in turn reflects their biological similarity. At the same time, the stochastic forcing that drives abundance fluctuations is itself biologically grounded: species that are more similar may be expected to respond more similarly to environmental variation. This motivates the increasingly common use of correlations in abundance time series, particularly in microbial communities, as proxies for biological similarity or niche overlap. Here we analyze the relation be-tween biological similarity and abundance correlations in stochastic community models. We require that the stochastic forcing acting on different species be correlated in proportion to their biologi-cal similarity, and ask how such forcing is reflected in abundance correlations. We show that this requirement cannot, in general, be satisfied within the widely used stochastic Lotka-Volterra frame-work, and that even when it is, abundance correlations carry no information about niche overlap. In contrast, consumer–resource models provide a natural framework for biologically grounded stochas-ticity. In this setting, however, the interpretation of abundance correlations depends strongly on the pathway through which noise enters the system: direct forcing of consumers and resource-mediated fluctuations encode different biological quantities. These results have implications both for the modeling of stochastic ecological communities and for understanding what can, and cannot, be inferred from correlations in community time series. 
+
+2I. INTRODUCTION 
+
+Temporal environmental stochasticity is a central driver of ecological populations and communities [1, 2]. Multispecies communities therefore reflect the combined action of de-terministic interactions and stochastic environmental forcing. Accordingly, they have been approached from a wide spectrum of theoretical perspectives, ranging from frameworks that emphasize deterministic structure [3, 4] to others in which temporal variation is viewed as predominantly stochastic or chaotic [5–9]. A central problem in this context is whether the resulting fluctuations can be used to infer properties of the underlying system. In ecological communities, this question is especially natural because biological similarity between species is often expected to generate both similar interaction patterns and similar responses to environmental variability. This raises the possibility that abundance correlations measured in community time series may serve as proxies for biologically meaningful quantities such as niche overlap. As time-resolved community data become increasingly available, particularly in microbial ecosystems, such inference-based approaches are attracting growing interest [10–13]. This possibility immediately raises a modeling question: how should environmental stochasticity be introduced if one wishes such correlations to retain a biologically meaning-ful interpretation? In many stochastic descriptions of community dynamics, environmental variability is incorporated by adding stochastic terms directly to Lotka-Volterra equa-tions [5, 14, 15]. This construction is technically convenient and is therefore often used as a framework in the literature. Yet it leaves open a basic conceptual issue. If the interaction matrix is interpreted in terms of niche overlap [16, 17], what should determine the correla-tion structure of the stochastic forcing? In most applications of stochastic Lotka-Volterra models, this structure is imposed externally: the noise acting on different species is typically assumed either to be uncorrelated, or to have some prescribed level of correlation that is not derived from the biological quantities that determine the interactions. In this paper, we address two closely related questions. First, we ask whether environ-mental stochasticity in community dynamics can be modeled in a biologically grounded manner, such that species that are mechanistically similar at the deterministic level are also subject to similar stochastic forcing. This, in turn, requires the covariance structure of the noise to track the degree of biological similarity between species, as encoded by their niche 3overlap. As we show below, however, implementing such a stochastic description is far from trivial. Second, we ask under what conditions species correlations can be given an inferential interpretation, and in particular whether they can be used to recover niche overlap. We show that the answer depends qualitatively on the mechanism by which stochasticity enters the system. More generally, the inferential content of species correlations cannot be assessed independently of the pathway through which environmental fluctuations are transmitted. This discussion points directly to a limitation of the standard Lotka-Volterra framework. Although LV equations provide an adequate minimal description of deterministic community dynamics [3, 4], their stochastic extension is much more constrained. As we show below, introducing environmental noise directly at the LV level generally does not allow for a biologically grounded covariance structure, and even when such a construction is feasible, it eliminates the inferential content of abundance correlations. The standard stochastic LV framework is therefore limited not only as a model of environmental forcing, but also as a basis for inference from community time series. This limitation is not merely technical, but reflects a fundamental constraint of coarse-grained descriptions: once the mechanistic origin of interactions is suppressed, it becomes impossible to impose a biologically grounded structure on the stochastic forcing. This mo-tivates a shift to a more mechanistic level of description. A natural framework for doing so is provided by consumer–resource models [11, 13, 18]. Within this framework, it becomes possible to distinguish between noise that acts directly on the growth rates of consumers, independently of resource dynamics (“external” noise), and noise that acts indirectly through resource availability when the latter fluctuates stochastically in time. We show that these two forms of stochasticity generate qualitatively different patterns of abundance correla-tions: the former reflects niche overlap, whereas the latter depends instead on a different quantity, the yield-depletion mismatch, which was analyzed in a recent study [19]. A short presentation of this quantity is provided in Appendix A. In the earlier work mentioned above [19], the central question was interpretive: given a consumer-resource system with stochastic fluctuations at the resource level, what do the resulting correlations reveal about the underlying mechanisms that shape the community. Here we step back and address a more fundamental question: how should stochasticity be modeled in the first place if it is to remain biologically grounded, and how does the 4choice of modeling level constrain the use of correlations for inference. The present work therefore provides a broader framework linking three issues that are often treated separately: the modeling of environmental stochasticity, the mathematical realizability of a biologically grounded noise structure, and the inferential content of the resulting fluctuations. The paper is organized as follows. In Sec. II, we present the deterministic consumer-resource and Lotka-Volterra descriptions and establish the connection between them. In Sec. III, we analyze stochastic Lotka-Volterra dynamics and show that imposing a biolog-ically grounded covariance structure is generically obstructed by a realizability constraint, and that even when such a construction is feasible it yields no informative abundance cor-relations. In Sec. IV, we turn to stochastic consumer-resource dynamics and show that a biologically grounded treatment of environmental noise is possible only at that level, where direct and resource-mediated fluctuations give rise to distinct statistical signatures. Finally, we discuss the implications of these results for the modeling of environmental stochasticity and for inference from correlations in community dynamics.  
+
+> II. FROM CONSUMER-RESOURCE DYNAMICS TO LOTKA-VOLTERRA: EF-FECTIVE INTERACTIONS AND NICHE OVERLAP
+
+To make the discussion concrete, we consider two standard modeling approaches for com-munity dynamics: the consumer-resource (CR) model and the Lotka-Volterra (LV) model. These should be viewed not as unrelated alternatives, but as two levels of description of the same interacting system. Although we expect our conclusions to hold more broadly, this pair of models provides an especially transparent framework: the CR description retains the mechanistic distinction between resource depletion and consumer benefit, whereas the LV description emerges from it in appropriate limiting regimes as an effective coarse-grained dynamics. This relation will be central below, since the passage from CR to LV preserves niche overlap while potentially obscuring other mechanistic information. We consider a community of S consumer species, competing for Q resources. The abun-dance of consumer species i is denoted by ni(t), and the biomass of resource k by Rk(t).Consumer growth is determined by resource uptake, whereas each resource grows logisti-cally in the absence of consumers and is depleted through consumption. The deterministic 5dynamics is therefore governed by the coupled equations 
+
+dn i(t)
+
+dt = −ni + niQ
+
+X
+
+> k=1
+
+γik Rk,dR k(t)
+
+dt = Rk − R2 
+
+> k
+
+− RkSX
+
+> i=1
+
+λki ni. (1) Here γik is the (i, k ) entry of the S × Q matrix Γ and quantifies yield, namely the increase in the growth rate of consumer i per unit of resource k. Similarly, λki is the (k, i ) entry of the Q × S matrix Λ and quantifies depletion, namely the per-capita removal of resource k
+
+by consumer i.A key feature of the present CR formulation is that it keeps separate two mechanistically distinct quantities: the benefit that a consumer derives from a resource, encoded in Γ, and the depletion that the same consumer imposes on that resource, encoded in Λ. In traditional consumer-resource models [18], the yield and depletion coefficients are typically assumed to be proportional at the level of individual consumer-resource interactions, γik = ckλki , where the proportionality factor depends only on the resource, thereby identifying consumption and growth up to a fixed conversion efficiency. Here we relax this assumption and allow depletion and benefit to be misaligned. Such a decoupling may arise from differences in conversion efficiency, wasteful or destructive uptake, metabolic by-products, cross-feeding, and related processes [20–27]. Consistent with this view, recent studies increasingly suggest that the yield-to-depletion ratio is not fixed, but can vary across conditions, resources, and taxa [28–30]. This separation will prove essential below, as it introduces an additional degree of freedom that is invisible at the LV level but directly controls the response to stochastic resource fluctuations. To obtain an effective Lotka-Volterra description, one integrates out the resource dy-namics and replaces them by direct competition terms between consumer species. This quasi-steady-state reduction assumes that 
+
+dR k
+
+dt = 0 ,
+
+so that resource abundances can be expressed as functions of consumer abundances and substituted back into the consumer equations. This approximation is justified in two closely related limits: when resource dynamics is much faster than consumer dynamics, so that resources may be treated as fast variables, and when the system is considered close to 6equilibrium. The resulting effective dynamics takes the Lotka-Volterra form 
+
+dn i
+
+dt = ni 1 − ni − X 
+
+> j̸=i
+
+αij nj
+
+!
+
+, (2) with effective interaction matrix 
+
+α = ΓΛ . (3) This reduction preserves the effective niche-overlap structure, now encoded in α, but it eliminates the mechanistic distinction between resource depletion and consumer benefit that remains explicit in the CR description. The effective matrix α will play a central role throughout this paper. In the competi-tive setting, when αi,i is normalized to one, αij is naturally interpreted as a measure of the effective overlap between consumer species i and j [17, 31]. For a non-symmetric interac-tion matrix, the corresponding quantity may be taken to be the symmetrized combination 
+
+(αij + αji )/2. When this overlap vanishes, the two consumers effectively exploit distinct resources and do not constrain one another’s growth. By contrast, a value close to one corresponds to nearly maximal overlap. For example, if a single biological species were ar-tificially partitioned into two populations according to a marker irrelevant to growth and resource uptake, the interaction coefficient between the two populations would be α = 1 .  
+
+> III. BIOLOGICALLY-GROUNDED STOCHASTIC DYNAMICS: THE FAILURE OF THE LOTKA-VOLTERRA MODEL A. A biologically grounded noise prescription
+
+We now turn to the stochastic extension of the effective Lotka-Volterra description. If environmental variability is introduced directly at the LV level, the standard prescription [5, 14, 32] is to add a time-dependent random term to the linear growth rate. This leads to the stochastic Lotka-Volterra equations used in much of the literature, 
+
+dn i
+
+dt = ni − n2 
+
+> i
+
+− ni
+
+X 
+
+> j̸=i
+
+αij nj + σeηi(t) ni, (4) or, equivalently, in stochastic differential equation form, 
+
+dn i = ni − n2 
+
+> i
+
+− ni
+
+X 
+
+> j̸=i
+
+αij nj
+
+!
+
+dt + σeni dW i, (5) 7where ⟨ηi(t)⟩ = 0 and ⟨ηi(t)ηi(t′)⟩ = δ(t−t′), and Wi denotes a Wiener process. In the simula-tions reported below, we implemented the Stratonovich convention, although the qualitative picture is independent of this choice. The key modeling question is then the correlation structure of the stochastic forcing. What should one assume about the correlations between the two timeseries, ηi(t) and ηj (t)?In most of the literature, the stochastic terms ηi(t) and ηj (t) are taken either to be com-pletely independent or to exhibit some arbitrarily prescribed level of correlation. Although this approach is technically straightforward, its ground in biological reality is problematic. We suggest that a biologically grounded correlation structure requires the covariance matrix of the noise, 
+
+Cij = ⟨ηi(t)ηj (t)⟩,
+
+to be, at least to first approximation, proportional to αij , for the following reasons: 1. The coefficient αij reflects the extent to which species depend on similar resources. Accordingly, the correlations between their environmental responses are expected to increase with αij : species with larger niche overlap should experience more similar fluctuations in their growth rates. 2. Even setting aside resource dynamics, the interaction coefficient αij often reflects bio-logical similarity between species, for example phylogenetic relatedness. It is therefore natural to expect that external environmental factors, such as temperature or pH, will affect species in a similar manner when αij is large. We are therefore led to model stochasticity in the LV dynamics by introducing S stochastic processes ηi(t), with i = 1 , . . . , S , whose covariance matrix satisfies 
+
+Cij = αij . (6) This prescription should not be viewed as a unique biological law, but rather as a canonical limiting case of biologically grounded direct noise. More generally, one may expect the covariance structure to reflect biological similarity only approximately. The choice C(η) 
+
+> ij
+
+= αij 
+
+therefore provides a stringent test case: if the stochastic Lotka-Volterra framework fails even under this maximally favorable assumption, it cannot serve as a reliable basis for correlation-based inference. 8A set of correlated time series of that kind can be generated, for example, using the Cholesky decomposition [33]. At first sight, this prescription offers a natural route to bio-logically grounded stochasticity in the LV dynamics. As we now show, however, it encounters two major obstacles: a realizability problem and an inferential one.  
+
+> B. The complexity-stochasticity problem
+
+For symmetric interaction matrices, the prescription above - that is, using the Cholesky decomposition to generate a biologically grounded correlation structure - is feasible only if the matrix α is positive semidefinite. Thus, biologically grounded stochastic forcing with 
+
+Cij = αij can be imposed only when the effective interaction matrix satisfies a very restrictive spectral condition. This requirement is closely analogous, in spirit, to May’s classical stability criterion [34]. In May’s case, coexistence is limited by the requirement that the Jacobian around a stable solution of Eq. (2) satisfy an appropriate spectral stability condition, whereas here the Cholesky construction imposes a comparable spectral constraint directly on the interaction matrix α. The analogy is not one of exact mathematical equivalence, but of statistical structure: in both settings, a large heterogeneous matrix must satisfy the same restrictive spectral condition, and in both settings this condition becomes increasingly unlikely to hold as the matrix grows larger and the variance of its entries increases. If the Jacobian and 
+
+α are assumed to have comparable statistical properties, then the two criteria should be expected to fail in the same regime of large size and strong heterogeneity. In practice, this analogy is reflected in the same qualitative pattern. Whenever the LV equations admit stable coexistence of all S species, it is generally possible to perform a Cholesky decomposition and construct stochastic fluctuations whose covariance structure follows the niche-overlap matrix α. By contrast, when the deterministic LV system does not admit coexistence, a covariance matrix consistent with this prescription is typically not realizable. In this sense, beyond the classical complexity-diversity problem, one encoun-ters here a related complexity-stochasticity problem: in sufficiently large and heterogeneous communities, biologically grounded stochastic forcing is generically not realizable. 9C. Vanishing abundance correlations 
+
+At first sight, one might hope to avoid the realizability problem discussed above by re-stricting attention to the subset of species that admits a stable coexistence state. We refer to such a subset as a coexistence clique [35]. Within a coexistence clique, the interaction matrix does, in general, admit a Cholesky decomposition, allowing one to generate stochas-tic environmental fluctuations with covariance matrix proportional to α and to use these fluctuations in the stochastic LV dynamics. However, even within a coexistence clique, a second and more fundamental difficulty re-mains. If the noise covariance is chosen to be proportional to αij , abundance correlations vanish in a two-species community. This result is derived in the weak-noise limit, by lineariz-ing the dynamics around a stable coexistence fixed point (see Appendix C). The cancellation is illustrated numerically in Fig. 1. The reason is that, under this prescription, the same coefficient αij controls two opposing effects: it determines how similarly species respond to environmental fluctuations and, at the same time, how strongly they compete with one another. Thus, whenever two species are driven in the same direction by the environment, they also inhibit one another more strongly. Within the stochastic LV structure, the positive correlation induced by the shared environment is therefore exactly canceled by the negative correlation induced by competition. The implication for inference is immediate. Within this stochastic LV framework, abun-dance correlations carry no information about niche overlap. Even under the most favorable noise prescription, namely, one in which the covariance of the stochastic forcing is chosen to follow α, abundance-level inference fails. The same result holds (see Appendix C) in a larger community with many species, provided that the interaction matrix α is symmetric.  
+
+> IV. BIOLOGICALLY GROUNDED STOCHASTIC DYNAMICS IN THE CONSUMER-RESOURCE MODEL
+
+We now return to the consumer-resource level, precisely because it preserves the mecha-nistic distinction that is lost in the coarse-grained Lotka-Volterra description. In particular, it allows us to distinguish between stochasticity that acts directly on consumers and stochas-ticity that acts indirectly through resources. We therefore consider the stochastic version of 10 FIG. 1: Abundance correlations in the Lotka-Volterra model for two-species commu-nity with correlated noise. The stochastic Lotka-Volterra model (Eqs. 4) was simulated for two species, 1 and 2. The competition is symmetric, α1,2 = α2,1 ≡ α. The covariance between the corre-sponding Wiener processes is proportional to α, with C1,2 = ⟨η1(t)η2(t)⟩ = b1α, where the constant 
+
+b1 takes the values 0.8, 1 and 1.2. While higher niche overlap α yields negative correlations due to competition, the higher covariance between noise timeseries reflect shared response to environmen-tal variations, hence yield positive correlations. At the point of biologically-grounded relationships, 
+
+b1 = 1 , the two effects cancel each other. Positive correlations appear when the shared response is dominant ( b1 > 1) and correlations become negative when competition is dominant. Results were extracted from simulations of T = 100 , 000 timesteps with σe = 0 .05 , where the mean and the variance were calculated using the last 9 time windows of 10 , 000 timesteps each. 
+
+the consumer-resource model, Eq. (1), 
+
+dn i(t)
+
+dt = −ni + niQ
+
+X
+
+> k=1
+
+γik Rk + σceξi(t) ni,dR k(t)
+
+dt = Rk − R2 
+
+> k
+
+− RkSX
+
+> i=1
+
+λki ni + σre ζk(t) Rk. (7) Here, both ξi(t) and ζk(t) are white-noise processes. The terms proportional to σre describe stochasticity in the growth rates of the resources, which in turn affects consumers indirectly through resource availability. The terms proportional to σce, by contrast, represent the direct 11 effect of external environmental factors, such as temperature or pH, on consumer dynamics. We assume that stochasticity at the resource level ( σre terms) is uncorrelated across differ-ent resource types. The underlying idea is that interaction with consumers is not, in many cases, a biologically meaningful evidence or source of similarity among resources. Consumers may affect resource abundances only weakly, and similar patterns of interaction with con-sumers do not necessarily imply similar physiology among resources. This assumption may admit exceptions, for example in systems where consumers and resources have undergone substantial coevolution, but we do not pursue such cases here. By contrast, we assume, as before, that stochasticity at the consumer level reflects biological similarity and is thus proportional to the interaction matrix α, so Cij ≡ ⟨ ξi(t)ξj (t)⟩ = αi,j .We can now evaluate these correlations, both numerically and analytically, within a biologically grounded framework. This analysis yields two important observations. First, let us consider the case σre = 0 , i.e., when stochasticity affects only the consumer species via external mechanisms (such as temperature or pH) and not through the resources. This reveals a major difference between Lotka-Volterra dynamics and the consumer-resource system. In the LV case, when the noise is biologically grounded, i.e., Cij = αij , the effect of competition, encoded by α and tending to induce negative correlations, exactly cancels the effect of the shared environmental response, which tends to induce positive correlations. The resulting abundance correlation is therefore zero. In the present case, however, the same value of α is obtained through Eq. (3), under the mapping to Lotka-Volterra, and hence the same degree of niche overlap. Yet, the qualitative outcome is different. The reason is that competition now acts more slowly, because it is mediated through resource dynamics, whereas the shared environmental response is more immediate and therefore has a stronger effect. As a consequence, biologically grounded stochasticity produces a positive abundance correlation. Negative correlations arise only when the shared environmental component is reduced, as in the case of stochastic forcing that is not structured according to α, allowing the effect of competition to dominate. This behavior is illustrated in Fig. 2. Since this deviation from the LV behavior is directly related to the slower response of resource-mediated interactions, it disappears when resources become fast variables and adapt to the instantaneous concentration of the consumers. In that limit the CR system is expected to approach the effective LV description more closely. Consistent with this expectation, 12 FIG. 2: Abundance correlations in consumer-resource system with consumer noise. 
+
+The stochastic model (Eqs. 7) were simulated for two species and three resources. Niche overlap 
+
+α is related to the matrices Γ and Λ through Eq. (3). Shown here are the abundance correlations between consumer species, as obtained from long simulations, as a function of α. Since the mapping is highly redundant, many combinations of Γ and Λ correspond to the same value of α [19], which brings some "width" to the resulting outcome. In Panel A (left), the noise is biologically grounded, with C12 = ⟨ξ1(t)ξ2(t′)⟩ = αδ (t − t′). In this case, abundance correlations are positive and increase with α, because the shared response to environmental fluctuations dominates the negative effect of competition. In Panel B (right), the stochastic forcing is uncorrelated, C12 = 0 . The shared envi-ronmental response is then absent, so competition dominates: abundance correlations are generally negative and become more negative as α increases. 
+
+our simulations suggest (results not shown) that, in the biologically grounded case Cij =
+
+αij , when the resource dynamics is much faster than that of the consumer, the abundance correlations indeed tend toward zero, as in the LV model. It should be noted, however, that this fast-variable limit is difficult to realize when α → 1. In that regime, consumer and resource modes become strongly coupled, and the relaxation timescale to equilibrium diverges for both. Our second observation is that a qualitatively different behavior arises for resource-mediated fluctuations. If the only source of fluctuations is the resource ( σce = 0 ), the consumer-consumer correlation function is almost independent of αij . As discussed in our recent work [19], correlations in that case depend on the yield-depletion mismatch YDM, that reflects the imbalance between competition and shared response, see Appendix A. 13 FIG. 3: Direct and resource-mediated noise. In both panels, color (see colorbar) indicates the level of correlation obtained from numerical experiments across the Y DM -α plane. In the left panel the stochasticity is external ( σre = 0 , no noise term in the resource equation) and in the right panel there is no external noise ( σce = 0 ). Clearly, external noise yields correlations that are a function of α, not of Y DM , while in resource-mediated stochasticity the role of niche overlap α is negligible and Y DM governs the correlations. We implemented a two-consumer, three-resource model, and we generate many randomly chosen Γ and Λ where α1,2 = P  
+
+> jΓ1,j Λj, 2, see Supplementary B.
+
+To see this intuitively, consider two species, i and j, that deplete resources similarly, but for which one of them, say species i, derives a much greater benefit from a given resource. An increase in the availability of that resource will then preferentially boost species i, whose growth will in turn deplete the relevant resources more strongly, inducing a decrease in the abundance of j and thus negative correlation between the two species. Conversely, if depletion patterns differ while yields remain similar, the resulting correlations are positive. Resource-mediated correlations therefore reflect the yield-depletion mismatch Y DM , rather than the niche overlap α.This result, and the sharp distinction between resource-mediated stochasticity and ex-ternal stochasticity, are demonstrated in Fig. 3. The value of abundance correlations is 
+
+Y DM -dependent for σce = 0 and is α-dependent when σre = 0 .The consumer-resource framework therefore resolves the ambiguity that arises at the Lotka-Volterra level by keeping distinct sources of stochasticity mechanistically separate. Direct consumer-level fluctuations carry information about niche overlap, whereas resource-mediated fluctuations carry information about yield-depletion mismatch. As a result, abun-14 dance correlations are not intrinsically informative: their interpretation depends on the origin of the noise. Any attempt to use such correlations for inference therefore requires an understanding how stochasticity enters the system. We would like to note a related work by Chen et al. [13], who also studied the inference of resource-mediated interactions from time-series data within a consumer-resource framework. A central conclusion of their work is consistent with ours: equal-time abundance correla-tions are generally unreliable indicators of resource overlap. One mechanism underlying this failure in their case is that changes in the timescale of environmental forcing shift the bal-ance between competition and shared response. These authors addressed the limitations of zero-time correlations by developing dynamical observables, in particular cross-power spec-tral density and coherence, which retain lag- and frequency-dependent information and can recover resource guild structure. We do not pursue such dynamical observables here, as our focus is not on improving inference from abundance time series, but rather on identi-fying the mechanistic conditions under which abundance correlations admit a meaningful interpretation. Despite these similarities, there are several important differences in the modeling as-sumptions underlying our approach and that of Chen et al. [13]. First, in their construction the effective interaction matrix is not normalized, so that diagonal self-interaction terms vary across species and may mix niche overlap with total resource use. Second, their parametrization limits differences between yield and depletion, corresponding in our ter-minology to a regime of small yield-depletion mismatch. Third, environmental fluctuations in their model are temporally correlated, either periodic or Ornstein-Uhlenbeck, and enter exclusively through the resources. In contrast, we employ white-noise forcing and explicitly distinguish between direct consumer-level noise and resource-mediated fluctuations.  
+
+> V. DISCUSSION
+
+The first conclusion of this work is that biologically grounded stochasticity is generically incompatible with large, heterogeneous communities. If niche overlap is interpreted as bio-logical similarity, it is natural to require the covariance of the stochastic forcing to track the interaction matrix α. However, this is possible only when α satisfies the spectral constraints of a covariance matrix [33]. 15 This leads to a direct analogue of May’s complexity-diversity argument [34]. Just as increasing diversity and heterogeneity make stable coexistence unlikely, they also make it unlikely that stochastic fluctuations can consistently reflect biological similarity. This defines a correlation-diversity problem: increasing diversity does not only destabilize deterministic coexistence, but also limits the ability of stochastic fluctuations to encode biological simi-larity. This connection can be understood intuitively by considering the relation between the two limitations discussed above. When a community violates May’s complexity-diversity criterion, many species cannot persist deterministically and survive only marginally, for example through continuous immigration. In that regime, the fluctuations experienced by these marginal species are dominated by external inputs and by the collective dynamics of the persistent community, rather than by their pairwise biological similarity. One should therefore not expect the stochastic covariance structure to track niche overlap outside the coexistence clique. A second conclusion is that biologically grounded stochasticity cannot be modeled directly at the level of Lotka-Volterra equations. Even in the low-diversity cases where the covariance prescription Cij ∝ αij is realizable, the resulting abundance correlations vanish identically. The reason is that, within the stochastic LV description, the same coefficient αij reflects two opposing trends: the biological similarity between species and between the environmental forcing acting on them, and the strength of the competition between them. As a consequence, the positive correlation induced by a shared environmental response is exactly canceled by the negative correlation induced by stronger competition. The LV formalism therefore builds in a hidden symmetry between gain and loss, or equivalently between shared response and competitive feedback, and this symmetry destroys the abundance-level signal. For this reason, inference based on abundance correlations cannot rely on stochastic LV modeling: the question of what abundance correlations reveal about niche overlap has, within that framework, no informative answer. The situation changes qualitatively in the consumer-resource dynamics. There, biologically-grounded stochasticity can be introduced at the mechanistic level, and one must distinguish between direct noise acting on consumers and indirect noise transmitted through resources. These two sources of stochasticity have fundamentally different signatures. Direct and bio-logically grounded consumer-level noise generates correlations that track αij and therefore 16 retain information about niche overlap or, more generally, about mechanistic similarity between species (guild structure). By contrast, resource-mediated noise does not reflect 
+
+αij ; instead, as shown in our previous work [19], it reflects the yield-depletion mismatch (YDM), namely the extent to which depletion and benefit are misaligned between species. In realistic systems, one should therefore expect a mixture of these two contributions. This immediately implies that abundance correlations can be used for inference only if one has some independent understanding of the origin of the noise and of the pathway through which it enters the system. As mentioned above, the recent work by Chen et al. [13] showed that abundance time series may nevertheless contain recoverable information about resource competition when analyzed dynamically rather than through equal-time correlations: cross-power spectral density and coherence can reveal resource guilds in consumer-resource systems with time-dependent resource supply. Our results are complementary. They show that the interpre-tation of abundance-derived statistics depends on the mechanism of environmental forcing: direct consumer-level fluctuations, resource-mediated fluctuations, and coarse-grained LV noise need not encode the same biological quantity. Finally, several caveats should be kept in mind. First, the assumption that stochastic forcing at the consumer level should be proportional to α is biologically natural, but not universal. Species may converge to similar niche positions while retaining very different physiologies (e.g., through convergent evolution), in which case their responses to external variables such as temperature or pH need not be similar. Second, we assumed here that resource-level stochasticity is uncorrelated across resource types. However, one could equally imagine systems in which resources that interact similarly with the consumers respond in correlated ways, suggesting covariance structures for the resource noise that are tied to Γ or 
+
+Λ. Such possibilities are especially plausible in systems with strong coevolution or tightly structured resource classes. Extending the present framework to these cases is an important direction for future work. 
+
+Acknowledgments: N.M.S acknowledges support from the Israel Ministry of Science (Italy-Israel cooperation, grant no. 7578) and of the Israel Science Foundation (grant no. 17 2435/24). 
+
+[1] Russell Lande, Steinar Engen, and Bernt-Erik Saether, Stochastic population dynamics in ecology and conservation (Oxford University Press, 2003). [2] Tak Fung, James P O’Dwyer, and Ryan A Chisholm, “Effects of temporal environmental stochasticity on species richness: a mechanistic unification spanning weak to strong temporal correlations,” Oikos 2022 , e08667 (2022). [3] Guy Bunin, “Ecological communities with lotka-volterra dynamics,” Physical Review E 95 ,042414 (2017). [4] Matthieu Barbier, Jean-François Arnoldi, Guy Bunin, and Michel Loreau, “Generic assembly patterns in complex ecological communities,” Proceedings of the National Academy of Sciences 
+
+115 , 2156–2161 (2018). [5] Michael Kalyuzhny, Ronen Kadmon, and Nadav M Shnerb, “A neutral theory with envi-ronmental stochasticity explains static and dynamic properties of ecological communities,” Ecology letters 18 , 572–580 (2015). [6] Matan Danino and Nadav M Shnerb, “Theory of time-averaged neutral dynamics with envi-ronmental stochasticity,” Physical Review E 97 , 042406 (2018). [7] Emil Mallmin, Arne Traulsen, and Silvia De Monte, “Chaotic turnover of rare and abundant species in a strongly interacting model community,” Proceedings of the National Academy of Sciences 121 , e2312822121 (2024). [8] Thibaut Arnoulx de Pirey and Guy Bunin, “Many-species ecological fluctuations as a jump process from the brink of extinction,” Physical Review X 14 , 011037 (2024). [9] Jacopo Grilli, “Macroecological laws describe variation and diversity in microbial communities,” Nature communications 11 , 1–11 (2020). [10] Akshit Goyal, Leonora S Bittleston, Gabriel E Leventhal, Lu Lu, and Otto X Cordero, “In-teractions between strains govern the eco-evolutionary dynamics of microbial communities,” Elife 11 , e74987 (2022). [11] Matteo Sireci, Miguel A Muñoz, and Jacopo Grilli, “Environmental fluctuations explain the universal decay of species-abundance correlations with phylogenetic distance,” Proceedings of the National Academy of Sciences 120 , e2217144120 (2023). 
+
+18 [12] Kyle Crocker, Abigail Skwara, Rathi Kannan, Arvind Murugan, and Seppe Kuehn, “Microbial functional guilds respond cohesively to rapidly fluctuating environments,” bioRxiv (2025). [13] Xiaowen Chen, Kyle Crocker, Seppe Kuehn, Aleksandra M Walczak, and Thierry Mora, “Inferring resource competition in microbial communities from time series,” PRX Life 3, 023019 (2025). [14] Michel Loreau and Claire De Mazancourt, “Biodiversity and ecosystem stability: a synthesis of underlying mechanisms,” Ecology letters 16 , 106–115 (2013). [15] Wim Van Saarloos, “Front propagation into unstable states,” Physics reports 386 , 29–222 (2003). [16] Peter Chesson, “Species competition and predation,” in Ecological systems (Springer, 2013) pp. 223–256. [17] Jurg W Spaak and Frederik De Laender, “Intuitive and broadly applicable definitions of niche and fitness differences,” Ecology Letters 23 , 1117–1128 (2020). [18] Jawad Sakarchi and Rachel M Germain, “Macarthur’s consumer-resource model: a rosetta stone for competitive interactions,” The American Naturalist 205 , 306–326 (2025). [19] Akiva Goldberg, Oshrit Shtossel, Yoram Louzoun, and Nadav M Shnerb, “Niche overlap is not enough: Same overlap, opposite dynamics,” bioRxiv (2025), accepted, Ecology letters. [20] E. Postma, C. Verduyn, W. A. Scheffers, and J. P. Van Dijken, “Enzymic analysis of the crabtree effect in glucose-limited chemostat cultures of saccharomyces cerevisiae,” Applied and Environmental Microbiology 55 , 468–477 (1989). [21] J. D. Bjørge, J. Overgaard, and H. Malte, “Temperature dependence of energy conversion efficiency in insect larvae,” Journal of Thermal Biology 74 , 252–258 (2018). [22] M. Basan, S. Hui, H. Okano, Z. Zhang, Y. Shen, J. R. Williamson, and T. Hwa, “Overflow metabolism in escherichia coli results from efficient proteome allocation,” Nature 528 , 99–104 (2015). [23] J. R. Speakman, “Body size, energy metabolism and lifespan,” Journal of Experimental Biology 
+
+208 , 1717–1730 (2005). [24] J. A. Vucetich, R. O. Peterson, and C. L. Schaefer, “The effect of prey and predator densities on wolf predation,” Ecology 83 , 3003–3013 (2004). [25] N. Owen-Smith, Megaherbivores: The Influence of Very Large Body Size on Ecology (Cam-bridge University Press, 1988). 
+
+19 [26] P. A. Jansen, M. Bartholomeus, and F. Bongers, “Scatter hoarding by rodents and seed predation: a spatially explicit model of survival,” Ecological Modelling 175 , 417–430 (2004). [27] L. M. Gosling and S. C. Roberts, “Scent-marking by male mammals: cheat-proof signals to competitors and mates,” Advances in the Study of Behavior 30 , 169–217 (2001). [28] Yizhou Liu, Jiliang Hu, and Jeff Gore, “Ecosystem stability relies on diversity difference between trophic levels,” Proceedings of the National Academy of Sciences 121 , e2416740121 (2024). [29] Theo Gibbs, Yifan Zhang, Zachary R Miller, and James P O’Dwyer, “Stability criteria for the consumption and exchange of essential resources,” PLoS computational biology 18 , e1010521 (2022). [30] Emmy Blumenthal, Jason W Rocks, and Pankaj Mehta, “Phase transition to chaos in com-plex ecosystems with nonreciprocal species-resource interactions,” Physical review letters 132 ,127401 (2024). [31] Peter Chesson, “Species competition and predation,” in Ecological systems: Selected entries from the encyclopedia of sustainability science and technology (Springer, 2012) pp. 223–256. [32] Egbert H van Nes, Diego GF Pujoni, Sudarshan A Shetty, Gerben Straatsma, Willem M de Vos, and Marten Scheffer, “A tiny fraction of all species forms most of nature: Rarity as a sticky state,” Proceedings of the National Academy of Sciences 121 , e2221791120 (2024). [33] Gene H Golub and Charles F Van Loan, Matrix computations (JHU press, 2013). [34] Robert M May, “Will a large complex system be stable?” Nature 238 , 413–414 (1972). [35] Yael Fried, David A Kessler, and Nadav M Shnerb, “Communities as cliques,” Scientific reports 
+
+6, 35648 (2016). 
+
+20 Appendix A: The yield-depletion mismatch (YDM) 
+
+In the main text, we emphasized that when stochasticity is transmitted through resource fluctuations, abundance correlations between consumers are not primarily governed by niche overlap alone. Instead, they depend on an additional mechanistic property of the consumer-resource system, which termed, in a previous work, the yield-depletion mismatch (YDM) [19]. In this appendix, we briefly introduce the yield-depletion mismatch (YDM) and outline its biological interpretation.  
+
+> 1. Resource-mediated correlations are controlled by yield-depletion mismatch
+
+Consider two consumer species i and j relying on a common pool of resources. At the level of the reduced Lotka-Volterra description, their level of competition is encoded by the effective interaction coefficient αij . In a consumer-resource system αij captures their niche overlap between these two species. However, the same value of αij can arise from many different combinations of consumer traits. In particular, as explained in the main text, each consumer species is characterized by two distinct profiles: 
+
+• a yield profile , describing how strongly each resource contributes to its growth; 
+
+• a a depletion profile , describing the per-capita rate at which the consumer removes each resource from the environment These two profiles need not coincide. Two species may deplete resources in very similar ways while differing strongly in the benefit they derive from them or vice versa. As a result, two consumer-resource systems with the same niche overlap may nevertheless respond very differently to stochastic resource fluctuations.  
+
+> 2. Definition
+
+We distinguish between two aspects of functional dissimilarity, namely yield dissimilarity 
+
+∆γ and depletion dissimilarity ∆λ, defined through the cosine distance between the relevant rows of the yield matrix Γ, and columns of the depletion matrix Λ (see Eq. (1) of the main 21 text): 
+
+∆γ = 1 − cos θi,j (γ) ≡ 1 −⃗ γ i ·⃗γ j
+
+|⃗γ i|| ⃗γ j |
+
+∆λ = 1 − cos θi,j (λ) ≡ 1 −⃗ λi ·⃗ λj
+
+|⃗λi|| ⃗λj |.
+
+In what follows, we focus on the yield-depletion mismatch D, defined by the difference between these two quantities: 
+
+D ≡ ∆λ − ∆γ .
+
+Thus, D is not another measure of niche overlap. Rather, it measures the imbalance between similarity in yield and similarity in depletion among systems that may have the same effective interaction coefficient αij . 
+
+> 3. Interpretation
+
+The sign of D has a simple qualitative meaning. When ∆γ > ∆λ, the two species differ more in yield than in depletion, so D < 0. In that case, a fluctuation in resource availability may benefit one species much more than the other, while both species still impose similar pressure on the resource pool. This tends to generate negative abundance correlations (see Figure 4, taken from [19]). By contrast, when ∆λ > ∆γ , one has D > 0. In that regime, the two species respond more similarly to resource increases, but differ more in the way they deplete resources. As a result, the shared positive response to resource fluctuations tends to dominate, leading to positive abundance correlations. In other words, YDM quantifies the balance between two competing tendencies: 1. shared response , which tends to produce positive correlations, and 2. effective competition through resource depletion , which tends to produce negative cor-relations. Therefore, abundance correlations due to resource-mediated noise are controlled by D
+
+rather than by niche overlap α.22 4. Relation to previous work 
+
+The role of YDM in the present paper is conceptually distinct from the role it played in [19]. There, the main question was whether abundance correlations can be predicted from niche overlap in a stochastic consumer-resource system, and the answer was negative: the relevant predictor was instead the yield-depletion mismatch. Here, our broader goal is to understand when stochasticity can be modeled in a biologi-cally grounded way, and what information can be extracted from the resulting correlations. From that perspective, YDM appears specifically in the case where stochasticity acts through the resources . In that case, abundance correlations depend on the mismatch between benefit and depletion, rather than on the effective overlap parameter α.By contrast, when stochasticity acts directly on consumers in a biologically grounded way, correlations track niche overlap much more directly. The key point is therefore that the inferential content of correlations depends not only on the deterministic interaction structure, but also on the mechanistic pathway through which stochasticity enters the system. 23 FIG. 4: Intuition Behind the Yield-Depletion Mismatch D. Two schematic examples corresponding to limiting cases. Green lines represent yield; red lines represent depletion. Left: 
+
+∆γ ≫ ∆λ, i.e., each consumer depends on a different resource (green arrows) but depletes (red arrows) both in a similar way. An increase in one resource strongly benefits only one species; since depletion is not species-specific, this harms the other species, producing negative correlations. 
+
+Right: ∆γ ≪ ∆λ. Now, both consumers are generalists and respond similarly to increases in any resource. Although their depletion profiles differ, the shared response to environmental variation dominates, producing positive correlations. These panels are intentionally stylized and are not meant to represent realistic communities. Natural systems are unlikely to exhibit perfectly generalist or perfectly specialist extremes; instead, yield-depletion asymmetries may arise from species-specific processing, wasteful or destructive uptake, cross-feeding and so on. The panels aim to clarify the mechanisms by which such asymmetries generate positive or negative abundance correlations. 
+
+24 Appendix B: Generating yield and depletion matrices 
+
+Throughout this paper, we fixed the parameter values in the LV model (thereby also deter-mining the niche overlap) and then searched for many consumer-resource systems that, in the limit ˙Rk = 0 , yield the same α values, using the redundancy of the mapping from the CR system to LV [19]. To this end, we explored Λ through null-space perturbations: 
+
+• Each of the S rows of Γ was generated by drawing a random vector of length Q with positive entries and normalizing it so that the row sum equals 2. 
+
+• Given such a Γ, we constructed a compatible Λ by solving: 
+
+ΓΛ = α
+
+• Since Γ is a S × Q matrix, the solution for Λ is underdetermined. The Moore-Penrose pseudoinverse Γ† provides us with a particular solution: 
+
+Λ0 = Γ †α. 
+
+• To explore the solution space, we added to this particular solution a random component from the null space of Γ, yielding: 
+
+Λ = Λ 0 + ϵ Null (Γ) 
+
+where ϵ is a random matrix of appropriate dimensions. This method ensures that all generated Λ matrices satisfy the required constraints while allowing for variability due to redundancy in the CR-to-LV projection. 25 Appendix C: Vanishing abundance correlations in the symmetric stochastic Lotka-Volterra model 
+
+In this appendix we show that, for a symmetric S-species stochastic Lotka-Volterra system, abundance correlations vanish (to leading order in the weak-noise expansion) when the covariance matrix of the environmental noise is chosen to be equal to the interaction matrix. This calculation generalizes the two-species result and shows that the cancellation is not a special property of the two-dimensional case. We consider the stochastic Lotka-Volterra system 
+
+dn i
+
+dt = ni 1 −
+
+> S
+
+X
+
+> j=1
+
+αij nj
+
+!
+
++ σeniηi(t), i = 1 , . . . , S. (C1) The matrix α is assumed to be symmetric, 
+
+αij = αji , (C2) with normalized diagonal entries, 
+
+αii = 1 . (C3) The environmental noise terms satisfy 
+
+⟨ηi(t)⟩ = 0 , (C4) and 
+
+⟨ηi(t)ηj (t′)⟩ = C(η) 
+
+> ij
+
+δ(t − t′). (C5) Here we focus on the biologically grounded prescription 
+
+C(η) 
+
+> ij
+
+= αij . (C6) Thus, species with larger niche overlap are also assumed to experience more strongly corre-lated environmental fluctuations. The deterministic part of Eq. (C1) is 
+
+dn i
+
+dt = ni 1 −
+
+> S
+
+X
+
+> j=1
+
+αij nj
+
+!
+
+. (C7) 26 A coexistence fixed point ¯n satisfies 
+
+1 −
+
+> S
+
+X
+
+> j=1
+
+αij ¯nj = 0 for all i, (C8) or, in matrix form, 
+
+α¯n = 1. (C9) We assume that this fixed point exists, is positive, and is linearly stable. We now write the abundance of each species as a small fluctuation around the coexistence fixed point, 
+
+ni(t) = ¯ ni + δn i(t). (C10) To leading order in the fluctuations, the deterministic dynamics becomes 
+
+ddt δn i =
+
+> S
+
+X
+
+> j=1
+
+Aij δn j , (C11) where A is the Jacobian matrix evaluated at the coexistence fixed point. From 
+
+fi(n) = ni 1 −
+
+> S
+
+X
+
+> k=1
+
+αik nk
+
+!
+
+, (C12) we obtain 
+
+Aij = ∂f i
+
+∂n j n=¯ n
+
+. (C13) Differentiating gives 
+
+∂f i
+
+∂n j
+
+= δij 1 −
+
+> S
+
+X
+
+> k=1
+
+αik nk
+
+!
+
+− niαij . (C14) At the fixed point, the first term vanishes because of Eq. (C9). Therefore, 
+
+Aij = −¯niαij . (C15) It is useful to define the diagonal matrix 
+
+N = diag(¯ n1, . . . , ¯nS ). (C16) Then Eq. (C15) can be written compactly as 
+
+A = −N α. (C17) 27 The stochastic term in Eq. (C1) is multiplicative. However, in the weak-noise expansion around the fixed point, its leading-order contribution is obtained by evaluating the amplitude 
+
+ni at ¯ni. Thus, 
+
+σeniηi(t) = σe ¯niηi(t) + O(σeδn iηi). (C18) The term O(σeδn iηi) contributes only at higher order in the weak-noise covariance calcula-tion. To leading order, the linearized stochastic dynamics is therefore 
+
+ddt δn = Aδ n + Bη(t), (C19) where 
+
+B = σeN. (C20) The noise covariance entering the linearized dynamics is therefore 
+
+D = BC (η)BT . (C21) Using C(η) = α, we obtain 
+
+D = σ2 
+
+> e
+
+N αN. (C22) Let C denote the stationary covariance matrix of the abundance fluctuations, 
+
+C = δnδnT , (C23) with entries 
+
+Cij = ⟨δn iδn j ⟩ . (C24) The linearized white-noise dynamics in Eq. (C19) implies that the stationary covariance satisfies the Lyapunov equation 
+
+AC + CA T + D = 0 . (C25) Equation (C25) follows from the linearized stochastic dynamics and gives the stationary covariance balance for abundance fluctuations around the stable coexistence fixed point. We now show that Eq. (C25) has a diagonal solution. Consider 
+
+C = σ2
+
+> e
+
+2 N. (C26) Since N is diagonal, this proposed covariance matrix has entries 
+
+Cij = σ2
+
+> e
+
+2 ¯niδij . (C27) 28 In particular, all off-diagonal covariances are zero. We now verify that Eq. (C26) satisfies the Lyapunov equation. Using A = −N α , we have 
+
+AC = ( −N α )
+
+σ2
+
+> e
+
+2 N
+
+
+
+= −σ2
+
+> e
+
+2 N αN. (C28) Because α is symmetric and N is diagonal, 
+
+AT = ( −N α )T = −αN. (C29) Therefore, 
+
+CA T =
+
+σ2
+
+> e
+
+2 N
+
+
+
+(−αN ) = −σ2
+
+> e
+
+2 N αN. (C30) Adding the two terms gives 
+
+AC + CA T = −σ2 
+
+> e
+
+N αN. (C31) Using Eq. (C22), 
+
+D = σ2 
+
+> e
+
+N αN. (C32) Hence, 
+
+AC + CA T + D = −σ2 
+
+> e
+
+N αN + σ2 
+
+> e
+
+N αN = 0 . (C33) Thus, the stationary covariance matrix of the linearized abundance fluctuations is 
+
+C = σ2
+
+> e
+
+2 diag(¯ n1, . . . , ¯nS ). (C34) It follows immediately that, for i̸ = j,
+
+⟨δn iδn j ⟩ = Cij = 0 . (C35) The abundance correlation coefficient between species i and j is 
+
+ρij = Cij 
+
+pCii Cjj 
+
+. (C36) Since Cij = 0 for all i̸ = j, we obtain 
+
+ρij = 0 , i̸ = j. (C37) Therefore, in the symmetric stochastic Lotka-Volterra model, if the covariance structure of the environmental forcing is chosen to match the niche-overlap matrix, 
+
+C(η) = α, (C38) 29 then all pairwise abundance correlations vanish at leading order in the weak-noise expansion around the coexistence fixed point. This result shows that the cancellation is a general property of the symmetric S-species stochastic Lotka-Volterra model. The same matrix α controls two opposing effects. On the one hand, larger αij means that species i and j experience more similar environmental fluctuations, which tends to generate positive abundance correlations. On the other hand, the same larger αij also means stronger competition, which tends to generate negative abun-dance correlations. When the noise covariance is chosen to be exactly C(η) = α, these two effects cancel in the linearized dynamics, leaving a diagonal abundance covariance matrix. Thus, within this stochastic Lotka-Volterra framework, abundance correlations contain no direct information about niche overlap under the biologically grounded prescription C(η) 
+
+> ij
+
+=
+
+αij . This provides the analytical basis for the caution that abundance correlations should not be interpreted as direct proxies for biological niche overlap when the system is modeled using a standard stochastic Lotka-Volterra framework. 30
