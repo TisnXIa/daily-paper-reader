@@ -1,0 +1,1581 @@
+Title: Dynamic balance of sparse flux vectors for efficient simulation of culture dynamics and metabolic network reduction
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.06.17.733012v1.full.pdf
+
+Number of Pages: 23
+
+Markdown Content:
+## Title: 1
+
+# Dynamic balance of sparse flux vectors for 2
+
+# efficient simulation of culture dynamics and 3
+
+# metabolic network reduction 4
+
+## Running title: 5
+
+# Dynamic Flux Vector Balancing 6
+
+Ignacio Tapia García 1, Cristóbal Torrealba 1, Ricardo Luna 3, José Ricardo Pérez-Correa 1 &7
+
+Pedro A. Saa 1,2, ∗8
+
+> 1
+
+Departamento de Ingeniería Química y Bioprocesos, Pontificia Universidad Católica de Chile, Santiago, 9
+
+Chile. 10 
+
+> 2
+
+Instituto de Ingeniería Matemática y Computacional, Pontificia Universidad Católica de Chile, Santiago, 11 
+
+Chile. 12 
+
+> 3
+
+Centro de Investigación e Innovación Viña Concha y Toro. 13 
+
+> ∗
+
+Corresponding author (pnsaa@uc.cl) 14 
+
+Abstract 15 
+
+Dynamic Flux Balance Analysis (DFBA) enables simulation of microbial culture dynamics 16 
+
+under changing environmental conditions, but remains computationally expensive for tasks 17 
+
+such as parameter calibration and fermentation optimization when applied using genome-18 
+
+scale metabolic models (GEMs). To address this challenge, we introduce Dynamic Flux Vec-19 
+
+tor Balancing (DFVB), a reformulation of DFBA that solves an equivalent problem using a 20 
+
+pre-computed, sparse basis of flux solutions that reduces the dimensionality of the internal 21 
+
+optimization problem without information loss. Notably, DFVB provides a compact, inter-22 
+
+pretable representation of flux states that can readily identify dynamically inactive pathways 23 
+
+1
+
+.CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.17.733012 doi: bioRxiv preprint and enable simulation-based automatic metabolic network reduction. We showed that DFVB 24 
+
+produces the same culture dynamics as DFBA across multiple model scales and conditions, 25 
+
+and identifies inactive reactions more accurately than Flux Variability Analysis (FVA) when 26 
+
+compared to transcriptomic data profiles. Furthermore, computational performance analyses 27 
+
+demonstrated that integrating DFVB with solver warm-start strategies and model reduction 28 
+
+enhances computational efficiency relative to DFBA, yielding up to 3-fold reductions in simu-29 
+
+lation time for large-scale metabolic models. Finally, kinetic parameter estimation of culture 30 
+
+dynamics with DFVB in two fermentation scenarios using a large-scale yeast GEM reached 31 
+
+equal or higher prediction fidelity and narrower confidence intervals than DFBA, indicating 32 
+
+improved parameter identifiability and robustness. Together, these results position DFVB as a 33 
+
+scalable, robust, and biologically coherent framework for dynamic metabolic modeling, easing 34 
+
+the integration of GEMs for culture dynamics simulation. 35 
+
+Keywords— Genome-scale metabolic model, Dynamic flux balance analysis, Model reduction, Metabolic path-36 
+
+ways 37 
+
+# Introduction 38 
+
+Genome-scale metabolic models enable the quantitative simulation of cellular physiology by integrating thousands 39 
+
+of biochemical reactions and metabolites within a comprehensive optimization framework (Orth, Thiele, et al. 2010). 40 
+
+These models have become indispensable tools for guiding metabolic engineering, strain design, and optimization of 41 
+
+biotechnological processes ranging from commodity production to pharmaceuticals and enzyme manufacturing, sup-42 
+
+ported by constraint-based modeling methods such as Flux Balance Analysis (FBA) (Gotsmy et al. 2024; Gu et al. 43 
+
+2019; Sánchez et al. 2014). The dynamic extension of this approach, Dynamic Flux Balance Analysis (DFBA), en-44 
+
+ables simulation of the temporal evolution of the cell culture under changing environmental conditions (Mahadevan, 45 
+
+Edwards, et al. 2002). However, DFBA requires solving a large number of coupled ordinary differential equations 46 
+
+and linear programming problems, resulting in a substantial computational burden that limits its scalability and 47 
+
+practical integration into complex cell culture models. 48 
+
+Recent studies have focused on overcoming computational limitations by enhancing solver performance, intro-49 
+
+ducing nonlinear reformulations through Karush–Kuhn–Tucker (KKT) conditions (de Oliveira et al. 2023), interior-50 
+
+point optimization methods (Scott et al. 2018), Runge–Kutta integration schemes (Schroeder and Saha 2020), and 51 
+
+hybrid approaches incorporating metabolomic constraints (Dromms et al. 2020). Despite these advances, the com-52 
+
+putational efficiency of DFBA simulations remains limited to specific applications, as most approaches focus on 53 
+
+improving numerical optimization rather than addressing the structural complexity of the underlying metabolic 54 
+
+model (Gotsmy et al. 2024; Höffner et al. 2013). 55 
+
+To tackle the above difficulties, various strategies have been proposed for reducing the complexity of metabolic 56 
+
+2
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.17.733012 doi: bioRxiv preprint
+
+networks. These methods include topological reduction techniques like redGEM (Ataman et al. 2017), identifica-57 
+
+tion of topologically independent modules (Martínez et al. 2022) and reaction lumping (Erdrich et al. 2015), which 58 
+
+systematically generate consistent core models by focusing on specific metabolic subsystems of interest or com-59 
+
+pressing linear pathways. Other frameworks, such as the Dynamic Reduction of Unbalanced Metabolism (DRUM) 60 
+
+(Baroukh et al. 2014), partition the network into quasi-steady-state modules connected by dynamic metabolites. 61 
+
+Static analysis methods like Flux Variability Analysis (FVA) are also often utilized to identify and prune blocked 62 
+
+reactions (Mahadevan and Schilling 2003), while minimal mass-balance representations offer an alternative path for 63 
+
+network reduction (Singh and Lercher 2020). Specifically, formulations like Alpha Spectrum (Wiback et al. 2003), 64 
+
+MinSpan (Bordbar et al. 2014), Fast-SNP (Saa and LK Nielsen 2016) and METACONE (Altamirano et al. 2026) 65 
+
+aim to represent the feasible flux space through extreme or sparse bases, substantially lowering the dimensionality of 66 
+
+subsequent LP-based flux analyses while theoretically preserving biochemical accuracy. However, a common draw-67 
+
+back of various approaches is that they frequently rely on a priori definitions of subsystems or make assumptions 68 
+
+about the metabolic state, which may fail to reliably capture the transient (de)activation of pathways inherent to 69 
+
+dynamic fermentation processes. Moreover, the robust and efficient application of these model reformulation and 70 
+
+reduction techniques to dynamic DFBA simulations, particularly those based on minimal mass-balance descriptions, 71 
+
+has received limited attention and remains to be evaluated. 72 
+
+This study addresses these limitations by introducing Dynamic Flux Vector Balancing (DFVB), a computational 73 
+
+framework designed to structurally reduce model complexity and improve the efficiency of dynamic simulations in 74 
+
+genome-scale metabolic models. By computing a sparse null-space basis of the flux solution space, the proposed 75 
+
+method isolates the dynamically active metabolic subspace under a given environmental context. This reformulation 76 
+
+not only preserves the prediction fidelity of conventional DFBA, but also enables a systematic, simulation-based 77 
+
+reduction of the network, identifying and removing reactions that remain inactive throughout the simulated process. 78 
+
+Furthermore, this approach enhances the identification of kinetic parameters from experimental fermentation data, 79 
+
+leading to lower prediction uncertainty. Finally, driven by model reduction, this method is scalable to high-80 
+
+dimensional GEMs. The resulting framework substantially reduces computational complexity, enabling the robust 81 
+
+integration of dynamic metabolic modeling into standard bioprocess simulation environments. 82 
+
+# Results 83 
+
+## The Dynamic Flux Vector Balancing (DFVB) Framework 84 
+
+Dynamic Flux Vector Balancing (DFVB) provides a rigorous mathematical reformulation of standard Dynamic Flux 85 
+
+Balance Analysis (DFBA) designed to accelerate simulations of culture dynamics without losing precision (Fig. 1). 86 
+
+Instead of computing the full vector of reaction fluxes ( v) at each integration step, DFVB maps the feasible flux 87 
+
+space onto the right null-space of the stoichiometric matrix ( N). This basis is computed using a Rank-Revealing LU 88 
+
+(RRLU) decomposition to preserve matrix sparsity (refer to Methods), thereby easing its biological interpretation 89 
+
+3
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.17.733012 doi: bioRxiv preprint
+
+a) Model contextualization d) DFVB simulation based-reduction c) Sparse Null-Space basis calculation SparseNull Replace LP b) Dynamic Flux Balance Analysis   
+
+> Context-speci�ic model reduction
+> Reduces N
+> Reduces S Recover exact solution with null-space basis weights Reaction and metabolite activity identi�ication
+
+Figure 1. General framework for model reduction using the Dynamic Flux Vector Balancing (DFVB) methodology. (a) Contextualization and initialization of the metabolic model. (b) Standard formulation of Dynamic Flux Balance Analysis (DFBA) coupling differential equations with iterative FBA solutions. (c) Computation of a sparse null-space basis ( N) from the stoichiometric matrix ( S), reformulating the internal LP by replacing mass-balance constraints with a representation of fluxes ( v) parameterized by latent variables ( α). (d) Simulation-based model reduction using DFVB: monitoring the temporal dynamics of α enables the systematic identification and removal of inactive basis vectors, reactions, and metabolites, yielding a context-specific reduced model that captures the exact dynamic solution. and accelerating computational simulation. By parameterizing the flux distribution as a linear combination of null-90 
+
+space basis vectors, weighted by a vector of coefficients ( α), this algebraic transformation implicitly satisfies the 91 
+
+intracellular quasi-steady-state mass balances (Eq. 1). Effectively, this reduces the problem dimensionality from 92 
+
+the total number of reactions ( m) in standard FBA to (m − k) + z variables, where k represents the rank of the 93 
+
+stoichiometric matrix, z denotes the number of exchange reactions, and typically k ≫ z. Consequently, the total 94 
+
+number of constraints decreases from n + 2 m to z + 2 m, where n is the total number of metabolites. Crucially, this 95 
+
+reformulation is not an approximation, but an exact transformation that yields an identical optimal solution to the 96 
+
+original FBA problem while significantly reducing the complexity of the constraint set. 97 
+
+The parameterization of fluxes through latent variables provides in addition a direct mechanism for systematic, 98 
+
+simulation-based model reduction (see Alg.1). Because each coefficient αj (t) reflects the activation of its corre-99 
+
+sponding flux vector basis, DFVB simulations can identify dynamically inactive pathways. Basis vectors for which 100 
+
+αj (t) = 0 across the entire simulation window ( t ∈ [0 , T ]) are classified as inactive. The sequential elimination 101 
+
+of these inactive basis vectors from N, followed by the removal of the resulting zero-flux reactions and orphan 102 
+
+metabolites from S, produces a highly compact, context-specific stoichiometric network. This algorithm retains 103 
+
+all dynamically accessible biological pathways while eliminating irrelevant degrees of freedom. This significantly 104 
+
+reduces the computational demand required for large-scale dynamic modeling, transcriptomic analysis, and kinetic 105 
+
+parameter estimation. 106 
+
+4
+
+.CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.17.733012 doi: bioRxiv preprint Dynamic flux balance simulations with DFVB are accurate 107 
+
+In order to evaluate the accuracy of DFVB relative to DFBA, simulations were performed using four metabolic 108 
+
+models under multiple fermentation conditions. The first evaluation employed the simple illustrative model proposed 109 
+
+by Zhao et al. (2017), shown in Fig. 2A with its corresponding null-space basis. As presented in Fig. 2B, DFVB and 110 
+
+DFBA produced identical dynamic profiles for all simulated variables, exhibiting numerical agreement up to machine 111 
+
+precision. The associated α-dynamics revealed that only a single basis vector remained active throughout the 112 
+
+simulation, corresponding to the flux mode responsible for biomass formation. The second basis vector, associated 113 
+
+with product formation, remained inactive. Despite eliminating four reactions and three metabolites after removal 114 
+
+of inactive columns from the null-space matrix, the reduced model reproduced the exact full-system trajectory. 115 
+
+This suggests that DFVB preserves the essential dynamic behavior of systems when the optimal flux distribution 116 
+
+is unique, enabling exact simulation without loss of information due to model reduction. 117 
+
+A similar analysis was performed using the E. coli core metabolic model under aerobic, anaerobic, and oxygen-118 
+
+limited regimes (Fig. 2C). In all three scenarios, DFVB and DFBA displayed perfectly overlapping trajectories for 119 
+
+biomass, glucose, oxygen, and acetate. Under oxygen-limited conditions, both frameworks identically predicted 120 
+
+acetate accumulation during exponential growth, followed by a metabolic shift toward acetate consumption once 121 
+
+glucose was depleted. This diauxic behavior is characteristic of E. coli under glucose overflow (Pinhal et al. 2019). 122 
+
+Table S1 in the Supplementary File summarizes the accuracy of DFVB relative to DFBA across the illustrative 123 
+
+model, the E. coli core model, iML1515, and Yeast9. For all models examined, DFVB reproduced the DFBA 124 
+
+trajectories with RMSE values close to numerical precision. The variables directly constrained by the objective 125 
+
+function, namely biomass and glucose, exhibited the smallest discrepancies across all models and conditions. In 126 
+
+the aerobic simulations of the genome-scale models ( iML1515 and Yeast9), slightly larger RMSE values were 127 
+
+observed in the production profiles of by-products (see Supplementary File Text S7), though these deviations did 128 
+
+not substantially affect the overall simulated optimal trajectories. 129 
+
+## Computational Performance Evaluation 130 
+
+The computational efficiency of DFVB was evaluated across the E. coli core model, iML1515, and Yeast9. Following 131 
+
+a single DFVB simulation, each metabolic model was reduced according to the subset of active reactions and 132 
+
+metabolites (Algorithm 1). The extent of this structural reduction is summarized in Table 1. While the reduction 133 
+
+was modest for the E. coli core model, the genome-scale models showed substantial compression: approximately 134 
+
+14% and 28% of the basis vectors remained active for iML1515 and Yeast9, respectively. Consequently, nearly 74% 135 
+
+of reactions and 68% of metabolites were eliminated in iML1515, and 68% of reactions and 64% of metabolites 136 
+
+were removed in Yeast9. 137 
+
+5
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.17.733012 doi: bioRxiv preprint
+
+A
+
+> Null-space basis
+
+BCFigure 2. Comparison of DFBA and DFVB simulations using a simple illustrative model and the E. coli core 
+
+metabolic network. (A) Schematic representation of the simple illustrative model, where S, X and P denote the substrate, biomass and a metabolic product, respectively. N represents a sparse null-basis of the stoichiometric matrix. (B) Concentration profiles of S, X, and P obtained with DFBA and DFVB, together with the associated dynamics of α. (C) Simulated concentration trajectories of biomass, glucose, oxygen, and acetate for the E. coli core model under aerobic, anaerobic, and oxygen-limited conditions using both DFBA and DFVB. The results of both methods are identical. 
+
+Table 1. Model reduction statistics across growth conditions.                                                                 
+
+> Reduction metric
+> E. coli core iML1515 Yeast9
+> Aerobic Anaerobic O2-limited Aerobic Anaerobic O2-limited Aerobic Anaerobic O2-limited Total basis vectors 28 28 28 867 867 867 1538 1538 1538 Active basis vectors 13 916 124 122 125 429 425 431 Reactions eliminated 23 34 17 1999 1999 1997 2792 2856 2792 Reactions conserved 73 62 79 714 714 716 1339 1275 1339 Metabolites eliminated 813 51268 1266 1266 1832 1889 1830 Metabolites conserved 65 60 68 610 612 612 974 917 976
+
+To maximize computational efficiency during dynamic integration, a sequential warm-start strategy can be 138 
+
+used for both the standard DFBA and the proposed DFVB algorithms. Because the metabolic shifts between 139 
+
+consecutive time steps are typically small, the optimal basis from the previous integration step is retained and 140 
+
+6
+
+.CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.17.733012 doi: bioRxiv preprint supplied to the linear programming solver. However, its synergistic combination with the structural dimensionality 141 
+
+reduction of DFVB ensures that successive optimization problems are solved with minimal pivoting. This provides 142 
+
+a highly accelerated foundation for the dynamic analyses. Table S2 in the Supplementary File reports the CPU 143 
+
+time metrics. Warm-starting the linear solver markedly enhanced computational performance for both approaches. 144 
+
+For iML1515 and Yeast9, disabling warm-starts increased the computational cost of DFVB by up to fivefold. Model 145 
+
+reduction further contributed to computational efficiency; under aerobic conditions for iML1515, network reduction 146 
+
+decreased DFBA runtime approx. 3-fold (from 2.505 s to 0.807 s), and 8-fold in DFVB (from 7.594 s to 0.942 s). 147 
+
+Similar proportional decreases were observed for Yeast9, where runtimes consistently fell to less than a third of 148 
+
+the unreduced counterparts. Since this reduction relies on identifying the active null-space basis vectors during a 149 
+
+preliminary DFVB simulation, DFVB emerges not merely as a simulation algorithm, but as a pre-processing step 150 
+
+for identifying accurate and reduced model structures. 151 
+
+## Biologically-relevant network reduction 152 
+
+The functional coherence of the reduced iML1515 model was evaluated using experimental transcriptomic data from 153 
+
+Sastry et al. (2019). The subset of inactive reactions predicted by DFVB was compared against those identified by 154 
+
+Flux Variability Analysis (FVA) using standard binary classification metrics across 49 transcriptomic conditions 155 
+
+(Fig. 3). 156 Accuracy Precision Recall F1-score 
+
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> 0.7
+> 0.8
+> Score
+> DFVB
+> FVA
+
+Figure 3. Inactive reaction classification using DFVB pre-processing and FVA. The comparative analysis revealed that model reduction using DFVB achieved substantially higher accuracy, 157 
+
+recall, and a superior overall F1-score compared to the FVA-based approach. However, the aggressive structural 158 
+
+reduction applied by DFVB also resulted in a higher number of false positives (i.e., active reactions incorrectly 159 
+
+classified as inactive). Conversely, FVA was more conservative, yielding fewer false positives but at the cost of a 160 
+
+significantly lower recall. 161 
+
+7
+
+.CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.17.733012 doi: bioRxiv preprint Kinetic Parameter Estimation Using Dynamic Flux Simulations 162 
+
+To evaluate parameter estimation capabilities, DFVB and DFBA were compared using aerobic batch fermentation 163 
+
+data from Sánchez et al. (2014) (Fig. 4). While both frameworks captured the general dynamic trends, DFVB 164 
+
+yielded an ethanol trajectory that more closely followed the experimental data, supported by a narrower confidence 165 
+
+region (RMSE 0.906 vs. 1.093). DFVB also achieved a reduction in biomass prediction error (RMSE 0.086 vs. 166 
+
+0.128). Conversely, DFBA displayed marginally lower RMSE values for glucose, citrate, and lactate. 167 0 2 4 6 8 10                              
+
+> 0.0
+> 0.5
+> 1.0
+> 1.5
+> 2.0
+> 2.5
+> Biomass (g/L)
+> RMSE DFVB: 0.077
+> RMSE DFBA: 0.126
+> 0246810
+> 0.0
+> 2.5
+> 5.0
+> 7.5
+> 10.0
+> 12.5
+> 15.0
+> 17.5
+> 20.0
+> Glucose (g/L)
+> RMSE DFVB: 0.926
+> RMSE DFBA: 0.819
+> 0246810
+> 0
+> 2
+> 4
+> 6
+> 8
+> 10
+> Ethanol (g/L)
+> RMSE DFVB: 0.906
+> RMSE DFBA: 1.093
+> 0246810
+> Time (h)
+> 0.8
+> 1.0
+> 1.2
+> 1.4
+> 1.6
+> 1.8
+> Glycerol (g/L)
+> RMSE DFVB: 0.077
+> RMSE DFBA: 0.078
+> 0246810
+> Time (h)
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> Citrate (g/L)
+> RMSE DFVB: 0.039
+> RMSE DFBA: 0.032
+> 0246810
+> Time (h)
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> Lactate (g/L)
+> RMSE DFVB: 0.070
+> RMSE DFBA: 0.064
+> DFBA 95% CI DFVB 95% CI DFBA Mean DFVB Mean Experimental Data
+
+Figure 4. Simulation results comparing DFVB and DFBA using the experimental dataset from Sánchez et al. (2014). Shaded areas represent 95% confidence regions computed using bootstrapping, while solid lines indicate the mean prediction estimates and points denote the experimental data. RMSE values are reported for both frameworks. Table S3 in the Supplementary File presents the parameter estimation statistics. Most initial conditions 168 
+
+and yield coefficients converged to similar magnitudes in both frameworks. However, the lower bound for oxy-169 
+
+gen uptake ( lb O2 ) diverged substantially, with the DFBA estimate averaging 0.737 mM gDW −1 h−1 compared to 170 
+
+0.178 mM gDW −1 h−1 for DFVB. Additionally, both frameworks exhibited large standard deviations for the glucose 171 
+
+saturation constant ( Kg ) and the ethanol inhibition constant ( Kie ), though DFVB maintained narrower relative 172 
+
+confidence intervals for these parameters. 173 
+
+A second evaluation was conducted using laboratory-scale Sauvignon Blanc fermentation data (Fig. 5). In this 174 
+
+scenario, DFBA failed to accurately predict ethanol evolution, exhibiting large deviations from the experimental 175 
+
+measurements. In contrast, DFVB achieved consistently lower RMSE values for every measured variable, including 176 
+
+an 81.5% error reduction for ethanol, 27.8% for glucose, and 50% for primary amino nitrogen (PAN). Parameter 177 
+
+estimation statistics (Table S4 in Supplementary File) revealed significant discrepancies in the metabolic yield 178 
+
+coefficients between the methods. Most notably, the nitrogen yield ( Yxn ) was estimated at 36.14 gDW g −1 by 179 
+
+8
+
+.CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.17.733012 doi: bioRxiv preprint 0 25 50 75 100 125 150 175                                        
+
+> 0.5
+> 1.0
+> 1.5
+> 2.0
+> 2.5
+> 3.0
+> 3.5
+> Biomass (g/L)
+> RMSE DFVB: 0.488
+> RMSE DFBA: 0.576
+> 025 50 75 100 125 150 175
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> Glucose (g/L)
+> RMSE DFVB: 6.688
+> RMSE DFBA: 9.265
+> 025 50 75 100 125 150 175
+> 0
+> 20
+> 40
+> 60
+> 80
+> Fructose (g/L)
+> RMSE DFVB: 6.432
+> RMSE DFBA: 7.067
+> 025 50 75 100 125 150 175
+> Time (h)
+> 0
+> 20
+> 40
+> 60
+> 80
+> Ethanol (g/L)
+> RMSE DFVB: 4.368
+> RMSE DFBA: 23.617
+> 025 50 75 100 125 150 175
+> Time (h)
+> 0.00
+> 0.02
+> 0.04
+> 0.06
+> 0.08
+> 0.10
+> Ammonia (g/L)
+> RMSE DFVB: 0.011
+> RMSE DFBA: 0.021
+> 025 50 75 100 125 150 175
+> Time (h)
+> 0.00
+> 0.05
+> 0.10
+> 0.15
+> 0.20
+> 0.25
+> 0.30
+> PAN (g/L)
+> RMSE DFVB: 0.025
+> RMSE DFBA: 0.050
+> DFBA 95% CI DFVB 95% CI DFBA Mean DFVB Mean Experimental Data
+
+Figure 5. Bootstrap analysis results comparing DFVB and DFBA using the experimental dataset from Concha y Toro winery. Shaded areas represent 95% confidence regions, while solid lines indicate the mean parameter estimates and points the experimental data. RMSE values are reported for both frameworks. DFVB compared to 14.58 gDW g −1 by DFBA, with DFVB reducing the relative confidence interval width by 180 
+
+1.8-fold. 181 
+
+# Discussion 182 
+
+This study introduced and evaluated DFVB, a computational framework for dynamic metabolic flux simulations 183 
+
+designed to overcome the structural limitations of conventional approaches like DFBA. By reformulating the high-184 
+
+dimensional differential-algebraic system into a reduced-order model based on a sparse null-space basis, we demon-185 
+
+strated that DFVB retains the full simulation capability of standard DFBA while offering critical advantages in 186 
+
+model reduction and parameter identifiability. 187 
+
+Our accuracy benchmarks confirmed that DFVB reproduces DFBA trajectories to machine precision when the 188 
+
+optimal flux distribution is unique, thus preserving the exact essential dynamic behavior of the system even after 189 
+
+model reduction. The minor discrepancies observed in the by-product profiles of genome-scale models ( iML1515 190 
+
+and Yeast9) can be attributed to the larger number of degrees of freedom inherent to these reconstructions. As 191 
+
+noted by Smallbone and Simeonidis (2009), highly interconnected networks often possess a degenerate solution 192 
+
+space where multiple distinct flux distributions satisfy the same optimal objective value. Under these conditions, 193 
+
+DFBA and DFVB may naturally follow different—but equally valid—optimal internal trajectories. 194 
+
+From a computational perspective, the initial burden of computing the null-space projection was effectively 195 
+
+mitigated by coupling DFVB with linear solver warm-starts and structural reduction. While warm-starts ensured 196 
+
+9
+
+.CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.17.733012 doi: bioRxiv preprint rapid convergence at each integration step, the model reduction lowered the dimensionality of the optimization 197 
+
+problems themselves—and crucially, the most efficient performances reported here were only achievable using the 198 
+
+structural insights provided by DFVB. By eliminating hundreds of constraints and variables associated with dy-199 
+
+namically inactive basis vectors, the cost per integration step became substantially smaller, and the reduced DFVB 200 
+
+approach reached computational speeds highly competitive with standard DFBA. Therefore, DFVB emerges not 201 
+
+merely as a dynamic simulator, but as an automated, context-specific pre-processing tool for identifying reduced 202 
+
+model topologies. 203 
+
+Beyond numerical efficiency, the simulation-based reduction applied by DFVB proved to be biologically relevant. 204 
+
+When compared against E. coli transcriptomic profiles, the active reactions identified by DFVB correlated more 205 
+
+closely with gene expression than those identified by FVA. The superior F1-score and higher recall suggest that 206 
+
+DFVB is highly sensitive to capturing the true representative phenotype under specific environmental conditions. 207 
+
+While its aggressive reduction criteria can overestimate the number of inactive reactions, resulting in more false 208 
+
+positives than the FVA, the reduced network topology strikes a superior balance for dynamic modeling, retaining 209 
+
+essential active pathways while removing irrelevant metabolic functions in the simulation context. 210 
+
+A key virtue of DFVB lies in its capacity for structural regularization during kinetic parameter calibration. 211 
+
+Estimating parameters from nonlinear kinetic models in DFBA is notoriously challenging due to solution degeneracy 212 
+
+(Sánchez et al. 2014). In the aerobic batch dataset, this was evidenced by the high uncertainty in Kg and Kie 213 
+
+estimation, reflecting a lack of experimental information in the high-inhibition region. Nonetheless, DFVB effectively 214 
+
+constrained the kinetic search space and narrowed the confidence intervals. Furthermore, since the experiment 215 
+
+was conducted under non-limiting dissolved oxygen conditions, the strict oxygen uptake constrains the saturation 216 
+
+of the cellular respiratory capacity (J Nielsen and Villadsen 1994). DFVB captured this bottleneck effectively, 217 
+
+forcing the excess carbon flux toward fermentative pathways and resulting in an accurate ethanol production 218 
+
+prediction. The virtue of this regularization was even more pronounced in the anaerobic fermentation scenario. 219 
+
+DFBA failed to accurately predict ethanol production because its unconstrained LP optimization maximized the 220 
+
+growth rate through flux distributions that did not correspond to the actual metabolic phenotype of the yeast. 221 
+
+DFVB bypassed this degeneracy by restricting the feasible space to a linear combination of active basis vectors, 222 
+
+effectively enforcing a strict physiological coupling between growth and ethanol synthesis. This structural rigidity 223 
+
+also enabled a more biologically accurate estimation of the nitrogen yield ( Yxn ). It has been demonstrated that 224 
+
+yeast biomass yield on nitrogen increases significantly under deficiency due to a drastic reduction in cellular protein 225 
+
+content, rising from approximately 19 gDW g −1 to 30 gDW g −1 (Boer et al. 2003; Varela et al. 2004). The higher 226 
+
+Yxn estimate obtained by DFVB (36.14 gDW g −1) successfully captured this adaptive metabolic state. In contrast, 227 
+
+DFBA remained trapped in parameter regions associated with nitrogen-rich conditions (14.58 gDW g −1), failing to 228 
+
+identify the varying yield that governed the culture dynamics. It is important to note, however, that this robust 229 
+
+parameter identification relies heavily on the suitability of the initial parameter guess; an incorrect initialization 230 
+
+could potentially lock the reduced DFVB model into a biased structural representation. 231 
+
+In summary, DFVB helps bridge the gap between theoretical genome-scale modeling and practical cell cul-232 
+
+10 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.17.733012 doi: bioRxiv preprint
+
+ture simulation by providing a mathematically rigorous method to derive low-order, structurally consistent, and 233 
+
+computationally efficient dynamic models. Future iterations of the framework could further refine the selection 234 
+
+of null-space vectors by incorporating regularization terms into the objective function or by adaptively modifying 235 
+
+objectives across different growth phases. Additionally, the reduced-order nature of DFVB facilitates its integra-236 
+
+tion with advanced optimization techniques, such as nonlinear reformulations via KKT conditions, interior-point 237 
+
+methods, and hybrid approaches incorporating metabolomic constraints. More importantly, this framework enables 238 
+
+the development of more advanced digital models for fermentation optimization and control by allowing robust 239 
+
+parameter estimation and more precise predictions. 240 
+
+# Methods 241 
+
+## Flux Balance Analysis 242 
+
+Constraint-based methods are employed for the computation of metabolic fluxes using GEMs (Orth, Thiele, et 243 
+
+al. 2010). The vector of fluxes ( v) is calculated under the steady-state assumption, i.e., there is no significant 244 
+
+accumulation of intracellular metabolites. Additionally, reaction fluxes are phenomenologically constrained by 245 
+
+upper ( ub ) and lower ( lb ) bounds based on reaction thermodynamics and enzyme capacity: 246 
+
+S · v = 0 (1) 
+
+> 247
+
+lb ≤ v ≤ ub (2) Exploration of the solution space spanned by Eqs. (1–2) can be achieved using optimization. For this task, an 248 
+
+objective function that typically maximizes or minimizes a specific flux (e.g., biomass growth) is chosen, leading to 249 
+
+the Flux Balance Analysis (FBA) formulation of Eq. (3) (Orth, Thiele, et al. 2010). The objective function choice 250 
+
+is not unique, and various studies have proposed alternative objective functions, such as maximizing growth rate 251 
+
+and maximizing ATP production, among others (Antoniewicz 2021). 252 
+
+FBA: max  
+
+> v
+
+cTv
+
+s.t. S · v = 0lb ≤ v ≤ ub v ∈ Rm
+
+(3) 
+
+## Dynamic Flux Balance Analysis 253 
+
+A dynamic version of FBA, termed DFBA, was introduced by Mahadevan, Edwards, et al. (2002) that integrates 254 
+
+a system of differential equations for the external (unbalanced) species with an FBA problem. Within the static 255 
+
+optimization approach of this framework, the FBA solution provides the specific production and consumption rates 256 
+
+11 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.17.733012 doi: bioRxiv preprint
+
+of the external metabolites at each time step (Eq. 4). These rates are subsequently used to integrate the differential 257 
+
+equations and update the bounds of the internal optimization problem. 258 
+
+DFBA: dC
+
+dt = vex (t) · X(t)
+
+dO2
+
+dt = vO2 (t) · X(t) + kLa · (Osat  
+
+> 2
+
+− O2)
+
+dX dt = vX (t) · X(t)
+
+vex (t), v O2 (t), v X (t) ∈ argmax v
+
+{cTv | S · v = 0, vex = g(C(t), θ), lb ≤ v ≤ ub }
+
+(4) In this framework, C represents the vector of extracellular metabolite concentrations, O 2 the dissolved oxygen 259 
+
+concentration, and X denotes the biomass concentration. The vector vex corresponds to the subset of exchange 260 
+
+fluxes derived from the optimal flux distribution v∗. This distribution is determined by maximizing a cellular 261 
+
+objective subject to the quasi-steady-state mass balance (Eq. 1) and capacity constraints (Eq. 2). The scalars vO2 (t)262 
+
+and vX (t) represent the oxygen consumption rate and the specific growth rate at time t, respectively. Crucially, 263 
+
+the system is coupled to the environment through kinetic constraints vex = g(C(t), θ), where the permissible 264 
+
+uptake/secretion rates depend dynamically on the current metabolite concentrations and the particular kinetics 265 
+
+encoded in the vector of kinetic parameters θ. Finally, the model incorporates gas-liquid oxygen transfer, defined 266 
+
+by the volumetric mass transfer coefficient kLa and the oxygen saturation concentration O sat  
+
+> 2
+
+.267 
+
+## Null-space Representation of Mass-balanced Fluxes 268 
+
+The homogeneous linear system S · v = 0 can be represented using the right null-space of the stoichiometric matrix 269 
+
+S (Lay et al. 2016). Let N be the null-space of S and α be a real-valued vector. Then, a mass-balanced vector v270 
+
+lies in the column space of N and is given by 271 
+
+v = N · α (5) Although the null space of a matrix is a unique linear subspace, it can be spanned by an infinite number of 272 
+
+possible bases. To minimize computational cost, a specific basis can be selected based on a sparsity criterion (Saa 273 
+
+and LK Nielsen 2016; Bordbar et al. 2014; Gomes de Oliveira Dal’Molin et al. 2018). In this work, the null-space 274 
+
+basis of S is computed using an algorithm based on Rank-Revealing LU (RRLU) decomposition (Pan 2000). Briefly, 275 
+
+the stoichiometric matrix is decomposed as S = LUQ , where L and Q are invertible matrices and U is an upper 276 
+
+triangular matrix that reveals the rank structure. The null-space basis N is then constructed from the columns 277 
+
+of Q−1 corresponding to the zero columns of U. This approach is selected because RRLU preserves the original 278 
+
+matrix entries and structure, thereby facilitating the maintenance of sparsity in the resulting basis and avoiding 279 
+
+the computational burden of SVD approaches (Pan 2000). 280 
+
+The null-space basis matrix can be partitioned into rows corresponding to internal reactions ( Nint ) and external 281 
+
+reactions ( Nex ). By focusing on the partition of the matrix and the associated fluxes, solutions can be systematically 282 
+
+explored using an objective function analogous to that employed in FBA. This approach leads to the formulation 283 
+
+12 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.17.733012 doi: bioRxiv preprint
+
+of an optimization problem, here termed Flux Vector Balancing (FVB), which is defined as follows: 284 
+
+FVB: max  
+
+> vex ,α
+
+cTex vex 
+
+s.t. Nex · α = vex 
+
+lb int ≤ Nint · α ≤ ub int 
+
+lb ex ≤ vex ≤ ub ex 
+
+α ∈ Rr , vex ∈ Rz
+
+(6) Notably, here the problem is partitioned into internal and external reactions. The vector of coefficients α carries 285 
+
+the weights associated with each basis vector of the null space, describing the activation/inactivation level of each 286 
+
+basis vector or flux mode. Simply put, α operates as a vector of variables that fully parameterize the feasible flux 287 
+
+distributions. Internal fluxes are represented as a linear combination of the columns of Nint , whereas the external 288 
+
+fluxes are explicitly retained in the formulation to preserve the original structure of the objective function. Here, 289 
+
+we have assumed that the optimization target is invariably associated with an external metabolite, as it is common 290 
+
+practice for cell culture simulation. 291 
+
+It is crucial to establish that the FVB formulation is not an approximation but a reformulation of the original 292 
+
+FBA problem that produces an identical optimal solution (Luenberger and Ye 2008). We provide a rigorous 293 
+
+mathematical proof of this proposal in Supplementary File Text S1. Another key insight is the dimensionality 294 
+
+reduction of the optimization problem. Let us denote k as the rank of S and m as the total number of reactions, the 295 
+
+nullity is given by m−k. By incorporating z exchange reactions explicitly, the FVB problem contains only (m−k)+ z296 
+
+variables, compared to m in FBA. Given that typically z ≪ m, this results in a smaller system. Furthermore, the 297 
+
+complexity of the constraint set is significantly lower. Standard FBA enforces n mass balance equalities and 2m298 
+
+bound inequalities, totaling n + 2 m constraints. In contrast, FVB implicitly satisfies the intracellular mass balance, 299 
+
+requiring only z equality constraints to couple the exchange fluxes ( Nex · α = vex ) alongside the preserved 2m300 
+
+bounds. Since the number of exchange reactions is strictly smaller than the number of metabolites ( z < n ), the 301 
+
+total constraint count decreases from n + 2 m to z + 2 m. Therefore, this reformulation can effectively leverage the 302 
+
+reduced degrees of freedom to improve solver convergence. 303 
+
+## Dynamic Flux Vector Balancing 304 
+
+The Dynamic Flux Vector Balancing (DFVB) algorithm is derived by replacing the internal FBA formulation with 305 
+
+the FVB approach (Eq. 7). This modification reduces the size of the internal optimization problem, significantly 306 
+
+decreasing the computational demand required to integrate the system of differential equations. 307 
+
+13 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.17.733012 doi: bioRxiv preprint
+
+DFVB: dC
+
+dt = vex (t) · X(t)
+
+dO2
+
+dt = vO2 (t) · X(t) + kLa · (Osat  
+
+> 2
+
+− O2)
+
+dX dt = vX (t) · X(t)
+
+vex (t), v O2 (t), v X (t) ∈ argmax vex ,α
+
+{cTvex | Nex · α = vex , vex = g(C(t), θ),
+
+lb int ≤ Nint · α ≤ ub int , lb ex ≤ vex ≤ ub ex 
+
+}
+
+(7) This formulation provides a computationally efficient approach for dynamic metabolic modeling that accounts 308 
+
+for oxygen mass transfer, making it particularly suited for large-scale and time-resolved studies in systems biology. 309 
+
+## Simulation-based Model Reduction 310 
+
+DFVB simulations provide time-resolved trajectories for both metabolite concentrations and the flux-basis coef-311 
+
+ficients α(t), under a given scenario captured by the metabolic objective, bounds and kinetic expressions. Since 312 
+
+each coefficient αj (t) corresponds to the contribution of the specific null-space vector j, its temporal profile directly 313 
+
+reflects the activation of the associated flux mode (Gomes de Oliveira Dal’Molin et al. 2018; Bordbar et al. 2014). 314 
+
+Basis vectors for which αj (t) = 0 for all t ∈ [0 , T ] can therefore be considered inactive throughout the entire 315 
+
+simulation. 316 
+
+These inactive basis vectors can be systematically removed from the null-space matrix N, yielding a reduced 317 
+
+basis that spans only dynamically active metabolic functions. Notably, eliminating columns from N may produce 318 
+
+rows consisting entirely of zeros; the reactions associated with such rows cannot carry flux under the simulated 319 
+
+conditions and are thus also classified as inactive. Once inactive reactions are identified, they can be removed from 320 
+
+the original stoichiometric matrix S, as well as any metabolite who becomes orphan. This sequential elimination of 321 
+
+inactive basis vectors, reactions, and metabolites produces a reduced metabolic model that preserves all dynamically 322 
+
+accessible pathways while discarding components that are irrelevant over the entire DFVB trajectory. A schematic 323 
+
+overview of the entire DFVB method and model reduction framework is illustrated in Fig. 1. Algorithm 1 formalizes 324 
+
+this procedure. 325 
+
+14 
+
+.CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.17.733012 doi: bioRxiv preprint Algorithm 1: Model reduction using DFVB-derived activity patterns 
+
+Data: Stoichiometric matrix S, null-space basis N, flux boundaries lb , ub . Objective function c,simulation time T .
+
+Result: Reduced stoichiometric matrix Sred and reduced null-space matrix Nred  
+
+> 1
+
+Initialization:  
+
+> 2
+
+Initial conditions C0 and X0, kinetic parameters θ. 
+
+> 3
+
+Run DFVB over t ∈ [0 , T ] to obtain trajectories α(t) and metabolite concentrations C(t) 
+
+> 4
+
+Iα ← { j | αj (t) = 0 , ∀ t ∈ [0 , T ] } 
+
+> 5
+
+Basis reduction:  
+
+> 6
+
+Nred ← N(: , j / ∈I α) 
+
+> 7
+
+Ir ← { i | Nred (i, :) = 0 , ∀ i ∈ [1 , m ]} 
+
+> 8
+
+Sred ← S(: ,i / ∈I r ) 
+
+> 9
+
+Stoichiometric reduction:  
+
+> 10
+
+Im ← { k | Sred (k, :) = 0 , ∀ k ∈ [1 , n ]} 
+
+> 11
+
+Sred ← Sred (k / ∈ I m , :)  
+
+> 12
+
+Finalization:  
+
+> 13
+
+return (Sred , Nred )
+
+> 326
+
+## Evaluation of Dynamic Flux Simulations in Metabolic Models 327 
+
+The computational performance of DFVB was compared against DFBA using metabolic models spanning a wide 328 
+
+range of scales. The considered models include the illustrative model from Zhao et al. (2017) (5 metabolites, 7 329 
+
+reactions), which features a single substrate, a product species P, biomass formation, and an internal cycle to 330 
+
+explore alternative metabolic routes. To evaluate biologically realistic networks, we employed the Escherichia coli 331 
+
+core model (73 metabolites, 96 reactions) (Orth, Fleming, et al. 2010), and two genome-scale metabolic models 332 
+
+(GEMs): iML1515 for E. coli (1878 metabolites, 2713 reactions) (Monk et al. 2017) and Yeast9 for Saccharomyces 333 
+
+cerevisiae (2806 metabolites, 4131 reactions) (Zhang et al. 2024). The E. coli models were modified to include 334 
+
+an explicit biomass metabolite and an associated exchange reaction (see Supplementary File Text S2). In all 335 
+
+simulations, growth rate maximization was used as the objective function, assuming growth in a minimal medium. 336 
+
+Three growth regimes were evaluated: aerobic, anaerobic, and oxygen-limited. Glucose and ammonium were 337 
+
+provided as the sole carbon and nitrogen sources, respectively. The bounds for reversible reactions were set to 338 
+
+[−1000 , 1000] mM gDW −1 h−1, while irreversible reactions had their lower bound constrained to zero. Oxygen 339 
+
+availability was controlled by adjusting the lower bound of the uptake flux. For the aerobic and anaerobic scenarios, 340 
+
+this bound was set to −1000 and 0 mM gDW −1 h−1, respectively. For the oxygen-limited condition, uptake was 341 
+
+defined by a Michaelis-Menten expression with a maximum oxygen consumption rate of 20 mM gDW −1 h−1 and 342 
+
+a half-saturation constant of 0.003 mM. In simulations using GEMs, initial conditions were set to 0.5 g L −1 for 343 
+
+biomass, 1.8 g L −1 for glucose, 0.5 g L −1 for ammonium, and zero for all metabolic products. Initial dissolved 344 
+
+15 
+
+.CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.17.733012 doi: bioRxiv preprint oxygen was set to 0.01 g L −1 for the aerobic condition. The volumetric mass transfer coefficient, kLa, was set to 345 
+
+100 h−1, 50 h−1, and 0 h−1 for the aerobic, oxygen-limited, and anaerobic simulations, respectively, assuming an 346 
+
+oxygen saturation concentration of 10 mg L −1. Finally, acetate and ethanol uptakes were permitted only if these 347 
+
+metabolites were endogenously produced by the metabolic network. 348 
+
+DFVB and DFBA were used to generate dynamic profiles of extracellular metabolites and biomass under 349 
+
+different conditions and models. The root-mean-square error (RMSE) was calculated for each metabolite to quantify 350 
+
+agreement between DFVB and DFBA and between simulations and experimental data: 351 
+
+RMSE = 
+
+√√√√ 1
+
+T
+
+> T
+
+∑
+
+> t=1
+
+(Ct, DFVB − Ct, ref )2, (8) where Ct, DFVB and Ct, ref denote the concentration of a metabolite at time t predicted by DFVB and the 352 
+
+reference data (either DFBA or experimental measurements), respectively, and T is the number of sampled time 353 
+
+points. 354 
+
+To accelerate sequential LP solution during dynamic simulations, warm-starts were enabled at every integration 355 
+
+step. Providing a feasible basis allows linear solvers to bypass the simplex Phase I procedure and proceed directly 356 
+
+to Phase II, substantially reducing the number of pivots required to reach optimality. As reported by Kenefake 357 
+
+et al. (2022), warm-starting can substantially reduce computation time while preserving the exact optimal solution, 358 
+
+making it particularly effective in DFBA/DFVB simulations where successive LP problems differ only slightly. 359 
+
+Computational performance was evaluated by measuring CPU time for each simulation under four configura-360 
+
+tions: DFBA and DFVB, with and without solver warm-start, and before and after model reduction. This allowed 361 
+
+direct comparison of the impact of both warm-starting and network reduction on the computational cost of dynamic 362 
+
+flux simulations. 363 
+
+## Biological Analysis of Model Reduction 364 
+
+To link gene expression levels with the activity of metabolic reactions predicted by simulations using the iML1515 365 
+
+model, the Reaction Activity Score (RAS) was employed (Graudenzi et al. 2018; Huang et al. 2022). This metric 366 
+
+assigns an activity value to each reaction based on the expression of its associated genes, accounting for both 367 
+
+reactions constrained by the presence of all subunits (logical AND relationships, e.g., multi-unit enzyme complexes) 368 
+
+and those involving isozymes (OR relationships). 369 
+
+Transcriptomic data were first normalized using the rssA gene as a housekeeping reference, which encodes 370 
+
+the 16S rRNA subunit (Peng et al. 2014; Zhou et al. 2011). Subsequently, the Reaction Activity Score (RAS) 371 
+
+for each reaction was calculated following the method described by Huang et al. (2022). Formally, letting I372 
+
+denote the set of genes encoding enzymes associated with metabolic reactions, the expression level of each gene 373 
+
+was initially normalized according to the number of reactions in which the corresponding enzyme participates, 374 
+
+yielding mRNA norm ,j . The specific score RAS j was then computed depending on the catalytic requirements of 375 
+
+the reaction: for those catalyzed by a single enzyme, the score was defined directly as RAS j = mRNA norm ,j ; for 376 
+
+16 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.17.733012 doi: bioRxiv preprint
+
+reactions involving an OR relationship among the genes in set I (e.g., isozymes), it was calculated as the sum 377 
+
+of the normalized expressions, RAS j = ∑ 
+
+> i∈I
+
+mRNA i 
+
+> norm ,j
+
+; whereas for reactions involving an AND relationship 378 
+
+(e.g., multi-subunit enzyme complexes), the score was determined by the minimum expression level among the 379 
+
+required subunits, RAS j = min i∈I
+
+(mRNA i
+
+> norm ,j
+
+). Finally, reactions lacking associated genes were excluded from 380 
+
+the analysis, as their activity could not be reliably verified in the absence of a corresponding gene-protein-reaction 381 
+
+mapping. After computing the RAS, reactions were classified as active/inactive using a dynamic threshold at the 382 
+
+40th percentile, also corresponding to a bimodal separation (see Supplementary File Text S3). This cutoff preserves 383 
+
+essential metabolic functionalities often lost with stricter thresholds, while effectively filtering transcriptional noise 384 
+
+(Opdam et al. 2017). 385 
+
+We employed a curated subset of the PRECISE compendium generated by Sastry et al. (2019). While the full 386 
+
+dataset contains 278 RNA-seq profiles spanning diverse environmental and regulatory conditions, 49 transcriptomes 387 
+
+were selected, corresponding specifically to Escherichia coli K-12 MG1655 grown aerobically in M9 minimal medium 388 
+
+with glucose and ammonium as the sole carbon and nitrogen sources. In the original study, samples were harvested 389 
+
+during exponential growth (OD 600 ≈ 0.5), subjected to standardized RNA extraction and rRNA depletion protocols, 390 
+
+and sequenced using the Illumina platform. After quality-controlled processing and log-transformation of transcript 391 
+
+abundances, the resulting dataset delivers high-quality expression measurements for 1516 enzyme-associated genes. 392 
+
+This controlled and internally consistent subset was chosen to rigorously evaluate whether the reduced metabolic 393 
+
+models preserve functional coherence at the gene-reaction level. 394 
+
+## Kinetic Parameter Estimation for Modeling Culture Dynamics 395 
+
+To demonstrate the practical advantages of the DFVB framework over conventional DFBA, kinetic parameter cal-396 
+
+ibration was performed in two distinct fermentation scenarios. In standard DFBA, estimating kinetic parameters 397 
+
+from experimental data is notoriously challenging and computationally expensive (Sánchez et al. 2014). By struc-398 
+
+turally reducing the metabolic network and isolating the dynamically active subspace, DFVB significantly decreases 399 
+
+this computational burden, enabling a robust and more efficient parameter estimation process. 400 
+
+The kinetic models calibrated for the aerobic batch culture of S. cerevisiae and Sauvignon Blanc fermentation 401 
+
+are based on Sánchez et al. (2014) and Zenteno et al. (2010), respectively, and they are described in detail in 402 
+
+Supplementary File Text S4. 403 
+
+For the aerobic batch fermentation of S. cerevisiae , the calibrated parameters included the maximum glucose 404 
+
+uptake rate ( vS, max ), the half-saturation constant for glucose ( KS ), the ethanol inhibition constant ( Kie ), the lower 405 
+
+bound on oxygen uptake in the metabolic model ( lb O2 ), and the biomass yield coefficients for glycerol, citrate, and 406 
+
+lactate ( Yx,gly , Yx,cit , Yx,lac ). 407 
+
+For the Sauvignon Blanc fermentation model, the calibrated parameters were the maximum specific growth 408 
+
+rate ( μ0); the half-saturation constants for nitrogen, glucose, and fructose uptake ( Kn, 0, Kg, 0, Kf, 0); the ethanol 409 
+
+inhibition constant ( Kie, 0); the biomass yields on nitrogen, glucose, and fructose ( Yxn , Yxg , Yxf ); the ethanol yield 410 
+
+on fructose ( Yef ); and the baseline production rates of ethanol from glucose and fructose ( βg, 0, βf, 0). 411 
+
+17 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.17.733012 doi: bioRxiv preprint
+
+The parameter calibration was formulated as an iterative optimization problem. Here, the decision variable 412 
+
+vector θ represents the kinetic parameters governing the system dynamics (Eq. 4 and Eq. 7). Each optimization step 413 
+
+involved executing a forward simulation using either the DFBA or DFVB framework to minimize a loss function 414 
+
+based on the relative mean squared error between the predicted and experimentally measured concentrations. A415 
+
+detailed mathematical description of this optimization problem is provided in Supplementary File Text S5. For both 416 
+
+kinetic models, the optimization was initialized using parameter estimates from the literature (see Supplementary 417 
+
+File Text S4). The initial conditions were also included as fitted parameters, as experimental error in these mea-418 
+
+surements can severely affect parameter calibration (Cao et al. 2011). Due to the lack of replicates in the Sánchez 419 
+
+et al. (2014) dataset, a variation of 30% relative to the reported values was allowed to constrain the estimation. In 420 
+
+contrast, for the Sauvignon Blanc parameter calibration, the bounds were defined using two standard deviations 421 
+
+derived from the three experimental replicates, thereby explicitly accounting for measurement uncertainty. 422 
+
+Finally, a bootstrap analysis with 1000 resampling iterations was performed for both calibration procedures 423 
+
+(Wong et al. 2016). In each iteration, the experimental dataset was resampled with replacement, and the model was 424 
+
+recalibrated using the resampled data. The resulting parameter distributions were then used to compute the mean 425 
+
+estimates associated 95% bootstrap confidence intervals, enabling a robust comparison of the parameter uncertainty 426 
+
+and overall calibration performance of DFBA and DFVB. 427 
+
+## Experimental Methods 428 
+
+Two independent experimental datasets were used to evaluate parameter fitting of dynamic models. The first 429 
+
+dataset consisted of laboratory-scale fermentations of Sauvignon Blanc must (blend-quality lot sourced from Fundo 430 
+
+San Ignacio, Lontué, Chile), carried out in 2-L jacketed bioreactors in triplicate. The system followed a stepwise 431 
+
+temperature profile of 19, 16, and 21 ◦C, regulated by a circulating water bath connected to the vessel jackets, 432 
+
+with temperature logging but no closed-loop control. Prior to filling, the must was homogenized, supplemented 433 
+
+with 50 mg L −1 SO 2, as potassium metabisulfite, and adjusted to a pH of 3.45 using tartaric acid. Fermentations 434 
+
+were inoculated with Saccharomyces cerevisiae VL3 (Laffort, France). Nitrogen supplementation consisted of two 435 
+
+aqueous bolus additions of diammonium phosphate (10% w/w stock), applied at inoculation and mid-fermentation. 436 
+
+The reactors were magnetically stirred at 400 rpm for 2 min and samples were collected one to two times per day 437 
+
+via the top port. Biomass concentration and viability were quantified from unprocessed aliquots using the Oculyze 438 
+
+system with 0.01% alkaline methylene violet, while dry cell weight was determined gravimetrically after drying 439 
+
+cell pellets at 60 ◦C for 48 h. All other analytes were measured from the supernatant obtained by centrifugation 440 
+
+(5 min, 4200 rpm). These measurements included density (Anton Paar DM35), ethanol (Anton Paar Alcolyzer), 441 
+
+and enzymatic assays (Biosystems Y15) for glucose, fructose, yeast-assimilable nitrogen, glycerol, and organic acids. 442 
+
+The progression of these fermentations to complete dryness ( <2 g L −1 residual sugars) provided a high-resolution 443 
+
+experimental dataset. By capturing the complex transient dynamics of anaerobic growth under shifting temperature 444 
+
+regimes, this experimental setup provides sufficient data to benchmark the parameter identification capabilities of 445 
+
+both DFBA and DFVB frameworks in highly non-linear scenarios. 446 
+
+18 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.17.733012 doi: bioRxiv preprint
+
+The second dataset was taken from Sánchez et al. (2014), who reported controlled aerobic batch fermentations 447 
+
+of Saccharomyces cerevisiae using the EC1118 wine yeast strain (Lalvin, Switzerland). The cultures were initi-448 
+
+ated with 20 g L −1 glucose in defined minimal medium and performed in 1-L stirred-tank bioreactors equipped 449 
+
+with temperature, pH, and dissolved oxygen control. Samples collected over 12 h enabled quantification of key 450 
+
+extracellular metabolites, including glucose, ethanol, glycerol, citrate, and lactate through high-performance liquid 451 
+
+chromatography (HPLC). This dataset provides high-resolution time-course measurements of biomass and metabo-452 
+
+lite dynamics under aerobic condition, serving as an independent source for evaluating parameter identifiability and 453 
+
+model predictive capability. 454 
+
+## Computational Implementation 455 
+
+The algorithms were implemented and executed in MATLAB 2025a (The MathWorks, Natick, MA, USA). Linear 456 
+
+programming problems were solved using Gurobi Optimizer 12.0.0 (Gurobi Optimization, Inc., Houston, TX, USA) 457 
+
+with both relative and absolute tolerances set to 10 −8. To enable the warm-start configuration in Gurobi, the 458 
+
+optimal basis from the previous LP ( vbasis and cbasis ) is loaded, and the LPWarmStart parameter is set to 1. 459 
+
+Ordinary differential equations were integrated using MATLAB’s built-in ode113 solver, a variable-step, variable-460 
+
+order Adams–Bashforth–Moulton method (Shampine and Reichelt 1997). Parameter estimation was carried out 461 
+
+using the local optimizer fminsearchbnd (D’Errico 2026), a bound-constrained extension of the standard Nelder-462 
+
+Mead simplex algorithm implemented in MATLAB. This derivative-free method circumvents the limitations of 463 
+
+unconstrained optimization by applying internal coordinate transformations to the decision variables. This approach 464 
+
+enables rigorous enforcement of lower and upper bounds on the kinetic parameters without computing gradients, 465 
+
+ensuring that the calibrated values remain within biologically realistic ranges throughout the optimization process. 466 
+
+Simulations were carried out on a laptop equipped with an Intel Core Ultra i7 155H processor, 16 GB RAM, 64-bit 467 
+
+architecture, running Windows 11. Bootstrapping calibrations were run on a node of the Unix-based Cluster of the 468 
+
+School of Engineering at the Pontificia Universidad Católica de Chile (more details for the computational resources 469 
+
+employed can be found in Supplementary File Text S6). The code and model reconstructions used in this study 470 
+
+are available in the GitHub repository (https://github.com/SysBioengLab/DFVB). 471 
+
+# Data access 472 
+
+All data accompanying this research are presented directly in the manuscript and Supplementary Material. The 473 
+
+complete datasets, source code, and implementation details required to reproduce this work are publicly available 474 
+
+in the GitHub repository: https://github.com/SysBioengLab/DFVB. 475 
+
+# Competing interest statement 476 
+
+The authors declare no competing interests. 477 
+
+19 
+
+.CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.17.733012 doi: bioRxiv preprint Acknowledgments 478 
+
+PAS and JRP acknowledge the financial support from ANID – Applied Research Center – CIA 250013. IT and 479 
+
+PAS also acknowledge the support from the UC School of Engineering through the Seed Fund ILO 2025. 480 
+
+# Author Contributions 481 
+
+Ignacio Tapia : Conceptualization, Investigation, Methodology, Formal analysis, Software, Writing – original draft, 482 
+
+Writing – review & editing. Cristóbal Torrealba : Investigation, Methodology, Validation, Writing-review & edit-483 
+
+ing. Ricardo Luna : Funding, Writing–review & editing. José Ricardo Pérez : Conceptualization, Investigation, 484 
+
+Methodology, Formal analysis, Writing – original draft, Writing – review & editing. Pedro Saa : Conceptualization, 485 
+
+Investigation, Methodology, Formal analysis, Writing – original draft, Writing – review & editing. 486 
+
+# References 487 
+
+Altamirano Á, I Tapia, V Acuña, D Garrido, and PA Saa. 2026. METACONE: A scalable framework for ex-488 
+
+ploring the conversion cone of metabolic networks. Computational Biology and Chemistry 120:108607. 489 
+
+Antoniewicz MR. 2021. A guide to metabolic flux analysis in metabolic engineering: Methods, tools and 490 
+
+applications. Metabolic Engineering 63:2–12. 491 
+
+Ataman M, DF Hernandez Gardiol, G Fengos, and V Hatzimanikatis. 2017. redGEM: Systematic reduction 492 
+
+and analysis of genome-scale metabolic reconstructions for development of consistent core metabolic 493 
+
+models. PLOS Computational Biology 13:1–22. 494 
+
+Baroukh C, R Muñoz-Tamayo, J.-P Steyer, and O Bernard. 2014. DRUM: A New Framework for Metabolic 495 
+
+Modeling under Non-Balanced Growth. Application to the Carbon Metabolism of Unicellular Microal-496 
+
+gae. PLOS ONE 9:1–15. 497 
+
+Boer VM, JH de Winde, JT Pronk, and MD Piper. 2003. The genome-wide transcriptional responses of 498 
+
+Saccharomyces cerevisiae grown on glucose in aerobic chemostat cultures limited for carbon, nitrogen, 499 
+
+phosphorus, or sulfur. The Journal of Biological Chemistry 278:3265–3274. 500 
+
+Bordbar A, H Nagarajan, NE Lewis, H Latif, A Ebrahim, S Federowicz, J Schellenberger, and BO Palsson. 501 
+
+2014. Minimal metabolic pathway structure is consistent with associated biomolecular interactions. 502 
+
+Molecular Systems Biology 10:737. 503 
+
+Cao J, L Wang, and J Xu. 2011. Robust Estimation for Ordinary Differential Equation Models. Biometrics 504 
+
+67:1305–1313. 505 
+
+20 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.17.733012 doi: bioRxiv preprint
+
+D’Errico J. 2026. fminsearchbnd, fminsearchcon. MATLAB Central File Exchange. 506 
+
+de Oliveira RD, GA Le Roux, and R Mahadevan. 2023. Nonlinear programming reformulation of dynamic 507 
+
+flux balance analysis models. Computers & Chemical Engineering 170:108101. 508 
+
+Dromms RA, JY Lee, and MP Styczynski. 2020. LK-DFBA: a linear programming-based modeling strat-509 
+
+egy for capturing dynamics and metabolite-dependent regulation in metabolism. BMC Bioinformatics 510 
+
+21:93. 511 
+
+Erdrich P, R Steuer, and S Klamt. 2015. An algorithm for the reduction of genome-scale metabolic network 512 
+
+models to meaningful core models. BMC Systems Biology 9:48. 513 
+
+Gomes de Oliveira Dal’Molin C, L.-E Quek, PA Saa, R Palfreyman, and LK Nielsen. 2018. From recon-514 
+
+struction to C4 metabolic engineering: A case study for overproduction of polyhydroxybutyrate in 515 
+
+bioenergy grasses. Plant Science 273:50–60. 516 
+
+Gotsmy M, D Giannari, R Mahadevan, and J Zanghellini. 2024. Optimizing Fed-Batch Processes with 517 
+
+Dynamic Control Flux Balance Analysis. IFAC-PapersOnLine 58:109–114. 518 
+
+Graudenzi A, D Maspero, M Di Filippo, M Gnugnoli, C Isella, G Mauri, E Medico, M Antoniotti, and 519 
+
+C Damiani. 2018. Integration of transcriptomic data and metabolic networks in cancer samples reveals 520 
+
+highly significant prognostic power. Journal of Biomedical Informatics 87:37–49. 521 
+
+Gu C, GB Kim, WJ Kim, HU Kim, and SY Lee. 2019. Current status and applications of genome-scale 522 
+
+metabolic models. Genome Biology 20:121. 523 
+
+Höffner K, SM Harwood, and PI Barton. 2013. A reliable simulator for dynamic flux balance analysis. 524 
+
+Biotechnology and Bioengineering 110:792–802. 525 
+
+Huang Y, V Mohanty, M Dede, M Daher, L Li, K Rezvani, and K Chen. 2022. Characterizing metabolism 526 
+
+from bulk and single-cell RNA-seq data using METAFlux. bioRxiv doi: 10.1101/2022.05.18.492580. 527 
+
+Kenefake D, E Armingol, NE Lewis, and EN Pistikopoulos. 2022. An improved algorithm for flux variability 528 
+
+analysis. BMC bioinformatics 23:550. 529 
+
+Lay D, S Lay, and J McDonald. 2016. Linear Algebra and Its Applications. Pearson. 530 
+
+Luenberger DG and Y Ye. Linear and Nonlinear Programming. In: 3rd ed. International Series in Operations 531 
+
+Research & Management Science. Chap. 6.5, pp. 179–181. 532 
+
+21 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.17.733012 doi: bioRxiv preprint
+
+Mahadevan R and C Schilling. 2003. The effects of alternate optimal solutions in constraint-based genome-533 
+
+scale metabolic models. Metabolic Engineering 5:264–276. 534 
+
+Mahadevan R, JS Edwards, and FJD III. 2002. Dynamic flux balance analysis of diauxic growth in Es-535 
+
+cherichia coli. Biophysical Journal 83:1331–1340. 536 
+
+Martínez VS, PA Saa, J Jooste, K Tiwari, L.-E Quek, and LK Nielsen. 2022. The topology of genome-scale 537 
+
+metabolic reconstructions unravels independent modules and high network flexibility. PLOS Compu-538 
+
+tational Biology 18:1–20. 539 
+
+Monk JM et al. 2017. iML1515, a knowledgebase that computes Escherichia coli traits. Nature biotechnology 540 
+
+35:904–908. 541 
+
+Nielsen J and J Villadsen. 1994. Bioreaction Engineering Principles. Springer New York, New York, NY. 542 
+
+Opdam S, A Richelle, B Kellman, S Li, DC Zielinski, and NE Lewis. 2017. A systematic evaluation of 543 
+
+methods for tailoring genome-scale metabolic models. Cell systems 4:318–329. 544 
+
+Orth J, R Fleming, and B Palsson. 2010. Reconstruction and Use of Microbial Metabolic Networks: the Core 545 
+
+Escherichia coli Metabolic Model as an Educational Guide. EcoSal Plus 4:10.1128/ecosalplus.10.2.1. 546 
+
+Orth J, I Thiele, and B Palsson. 2010. What is flux balance analysis. Nature biotechnology 28:245–248. 547 
+
+Pan CT. 2000. On the existence and computation of rank-revealing LU factorizations. Linear Algebra and 548 
+
+its Applications 316:199–222. 549 
+
+Peng S, R Stephan, J Hummerjohann, and T Tasara. 2014. Evaluation of three reference genes of Escherichia 550 
+
+coli for mRNA expression level normalization in view of salt and organic acid stress exposure in food. 551 
+
+FEMS Microbiology Letters 355:78–82. 552 
+
+Pinhal S, D Ropers, J Geiselmann, and H de Jong. 2019. Acetate Metabolism and the Inhibition of Bacterial 553 
+
+Growth by Acetate. Journal of Bacteriology 201:10.1128/jb.00147–19. 554 
+
+Saa PA and LK Nielsen. 2016. Fast-SNP: a fast matrix pre-processing algorithm for efficient loopless flux 555 
+
+optimization of metabolic models. Bioinformatics 32:3807–3814. 556 
+
+Sánchez BJ, JR Pérez-Correa, and E Agosin. 2014. Construction of robust dynamic genome-scale metabolic 557 
+
+model structures of Saccharomyces cerevisiae through iterative re-parameterization. Metabolic Engi-558 
+
+neering 25:159–173. 559 
+
+22 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 22, 2026. ;https://doi.org/10.64898/2026.06.17.733012 doi: bioRxiv preprint
+
+Sastry AV, Y Gao, R Szubin, Y Hefner, S Xu, D Kim, KS Choudhary, L Yang, ZA King, and BO Palsson. 560 
+
+2019. The Escherichia coli transcriptome mostly consists of independently regulated modules. Nature 561 
+
+Communications 10:5536. 562 
+
+Schroeder W and R Saha. 2020. Introducing an Optimization- and explicit Runge-Kutta- based Approach 563 
+
+to Perform Dynamic Flux Balance Analysis. Scientific Reports 10:9241. 564 
+
+Scott F, P Wilson, R Conejeros, and VS Vassiliadis. 2018. Simulation and optimization of dynamic flux bal-565 
+
+ance analysis models using an interior point method reformulation. Computers & Chemical Engineering 566 
+
+119:152–170. 567 
+
+Shampine LF and MW Reichelt. 1997. The MATLAB ODE Suite. SIAM Journal on Scientific Computing 568 
+
+18:1–22. 569 
+
+Singh D and MJ Lercher. 2020. Network reduction methods for genome-scale metabolic models. Cellular 570 
+
+and Molecular Life Sciences 77:481–488. 571 
+
+Smallbone K and E Simeonidis. 2009. Flux balance analysis: A geometric perspective. Journal of Theoretical 572 
+
+Biology 258:311–315. 573 
+
+Varela C, F Pizarro, and E Agosin. 2004. Biomass Content Governs Fermentation Rate in Nitrogen-Deficient 574 
+
+Wine Musts. Applied and Environmental Microbiology 70:3392–3400. 575 
+
+Wiback SJ, R Mahadevan, and BØ Palsson. 2003. Reconstructing metabolic flux vectors from extreme 576 
+
+pathways: defining the α-spectrum. Journal of Theoretical Biology 224:313–324. 577 
+
+Wong RKW, CB Storlie, and TCM Lee. 2016. A Frequentist Approach to Computer Model Calibration. 578 
+
+Journal of the Royal Statistical Society Series B: Statistical Methodology 79:635–648. 579 
+
+Zenteno MI, JR Pérez-Correa, CA Gelmi, and E Agosin. 2010. Modeling temperature gradients in wine 580 
+
+fermentation tanks. Journal of Food Engineering 99:40–48. 581 
+
+Zhang C et al. 2024. Yeast9: a consensus genome-scale metabolic model for S. cerevisiae curated by the 582 
+
+community. Molecular Systems Biology 20:1134–1150. 583 
+
+Zhao X, S Noack, W Wiechert, and EV Lieres. 2017. Dynamic flux balance analysis with nonlinear objective 584 
+
+function. Journal of mathematical biology 75:1487–1515. 585 
+
+Zhou K, L Zhou, J Lim, R Zou, G Stephanopoulos, and H.-P Too. 2011. Novel reference genes for quantifying 586 
+
+transcriptional responses of Escherichia coli to protein overexpression by quantitative PCR. BMC 587 
+
+molecular biology 12:18. 588 
+
+23

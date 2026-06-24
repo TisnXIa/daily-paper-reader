@@ -1,0 +1,606 @@
+Title: cuSBF: A Minimizer-Aware Bloom Filter for Genomic Sequence Data on Modern GPUs
+
+URL Source: https://arxiv.org/pdf/2606.24417v1
+
+Published Time: Wed, 24 Jun 2026 00:51:58 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+# cuSBF: A Minimizer-Aware Bloom Filter for Genomic Sequence Data on Modern GPUs 
+
+Tim Dortmann 
+
+Institute of Computer Science Johannes Gutenberg University 
+
+Mainz, Germany research@tdortman.com 
+
+Markus Vieth 
+
+Institute of Computer Science Johannes Gutenberg University 
+
+Mainz, Germany vieth@uni-mainz.de 
+
+Bertil Schmidt 
+
+Institute of Computer Science Johannes Gutenberg University 
+
+Mainz, Germany bertil.schmidt@uni-mainz.de 
+
+Abstract —Efficient genomic k-mer indexing depends on ap-proximate membership query (AMQ) structures that must deliver high throughput, low false-positive rates (FPR), and modest memory footprints. The Super Bloom filter (SBF) is attractive for this scenario because minimizer-guided sharding and the Findere scheme exploit the redundancy of overlapping k-mers. However, those same features cause high per-k-mer compute cost, severe register pressure, and irregular memory accesses, which hinder an effective GPU implementation. We present cuSBF , an open-source, header-only CUDA library that implements SBF for sequence-native workloads. cuSBF’s design merges sector-ized shards, cooperative shared-memory tiling, warp-level shard sharing, and segmented warp reductions, turning super-k-mer locality into scalable GPU parallelism. Across real genomic workloads on RTX PRO 6000 Blackwell and GH200 systems, cuSBF achieves the highest throughput among all evaluated sequence-capable baselines. On the RTX PRO 6000, it surpasses the cuCollections blocked Bloom filter baseline by up to 9.1 × for insertion and 7.7 × for query, while reaching up to 92 × and 234 ×
+
+speedups over the multi-threaded CPU Super Bloom reference implementation. It also outperforms GPU-based dynamic AMQs (Cuckoo, Two-Choice, Quotient filters) by 1.5–3400 × depend-ing on workload characteristics. A parameter sweep identifies 
+
+(s = 28 , m = 16 , H = 4) as Pareto-optimal for k = 31 , yielding significantly lower FPR than cuCollections at matched memory budgets. Crucially, cuSBF’s architecture-aware design sustains 85% streaming multiprocessor utilization even for out-of-cache filters — proving that sequence locality, not raw bandwidth, is the key to GPU-accelerated genomic indexing. 
+
+Index Terms —Bloom filters, GPU computing, approximate membership query, minimizers, genomic indexing 
+
+I. I NTRODUCTION 
+
+Approximate membership query (AMQ) data structures answer the question ”is element q in set S?” while allow-ing a tunable false-positive rate (FPR) ϵ, thereby trading a small amount of inaccuracy for substantial savings in memory and time. The Bloom filter [1] has been the de-facto AMQ structure for more than two decades and is employed in a wide range of domains, from databases [2] and networking [3] to bioinformatics [4]. The Blocked Bloom filter [5] improves cache locality by partitioning the bit array into small blocks; GPU-accelerated blocked Bloom filter implementations [6], [7] have demonstrated that such structures can fully saturate the global-memory bandwidth of modern GPUs. For genomic sequence analysis, and in particular k-mer indexing, the Super Bloom filter (SBF) [8] adopts a funda-mentally different strategy. Instead of hashing each k-mer independently, SBF performs a two-level decomposition: a minimizer hash selects a Bloom-filter shard, and a set of 
+
+s-mer hashes sets bits inside that shard. Because consecutive genomic k-mers often share the same minimizer, SBF exploits this intrinsic locality to reduce the number of distinct insertions and queries, yielding higher throughput and lower FPR on CPUs. Nevertheless, CPU-bound performance remains limited by memory-bandwidth and compute constraints. Porting SBF to GPUs introduces three major challenges.  
+
+> •
+
+High per-k-mer compute cost. A na¨ ıve GPU implemen-tation would (i) pack a k-mer into a 64-bit word, (ii) slide a window of length (k − m + 1) to locate the minimizer, (iii) hash (k − s + 1) s-mers, and (iv) apply H hash functions to set bits in the selected shard. This approach can dominate the ALU pipeline, causing instruction stalls that leave the memory subsystem underutilized.  
+
+> •
+
+Severe register pressure. All intermediate values (packed k-mer, minimizer hash, per-s-mer masks, shard index, and tile pointers) must reside in registers for latency hiding. The resulting high register usage limits the number of concurrent warps per Streaming Multiproces-sor (SM), reducing occupancy and starving the memory subsystem of in-flight requests.  
+
+> •
+
+Irregular memory access patterns. While many adja-cent k-mers share a minimizer (and thus the same shard), minimizer boundaries cause threads within a warp to di-verge and scatter to different shards. Without coordinated warp-level handling this leads to redundant shard loads, wasteful global-memory traffic, and destructive atomic contention during insertions. In this paper we introduce cuSBF 1, a high-performance, header-only CUDA library that implements the Super Bloom filter for sequence-native workloads on modern GPUs. Our key insight is that the compute overhead and register pressure can be mitigated by amortizing work across multiple k-mers per thread and by using simplified hash functions, while the minimizer-driven locality can be turned into a performance ad-vantage through warp-level coordination. Our design combines 
+
+> 1
+
+cuSBF is released as open-source software (header-only CUDA) at: https://github.com/tdortman/cuSBF 
+
+> arXiv:2606.24417v1 [cs.DC] 23 Jun 2026
+
+a sectorized 256-bit shard layout, cooperative shared-memory tiling, warp-level shard sharing, and segmented warp reduc-tions, thereby converting super-k-mer locality into effective GPU parallelism. We make the following contributions:  
+
+> •
+
+High-performance CUDA SBF library : We present a sequence-native, header-only implementation that sup-ports host and device sequences, dense record batches, and streamed FASTA/FASTQ input, including gzip-compressed files.  
+
+> •
+
+Novel GPU-centric SBF design : We introduce a sec-torized 256-bit shard layout, cooperative shared-memory sequence tiling, warp-level shard sharing, and segmented warp reductions.  
+
+> •
+
+Comprehensive Evaluation : Throughput and FPR anal-ysis on RTX PRO 6000 (Blackwell) and GH200 GPUs, a full parameter sweep over (s, m, H ) that reveals Pareto-optimal configurations, and a speed-of-light analy-sis distinguishing compute-bound from bandwidth-bound regimes. The rest of the paper is organized as follows. Section II surveys Bloom filter variants (standard, blocked, and Su-per Bloom) and introduces the GPU architectural features that drive our design. Section III reviews prior GPU-based AMQ structures and minimizer-driven sequence-indexing techniques. Section IV details the cuSBF library, cover-ing the sectorized-shard layout, cooperative shared-memory tiling, warp-level insertion and query algorithms, and the sequence-native FASTX ingestion pipeline. Section V presents the experimental methodology, the (s, m, H ) parameter sweep, throughput and false-positive evaluations, a speed-of-light analysis, and a study of host-to-device transfer overhead. Section VI concludes the paper. II. B ACKGROUND 
+
+A. Bloom Filters 
+
+A Bloom filter [1] represents a set S using an array of 
+
+m bits, initially all zero. Upon insertion of an element x, H
+
+independent hash functions map x to H bit positions, which are set to 1. A query for q checks whether all H positions are set: if any is 0, q / ∈ S definitely (See Fig. 1a). If all are 1, 
+
+q ∈ S with probability 1 − ϵ, where the FPR for n inserted elements is approximately 
+
+ϵ ≈
+
+
+
+1 − e−Hn/m H
+
+. (1) The Blocked Bloom filter (BBF) [5] partitions the m bits into B equal-sized blocks (shards). Each element is assigned to exactly one block, and bits are set only within that block (Fig. 1b). While this does improve cache locality on CPUs and GPUs, isolated blocks cannot ”average” collisions across the full array, leading to higher FPR at a given memory budget. 
+
+B. Super Bloom Filter 
+
+The Super Bloom filter (SBF) [8] adapts blocked Bloom filters to streaming sequence data such as genomic strings                                                  
+
+> 011001100110
+> yx
+> q
+> (a) Standard Bloom filter ( m= 12 ,k= 3 ).
+> Block 0 Block 1
+> 100101110010
+> yx
+> q
+> hblock hblock
+> hblock
+> (b) Blocked Bloom filter ( m= 12 ,B= 2 ). Fig. 1. Comparison of Bloom filter variants. In the standard Bloom filter (a), k= 3 hash functions map each item globally across all m= 12 bits. In the blocked Bloom filter (b), a block-selection hash function ( hblock ) first maps each item to one of the B= 2 blocks, and then k= 3 in-block hash functions map the item within that chosen block. A query for qreturns “no” because one of its target bits is 0(despite two positive hits).
+
+by exploiting two structural properties of consecutive k-mers: they overlap heavily, and they can be grouped by shared minimizers. 
+
+1) Minimizers and Super-k-mers : Consider a sequence S
+
+over an alphabet Σ. A k-mer of S is any substring of length k
+
+contained within S. Each k-mer contains w = k − m + 1 
+
+overlapping substrings of length m, called m-mers. Given a hash function over all m-mers, the minimizer [9] of a k-mer is the m-mer with the minimum hash value. Consecutive 
+
+k-mers overlap by k − 1 symbols, and therefore by w − 1
+
+of their m-mers. As a result, adjacent k-mers frequently select the same minimizer. Fig. 2a illustrates an example for S = ACT GAAACT T AG over Σ = {A, C, G, T } and 
+
+k = 9 , m = 5 .A super-k-mer is a maximal run of consecutive k-mers sharing the same minimizer. The density d of a minimizer scheme is the fraction of m-mers that become minimizers. For random minimizers on random sequences, the expected density is well-approximated by d ≈ 2/(w + 1) [8], so the expected super-k-mer length is 1/d ≈ (w + 1) /2.For our default cuSBF configuration k = 31 , m = 16 , we have w = 31 − 16 + 1 = 16 , giving an expected super-k-mer length of (16+1) /2 = 8 .5. This means that, on average, about 8 consecutive k-mers map to the same shard. SBF assigns all 
+
+k-mers in a super-k-mer to the shard selected by their shared minimizer, amortizing the shard load across the entire run (Fig. 2a). 2) Findere Scheme : Within the selected shard, SBF does not insert or query k-mers directly. Instead, it uses the Findere scheme [10]: for a k-mer, all z + 1 = k − s + 1 overlapping 
+
+s-mers (with s < k ) are inserted or tested. A query returns positive only if every one of the z + 1 s-mers is found in the shard. This approach exponentially suppresses false positives rel-ative to the base s-mer false-positive rate. For a random alien 
+
+k-mer that shares no s-mers with indexed data, each of its 
+
+z + 1 s-mers must independently produce a false positive. If a single s-mer false-positive rate is ϵ, the k-mer false-positive rate is approximately 
+
+ϵk-mer ≈ ϵ z+1 = ϵ k−s+1 . (2) With the default cuSBF configuration k = 31 , s = 28 ,each k-mer is represented by z + 1 = 4 overlapping s-mers. With H = 4 hash functions per s-mer, a random alien k-mer must satisfy 4 × 4 = 16 independent bit-tests simultaneously to yield a false positive. Conversely, an almost alien k-mer that differs from an indexed k-mer by only one base shares 
+
+z of its z + 1 s-mers with that indexed k-mer, so only one alien s-mer must be falsely recognized. Its FPR then reverts to approximately ϵ instead of ϵ z+1 . The parameter s therefore tunes a trade-off: smaller s increases z + 1 , strengthening the suppression of random aliens, while larger s make each s-mer more selective, so a single-base mutation invalidates a larger fraction of all s-mers and near-matches are thus more strongly differentiated from true positives. Fig. 2b illustrates the Findere decomposition for a single k-mer. Together, minimizer-guided sharding and Findere-based FPR suppression form the foundation of cuSBF’s design: the expected 8-wide super-k-mer runs enable warp-level cooper-ation on the GPU (Section IV-D), while the exponential FPR reduction provides strong accuracy even at modest shard sizes (Section V-D). 
+
+C. Modern GPU Architectures 
+
+Processing on the GH200 (RTX PRO 6000 Blackwell) GPU is distributed across 132 (188) streaming multiprocessors (SMs) containing 4 vector units of 32 cores. Typically, one unit of work is assigned to one thread. When running a multi-threaded task, the GPU distributes small batches of threads (thread blocks) across SMs, which then schedule even smaller batches of 32 threads (warps) onto the 32-core vector units. Each SM has its own L1 cache (128 KB), which can be partially reconfigured to serve as fast user-programmable shared memory, allowing for fast data movement within a thread block. Similarly, each SM contains 256 KB worth of 32-bit registers, which can be cross-referenced by threads within a warp to exchange data via warp shuffling. Additionally, the GPU features a unified L2 cache (50 MB (128 MB) for GH200 (RTX PRO 6000)). When multiple neighboring threads within a warp load neighboring entries at the same time, the GPU performs a single, larger memory access instead, usually referred to as access coalescing .                                     
+
+> k0ACTGAAACT
+> k1CTGAAACTT
+> k2TGAAACTTA
+> k3GAAACTTAG
+> shared minimizer GAAAC
+
+hash( GAAAC )
+
+target shard                                          
+
+> &(N−1)
+> (a) Minimizer-guided sharding.
+> kiACTGAAACT
+> s0ACTGAA
+> s1CTGAAA
+> s2TGAAAC
+> s3GAAACT
+> (k−s+ 1) = 4 overlapping s-mers
+
+H bits per s-mer 
+
+present iff all bits set                 
+
+> (b) s-mer verification. Fig. 2. Minimizer-guided sharding and s-mer verification, shown for k= 9 ,
+> m= 5 ,s= 6 . Consecutive overlapping k-mers can share the same minimizer (here GAAAC ) and therefore target the same shard. Within that shard, the findere scheme represents a k-mer through (k−s+ 1) = 4 overlapping
+> s-mers, requiring all corresponding bits to be set for a positive query.
+
+Direct communication across SMs is restricted to com-munication through the GPU global main memory, which is based on GDDR or high-bandwidth on-chip memory (HBM). While the former typically achieve just above one terabyte per second of throughput, e.g., 1.8 TB/s on our utilized RTX PRO 6000, HBM is capable of sustaining several terabytes per second of throughput in the optimal case, e.g., 3.4 TB/s on GH200. This bandwidth, however, comes at the cost of relatively high access latency. The minimum access granularity is 32B, referred to as a sector, with four sectors composing a 128B cache line. Accesses from threads on the same SM that target the same cache line or even sector can be merged into a single L2 request through temporal coalescing. Consequently, coalesced memory access patterns are critical for efficient use of GPU DRAM, as they minimize the number of high-latency memory transactions. Atomic updates benefit from the same coalescing mechanism as well, which is essential for supporting concurrent, lock-free insertions into the Bloom filter. III. R ELATED WORK 
+
+Bloom filter variants. The standard Bloom filter [1] and its cache-friendly blocked variant [5] provide fast append-only AMQs. J¨ unger et al. [7] recently proposed optimized GPU Bloom filters using vectorization and thread cooperation. As their implementation is not public, we use the cuCollections [6] blocked Bloom filter as our high-performance GPU base-line. 
+
+Sequence-aware CPU-based filters. The original Super Bloom filter [8] exploits minimizers to group adjacent k-mers and uses the Findere scheme [10] to reduce false positives through overlapping s-mer evidence. In the authors’ CPU benchmarks on streaming k-mer insert and query, it con-sistently outperforms classical and blocked Bloom filters as well as other widely used open-source implementations, with several-fold runtime gains at comparable memory budgets. With Findere enabled it also achieves far lower false-positive rates than these baselines, and in a Rust reimplementation of BioBloom Tools it remains faster than filters built from stan-dard or blocked Bloom layouts. cuSBF keeps the same high-level AMQ semantics but redesigns the implementation around GPU execution, emphasizing register-resident bit masks, warp-level cooperation, and atomic reduction. 
+
+Minimizer-based GPU k-mer processing. Minimum sub-string partitioning (MSP) groups consecutive k-mers sharing a minimizer into super-k-mers in order to reduce storage and partition workloads in k-mer counting [9]. RapidGKC [11] accelerates the full MSP pipeline on GPUs, including a branch-divergence-minimizing signature rule for selecting common substrings, a parallel encoding scheme for variable-length super-k-mers, and pipelined CPU–GPU co-processing. Gerbil [12] and GPU-KMC2 [13] likewise apply super-k-mer grouping for GPU-accelerated counting but do not accelerate the encoding or partitioning phases. cuSBF shares the core insight that super-k-mers expose exploitable locality on GPUs, but applies it to AMQs rather than exact counting. Instead of sorting super-k-mers into bins, cuSBF uses them to amortize shard loads and enable warp-level cooperation within a Bloom filter. To our knowledge, cuSBF is the first GPU implementa-tion to combine minimizer-based super-k-mer grouping with Findere-based Bloom filtering. 
+
+Dynamic GPU filters. The Two-Choice filter and GPU Counting Quotient filter [14], [15] support dynamic operations on GPUs but rely on complex cooperative scheduling or shift-ing operations. Cuckoo-GPU [16] demonstrates that dynamic AMQs can be made highly efficient, but cuSBF targets append-only sequence indexing where deletions are unnecessary and FPR is the primary constraint. 
+
+Applications of sequence-based Bloom filters. Bloom filters are a core primitive in genomic sequence analysis pipelines, including large-scale dataset indexing and search in BIGSI [17], Bloom-filter-based de Bruijn graph assembly in ABySS 2.0 [18], metagenomic read classification in Ganon [19], short-read error correction in CUDA-EC [20] and host-removal or contamination screening in BioBloom Tools [21]. cuSBF targets the same workload family, but focuses on accelerating the underlying sequence-native insert and query path on GPUs. IV. D ESIGN OF CU SBF 
+
+A. Library Design 
+
+cuSBF is provided as a header-only CUDA C++ library, allowing developers to integrate it without modifying their build system. All tunable parameters ( k, s, m, hash count 
+
+H, CUDA block size, and the alphabet encoding) are exposed as compile-time template arguments through a Config struc-ture. This enables the compiler to generate fully specialized kernels with static loop unrolling and constant propagation. The only run-time input is the total filter size (in bits), which determines the number of shards. The library supports three alphabet encodings out of the box: DNA (4 symbols, 2 bits), proteins (26 symbols, 5 bits), and DNA triplets (64 symbols, 6 bits, multi-byte). While cuSBF does support non-DNA sequences, DNA is our primary target and the sole focus of this evaluation. Larger alphabets re-main functional, but they are a less favorable fit for this design because packing into 64-bit words leaves room for fewer sym-bols, which in turn forces smaller feasible parameter choices. In particular, the smaller minimizer lengths that follow from large symbol widths substantially hurt false-positive rate, as the parameter sweep in Section V-B shows. cuSBF accepts several input forms that match common sequence-processing pipelines, including host-resident sequences, device-resident sequences, dense record batches, and streamed FASTA/FASTQ input with transparent gzip decompression. Host-facing entry points synchronize before returning, while device-facing entry points leave stream ordering and synchronization under the caller’s control. 
+
+B. Data Layout 
+
+The filter resides as a contiguous array of 2P shards in global memory. The shard count rounded up to the next power of two. This enables shard index computation with a single bitwise AND, avoiding a costly division. Each shard is a 256-bit (32-byte) struct consisting of four 64-bit unsigned-integer words. This size matches the maxi-mum single-instruction load width on Blackwell-class GPUs (Section IV-G). The H hash functions are distributed across the four word sectors: a hash index i ∈ { 0, . . . , H − 1} maps to sector s =
+
+i mod 4 . By concentrating a hash function’s bit updates within a single 64-bit word, we minimize the atomic-update footprint and enable independent word-level operations. 
+
+C. Shared Tile Preparation 
+
+Insertion and query share the same front end. Rather than having each of T threads independently read k overlapping symbols from global memory ( T × k total reads), all threads cooperatively load a tile of T + k − 1 encoded symbols into shared memory. Each thread loads symbols at stride 
+
+T , achieving coalesced global memory access. The tile also computes a tile-wide validity flag: if every symbol in the tile is valid, per-k-mer validity checks are skipped entirely. Each active thread then packs one k-mer into a 64-bit integer using shift-and-OR operations. For DNA this is possible for 
+
+k ≤ 32 because every base occupies two bits. Larger alpha-bets use more bits per symbol and therefore support smaller maximum k values. 
+
+D. Insertion Algorithm 
+
+Each insertion thread processes one k-mer from the pre-pared tile (see Algorithm 1). It first computes the minimizer by hashing every overlapping m-mer with a lightweight mul-tiplicative hash and taking the minimum value. The minimizer lanes                                       
+
+> masks
+> per-word OR
+> writes
+> T0T1T2T3T4T5T6T7
+> AAABBCCsentinel
+> run A run B run C
+> w0w1w2w3
+> w0w1w2w3
+> w0w1w2w3
+> w0w1w2w3
+> w0w1w2w3
+> w0w1w2w3
+> w0w1w2w3
+> w0w1w2w3
+> w0w0w0w1w1w1w2w2w2w3w3w3
+> 4×atomicOr 4×atomicOr 4×atomicOr
+> head T 0head T 3head T 5
+> Here, 7×4 = 28 atomic writes reduce to 3×4 = 12 .
+
+Fig. 3. Segmented warp reduction. Consecutive threads sharing the same minimizer form a contiguous run (top). Within each run, 
+
+HeadSegmentedReduce merges all four word masks via bitwise-OR using warp shuffles (middle). Only the run head issues atomicOr to the target shard in global memory (bottom). 
+
+hash selects the target shard. Then, for each of the (k − s + 1) 
+
+overlapping s-mer windows, the thread hashes the s-mer and accumulates all corresponding bit positions into four 64-bit word masks held in registers. Contiguous threads that target the same shard form a run. cuSBF uses CUB’s HeadSegmentedReduce to merge the four word masks within each run using bitwise OR. Only the run head issues atomicOr operations on the shard words. Fig. 3 illustrates this reduction. This reduces the worst-case number of atomics from T × 4 per CTA to approximately one per run per word. Inactive threads, corresponding to invalid k-mers, receive a per-lane sentinel shard index, naturally splitting runs around them. 
+
+E. Query Algorithm 
+
+Query uses the same tile preparation and minimizer selec-tion, but each thread processes kStride = 4 consecutive k-mers to amortize packing overhead. The first k-mer is packed from scratch, and each subsequent k-mer is obtained by a single sliding-window operation: left-shift by the alphabet symbol width, OR in the new trailing symbol, and mask to k
+
+symbols. For k = 31 and kStride = 4 , this reduces per-thread packing work from 4k = 124 loop iterations to k + 3 = 34 ,saving 3( k − 1) = 90 packing steps. After computing a k-mer’s target shard, threads within a warp call __match_any_sync to identify lanes that need the same shard. The lowest-numbered peer becomes the leader: it loads the entire 256-bit shard, then broadcasts the four words to peer lanes via __shfl_sync . This replaces redundant global loads with register shuffles when adjacent k-mers share a minimizer. The query then checks all s-mer windows and all 
+
+H hash functions, accumulating the result across all required bit tests. Algorithm 2 shows the overall process. 
+
+F. Sequence-Native Design 
+
+Unlike general-purpose filters that ingest individual integer keys, cuSBF operates directly on character sequences. When processing FASTA/FASTQ input, consecutive records are con-catenated with a designated separator character (e.g., ’N’ for 
+
+Algorithm 1: Parallel Insertion  
+
+> 1
+
+Function InsertKmer(tile, threadIdx) // Cooperatively load encoded symbols into shared memory  
+
+> 2
+
+LoadTile(tile, sequence, blockStart, blockKmers)  
+
+> 3
+
+active ← ValidKmer(tile, threadIdx)  
+
+> 4
+
+packed ← PackKmer(tile, threadIdx) // Minimizer: minimum hash across all m-mer windows  
+
+> 5
+
+minHash ← ∞  
+
+> 6
+
+for i ← 0 to k − m do  
+
+> 7
+
+h ← MinimizerHash(Subwindow(packed, i, m))  
+
+> 8
+
+if h < minHash then  
+
+> 9
+
+minHash ← h 
+
+> 10
+
+shardIdx ← minHash & (NumShards() - 1) // Accumulate s-mer hashes into 4 word masks  
+
+> 11
+
+w0, w1, w2, w3 ← 0, 0, 0, 0 
+
+> 12
+
+for i ← 0 to k − s do  
+
+> 13
+
+sHash ← SmerHash(Subwindow(packed, i, s))  
+
+> 14
+
+HashToMasks(sHash, &w0, &w1, &w2, &w3) // Detect contiguous run of threads targeting the same shard  
+
+> 15
+
+prev ← ShflUp(shardIdx)  
+
+> 16
+
+runHead ← (lane = 0) or (prev ̸ = shardIdx ) 
+
+> 17
+
+if ¬active then  
+
+> 18
+
+shardIdx ← unique per-lane sentinel // Merge masks within each run via segmented warp reduction  
+
+> 19
+
+w0 ← HeadSegmentedReduce(w0, runHead, OR ) 
+
+> 20
+
+w1 ← HeadSegmentedReduce(w1, runHead, OR ) 
+
+> 21
+
+w2 ← HeadSegmentedReduce(w2, runHead, OR ) 
+
+> 22
+
+w3 ← HeadSegmentedReduce(w3, runHead, OR )// Only the run head issues atomic writes  
+
+> 23
+
+if runHead and active then  
+
+> 24
+
+AtomicOr(&shards[shardIdx].words[0], w0)  
+
+> 25
+
+AtomicOr(&shards[shardIdx].words[1], w1)  
+
+> 26
+
+AtomicOr(&shards[shardIdx].words[2], w2)  
+
+> 27
+
+AtomicOr(&shards[shardIdx].words[3], w3) 
+
+DNA) plus alignment padding to symbolWidth boundaries. Any k-mer that spans a record boundary will contain the invalid separator and is naturally filtered out by the validity check. This eliminates the need for record-boundary tracking inside GPU kernels, keeping the fast path simple and branch-free. 
+
+G. Optimizations 
+
+Bit-slicing. Within each word sector, a hash value is mapped to a bit position in one of two ways. When 64 /H ≥ 6, the 64-bit hash is divided into H equal-width slices, and slice 
+
+i directly addresses a bit position for hash index i. This avoids an extra multiplication for each hash function. When 
+
+H is large and each slice is too narrow, cuSBF falls back to multiplying with an inlined per-hash-index golden-ratio-derived salt and extracting the upper bits. 
+
+Role-specialized hashing. cuSBF uses different hash costs for different tasks. Minimizer selection hashes each m-mer with a single multiplicative mix, which is sufficient for uni-form shard selection and minimum comparison, while s-mer hashing for Bloom bit placement uses a stronger mix with an additional xorshift. This reduces ALU work in the minimizer hot path without changing the higher-quality hashing used for filter updates and queries. 
+
+Non-coherent vector loads. On Blackwell-class GPUs, query loads use ld.global.nc.v4.u64 to fetch all Algorithm 2: Parallel Query                                                                                                                                        
+
+> 1Function QueryKmers(tile, threadIdx) // Cooperatively load encoded symbols into shared memory
+> 2LoadTile(tile, sequence, blockStart, blockKmers)
+> 3threadOffset ←threadIdx ·kStride // First k-mer packed from scratch
+> 4packed ←PackKmer(tile, threadOffset)
+> 5for s←0to kStride −1do
+> 6localIdx ←threadOffset +s
+> 7if s > 0then
+> // Slide window: one shift-and-OR per subsequent k-mer
+> 8packed ←AdvanceWindow(packed, tile[localIdx +k−1])
+> 9if ¬ValidKmer(tile, localIdx) then
+> 10 output[blockStartKmer +localIdx] ←false
+> 11 continue
+> // Minimizer selects target shard
+> 12 minHash ← ∞
+> 13 for i←0to k−mdo
+> 14 h←MinimizerHash(Subwindow(packed, i,m))
+> 15 if h<minHash then
+> 16 minHash ←h
+> 17 shardIdx ←minHash & (NumShards() - 1) // Warp-level shard sharing: one lane loads, all receive via shuffle
+> 18 peers ←MatchAny(shardIdx)
+> 19 leader ←FirstLane(peers)
+> 20 if lane =leader then
+> 21 Load256Bit(words[0..3], shards[shardIdx])
+> 22 words[0..3] ←Shuffle(words[0..3], leader, peers) // Check all s-mer offsets and accumulate membership
+> 23 present ←Contains(packed, words)
+> 24 output[blockStartKmer +localIdx] ←present
+> 25 Function Contains(packed, words)
+> 26 present ←true
+> 27 for i←0to k−sdo
+> 28 sHash ←SmerHash(Subwindow(packed, i,s))
+> 29 for h←0to H−1do
+> 30 sector ←hmod 4
+> 31 bitPos ←BitAddress(sHash, h)
+> 32 present ←present ∧BitIsSet(words[sector], bitPos)
+> 33 return present
+
+four shard words in one instruction while bypassing L1. Older GPUs fall back to two 128-bit non-coherent loads via 
+
+ld.global.nc.v2.u64 .
+
+Compile-time specialization. All core loops over hash functions, s-mer windows, and minimizer windows are con-trolled by compile-time constants. This lets the compiler unroll hot loops and eliminate unused code paths for each configuration. 
+
+Host FASTX staging. For FASTA/FASTQ inputs, cuSBF selects among stream, memory-mapped, and pipelined paths from file size, available host RAM, and a VRAM-derived staging budget ( fill_fraction of free GPU memory). Uncompressed files that fit in memory can be mmap ’d and parsed without an extra full-file read. Multi-chunk workloads overlap host normalization, pinned staging, and H2D copies with GPU work on alternating CUDA streams. When the entire normalized batch fits one chunk, each insert or query pass issues a single kernel launch. V. E VALUATION 
+
+A. Experimental Setup 
+
+The performance evaluation was conducted on three distinct hardware configurations.  
+
+> •
+
+System A : An AMD EPYC 7713P (64 cores) paired with an RTX PRO 6000 Blackwell GPU featuring 96 GB of GDDR7 memory (1.8 TB/s) running AlmaLinux 10.1 and CUDA 13.2.  
+
+> •
+
+System B : A GH200 Grace Hopper system with 72 ARM Neoverse V2 cores and an H100 GPU featuring 96 GB of HBM3 (3.4 TB/s) running Ubuntu 24.04.4 and CUDA 13.2.  
+
+> •
+
+System C : Intel ® Xeon ® W9-3595X CPU featuring 60 cores and 256 GB of DDR5 (300 GB/s) running Alma-Linux 10.1. Systems A and B were selected to expose different ar-chitectural trade-offs. While System B offers substantially higher memory bandwidth through HBM3 memory compared to GDDR7, System A provides roughly 50% more CUDA cores. This distinction helps differentiate compute-bound from memory-bound behavior. System C, in contrast, has been chosen for its strong multi-core CPU performance and is used to evaluate the CPU reference implementation using 120 threads. To provide a comprehensive comparison, we evaluate cuSBF against the following baselines:  
+
+> •
+
+GPU Blocked Bloom filter (GBBF) : NVIDIA’s cuCollections Bloom filter [6], used as the high-performance append-only GPU baseline.  
+
+> •
+
+Cuckoo-GPU : A modern GPU Cuckoo filter [16], in-cluded to compare against a high-throughput dynamic AMQ that supports insertions, queries, and deletions.  
+
+> •
+
+Bulk Two-Choice filter (TCF) : A GPU-focused dynamic AMQ from McCoy et al. [14] that emphasizes locality through cooperative scheduling.  
+
+> •
+
+GPU Counting Quotient filter (GQF) : The quotient-filter variant from the same study [14], [15], included as a space-efficient dynamic baseline.  
+
+> •
+
+CPU Super Bloom : The CPU reference implementation of Super Bloom [8], used to separate algorithmic gains from GPU-specific acceleration. All throughput comparisons use the same sequence-derived 
+
+k-mer workloads and assign each filter a common nomi-nal budget of 16 bits per inserted k-mer, rounded up to implementation-compatible capacities. Unless noted other-wise, our sequence benchmarks use the C. elegans reference (≈ 97 MiB) as the smaller, more cache-friendly workload and as the base dataset for the false-positive-rate experiment, and the human T2T-CHM13 v2.0 reference ( ≈ 3 GiB) as a large, out-of-cache workload that stresses sustained global-memory behavior. For the C. elegans workload, cuSBF, GBBF, Cuckoo-GPU, TCF, and Super Bloom therefore use 256 MiB filters, 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31                                               
+
+> S
+> H=4 H=8 H=12 H=16
+> 812 16 20 24 28 31
+> M
+> 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+> S
+> H=4
+> 812 16 20 24 28 31
+> M
+> H=8
+> 812 16 20 24 28 31
+> M
+> H=12
+> 812 16 20 24 28 31
+> M
+> H=16
+> 10 0
+> 10 1
+> FPR [%]
+> 10 1
+> 3×10 0
+> 4×10 0
+> 6×10 0
+> Insert + Query Time [ms]
+> Pareto config Fig. 4. Parameter sweep summary for k=31 on System A. The top row shows false-positive rate and the bottom row the combined insert+query time. Columns correspond to the hash count H∈ { 4,8,12 ,16 }, while each heatmap sweeps the Findere length s(vertical axis) and minimizer length m
+> (horizontal axis). Outlined cells are Pareto-optimal when minimizing false-positive rate and total runtime jointly.
+
+while GQF uses the same nominal capacity but occupies 290.25 MiB because of its layout overhead. For the human T2T-CHM13 v2.0 workload, the corresponding sizes are 8 GiB for cuSBF, GBBF, Cuckoo-GPU, TCF, and Super Bloom, and 9.06 GiB for GQF. Reported sizes count only the allocated filter object, scratch buffers and staging memory are excluded. We also assume GPU-resident input, so host–device transfer time is not charged. 
+
+B. Parameter Exploration 
+
+To isolate SBF trade-offs, we swept (s, m, H ) on the 
+
+C. elegans workload at a 256 MiB memory budget (Fig. 4). All Pareto-optimal configurations lie at H = 4 , increasing 
+
+H raises runtime without improving the false-positive rate. At our selected operating point of (28 , 16 , 4) , moving to 
+
+H = 8 increases runtime by 7.6% and doubles the FPR, while 
+
+H = 16 raises runtime by 65.9% and the FPR by 5.2×.For fixed (m, H ) = (16 , 4) , the Findere length s is optimal around s ≈ 27 –29. Increasing s from 16 to 28 reduces total time by 29.1% and the FPR by 37.4% by reducing overlapping 
+
+s-mers. Beyond s = 28 , accuracy degrades because too few overlapping s-mers remain to suppress false positives; relative to s = 28 , the FPR is 25.6% higher at s = 30 and 2.29 ×
+
+higher at s = 31 .The minimizer length m similarly peaks at m = 16 . At 
+
+(s, H ) = (28 , 4) , increasing m from 8 to 12 reduces the FPR by 91.7%, and moving to 16 reduces it by another 90.8%. Beyond m = 16 , extra minimizer work and shorter super-k-mer runs degrade performance: at m = 18 , total time is 8.5% higher and FPR is 3.5% higher, and by m = 31 , insertion time is 7.7× higher and FPR is 4.8× higher. Based on this frontier, we use k = 31 , s = 28 , m = 16 ,and H = 4 in the remaining benchmarks. It sits at the low-FPR turning point of the Pareto set. Compared to (s, m, H ) = (27 , 16 , 4) it retains essentially identical accuracy for 0.7% lower total runtime, while compared to (s, m, H ) = (29 , 16 , 4) 
+
+it pays only 2.3% more time to reduce the FPR by 5.1%. 
+
+C. Throughput 
+
+Fig. 5 shows that cuSBF remains the fastest method across both genomic workloads, though the extent of this advantage is heavily influenced by the available compute resources. On System A (GDDR7), cuSBF leads the cuCollections blocked Bloom baseline by about 9.1 × for insertion and 7.7 × for query on the smaller C. elegans filter, and by 8.2 × and 7.6 ×
+
+on the larger human CHM13 filter. Against the CPU Super Bloom implementation on System C, the gap is even larger, reaching 92 ×/234 × on C. elegans and 59 ×/165 × on CHM13 for insert/query, respectively. The relative picture changes on System B (HBM3): cuSBF still outperforms every baseline, but its advantage over the blocked Bloom filter narrows to 2.1 × insertion and 1.37 ×
+
+query on C. elegans , and 2.36 × and 1.49 × on CHM13. This is exactly the pattern that shows up in the speed-of-light analysis in Section V-E: cuSBF is more compute-heavy, whereas cuCollections is closer to a pure bandwidth-bound baseline. Moving from GDDR7 to HBM3 therefore helps cuCollections much more strongly than cuSBF. cuCollections gains roughly 2.1–2.6 × across these workloads, while cuSBF does not scale up and in fact runs slower on System B, consistent with System A offering substantially more CUDA cores despite the lower memory bandwidth. Even so, cuSBF remains far ahead of the dynamic GPU AMQs on both GPU systems. On System A, it is about 79 ×
+
+faster than Cuckoo-GPU for insertion on C. elegans and over 3400 × faster on CHM13, while still holding roughly 8 ×
+
+higher query throughput. On System B, the same comparison yields about 65 × and 1600 × insertion speedups and about 1.5 × query speedups. Relative to TCF and GQF, cuSBF’s margins are also consistently large: on System A it exceeds TCF by about 12 × for insertion and over 50 × for query, while on System B it still maintains about 7 × insertion and 15 ×
+
+query speedups. These gaps show that even when cuSBF’s own lead over blocked Bloom shrinks on HBM3, the sequence-aware design still translates into a clearly superior practical AMQ for sequence workloads. Cuckoo-GPU deserves a separate discussion because its behavior is highly asymmetric. Its query throughput stays close to the blocked Bloom baseline on both GPU systems, show-ing that read-only membership checks tolerate the duplicate-heavy genomic workload reasonably well. Insertion, however, collapses on the human genome: relative to its own C. elegans 
+
+throughput, Cuckoo-GPU drops by about 57 × on System A and 25 × on System B. For genomic data this is unsurprising: DNA contains many duplicate k-mers, and duplicate insertions repeatedly target the same Ccuckoo buckets. That amplifies contention and eviction churn, which is especially harmful for a write-heavy dynamic structure. The smaller filter suffers from the same effect, but more traffic remains cache-resident and the penalty is less severe. If the input would be dedupli-cuSBF GBBF Cuckoo-GPU GQF TCF Super Bloom GH200 (HBM3) RTX PRO 6000 (GDDR7) W9-3595X (DDR5) Insert Query 10 −2  
+
+> 10 −1
+> 10 0
+> 10 1
+> 10 2
+> Throughput [GKmer/s] (a) C. elegans genome. 10 −2
+> 10 −1
+> 10 0
+> 10 1
+> 10 2
+> Throughput [GKmer/s] (b) Human genome (T2T-CHM13). Fig. 5. Insert and query throughput on real genomic FASTA workloads across System A (GDDR7), System B (HBM3) and System C (DDR5).
+
+cated before insertion, Cuckoo-GPU would be placed much closer to the blocked Bloom baseline. Overall, the throughput results show a clear architectural split. cuSBF is not the most bandwidth-scalable design in the comparison. Instead, it trades some peak memory through-put for much stronger end-to-end sequence throughput via minimizer-guided shard reuse, warp-level shard sharing, and segmented atomic reduction. That trade-off remains favorable on both GPU platforms and leaves the CPU implementation far behind. 
+
+D. False Positive Rate 
+
+Fig. 6 plots the number of false positives among 10 9
+
+random 31-mers after inserting the C. elegans reference while sweeping the total filter size from 222 to 239 bits. Among the cuSBF variants, the expected ordering from Eq. (2) is visible immediately: s = 28 yields the lowest FPR, s = 30 is consistently worse, and s = 31 (which removes the Findere overlap entirely) is the worst throughout. This is the cost of enlarging s: the per-s-mer test becomes more selective, but the number of overlapping s-mers per 31-mer drops from 4 to 2 to 1, weakening the multiplicative suppression of random-alien false positives. The primary accuracy target for us is the cuCollections blocked Bloom baseline. cuSBF with s = 28 outperforms that baseline at every shared budget, delivering 3.6 × lower FPR at 231 bits, 2.9 × lower FPR at 235 bits, and just over two orders-of-magnitude lower FPR at 239 bits. The gap widens as the filters grow because the blocked Bloom curve begins to flatten at large capacities. This is consistent with cuco’s default single-hash blocked policy, which uses one 64-bit hash both to choose the block and to derive the in-block bit pattern. Once the filter is extremely large, adding more memory mostly creates more blocks rather than proportionally strengthening the evidence checked inside each block. TCF and GQF only appear from 231 bits onward, but for different reasons: below that point TCF’s additional scratch buffers no longer fit alongside the filter at the fixed 95% load factor, whereas GQF’s allocated filter object is already too large because of its layout overhead. Of those two, GQF is clearly better: it stays roughly 8 × below TCF throughout the shared range, beats Cuckoo-GPU at smaller and mid-sized budgets, and only falls behind once the sweep reaches the very largest filters. Cuckoo-GPU is strong across the entire range, dropping by about 251 × from 231 to 239 bits, and it stays below cuSBF until the very largest point: it is about 24 × lower than cuSBF at 231 bits, but by 239 bits cuSBF is about 1.6 ×
+
+lower. Its slope is nevertheless shallower than the Bloom-like filters, which is consistent with the benchmark configuration keeping a fixed 16-bit fingerprint and 16-slot bucket layout while scaling capacity: additional memory lowers occupancy, but it does not widen the fingerprints that ultimately control accidental matches. The CPU Super Bloom reference retains the best FPR among the SBF-family variants, remaining far below cuSBF at moderate budgets and still slightly ahead at the largest one: relative to cuSBF with s = 28 , it is about 30 × lower at 231 
+
+bits, 8.3 × lower at 235 bits, and 1.15 × lower at 239 bits. This is where our GPU-oriented simplifications show up most clearly: the CPU reference uses larger 512-bit blocks, and its per-s-mer hash applies a stronger SplitMix-style 64-bit mix. By contrast, cuSBF sectorizes each 256-bit shard into four 64-bit words, so each hash index addresses only one 64-bit sector rather than the whole shard. That reduces bit dispersion, but avoids the runtime mask-selection branching that would otherwise be far too costly on the GPU. That trade-off is intentional. In the intended deployment regime, throughput is the primary constraint as long as the FPR remains low enough to make the filter useful. Under that criterion cuSBF lands in the right part of the design space: it consistently beats the GPU blocked Bloom baseline on FPR, while Section V-C showed that it surpasses every evaluated alternative by a wide margin in throughput. 
+
+E. Speed-of-Light Analysis 
+
+Fig. 7 compares cuSBF against the cuCollections blocked Bloom filter baseline on System A with a fixed memory budget of 16 bits per inserted k-mer and a constant 95% 223 225 227 229 231 233 235 237 239 
+
+> Filter size [bits]
+> 10 3
+> 10 4
+> 10 5
+> 10 6
+> 10 7
+> 10 8
+> 10 9
+> False positives (hits / 1B random k-mers)
+> GBBF Super Bloom (s=27) Super Bloom (s=28) cuSBF (s=28) cuSBF (s=30) cuSBF (s=31) TCF Cuckoo-GPU GQF
+
+Fig. 6. False-positive hits among 10 9 random 31-mers after inserting the C. elegans reference, plotted against allocated filter size. 
+
+load factor. cuSBF reaches about 85% of peak SM throughput for insertion and about 70% for query while keeping L2 and DRAM utilization comparatively modest over a broad range of capacities. This indicates that the optimized cuSBF kernels are primarily limited by on-chip work (packing, minimizer selection, hashing) rather than by off-chip bandwidth alone. Only once the filter grows beyond the size of the L2 cache does DRAM pressure rise noticeably, yet cuSBF still sustains about 50% SM throughput at the largest tested capacities. In contrast, cuco reaches high L2 and DRAM utilization much earlier, but its SM throughput collapses once the filter outgrows the cache-resident regime. For insertion, cuco peaks at about 82% L2 throughput but falls below 10% SM through-put at the largest capacities. For query, DRAM throughput rises to about 61% while SM throughput drops to below 9%. This is consistent with cuSBF’s minimizer-guided shard reuse and segmented warp reductions: they keep more work local to registers and shared memory, reducing the cost of repeated random global memory accesses when the filter no longer fits comfortably in cache. 
+
+F. Host-to-Device Transfer Overhead 
+
+Section V-C assumes GPU-resident input, which matches a pipeline stage but not standalone use from host-resident FASTX files, where H2D transfer and synchronization can dominate. This question is especially relevant on a new class of tightly coupled heterogeneous systems, including GH200, GB200 and GB300, Vera Rubin, and compact platforms such as DGX Spark and RTX Spark, which pair CPUs and GPUs behind cache-coherent chip-to-chip links rather than a con-ventional PCIe root complex. On GH200, the NVLink-C2C interconnect advertises up to 450 GB/s per direction [22], roughly 7 × higher than PCIe Gen5. Because Section V-C nevertheless favored the RTX PRO 6000 once data was already on the device, we test whether that faster link wins when sequence bytes remain on the host. Fig. 8 compares host-sequence insert and query (excluding FASTX parsing) against device-resident async kernels on T2T-218 221 224 227 230             
+
+> 0
+> 25
+> 50
+> 75
+> 100
+> Compute
+> 218 221 224 227 230
+> L1 Cache
+> 218 221 224 227 230
+> 0
+> 25
+> 50
+> 75
+> 100
+> L2 Cache
+> 218 221 224 227 230
+> DRAM
+> Throughput (% of Peak) Target Filter Capacity [k-mers]
+
+cuSBF GBBF Insert Query 
+
+Fig. 7. Speed-of-Light throughput metrics for cuSBF and cuco blocked Bloom on System A across varying target capacities, fixed at 16 bits per inserted k-mer and a constant 95% load factor. Compute, L1, L2, and DRAM throughput are reported as percentages of peak sustained performance. 10 1 
+
+> 10 2
+> Throughput [GKmer/s]
+> 87 94
+> 16
+> 16
+
+RTX PRO 6000 Insert Query GH200 Device-resident 
+
+Fig. 8. cuSBF insert and query throughput on the human T2T-CHM13 v2.0 reference at the main benchmark configuration. Bars report throughput with host-resident sequence input, horizontal markers show device-resident throughput on the same system. Percentages quantify the throughput lost to host–device transfer relative to that device-resident rate. 
+
+CHM13 v2.0 at the main configuration. On System A, host insert and query reach only 6.3 and 7.1 GKmer/s, 87–94% below the corresponding device-resident throughput of 48.5 and 112 GKmer/s. On System B, transfer overhead is smaller (17% on insert, 16% on query) and reverses the platform rank-ing: despite slower device-resident kernels, GH200 delivers 4.8 × and 6.3 × higher host-sequence throughput than the RTX PRO 6000. VI. C ONCLUSION 
+
+We have introduced cuSBF, the first GPU-native implemen-tation of the Super Bloom filter that is tailored to genomic 
+
+k-mer workloads. By combining minimizer-guided sharding with a GPU-oriented data layout (256-bit sectorized shards, cooperative shared-memory tiling, warp-level shard sharing, and segmented warp reductions), cuSBF converts the locality inherent in super-k-mers into high-throughput, low-contention execution on modern accelerators. Across the evaluated genomic workloads, cuSBF consis-tently delivers the highest end-to-end throughput among all tested sequence-capable baselines. It maintains this advantage across both the discrete GDDR7-based RTX PRO 6000 and the HBM3-based GH200, even though the latter favors more purely bandwidth-bound designs. At the same time, cuSBF does not trade away accuracy to obtain this speed. The parameter sweep identifies k = 31 , s = 28 , m = 16 , and 
+
+H = 4 as the best overall operating point, and the resulting configuration consistently achieves lower false-positive rates than the GPU blocked Bloom baseline at comparable memory budgets. The speed-of-light analysis clarifies why this trade-off works: cuSBF is not the most bandwidth-scalable filter in the comparison. Instead, it deliberately spends more on-chip work to reduce redundant global-memory traffic and to exploit the structure of overlapping sequence windows. For the intended deployment setting of GPU-native genomic pipelines, this proves to be the better design point. At the same time, the current design has clear limitations that point to future work. Although cuSBF supports arbitrary alphabets, larger alphabets consume more bits per symbol and therefore force smaller feasible minimizer lengths within the current 64-bit packing scheme, which in turn raises the false-positive rate. One promising direction is to explore wider packed representations, such as multiword or SIMD/vector-assisted encodings, to support larger alphabets without giving up too much performance. For standalone use over host-resident sequence data, Section V-F further shows that such integrated platforms can outweigh faster discrete GPUs once data movement is included. Overall, our results show that minimizer-aware AMQs can be mapped efficiently to GPUs and can substantially outper-form generic GPU filters on real sequence data, but that the best future designs will likely need to co-optimize both kernel execution and data movement for the target system. REFERENCES [1] B. H. Bloom, “Space/time trade-offs in hash coding with allowable errors,” Commun. ACM , vol. 13, no. 7, p. 422–426, Jul. 1970. [Online]. Available: https://doi.org/10.1145/362686.362692 [2] F. Chang, J. Dean, S. Ghemawat, W. C. Hsieh, D. A. Wallach, M. Burrows, T. Chandra, A. Fikes, and R. E. Gruber, “Bigtable: A Distributed Storage System for Structured Data,” ACM Trans. Comput. Syst. , vol. 26, no. 2, 2008. [Online]. Available: https: //doi.org/10.1145/1365815.1365816 [3] A. Broder and M. Mitzenmacher, “Network Applications of Bloom Filters: A Survey,” Internet Mathematics , vol. 1, no. 4, pp. 485– 509, 2004. [Online]. Available: https://doi.org/10.1080/15427951.2004. 10129096 [4] A. S. C. Gaia, P. H. C. G. de S´ a, M. S. de Oliveira, and A. A. d. O. Veras, “NGSReadsTreatment – A Cuckoo Filter-based Tool for Removing Duplicate Reads in NGS Data,” Scientific Reports , vol. 9, no. 1, p. 11681, Aug 2019. [Online]. Available: https://doi.org/10.1038/s41598-019-48242-w [5] F. Putze, P. Sanders, and J. Singler, “Cache-, Hash- and Space-Efficient Bloom Filters,” in Experimental Algorithms , C. Demetrescu, Ed. Springer, 2007, pp. 108–121. [6] NVIDIA Corporation, “cuCollections,” Oct. 2026, gitHub repository, commit 8576506. [Online]. Available: https://github.com/NVIDIA/ cuCollections [7] D. J¨ unger, K. Kristensen, Y. Wang, X. Yu, and B. Schmidt, “Optimizing Bloom Filters for Modern GPU Architectures,” 2025. [Online]. Available: https://arxiv.org/abs/2512.15595 [8] E. Conchon-Kerjan, T. Rouz´ e, L. Robidou, F. Ingels, and A. Limasset, “Super Bloom: Fast and precise filter for streaming k-mer queries,” 
+
+bioRxiv , 2026. [Online]. Available: https://www.biorxiv.org/content/ early/2026/03/19/2026.03.17.712354 [9] M. Roberts, W. Hayes, B. R. Hunt, S. M. Mount, and J. A. Yorke, “Reducing storage requirements for biological sequence comparison,” 
+
+Bioinformatics , vol. 20, no. 18, pp. 3363–3369, 12 2004. [Online]. Available: https://doi.org/10.1093/bioinformatics/bth408 [10] L. Robidou and P. Peterlongo, “findere: Fast and Precise Approximate Membership Query,” in String Processing and Information Retrieval ,T. Lecroq and H. Touzet, Eds. Cham: Springer International Publishing, 2021, pp. 151–163. [11] Y. Cheng, X. Sun, and Q. Luo, “RapidGKC: GPU-Accelerated K-Mer Counting,” in 2024 IEEE 40th International Conference on Data Engineering (ICDE) , May 2024, pp. 3810–3822. [12] M. Erbert, S. Rechner, and M. M¨ uller-Hannemann, “Gerbil: a fast and memory-efficient k-mer counter with GPU-support,” Algorithms for Molecular Biology , vol. 12, no. 1, p. 9, Mar 2017. [Online]. Available: https://doi.org/10.1186/s13015-017-0097-9 [13] H. Li, A. Ramachandran, and D. Chen, “GPU Acceleration of Advanced k-mer Counting for Computational Genomics,” in 2018 IEEE 29th International Conference on Application-specific Systems, Architectures and Processors (ASAP) , July 2018, pp. 1–4. [14] H. McCoy, S. Hofmeyr, K. Yelick, and P. Pandey, “High-Performance Filters for GPUs,” in Proceedings of the 28th ACM SIGPLAN Annual Symposium on Principles and Practice of Parallel Programming , ser. PPoPP ’23. New York, NY, USA: ACM, 2023, p. 160–173. [Online]. Available: https://doi.org/10.1145/3572848.3577507 [15] A. Geil, M. Farach-Colton, and J. D. Owens, “Quotient Filters: Approx-imate Membership Queries on the GPU,” in 2018 IEEE International Parallel and Distributed Processing Symposium (IPDPS) , 2018, pp. 451– 462. [16] T. Dortmann, M. Vieth, and B. Schmidt, “Cuckoo-GPU: Accelerating Cuckoo Filters on Modern GPUs,” 2026. [Online]. Available: https://arxiv.org/abs/2603.15486 [17] P. Bradley, H. C. den Bakker, E. P. C. Rocha, G. McVean, and Z. Iqbal, “Ultrafast search of all deposited bacterial and viral genomic data,” 
+
+Nature Biotechnology , vol. 37, no. 2, pp. 152–159, Feb 2019. [Online]. Available: https://doi.org/10.1038/s41587-018-0010-1 [18] S. D. Jackman, B. P. Vandervalk, H. Mohamadi, J. Chu, S. Yeo, S. A. Hammond, G. Jahesh, H. Khan, L. Coombe, R. L. Warren, and I. Birol, “ABySS 2.0: resource-efficient assembly of large genomes using a Bloom filter,” Genome Res , vol. 27, no. 5, pp. 768–777, feb 2017. [19] V. C. Piro, T. H. Dadi, E. Seiler, K. Reinert, and B. Y. Renard, “ganon: precise metagenomics classification against large and up-to-date sets of reference sequences,” Bioinformatics , vol. 36, no. S1, pp. i12–i20, 07 2020. [Online]. Available: https://doi.org/10.1093/bioinformatics/ btaa458 [20] H. Shi, B. Schmidt, W. Liu, and W. M¨ uller-Wittig, “A parallel algorithm for error correction in high-throughput short-read data on CUDA-enabled graphics hardware,” Journal of Computational Biology , vol. 17, no. 4, pp. 603–615, 2010. [21] J. Chu, S. Sadeghi, A. Raymond, S. D. Jackman, K. M. Nip, R. Mar, H. Mohamadi, Y. S. Butterfield, A. G. Robertson, and I. Birol, “BioBloom tools: fast, accurate and memory-efficient host species sequence screening using bloom filters,” Bioinformatics ,vol. 30, no. 23, pp. 3402–3404, 12 2014. [Online]. Available: https://doi.org/10.1093/bioinformatics/btu558 [22] G. Schieffer, J. Wahlgren, J. Ren, J. Faj, and I. Peng, “Harnessing Integrated CPU-GPU System Memory for HPC: a first look into Grace Hopper,” 2024. [Online]. Available: https://arxiv.org/abs/2407.07850
