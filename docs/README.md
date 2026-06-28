@@ -6,29 +6,30 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-27
-- 运行时间：2026-06-27 21:22:06 UTC
+- 最新运行日期：2026-06-28
+- 运行时间：2026-06-28 21:20:36 UTC
 - 运行状态：成功
 - 本次总论文数：3
-- 精读区：1
-- 速读区：2
+- 精读区：0
+- 速读区：3
 
 ### 今日简报（AI）
-今日聚焦微生物组水平基因转移检测与组学整合，精读一篇图泛基因组方法高分论文。最值得关注的是基于图泛基因组的Kente（9/10），可高效检测水平基因转移；速读中多变量随机森林与长读长比对可视化工具也具实用价值。建议优先探索Kente在微生物组中的应用，并尝试与多组学整合工具结合分析。
-- 详情：[/202606/27/README](/202606/27/README)
+今日速读3篇，涵盖FASTQ高效子采样和两项多组学整合新方法。最值得关注的是《fastQpick: scalable bootstrap and subsampling of FASTQ reads》（7.0分），适合处理海量测序数据的读者。建议优先了解fastQpick的算法优势，再对比多组学整合的稳定性策略。
+- 详情：[/202606/28/README](/202606/28/README)
 
 ### 精读区论文标签
-1. [Kente: A Graph-based Pangenomic Approach for Horizontal Gene Transfer Detection in Microbiomes](/202606/27/biorxiv-10-64898-2026-06-22-733643-v1-kente-a-graph-based-pangenomic-approach-for-horizontal-gene-transfer-detection-in-microbiomes)  
-   标签：评分：9.0/10、query:microbiome
-   evidence：Kente基于图泛基因组的方法用于微生物组水平基因转移检测
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [Multivariate Random Forests for Cross-Modal Multi-Omics Integration](/202606/27/biorxiv-10-64898-2026-06-17-732933-v1-multivariate-random-forests-for-cross-modal-multi-omics-integration)  
+1. [fastQpick: scalable bootstrap and subsampling of FASTQ reads](/202606/28/biorxiv-10-64898-2026-06-23-734068-v1-fastqpick-scalable-bootstrap-and-subsampling-of-fastq-reads)  
+   标签：评分：7.0/10、query:microbiome
+   evidence：可扩展的FASTQ读取自助抽样工具，适用于微生物组宏基因组数据
+2. [Multivariate Random Forests for Cross-Modal Multi-Omics Integration](/202606/28/biorxiv-10-64898-2026-06-17-732933-v1-multivariate-random-forests-for-cross-modal-multi-omics-integration)  
    标签：评分：6.0/10、query:microbiome
-   evidence：多组学整合随机森林方法
-2. [Bamsnap-LRS: an automated batch visualization tool for long-read sequencing alignments](/202606/27/biorxiv-10-64898-2026-06-21-733121-v1-bamsnap-lrs-an-automated-batch-visualization-tool-for-long-read-sequencing-alignments)  
+   evidence：可用于微生物组数据的多组学整合方法
+3. [Stability-driven multi-omics integration for reproducible latent structure](/202606/28/biorxiv-10-64898-2026-06-23-734064-v1-stability-driven-multi-omics-integration-for-reproducible-latent-structure)  
    标签：评分：6.0/10、query:microbiome
-   evidence：长读长测序比对的批处理可视化工具，可用于宏基因组分析
+   evidence：稳定性驱动的多组学整合方法，可应用于微生物组数据
 
 
 <div class="dpr-home-promo-card">
