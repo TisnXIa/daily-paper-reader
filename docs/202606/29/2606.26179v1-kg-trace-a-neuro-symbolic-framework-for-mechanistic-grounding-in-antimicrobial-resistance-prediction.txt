@@ -1,0 +1,265 @@
+Title: KG-TRACE: A Neuro-Symbolic Framework for Mechanistic Grounding in Antimicrobial Resistance Prediction
+
+URL Source: https://arxiv.org/pdf/2606.26179v1
+
+Published Time: Fri, 26 Jun 2026 00:02:38 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# KG-TRACE: A Neuro-Symbolic Framework for Mechanistic Grounding in Antimicrobial Resistance Prediction 
+
+Naman Garg 1, Sarika Jain 1, Sourav Yadav 2, Bharat K. Bhargava 3, Ghanapriya Singh 1, Abhishek Srivastava 4, Parimal Kar 4
+
+> 1
+
+National Institute of Technology Kurukshetra, Kurukshetra, India 
+
+> 2
+
+Indian Institute of Information Technology Manipur, Manipur, India 
+
+> 3
+
+Purdue University, West Lafayette, IN, USA 
+
+> 4
+
+Indian Institute of Technology Indore, Indore, India 
+
+Abstract —While WGS-based AMR prediction has reached high accuracy, existing models lack a mechanism to ground neural attributions in established biological pathways. We present KG-TRACE, a novel neuro-symbolic framework that integrates the WHO mutation knowledge graph (KG) as a structured biolog-ical constraint on a neural genomic model. Unlike existing meth-ods that learn statistical patterns in isolation, KG-TRACE fuses genomic features and RotatE-based KG embeddings through a learned epistemic trust gate, dynamically weighting neural evidence against symbolic biological knowledge. Evaluated on the CRyPTIC M. tuberculosis cohort, KG-TRACE achieves an AUROC of 0.9760 for isoniazid, achieving competitive accuracy while its primary value lies in symbolic grounding, not predictive uplift. More importantly, we introduce the Biological Grounding Ratio (BGR), a dataset-level metric that quantifies alignment between neural attributions and established biology. Our framework achieves a 92.5% symbolic coverage of isoniazid-resistant predictions and effectively identifies MDR co-occurrence artifacts by issuing laboratory follow-up flags for ’UNCERTAIN’ cases. We demonstrate that neuro-symbolic grounding provides a verifiable audit trail for clinicians, bridging the gap between predictive accuracy and clinical trust. 
+
+Index Terms —Antimicrobial resistance, neuro-symbolic AI, knowledge graph embedding, mechanistic grounding, cross-attention fusion, Explainable AI (XAI), Clinical Decision Support 
+
+I. I NTRODUCTION 
+
+Bacterial AMR killed 1.14 million people directly in 2021 and was associated with a further 4.71 million deaths; between 2025 and 2050, the toll is projected to exceed 39 million [1]. Those numbers are sobering, but from a diagnostic standpoint, the more immediate problem is simpler and more tractable: how long does it take to know whether a given isolate is resistant? For M. tuberculosis , conventional culture-based drug-susceptibility testing takes two weeks or more [3]. Two weeks is a long time to start an ineffective regimen. WGS can, in principle, compress that to a few hours—sequence the isolate, run a model, return a prediction before the patient leaves the clinic. The computational literature has pursued this path with genuine commitment. Linear models [10], random forests [12], gradient-boosted trees [13], 1D convolutional networks [16], and dedicated architectures such as DeepAMR [14] and the TB-DROP framework [15] have all pushed AMR prediction accuracy on WGS data to a point where the numbers, taken alone, look clinical-grade. But two gaps persist that matter for whether the numbers translate into safer clinical decisions. The first is that essentially all current methods process each isolate in isolation. They treat the mutation vector as a raw feature space and learn from it, without drawing on the decades of molecular microbiology encoded in resources like the WHO mutation catalogue or the CARD database. For isolates with clean, well-characterized resistance mutations, this matters less; for those with ambiguous or sparse profiles, it matters a lot, because the model has nothing to fall back on but statistical patterns. The second gap is per-sample mechanistic grounding. When a model predicts resistance, the clinician’s natural question is: which gene, which mutation, and is this a known causal mechanism or a coincidental co-occurrence? A model that correctly predicts resistance because a drug-pathway mutation happened to co-occur with an MDR background marker is making the right call for the wrong reason, and in a clinical note, that is a real liability. SHAP attributions go partway toward answering the question, but they cannot, by themselves, distinguish a causal driver from a statistical artefact. Knowledge graphs have proven useful in adjacent settings— drug repurposing [22], cancer target identification [23], cy-bersecurity [30], and mental health assessment [31]—and the case for using them in AMR prediction is essentially the same: structured biological knowledge that a pure ML approach discards. Simple concatenation of KG embeddings with genomic features has been tried and produced modest gains without per-sample adaptivity. We wanted something that could vary its reliance on the symbolic layer depending on the evidence in front of it. 
+
+KG-TRACE (KG Fusion for Traceable AMR) brings these two components together through a learned cross-attention gate. The primary objective is accurate, clinically actionable AMR prediction from WGS data, with grounding that links each prediction to specific mutations and WHO-catalogued resistance pathways. The two concrete contributions are: 1) A neuro-symbolic attention gate for genomic-KG fusion. Inspired by gated multimodal fusion [24], [25], the gate dynamically allocates trust between the neural 
+
+> arXiv:2606.26179v1 [cs.LG] 24 Jun 2026
+
+(genomic) and symbolic (KG) components on a per-sample basis. It behaves differently for resistant versus susceptible isolates, and the KG branch acts as a bi-ological regularizer that penalizes reliance on features without a causal path to the drug of interest. 2) Dual-level mechanistic grounding with a defined trust hierarchy. A dual-level mechanistic grounding proto-col that issues uncertainty flags when neural evidence lacks a catalogued biological path. When a high-SHAP mutation has no catalogued KG path to the drug, the system flags this disagreement between the two levels as uncertain rather than reporting it as verified. The Biological Grounding Ratio (BGR) gives a dataset-level measure of how well the neural attribution aligns with the symbolic knowledge base. To make the problem concrete: Fig. 1 shows the Clinical Decision Support Note that KG-TRACE generates for isolate SAMN07236525 from the CRyPTIC dataset, a phenotypically INH-resistant M. tuberculosis sample. The model returns a confidence of p ≈ 0.94 , but more usefully, it names the mutations driving the prediction, checks each one against the WHO knowledge graph, and reports whether the causal chain is verified. The prediction is traceable. That is what we mean by mechanistic grounding. While current deep learning models for AMR focus heavily on maximizing AUROC, KG-TRACE prioritizes clinically actionable interpretability by ensuring every high-confidence prediction is backed by a WHO-catalogued causal chain. Section II reviews related work. Section III covers data, KG construction, model architecture, and grounding methodology. Section IV details the experimental setup, Section V presents and interprets results. Sections VI and VII address limitations and conclusions. II. B ACKGROUND AND RELATED WORK 
+
+A. Classical and Ensemble Methods for AMR Prediction 
+
+The earliest computational AMR tools—Mykrobe [3] and KvarQ [4]—worked by matching observed mutations against curated resistance catalogues. ResFinder [5] and AMRFinder Plus [6] extended this to broad-spectrum genomic screening. Catalogue-based tools are fast and transparent, but they fail on variants not yet catalogued; the long tail of novel resistance mechanisms that genomic surveillance keeps uncovering is exactly what they miss. Statistical machine learning fills that gap. Yang et al. trained support vector machines, logistic regression, and random forest classifiers on WGS data from 1,839 UK M. tuberculosis 
+
+isolates, showing that learned models can match or beat catalogue rules for commonly tested drugs [10]. Moradigar-avand et al. applied ℓ1-penalized regression to E. coli pan-genome vectors, reaching AUROCs above 0.96 [11]. Drouin et al. combined a Set Covering Machine with gradient-boosted trees and produced a short, human-readable rule set alongside competitive performance [13]. The ceiling for ensemble methods is structural: they work genome-by-genome, with no mechanism to incorporate the 
+
+KG-TRACE Clinical Decision Support Note           
+
+> Isolate: SAMN07236525 Drug: Isoniazid (INH) Date: CRyPTIC test
+> INPUTS
+> Mutation vector:
+> x∈ { 0,1}17 ,352
+> WHO catalogue features
+> KG embeddings: 64-d biological context vectors for 26 resistance genes
+> PREDICTION
+
+## RESISTANT                                       
+
+> Confidence: p≈0.94
+> Gate α=0.337 (KG-dominant; susceptible baseline: 0.336)
+> LEVEL 1 (Primary Trust): SHAP Mutation Attribution
+> Rank Feature SHAP Score
+> 1katG :S315T +2 .41 ✓
+> 2inhA :c-15t +1 .87 ✓
+> 3fabG1 :L203L +1 .22 ✓
+> ✓= KG-verified causal driver
+> LEVEL 2 (Symbolic Verification): Mechanistic KG Trace
+> katG
+> |{z}
+> Gene
+> has_mutation
+> −−−−−−−−−→katG :S315T
+> |{z }
+> Mutation
+> confers_R
+> −−−−−−−→Isoniazid
+> |{z }
+> Drug
+> Actionability Score: HIGH (SHAP top-1 verified by KG trace)
+> WHO EVIDENCE GRADE & ACTION
+> WHO Evidence: Grade 1 for katG :S315T confirmed in KG. No uncertain mechanism flag raised.
+> This Clinical Decision Support Note cites specific WHO evidence grades found in the KG, providing immediate reference to estab-lished literature.
+> Fig. 1: KG-TRACE Clinical Decision Support Note for isolate SAMN07236525. |Requires clinical review before action.
+
+organized biological knowledge in WHO or CARD. This matters most for isolates with sparse or ambiguous mutation profiles, which are also the cases where co-occurrence artefacts are most dangerous. 
+
+B. Deep Learning Approaches 
+
+Autoencoder and convolutional architectures. Yang et al. introduced DeepAMR, a stacked denoising autoencoder that learns compact mutation-profile representations while predict-ing resistance across multiple first-line anti-TB drugs [14]. Kuang et al. trained a 1D convolutional network on 10,575 
+
+M. tuberculosis isolates from 16 countries and reported F1-scores of 95.9–97.2% for isoniazid [16]. Stokes et al. used a message-passing neural network to screen compounds for antibiotic activity, identifying halicin from a library of over 107 million molecules drawn from the ZINC15 database [19]. 
+
+Graph-based and multi-architecture approaches. Yang et al. built HGAT-AMR, a heterogeneous graph attention network that encodes M. tuberculosis genomic data as a graph distin-guishing coding from intergenic sequence [18]. Wang et al. benchmarked CNN, denoising autoencoder, and Wide&Deep architectures in the TB-DROP framework [15]. Green et al. trained a multi-drug CNN across 18 loci and 13 antibiotics; saliency maps picked up 18 resistance-associated sites not previously in the catalogue [17]. Two structural gaps remain. Graph-based methods construct their graphs from the isolate’s own genomic data; they do not pull in the external {gene, mutation, drug} triples from the WHO or CARD databases. And while saliency maps and SHAP give feature-level insight, no existing deep AMR frame-work has formalized a neuro-symbolic constraint whereby the symbolic knowledge base acts as a verifier of neural attributions. KG-TRACE addresses both. 
+
+C. Knowledge Graphs in Biomedicine 
+
+KG embedding methods such as TransE, RotatE, and ComplEx learn dense entity and relation representations that preserve structural proximity in the graph [20]. In biomed-ical settings, these embeddings have been applied to drug– target interaction prediction, disease comorbidity modeling, and polypharmacy side-effect characterization [22]. RotatE models each relation type as a rotation in complex space, which makes it effective on biological knowledge graphs where relation semantics vary widely. The embeddings carry both magnitude and phase information: magnitude captures entity salience, phase encodes relational properties such as symmetry and inversion. This informs our choice of RotatE and the downstream design decision discussed in Section III. 
+
+D. Explainability and Mechanistic Grounding for AMR Mod-els 
+
+SHAP [26] provides additive, model-agnostic feature at-tributions grounded in cooperative game theory. Applied to 
+
+Pseudomonas aeruginosa AMR models, it has recovered resistance-associated SNPs consistent with molecular diagnos-tics [27]. The limitation that motivates our work is also the one SHAP cannot fix on its own: it cannot distinguish between a mutation that causes resistance and one that merely co-occurs with it in MDR backgrounds. That distinction requires the symbolic layer that KG-TRACE adds. III. KG-TRACE: N EURO -S YMBOLIC MECHANISTIC 
+
+GROUNDING 
+
+A. Knowledge Graph Construction and Embedding 1) MTB Knowledge Graph: The MTB knowledge graph is constructed using relation triples extracted from the WHO mutation catalogues [8], [9], discarding unannotated syn-onymous variants. This yields 60,017 unique triples across 25,095 entities and six relation types (e.g., has_mutation ,
+
+confers_resistance_to ). Node entities encompass tar-geted genes, distinct mutations, drugs, and resistance mecha-nisms (Fig. 2). 
+
+2) Embedding: KG embeddings are trained with RotatE [20] as implemented in PyKEEN [21]: embedding dimension 
+
+d=64 , batch size 512, up to 300 epochs with early stopping on Hits@10 (patience 20; best checkpoint at epoch 50, training time ≈15 min). Training follows the stochastic Local Closed World Assumption (sLCWA) with MarginRankingLoss 
+
+(margin 1.0). RotatE represents each relation as a rotation in complex space, encoding symmetry, antisymmetry, and inversion— properties that correspond to biological relationships such as mutual inhibition or cascaded activation. The complex-valued embeddings carry both magnitude (entity salience) and phase (relational structure). For this framework, we pass the element-wise magnitude ∥v∥ to downstream MLP layers: this gives a real-valued, non-negative feature that encodes which genes are most prominent in the resistance-pathway context. The phase information is deliberately discarded in this first iteration; we discuss the implications in Section VI. 
+
+B. Neuro-Symbolic Cross-Attention Fusion 
+
+The four-stage architecture of KG-TRACE, illustrated in Fig 3, unifies neural genomic encoding with symbolic knowl-edge graph embeddings through an epistemic trust gate. 
+
+1) Genomic Encoder (Neural Component): Given a binary mutation vector x ∈ { 0, 1}D (D=17 ,352 ), the encoder applies a two-layer fully connected network with batch normalization (BN) and dropout: 
+
+g = W2 Drop 0.3(ReLU (BN (W1x + b1)))+ b2 ∈ R256 , (1) where W1 ∈ R512 ×D and W2 ∈ R256 ×512 .
+
+2) KG Encoder (Symbolic Component): Let E ∈ Rng ×64 
+
+collect the RotatE magnitude embeddings for the ng resistance genes present in the sample. A query vector q = Wq g ∈ R64 
+
+is projected from the genomic state, and scaled dot-product attention produces a KG summary: 
+
+β = softmax 
+
+ E q 
+
+√64 
+
+
+
+∈ Rng , k = E⊤β ∈ R64 . (2) 
+
+3) Epistemic Trust Gate (α): Both representations are projected into a common space ( ˜g = Wg,p g, ˜k = Wk,p k)and blended via an element-wise gating vector: 
+
+α = σ
+
+
+
+MLP 
+
+
+
+[˜ g; ˜k]
+
+ 
+
+∈ (0 , 1) 128 , (3) yielding the fused representation h = α ⊙ ˜g + ( 1 − α) ⊙ ˜k.Empirically, mean gate allocations stay under 0.5 (resistant: 
+
+¯α = 0 .337 ), creating a robust, KG-dominant baseline configu-ration. Rather than performing dynamic, sample-level routing based on symbolic verification, the gate functions primarily as a architectural bias shifting slightly toward genomic features when prediction confidence drops. However, contrary to our initial hypothesis, the gate does not dynamically adjust based on symbolic verification. As shown by a distributional analysis, α exhibits no significant correla-tion with the strict Biological Grounding Ratio ( p = 0 .74 ). Consequently, predictions flagged as UNCERTAIN (lacking a strict KG path) do not cluster at different α values ( ¯α = 0 .338 )compared to HIGH actionability predictions ( ¯α = 0.336 ). The only significant variation occurs against prediction con-fidence, where α exhibits a moderate negative correlation (ρ = −0.46 , p < 0.001 ), indicating the model shifts slightly Fig. 2: MTB Knowledge Graph Schema. The symbolic component encodes 60,017 triples and 25,095 entities extracted from the WHO catalogue. The highlighted path (orange) corresponds to the Level 2 symbolic verification trace, illustrating how neural SHAP attributions are grounded in established clinical evidence through the knowledge graph. 
+
+more weight to the genomic branch when confidence is low. Overall, the variance of the epistemic gate is remarkably low, functioning more as a static architectural bias than a dynamic, sample-level router. The introduction of the epistemic trust gate represents a departure from simple feature concatenation; it allows the model to ’self-audit’ by comparing neural feature importance against the KG’s symbolic truth. 
+
+4) Classifier and Gene Auxiliary Head: The AMR classifier maps h through Linear (128 →64) → ReLU → Linear (64 →2) .An auxiliary gene-detection head predicts resistance-gene presence from the same fused state as a 26-class multi-label task. This head serves two functions. First, it acts as a symbolic regularizer, keeping the KG branch anchored to known resistance-gene biology throughout training. Second, it provides a direct supervision signal on the KG-derived representations, preventing the gate from silently collapsing the KG contribution to zero. Without it, the model could achieve high accuracy while ignoring the KG entirely—and the resulting grounding report would be hollow. 
+
+5) Training Objective: 
+
+L = LCE (ˆ y, y ) + 0 .3 LBCE (ˆ g, g∗). (4) The 0.3 auxiliary weight was selected via grid search over 
+
+{0.1, 0.3, 0.5, 1.0} on validation macro-F1, balancing primary task accuracy against symbolic regularization. 
+
+C. Dual-Level Mechanistic Grounding and Trust Hierarchy 
+
+A grounding system that is useful in the clinic has to support someone who needs to act, not just evaluate. We separate mechanistic grounding into two levels with an explicit trust ordering. 
+
+Level 1 (Primary Trust Layer): Mutation-Level SHAP Attribution. SHAP values computed via GradientExplainer quantify, per sample, the marginal contribution of each muta-tion to the resistance prediction. These are validated against CARD biological importance in Section V-B. 
+
+Level 2 (Symbolic Verification): KG Pathway Ground-ing. For each resistant prediction, we traverse the MTB KG to check whether the top-ranked SHAP mutation has a gene → mutation → drug path to the drug of interest. This step is where the symbolic constraint does its work: the KG either confirms the neural attribution or flags it. 
+
+Actionability Score and Co-occurrence Protocol. When SHAP and KG agree, i.e., the top SHAP mutation traces to a KG path for the drug, the system reports a HIGH Actionability Score. When the top-ranked SHAP feature has no KG path to the specific drug, the score drops to UNCERTAIN and the system raises a laboratory follow-up flag. This protocol handles co-occurrence artefacts directly. If a mutation earned a high SHAP score because it travels with true resistance mutations in an MDR background, the KG check will find no direct path to the drug and flag the disagreement. The clinician sees a flagged prediction, not a confidently mislabeled one. Whether that flag represents a novel mechanism or an MDR artefact matters; the system’s job is to say “we do not know” rather than to guess. IV. E XPERIMENTAL SETUP 
+
+A. Data and Feature Extraction 1) CRyPTIC / M. tuberculosis (Primary Dataset): Our primary data source is the CRyPTIC consortium release v2.1.2 [7], comprising 41,460 M. tuberculosis isolates. Mutation calling used Clockwork v0.12.4 with gnomonicus and the Fig. 3: KG-TRACE four-stage neuro-symbolic architecture. Stages 1 and 2 process neural (genomic) and symbolic (KG) inputs independently. Stage 3 unifies them via an epistemic trust gate ( α) blending the state vectors. Stage 4 outputs predictions, regularization signals, and dual-level mechanistic grounding reports. 
+
+WHO mutation catalogues v1 and v2 [8], [9], yielding a binary mutation-presence matrix. After filtering to isolates with INH phenotypic DST results from MGIT and UKMYC assay plates, the working dataset is 37 ,761 × 17 ,352 . Resistance labels for isoniazid (INH), rifampicin (RIF), ethambutol (EMB), and levofloxacin (LEV) come from the DST_MEASUREMENTS 
+
+table. Samples are partitioned 70:15:15 by stratified random split ( random_state=42 ); the INH test partition contains 5,665 isolates (37.0% resistant). 
+
+B. Experiment Configurations 
+
+KG-TRACE is optimized using Adam (learning rate 10 −3,batch size 64) with early stopping on validation macro-F1 (patience 10, maximum 100 epochs; best checkpoint at epoch 3, wall time ≈4 min). The full model has 9,142,493 parameters. Four baselines are evaluated on the identical feature matrix, including a graph-attention baseline (PyG GAT) operating directly on the MTB KG without the trust-gated fusion. Because baselines do not require a held-out validation set for early stopping, they train on the combined train+validation partition (32,096 samples); KG-TRACE trains on the training partition only (26,432 samples). This asymmetry favors the baselines, so KG-TRACE’s competitive results should be read as a conservative lower bound. Hyperparameters: LinearSVC with Platt scaling ( C = 1 .0); XGBoost ( n = 200 , depth 8, lr 0.1); Random Forest ( n = 200 , depth None). Six ablation variants isolate the contribution of each architectural choice: (1) genomic_only : KG branch dis-abled (α ≡ 1, stops epoch 12); (2) kg_only : genomic branch disabled ( α ≡ 0, stops epoch 53); (3) avg_pool :gene embeddings averaged without learned attention (stops epoch 14); (4) scalar_fusion : α=0 .5 fixed (stops epoch 11); (5) no_aux_head : full architecture without the auxiliary gene-detection objective; and (6) full_kg_trace : the complete pro-posed model (stops epoch 11). 
+
+C. Reproducibility 
+
+All code, pre-trained RotatE embeddings, model check-points, split indices ( random_state=42 ), SHAP scripts, and a README sufficient to reproduce Table I in full are available at https://github.com/semintelligence/KG-TRACE. The MTB knowledge graph (60,017 triples) is provided as a serialized file. V. R ESULTS AND DISCUSSION 
+
+We emphasize that KG-TRACE’s value proposition is not a marginal increase in AUROC, but a fundamental shift toward TABLE I: Performance on INH for baselines and ablations. Baselines trained on train+val combined (32,096 samples); KG-TRACE and ablation variants trained on train only (26,432 samples).                                       
+
+> Category Model / Config Drug AUROC F1-mac
+> Baselines (tuned) KG-TRACE (primary) †INH 0.9760 0.9584 PyG GAT Baseline INH 0.9756 0.9552 LinearSVC ( C=1 .0)INH 0.9794 0.9585 XGBoost ( n=200 , d8) INH 0.9760 0.9595 Random Forest ( n=200 )INH 0.9806 0.9548 Ablations (early stop)
+> genomic_only INH 0.9773 0.9575
+> kg_only INH 0.9526 0.8914
+> avg_pool INH 0.9767 0.9556
+> scalar_fusion INH 0.9781 0.9580
+> no_aux_head INH 0.9754 0.9570
+> full_kg_trace ‡INH 0.9771 0.9598
+> †Primary model early-stopped at epoch 3; ‡Ablation at epoch 11. Differences arise from training stochasticity (e.g., initialization, data shuffling).
+
+verifiable AI, where every resistance prediction is backed by a symbolic audit trail that a clinician can independently verify against the WHO catalogue. 
+
+A. Predictive Performance 
+
+Table I consolidates performance across all configurations. 
+
+1) Baselines: KG-TRACE achieves an AUROC of 0.9760 on INH, within the range of fully-tuned baselines trained on 17.6% more data (LinearSVC: 0.9794, Random Forest: 0.9806). Crucially, the genomic-only ablation (0.9773) slightly exceeds the full model, confirming that the KG branch does not improve predictive accuracy. We emphasize that this is expected and by design: the KG branch functions as a sym-bolic verifier and biological regularizer, not as a discriminative signal. Its contribution is to mechanistic grounding and clinical safety, not to AUROC. The clinically relevant number, though, is resistant-class recall. KG-TRACE has a resistant-class recall of 0.9294 (148 false negatives out of 2,095 resistant samples) and a macro-recall of 0.9549, matching LinearSVC (0.9538). Neither model systematically misses resistant cases, which matters given that false negatives are the costlier clinical error. 
+
+2) Ablation Studies: The KG Branch as a Safety and Trust Feature: The ablation results need careful reading. The genomic_only variant (AUROC 0.9773, macro-F1 0.9575) performs almost identically to the full model in aggregate, which could suggest the KG branch adds complexity without adding predictive power. This reading misses the point of neuro-symbolic grounding. Consider a scenario where the model correctly predicts resistance because an MDR background mutation happened to co-occur with a resistance-conferring mutation from a different drug pathway. The aggregate accuracy looks fine. But the grounding report would identify the wrong mechanism, and the clinician would be misled about which gene to report in the clinical note. The KG branch prevents this by penalizing reliance on features that lack a causal WHO-catalogued path to the drug in question. For isolates with rare or novel mutations absent from the training distribution, this constraint matters most: without it, the model cannot tell a genuinely novel resistance variant from a coincidental co-occurrence. With it, the system at least flags the uncertainty rather than confabulating a cause. The kg_only variant (AUROC 0.9526, macro-F1 0.8914) shows that KG embeddings alone are not sufficient—the high-dimensional binary mutation vector carries most of the dis-criminative signal. The markedly later convergence (epoch 53 versus epochs 11–14 for all other variants) reflects the harder optimization when the genomic signal is absent. The targeted ablation on the auxiliary head ( no_aux_head )costs 0.6 AUROC points and 14 F1 points in the fourth dec-imal place. Small, but consistent: without the gene-detection objective, the gate can suppress the KG branch entirely, and the prediction is no longer symbolically grounded. 
+
+3) Multi-Drug Generalization: To verify that the neuro-symbolic framework generalizes beyond isoniazid, we eval-uated KG-TRACE on three additional first-line and second-line drugs: Rifampicin (RIF), Ethambutol (EMB), and Lev-ofloxacin (LEV). The model was trained from scratch for 10 epochs on each drug’s respective sub-cohort. Table II extends KG-TRACE to these three additional drugs. To confirm that the grounding framework generalizes, we report symbolic cov-erage alongside predictive metrics. Rifampicin achieves 98.4% symbolic coverage and BGR@50 = 0.24, consistent with its well-characterized rpoB -dominated resistance landscape. Ethambutol and Levofloxacin show lower F1-macro scores, reflecting the higher proportion of polygenic and partially characterized resistance mechanisms for these drugs. 
+
+TABLE II: Multi-Drug Extension Performance. Evaluated on the CRyPTIC M. tuberculosis cohort.                 
+
+> Drug Total Samples Resistant (%) AUROC F1-macro
+> Rifampicin (RIF) 37,831 29.1% 0.9846 0.9643
+> Ethambutol (EMB) 35,487 14.5% 0.9574 0.8668
+> Levofloxacin (LEV) 15,113 16.0% 0.9411 0.9032
+
+4) Calibration and Decision Thresholds: While predictive accuracy (AUROC) and mechanistic grounding are our pri-mary metrics, clinical deployment requires reliable uncertainty quantification. In AMR prediction, false negatives (missing a resistant infection) carry a higher clinical cost than false positives. KG-TRACE outputs a probability p ∈ [0 , 1] from its primary classifier. Evaluated on the INH test set, the model achieves an Expected Calibration Error (ECE) of 0.0272 (using 10 bins) and a Brier score of 0.0339, demonstrating strong intrinsic calibration without post-hoc scaling. Although our current training objective does not explicitly penalize calibration error (e.g., via focal loss or temperature scaling), the epistemic trust gate ( α) acts as an orthogonal confidence measure. A prediction that is statistically uncertain ( p ≈ 0.5)but accompanied by a low Actionability Score (indicating poor KG grounding) provides a much stronger signal for manual laboratory follow-up than the raw softmax probability alone. Adjusting the decision threshold below 0.5 can further maximize resistant-class recall at the expense of specificity, Fig. 4: SHAP beeswarm plot for the top-20 mutations. Grade-1 variants (katG :S315T, inhA :c-15t, fabG1 :L203L) are verified by KG traces (HIGH Actionability). Anomalies like tlyA :L11L lack direct KG paths to INH, flagging them as MDR artefacts. 
+
+though a formal threshold optimization under asymmetric clinical costs is left for future deployment studies. 
+
+B. Mechanistic Grounding Analysis 1) Level 1 (Primary Trust): SHAP Attribution: The top-20 SHAP beeswarm plot (Fig. 4) is biologically coher-ent. The three mutations that dominate INH resistance predictions— katG :S315T, inhA :c-15t, and fabG1 :L203L—are WHO Grade 1 evidence variants, and their positive SHAP values for resistant isolates align with their known roles in isoniazid drug activation and target binding. Two anomalies appear within the top five: tlyA :L11L and 
+
+mmpL5 :I948V. In MDR isolates, a single genome carries resis-tance mutations for multiple drugs simultaneously; mutations from other drug pathways become statistically overrepresented among INH-resistant isolates without being causally responsi-ble for INH resistance. SHAP alone treats them as important features. The KG layer does not. 
+
+2) Level 2 (Symbolic Verification): KG Pathway Ground-ing: Among all resistant predictions, 92.5% trace to at least one gene →mutation →drug path in the MTB KG. For the remaining 7.5%, the top-ranked SHAP mutation has no KG entry connecting it to the drug of interest, and the system issues an UNCERTAIN Actionability Score and a laboratory follow-up flag. The two anomalous SHAP features fall into this 7.5%: the KG trace finds no direct path from tlyA :L11L or mmpL5 :I948V to INH, confirming them as co-occurrence artefacts and keeping them out of the clinical note. 
+
+3) Biological Grounding Ratio (BGR): To put a number on how well the neural attributions align with the symbolic knowledge base, we define the BGR : the fraction of the top-
+
+k unique global SHAP features (averaged across the test set) that correspond to a mutation with a KG path to the drug of interest. To assess sensitivity to k, we report BGR at multiple thresholds: BGR @10 = 0 .20 , BGR @20 = 0 .15 , BGR @50 = 0 .14 
+
+(5) As a baseline, the genomic_only ablation (identical features, no KG branch) yields BGR@50 = 0.00, indicating that the KG branch raises the grounding ratio over a pure neural model. The improvement in BGR attributable to the symbolic constraint is therefore 14 percentage points. The remaining 86% of top-50 high-SHAP features—which represent co-occurrence noise or uncatalogued variants (like 
+
+tlyA :L11L)—are precisely the cases the KG layer flags as UNCERTAIN. A BGR of 0.14 highlights exactly why the symbolic verification step is doing substantive work: without the KG gate, the model would falsely attribute resistance to these MDR co-occurrence artifacts. VI. L IMITATIONS 
+
+Feature Circularity and Novel Mechanisms. Both genomic features and KG pathways derive from the WHO catalogue, biassing the system toward known mechanisms rather than de novo discovery. Consequently, novel uncatalogued resistance mutations may trigger statistical signals but fail symbolic verification, yielding an UNCERTAIN flag. We view this as a safety feature for laboratory follow-up rather than a failure mode. 
+
+Accuracy Trade-offs and Missing Phase Data. While well-tuned linear models remain competitive on raw accuracy, KG-TRACE prioritizes mechanistic grounding. Furthermore, by restricting RotatE embeddings to their magnitude, we discard phase information encoding relational symmetry (e.g., compensatory mutation pairs). Future iterations will employ Complex-Valued Neural Networks to leverage this structure. 
+
+Computational and Clinical Validation Hurdles. SHAP’s CPU-based GradientExplainer introduces latency (∼5.2ms per isolate), creating bottlenecks for global-scale surveillance pipelines. Training similarly relies on standard hardware, ne-cessitating accelerator clusters for production. Finally, current validation is purely retrospective; true clinical deployment requires prospective studies to assess time-to-treatment im-provements and clinician concordance. VII. C ONCLUSION 
+
+KG-TRACE is a neuro-symbolic framework for AMR pre-diction that grounds neural genomic patterns in established WHO biological knowledge. Achieving competitive accuracy on the CRyPTIC M. tuberculosis cohort, it introduces a two-level verification chain—SHAP attributions validated against KG pathway traces—yielding high symbolic coverage for primary drugs like isoniazid and rifampicin. Crucially, its Actionability Score protocol identifies uncertain predictions lacking KG support, preventing statistical artefacts from mis-guiding clinical decisions. Future work will focus on modeling epistatic interactions, incorporating relational phase data, and pursuing prospective clinical validation. ACKNOWLEDGEMENTS 
+
+We sincerely acknowledge the Anusandhan National Re-search Foundation (ANRF) for funding through the PAIR scheme (File No: ANRF/PAIR/2025/000018/PAIR-A(G)). We also acknowledge the use of Google Gemini, an AI assistant, for drafting and editing text in portions of this manuscript. REFERENCES [1] GBD 2021 Antimicrobial Resistance Collaborators (M. Naghavi et al. ), “Global burden of bacterial antimicrobial resistance 1990–2021: a sys-tematic analysis with forecasts to 2050,” The Lancet , vol. 404, no. 10459, pp. 1199–1226, Sep. 2024, doi: 10.1016/S0140-6736(24)01867-1. [2] C. J. L. Murray, K. S. Ikuta, F. Sharara, L. Swetschinski, G. Rob-les Aguilar et al. , “Global burden of bacterial antimicrobial resistance in 2019: a systematic analysis,” The Lancet , vol. 399, no. 10325, pp. 629– 655, Jan. 2022, doi: 10.1016/S0140-6736(21)02724-0. [3] P. Bradley, N. C. Gordon, T. M. Walker et al. , “Rapid antibiotic-resistance predictions from genome sequence data for Staphylococ-cus aureus and Mycobacterium tuberculosis ,” Nature Communications ,vol. 6, p. 10063, Dec. 2015, doi: 10.1038/ncomms10063. [4] A. Steiner, D. Stucki, M. Coscolla et al. , “KvarQ: targeted and direct variant calling from FASTQ reads of bacterial genomes,” BMC Ge-nomics , vol. 15, p. 881, 2014, doi: 1471-2164-15-881. [5] V. Bortolaia, R. S. Kaas, E. Ruppe et al. , “ResFinder 4.0 for predictions of phenotypes from genotypes,” Journal of Antimicrobial Chemotherapy ,vol. 75, no. 12, pp. 3491–3500, Dec. 2020, doi: 10.1093/jac/dkaa345. [6] M. Feldgarden, V. Brover, N. Gonzalez-Escalona et al. , “AMRFinderPlus and the Reference Gene Catalog facilitate examination of the genomic links among antimicrobial resistance, stress response, and virulence,” 
+
+Scientific Reports , vol. 11, p. 12728, Jun. 2021, doi: 10.1038/s41598-021-91456-0. [7] The CRyPTIC Consortium, “Genome-wide association studies of global 
+
+Mycobacterium tuberculosis resistance to 13 antimicrobials in 10,228 genomes identify new resistance mechanisms,” PLOS Biology , vol. 20, no. 8, p. e3001755, Aug. 2022, doi: 10.1371/journal.pbio.3001755. [8] World Health Organization, Catalogue of Mutations in Mycobacterium tuberculosis Complex and Their Association with Drug Resistance ,1st ed. Geneva: WHO, 2021 [Online]. Available: https://www.who.int/ publications/i/item/9789240028173. [9] World Health Organization, Catalogue of Mutations in Mycobacterium tuberculosis Complex and Their Association with Drug Resistance ,2nd ed. Geneva: WHO, 2023 [Online]. Available: https://www.who.int/ publications/i/item/9789240082410. [10] Y. Yang, T. M. Walker, A. S. Walker et al. , “Machine learning for classifying tuberculosis drug-resistance from DNA sequencing data,” 
+
+Bioinformatics , vol. 34, no. 10, pp. 1666–1671, May 2018, doi: 10.1093/bioinformatics/btx801. [11] D. Moradigaravand, M. Palm, A. Farewell et al. , “Prediction of antibiotic resistance in Escherichia coli from large-scale pan-genome data,” PLOS Computational Biology , vol. 14, no. 12, p. e1006258, Dec. 2018, doi: 10.1371/journal.pcbi.1006258. [12] M. B. Hall, L. Lima, L. J. M. Coin, and Z. Iqbal, “Drug resistance prediction for Mycobacterium tuberculosis with reference graphs,” Mi-crobial Genomics , vol. 9, no. 8, p. mgen001081, Aug. 2023, doi: 10.1099/mgen.0.001081. [13] A. Drouin, G. Letarte, F. Raymond et al. , “Interpretable genotype-to-phenotype classifiers with performance guarantees,” Scientific Reports ,vol. 9, p. 4071, 2019, doi: 10.1038/s41598-019-40561-2. [14] Y. Yang, T. M. Walker, A. S. Walker et al. , “DeepAMR for predicting co-occurrent resistance of Mycobacterium tuberculosis ,” Bioinformatics ,vol. 35, no. 18, pp. 3240–3249, Sep. 2019, doi: 10.1093/bioinformatic-s/btz067. [15] Y. Wang, Z. Jiang, P. Liang, Z. Liu, H. Cai, and Q. Sun, “TB-DROP: deep learning-based drug resistance prediction of Mycobacterium tuber-culosis utilizing whole genome mutations,” BMC Genomics , vol. 25, p. 167, Feb. 2024, doi: 10.1186/s12864-024-10066-y. [16] X. Kuang, H. Wang, M. Deng et al. , “Accurate and rapid prediction of tuberculosis drug resistance from genome sequence data using traditional machine learning algorithms and CNN,” Scientific Reports , vol. 12, p. 2427, Feb. 2022, doi: 10.1038/s41598-022-06449-4. [17] A. G. Green, C. H. Yoon, M. L. Chen et al. , “A convolutional neural network highlights mutations relevant to antimicrobial resistance in 
+
+Mycobacterium tuberculosis ,” Nature Communications , vol. 13, p. 3817, 2022, doi: 10.1038/s41467-022-31236-0. [18] Y. Yang, T. M. Walker, S. Kouchaki et al. , “An end-to-end heterogeneous graph attention network for Mycobacterium tuberculosis drug-resistance prediction,” Briefings in Bioinformatics , vol. 22, no. 6, p. bbab299, Nov. 2021, doi: 10.1093/bib/bbab299. [19] J. M. Stokes, K. Yang, K. Swanson et al. , “A deep learning approach to antibiotic discovery,” Cell , vol. 180, no. 4, pp. 688–702, Feb. 2020, doi: 10.1016/j.cell.2020.01.021. [20] Z. Sun, Z.-H. Deng, J.-Y. Nie, and J. Tang, “RotatE: Knowledge graph embedding by relational rotation in complex space,” in Proc. 7th Int. Conf. Learn. Representations (ICLR) , New Orleans, LA, May 2019, doi: 10.48550/arXiv.1902.10197. [21] M. Ali, M. Berrendorf, C. T. Hoyt et al. , “PyKEEN 1.0: A Python library for training and evaluating knowledge graph embeddings,” Journal of Machine Learning Research , vol. 22, no. 82, pp. 1–6, 2021. [22] M. Zitnik, M. Agrawal, and J. Leskovec, “Modeling polypharmacy side effects with graph convolutional networks,” Bioinformatics , vol. 34, no. 13, pp. i457–i466, 2018, doi: 10.1093/bioinformatics/bty294. [23] D. N. Nicholson and C. S. Greene, “Constructing knowledge graphs and their biomedical applications,” Computational and Struc-tural Biotechnology Journal , vol. 18, pp. 1414–1428, 2020, doi: 10.1016/j.csbj.2020.05.017. [24] J. Lu, D. Batra, D. Parikh, and S. Lee, “ViLBERT: Pretraining task-agnostic visiolinguistic representations for vision-and-language tasks,” in 
+
+Advances in Neural Information Processing Systems (NeurIPS) , vol. 32, Vancouver, BC, Dec. 2019, doi: 10.48550/arXiv.1908.02265. [25] A. Cheerla and O. Gevaert, “Deep learning with multimodal representa-tion for pancancer prognosis prediction,” Bioinformatics , vol. 35, no. 14, pp. i446–i454, Jul. 2019, doi: 10.1093/bioinformatics/btz342. [26] S. M. Lundberg and S.-I. Lee, “A unified approach to interpret-ing model predictions,” in Advances in Neural Information Process-ing Systems (NeurIPS) , vol. 30, Long Beach, CA, Dec. 2017, doi: 10.48550/arXiv.1705.07874. [27] A. Khaledi, A. Weimann, M. Schniederjans et al. , “Predicting antimi-crobial resistance in Pseudomonas aeruginosa with machine learning-enabled molecular diagnostics,” EMBO Molecular Medicine , vol. 12, no. 3, p. e10264, Mar. 2020, doi: 10.15252/emmm.201910264. [28] K. Hu, F. Meyer, Z.-L. Deng et al. , “Assessing computational predic-tions of antimicrobial resistance phenotypes from microbial genomes,” 
+
+Briefings in Bioinformatics , vol. 25, no. 3, p. bbae206, May 2024, doi: 10.1093/bib/bbae206. [29] Naman, G. Singh, S. Jain, S. Gupta, and S. Chandra, “Lightweight Multimodal CNN for Real-Time Bacterial Classification from Raman Spectroscopy,” in Proc. 2026 Second Int. Conf. Multi-Agent Systems for Collaborative Intelligence (ICMSCI) , Erode, India, 2026, pp. 1105– 1112, doi: 10.1109/ICMSCI67830.2026.11469385. [30] S. Jain et al. , “Charting the evolution of neuro-symbolic AI in cybersecu-rity: a scientometric perspective,” International Journal of Data Science and Analytics , 2026, doi: 10.1007/s41060-026-01062-4. [31] S. Dalal and S. Jain, “TRUST-MH: Transparent and Responsible User-Level Semantic Tagging for Mental Health Assessment,” in Recom-mender Systems for Sustainability and Social Good , Communications in Computer and Information Science, 2026, doi: 10.1007/978-3-032-13342-7_5.
