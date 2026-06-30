@@ -6,40 +6,32 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-29
-- 运行时间：2026-06-29 21:35:21 UTC
+- 最新运行日期：2026-06-30
+- 运行时间：2026-06-30 21:19:53 UTC
 - 运行状态：成功
-- 本次总论文数：6
-- 精读区：2
-- 速读区：4
+- 本次总论文数：4
+- 精读区：3
+- 速读区：1
 
 ### 今日简报（AI）
-今日聚焦6篇微生物组研究，精读坏死性软组织感染微生物组与肠道菌群代谢模型重建（均9.0分）。  
-最值得看：坏死性软组织感染研究揭示印度北部革兰阴性菌主导的宏基因组特征；CarveMe-GutMicrobes可自动化构建肠道微生物代谢模型。  
-建议关注微生物组在临床感染诊断与肠道功能建模中的实用工具与区域数据。
-- 详情：[/202606/29/README](/202606/29/README)
+今日共推荐4篇论文，精读3篇、速读1篇，涵盖微生物组分析流程与高维组成数据建模。最值得关注的是《MBIOME》开源工作流（9.0/10）和《Composition as Direction》主动集射线模型（8.0/10）。建议优先阅读这两篇，并留意速读中《MxSure》混合模型对传播SNP阈值的推断方法。
+- 详情：[/202606/30/README](/202606/30/README)
 
 ### 精读区论文标签
-1. [Gram-negative-dominated polymicrobial microbiome of necrotizing soft tissue infections from North India: an integrated culture and 16S rRNA metagenomics prospective cohort study](/202606/29/biorxiv-10-64898-2026-06-25-734553-v1-gram-negative-dominated-polymicrobial-microbiome-of-necrotizing-soft-tissue-infections-from-north-india-an-integrated-culture-and-16s-rrna-metagenomics-prospective-cohort-study)  
+1. [MBIOME: A comprehensive, reproducible, and open-source workflow for amplicon-based microbiome data analysis.](/202606/30/biorxiv-10-64898-2026-06-25-734448-v1-mbiome-a-comprehensive-reproducible-and-open-source-workflow-for-amplicon-based-microbiome-data-analysis)  
    标签：评分：9.0/10、query:microbiome
-   evidence：使用16S rRNA扩增子测序（QIIME2）分析临床队列微生物组
-2. [CarveMe-GutMicrobes: Automated Metabolic Model Reconstruction for Gut Microbial Species and Communities](/202606/29/biorxiv-10-64898-2026-06-26-734454-v1-carveme-gutmicrobes-automated-metabolic-model-reconstruction-for-gut-microbial-species-and-communities)  
-   标签：评分：9.0/10、query:microbiome
-   evidence：微生物组数据分析的生物信息学工具
+   evidence：基于扩增子的微生物组数据分析工作流，支持16S rRNA
+2. [Composition as Direction: An Active-Set Ray-Based Model for Sparse High-Dimensional Compositional Data](/202606/30/2606.28738v1-composition-as-direction-an-active-set-ray-based-model-for-sparse-high-dimensional-compositional-data)  
+   标签：评分：8.0/10、query:microbiome
+   evidence：针对微生物组稀疏高维成分数据的主动集射线模型
+3. [SCiMS: Sex Calling in Metagenomic Sequences](/202606/30/biorxiv-10-64898-2026-02-17-705110-v2-scims-sex-calling-in-metagenomic-sequences)  
+   标签：评分：8.0/10、query:microbiome
+   evidence：用于微生物组宏基因组序列的性别鉴定生信工具
 
 ### 速读区论文标签
-1. [MxSure: a mixture model for inferring within-host substitution rates and transmission SNP thresholds](/202606/29/biorxiv-10-64898-2026-06-24-734158-v1-mxsure-a-mixture-model-for-inferring-within-host-substitution-rates-and-transmission-snp-thresholds)  
+1. [MxSure: a mixture model for inferring within-host substitution rates and transmission SNP thresholds](/202606/30/biorxiv-10-64898-2026-06-24-734158-v1-mxsure-a-mixture-model-for-inferring-within-host-substitution-rates-and-transmission-snp-thresholds)  
    标签：评分：7.0/10、query:microbiome
-   evidence：用于推断微生物基因组替换率和SNP阈值的混合模型，可应用于宏基因组菌株追踪
-2. [KG-TRACE: A Neuro-Symbolic Framework for Mechanistic Grounding in Antimicrobial Resistance Prediction](/202606/29/2606.26179v1-kg-trace-a-neuro-symbolic-framework-for-mechanistic-grounding-in-antimicrobial-resistance-prediction)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：元基因组功能注释（抗生素耐药性预测）
-3. [Honey bee (Apis mellifera) gut microbiome associations with viruses and pesticides across Canadian agroecosystems](/202606/29/biorxiv-10-64898-2026-06-23-731697-v1-honey-bee-apis-mellifera-gut-microbiome-associations-with-viruses-and-pesticides-across-canadian-agroecosystems)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：利用测序数据分析蜜蜂肠道微生物组的关联研究
-4. [Epigenomes in thermophilic microbial communities and their impact on the interaction across prokaryotes and mobilomes](/202606/29/biorxiv-10-64898-2026-06-24-734251-v1-epigenomes-in-thermophilic-microbial-communities-and-their-impact-on-the-interaction-across-prokaryotes-and-mobilomes)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：利用单分子测序进行微生物群落的宏表观基因组分析
+   evidence：基于宏基因组数据的微生物基因组替代率与SNP阈值的混合模型
 
 
 <div class="dpr-home-promo-card">

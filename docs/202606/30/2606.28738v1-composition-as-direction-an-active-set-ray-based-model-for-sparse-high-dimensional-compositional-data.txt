@@ -1,0 +1,1078 @@
+Title: Composition as Direction: An Active-Set Ray-Based Model for Sparse High-Dimensional Compositional Data
+
+URL Source: https://arxiv.org/pdf/2606.28738v1
+
+Published Time: Tue, 30 Jun 2026 00:29:09 GMT
+
+Number of Pages: 29
+
+Markdown Content:
+# Composition as Direction: An Active-Set Ray-Based Model for Sparse High-Dimensional Compositional Data 
+
+Michael R. Schwob 1∗
+
+, Jyotishka Datta 1
+
+> 1
+
+Department of Statistics, Virginia Tech 
+
+June 30, 2026 
+
+Abstract 
+
+Compositional data are central to microbial, ecological, and environmental research, yet often have four features that are difficult to accommodate jointly: exact zeros, latent depen-dence among components, high-dimensionality, and a unit-sum constraint that induces a non-Euclidean geometry. Conventional Dirichlet-type and logistic-normal models address these fea-tures only partially; the former imposes an inflexible covariance structure, and the latter requires strictly positive observations or auxiliary zero-handling approaches that are problematic under sparsity. Projected Gaussian models offer a directional representation that captures exact zeros and latent dependence; however, support correctness on the simplex requires either truncation or folding, both of which become computationally prohibitive as the dimension grows. We develop an Active-set Ray-based Compositional (ARC) framework, which retains the benefits of pro-jected Gaussian models while remaining computationally feasible in high-dimensional settings. In this framework, we map compositions to the nonnegative orthant of the unit hypersphere and specify an active-set process that governs which components are present. Conditional on the active set, the positive subcomposition is modeled by evaluating a latent Gaussian density along positive rays of the active subspace with the radius treated as an auxiliary variable. Such a construction (i) separates the active-set process that governs which components are present from the positive subcomposition on the active components, (ii) preserves a latent Gaussian interpretation, and (iii) accommodates arbitrary latent dependence. Thus, the framework is conducive to high-dimensional applications in which exact zeros and shared positive responses are scientifically central. Conceptually, the proposed framework reframes a composition as an observed direction of a latent abundance vector with an unobserved magnitude and an explicitly modeled active set. 
+
+# 1 Introduction 
+
+Compositional data arise across the environmental and life sciences: microbial communities [Gloor et al., 2017, Quinn et al., 2018], phytoplankton assemblages [Pawlowsky-Glahn et al., 2015], soil and 
+
+> ∗
+
+Corresponding author: schwob@vt.edu 
+
+1
+
+> arXiv:2606.28738v1 [stat.ME] 27 Jun 2026
+
+sediment microbiomes [Fierer, 2017], dietary intake records [Leite and Prinelli, 2017], and remotely sensed land-cover proportions [Leininger et al., 2013] are all expressed naturally as compositions. Formally, a d-dimensional composition u is a vector of nonnegative entries on the simplex 
+
+∆d−1 =
+
+(
+
+(u1, . . . , u d)′ : uk ≥ 0 ∀k, 
+
+> d
+
+X
+
+> k=1
+
+uk = c
+
+)
+
+,
+
+where we take c = 1 without loss of generality. The questions that motivate these data though are rarely about the proportions themselves. They concern which taxa or functional groups occur in a given sample, which groups respond together to shared environmental drivers (e.g., temperature, nutrients, light, depth), and how those mechanisms shift across space and time. Simplex closure complicates the path from observed proportions to the underlying biological or ecological process; the unit-sum constraint forces components to compete and can leave apparent compositional cor-relations weak or even reversed in sign relative to the latent abundance-scale association. Two recurring features of community composition data make this mismatch concrete. The first is exact zeros. They are common, and their meanings are not interchangeable; a zero may signal a structural absence, a habitat-driven exclusion, a dispersal limitation, or a detection failure below an effective threshold. Replacing such zeros with small positive values is computationally convenient, yet it conflates presence with relative dominance and can manufacture dependence that is not there. The second feature is shared latent drivers; groups of taxa or functional categories often respond positively to the same environmental gradient even as closure forces their observed proportions to compete. A model that captures only one of these features leaves the other to contaminate the inference. Existing approaches handle only part of this problem. Dirichlet-type models honor composi-tional geometry but, in their basic form, tie the covariance to the mean and a single concentration parameter. The generalized Dirichlet extension uses a stick-breaking construction that admits limited negative correlations [Connor and Mosimann, 1969], and the Dirichlet-tree multinomial decomposes the multinomial likelihood along a phylogenetic tree and parameterizes its K × K co-variance with O(K) parameters [Dennis, 1991, Wang and Zhao, 2017]. Such extensions enrich the dependence structure but keep a parametric form that still cannot represent the arbitrary positive correlations induced by shared latent drivers. Logistic-normal models [Aitchison, 1982, Egozcue et al., 2003] are more flexible because a log-ratio map transforms compositions to Euclidean space, where a latent Gaussian flexibly models covariance. However, log-ratio transformations are un-defined at zeros and, therefore, awkward under sparsity. A separate line of work instead models structural zeros explicitly through point masses on the simplex. Leininger et al. [2013] introduced a power-scaling approach with multivariate latent variables that govern zero/nonzero entries in a spatial regression for compositional data with many zeros. Butler and Glasbey [2008] treated zeros geometrically, projecting a latent multivariate normal vector orthogonally onto the simplex boundary, and Tsagris [2022] refined this by projecting along the line from each point to the sim-plex centroid and fitting a zero-censored multivariate normal model in α-transformed coordinates. 2Such constructions do accommodate structural sparsity. However, the projection-based methods rest on ad hoc geometric choices for assigning boundary mass, while the power-scaling and α-transformations obscure the directional geometry of the original composition; these approaches fail to capture the positive latent dependence that arises when components share environmental drivers. A parallel literature in microbial community analysis considers exact-zero handling and la-tent dependence in factor-augmented multinomial, Dirichlet, or logistic-normal models. Datta and Dunson [2016] developed a quasi-sparse count model that supplies the foundational shrinkage frame-work for subsequent compositional applications. Tang and Chen [2019] developed a zero-inflated generalized Dirichlet-multinomial regression. Ren et al. [2020] developed Bayesian mixed-effects models for zero-inflated compositions in which dependence across compositions is induced through latent factors with adaptively learned dimensions. Xu et al. [2021] introduced zero-inflated Poisson factor analysis, and Zeng et al. [2023] developed a zero-inflated probabilistic PCA logistic-normal multinomial framework. Koslovsky [2023] introduced a Bayesian zero-inflated Dirichlet-multinomial regression for compositional count data, and Datta and Bandyopadhyay [2024] developed horseshoe-shrinkage priors for compositional regression with application to oral-microbiome compositions. A related thread targets microbial covariation networks rather than factor structure; Ha et al. [2020] introduced a multivariate hurdle graphical model that jointly infers conditional dependencies among continuous abundances and presence/absence indicators, and Xu and Ma [2026] developed a co-variance regression in which the network rewires with covariates through a sparse-plus-low-rank decomposition. These approaches parameterize dependence through Dirichlet-type covariances or log-ratio specifications that latent factors only partially relax, and the dependence they infer lives on the count or log-ratio scale rather than the abundance scale on which shared environmental responses most directly act. Projected Gaussian constructions offer a different geometric route, one that preserves directional structure by normalizing a latent Gaussian vector. An elementwise square root transformation maps from the simplex to the nonnegative orthant of the unit hypersphere, where directional distributions may be used [Stephens, 1982]. Paine et al. [2018] introduced the elliptically symmetric angular Gaussian (ESAG) distribution, which pairs an analytically tractable normalizing constant with anisotropic latent covariance across the entire hypersphere. However, for square-root transformed compositions, the relevant space is the nonnegative orthant, and conditioning a projected Gaussian there produces a clipped likelihood whose normalizing constant is a Gaussian orthant probability (i.e., the probability that a Gaussian vector with the current mean and covariance lands in Rd
+
+> +
+
+). This constant is parameter-dependent, varies across observations and across MCMC iterations in Bayesian implementations, and grows computationally prohibitive as d increases. Standard orthant-probability algorithms compound the difficulty; the Geweke-Hajivassiliou-Keane estimator, for instance, has relative variance that diverges exponentially in d [Ridgway, 2016], which leaves the truncated likelihood unstable at moderate to high dimensions. Schwob et al. [2025] confronted this barrier directly by approximating the orthant probability via Monte Carlo at every parameter value that the sampler visits, but the construction remains feasible only at low dimensions (e.g., 3d < 100) and does not separately accommodate exact zeros. This work aims to keep the latent Gaussian interpretation of projected Gaussian models while accommodating exact zeros explicitly, allowing flexible positive and negative latent dependence, and eliminating the orthant normalizing constant altogether. The key idea is a change of perspective; a composition is taken as the observed direction of a latent abundance vector rather than as a point in the simplex, with magnitude unobserved and an active set naming the components that are present. The manuscript provides four contributions: (i) we propose the Active-set Ray-based Compositional (ARC) model for sparse high-dimensional compositional data and derive its likelihood with the radius treated as an auxiliary latent variable; (ii) we then extend the model to structural zeros through an active-set formulation that splits the presence/absence process from the positive subcomposition such that each is specified by its own likelihood factor with its own covariates, latent factors, and priors; (iii) to keep inference tractable, we introduce a low-rank factor covariance with a probit active-set model, a pairing that yields conditionally Gaussian updates and scales to high-dimensional sparse compositions; (iv) finally, we show that the active-set process and the latent positive dependence can be recovered jointly on sparse high-dimensional compositional data. The paper proceeds as follows. Section 2 develops compositional geometry and the hyperspheric embedding. Section 3 introduces the active-set process and discusses what a structural zero means, and Section 4 specifies the ARC model, derives its likelihood, and builds the regression framework. The Bayesian implementation follows in Section 5. Section 6 reports a simulation study, and Section 7 closes with extensions to spatial, spatio-temporal, and detection-error settings and discusses implications for microbial, ecological, and environmental applications. 
+
+# 2 Compositional Geometry and the Positive Hypersphere 
+
+Two conventional modeling routes respect compositional geometry. One transforms the composi-tion into Euclidean space [e.g., log-ratio modeling; Aitchison, 1982, Egozcue et al., 2003], which removes the closure constraint and yields a coordinate system on which Gaussian models are well-defined. However, log-ratio transformations are undefined when components are zero-valued, which is common in microbial and ecological data. Several remedies soften the positivity constraint. Mul-tiplicative and Bayesian-multiplicative replacement methods substitute model-based small values for zeros before transforming [Mart´ ın-Fern´ andez et al., 2003, 2015], and pivot-coordinate construc-tions only require that one chosen pivot component be strictly positive [Hron et al., 2017]. Although these approaches impose weaker constraints, they do not remove the underlying reliance on positiv-ity. An alternative route focuses directly on the simplex and considers Dirichlet-type distributions, which admit exact zeros only as a measure-zero boundary limit and remain parametrically restricted in their dependence [Connor and Mosimann, 1969, Dennis, 1991, Wang and Zhao, 2017, Datta and Bandyopadhyay, 2024]. We take a third route and embed the composition in the nonnegative orthant of the unit 4Figure 1: Common modeling spaces for three-dimensional compositional data with five observations. 
+
+Center : The simplex ∆ 2, which is the natural domain of compositional data. Left : Euclidean R3,into which the simplex maps via log-ratio transformations; observations D and E are not properly transformed because they contain zeros, and the fitted covariance is singular along 1. Right :The nonnegative orthant of the unit hypersphere S2+, reached via the elementwise square root transformation y = √u; exact zeros lie naturally on geodesic arc boundaries. hypersphere. An elementwise square root transforms a composition u to a directional point y =
+
+√u ∈ Sd−10,+ , where 
+
+Sd−10,+ =
+
+n
+
+y ∈ Rd : ∥y∥ = 1 , y k ≥ 0 for all k
+
+o
+
+denotes the nonnegative orthant of the unit hypersphere and ∥ · ∥ denotes the Euclidean norm. Beyond handling each difficulty just described, this embedding offers two advantages that the simplex does not. The first concerns the constraint itself because the unit-sum constraint 1′ui = 1 becomes a unit-norm constraint 
+
+∥y∥2 =
+
+> d
+
+X
+
+> k=1
+
+y2 
+
+> k
+
+=
+
+> d
+
+X
+
+> k=1
+
+uk = 1 ,
+
+which is the defining property of the unit hypersphere [Mardia and Jupp, 2009, Scealy and Welsh, 2011, Paine et al., 2018]. Working on the hypersphere is advantageous because directional distri-butions may be built from latent Euclidean drivers by projection (i.e., y = x/∥x∥ for x ∈ Rd), which provides a latent Gaussian structure with flexible covariance modeling. The embedding is also faithful at the boundary. Because the square root preserves zeros exactly, uk = 0 ⇐⇒ yk = 0 
+
+∀k, exact zeros survive as boundary points on the nonnegative hypersphere and do not need reg-ularization, replacement, or separate transformation. In contrast, log-ratio maps are undefined at the boundary and simplex-based constructions require strictly positive compositions for the inner product to be well-defined. The hyperspheric embedding accommodates exact zeros without re-placement or transformation and retains a latent Gaussian representation that is well-suited for flexible covariance modeling. 53 Structural Zeros and the Active Set 
+
+Conventional compositional analyses treat zeros as numerical inconveniences. We instead make the zeros part of the model by defining the active set 
+
+Ai = {k : yik > 0} = {k : uik > 0},
+
+where mi = |Ai| is the number of active components in ui. The components excluded from Ai are taken to be structural zeros for observation i. Conditional on Ai, the positive subcomposition y+
+
+> i
+
+lies on a lower-dimensional positive hypersphere Smi−1+ such that all entries are strictly positive and 
+
+P 
+
+> k∈Ai
+
+y2 
+
+> ik
+
+= 1. The active set induces a factorization of the likelihood [ yi | · ]: [yi | · ] = [ y+ 
+
+> i
+
+| Ai, ·] [ Ai | · ], (1) where [ · | · ] denotes the conditional probability density or mass function [Gelfand and Smith, 1990]. Such a factorization is principled in microbial and ecological applications, where presence and dom-inance are governed by related but distinct mechanisms. For example, presence may depend on dispersal, habitat suitability, seasonality, detection thresholds, or structural unavailability, whereas dominance among the present components may depend on competition, shared environmental gra-dients, or latent community structure. A single continuous density on the simplex blurs such a distinction because one set of density parameters must simultaneously encode whether a compo-nent is present and, given presence, how strongly it dominates; these are separable mechanisms that may not respond to the same drivers. We consider two specifications for the active-set process [ Ai | · ]. We start with conditionally independent inclusion indicators with covariate-driven probabilities: 
+
+Zik = 1(k ∈ Ai) ∼ Bernoulli( ρik ), logit( ρik ) = w′
+
+> i
+
+αk + h′
+
+> i
+
+γk,
+
+where wi comprises covariates such as spatial coordinates, time, environmental drivers, or sampling-effort summaries, αk are the occurrence covariate coefficients, hi comprises basis functions evaluated at the observation location, and γk are the occurrence basis coefficients. Such a specification is parsimonious and scalable but does not allow for the residual co-occurrence common in ecological and microbial data. To capture correlated occurrence, we add latent factors: logit( ρik ) = w′
+
+> i
+
+αk + h′
+
+> i
+
+γk + ω′
+
+> k
+
+oi, oi ∼ Nqo (0, Iqo ), i = 1 , . . . , n, k = 1 , . . . , d, 
+
+where oi ∈ Rqo is the occurrence factor for observation i, ωk ∈ Rqo is the occurrence loading for component k, and qo is the rank of the occurrence factor model. Components with similar occurrence loadings tend to appear together, which captures co-occurrence and mutual exclusion without enumerating all 2 d active sets. In our simulation study, we adopt a probit analogue of 6the second specification to facilitate Albert-Chib augmentation for high-dimensional compositional data [Albert and Chib, 1993]. We model the active set as a discrete presence/absence process rather than through a continu-ous prior that shrinks small components toward zero, which is often preferred in sparse problems [Stephens, 2017]. The case for the continuous approach rests on priors over latent effects, where a point mass at zero idealizes an underlying continuous, unimodal effect distribution. Compositional zeros are different because they are a feature of the observed data. A compositional zero is exact (uik = 0), and the square-root transformation preserves it as an exact boundary point ( yik = 0), so the active set models an observed, exact event rather than a shrinkage idealization. The factorization in (1) also clarifies what a particular zero represents. In community compo-sition data, an observed zero may reflect a genuine structural absence (i.e., a taxon ecologically excluded from the location, an unsuitable habitat, or a dispersal limitation), or it may reflect a detection failure in which the taxon is present below an effective sampling threshold and is there-fore recorded as absent. The two interpretations carry different scientific implications. Structural absences inform which components belong to a community and which environmental gradients ex-clude them, whereas detection failures inform sampling design and effort. A model that treats all zeros identically conflates these meanings, and it may attribute a detection-driven gap to an ecological process or, conversely, dismiss a genuine absence as a sampling error. By relocating the zero process from a density-level nuisance to a modeled event, the active-set layer accommodates both types of zeros. When a zero marks a structural absence, Zik = 0 and inference proceeds directly. A detection failure is handled differently; Zik = 1 is reinterpreted as an observed presence of a latent true active set, and the observation model introduces component-specific false-negative probabilities that depend on covariates such as sampling effort, depth, or sequencing depth in microbial applications. Applying the ray-based positive subcomposition model [y+ 
+
+> i
+
+| Ai, ·] to the latent positive components allows the detection layer to absorb sampling variation. Thus, the two interpretations share the same positive subcomposition mechanism yet differ only in the active-set layer. As a result, structural and sampling zeros receive a unified treatment within a single model. 
+
+# 4 The Active-set Ray-based Compositional (ARC) Model 
+
+Conditional on Ai, we model the positive subcomposition y+ 
+
+> i
+
+through a latent Gaussian density evaluated along the ray generated by y+ 
+
+> i
+
+. We introduce a latent radius ri > 0 and the latent active vector 
+
+x+ 
+
+> i
+
+= ri y+ 
+
+> i
+
+,
+
+which lies in the positive orthant of the mi-dimensional active subspace because y+ 
+
+> i
+
+is elementwise positive and ri > 0. Because ri is unobserved, x+ 
+
+> i
+
+is latent rather than observed; the data inform 7x+ 
+
+> i
+
+only through its direction y+ 
+
+> i
+
+. We assign the base distribution 
+
+x+ 
+
+> i
+
+∼ Nmi (μ+ 
+
+> i
+
+, VAiAi ),
+
+where μ+ 
+
+> i
+
+∈ Rmi denotes the active entries of the latent mean μi ∈ Rd and VAiAi ∈ Rmi×mi denotes the active submatrix of the covariance V ∈ Rd×d. The unrestricted normal places mass throughout 
+
+Rmi , but the observation enters only through the positive rays of the active subspace such that every realization x+ 
+
+> i
+
+= riy+ 
+
+> i
+
+lies in the positive orthant by construction. The full-dimensional latent mean μi and covariance V describe the abundance-scale Gaussian vector before simplex closure, and ri is the unobserved magnitude that is lost when the data are reduced to relative compositions. The radius is identifiable up to the parameterization of the base distribution. In particular, the likelihood is unchanged under the joint rescaling {ri, βk, δk, λk, σ k} 7 → { sr i, s βk, s δk, s λk, sσ k} for any s > 0; we address this in Section 5. The proposed construction is closely related to the projected normal distribution, in which a Gaussian density on Rd generates a directional density on the unit hypersphere through normaliza-tion [Wang and Gelfand, 2013, Hernandez-Stumpfhauser et al., 2017]. The ARC model specializes this construction to the positive rays of the active subspace such that the unrestricted Gaussian base distribution is interpreted not generatively over Rmi but only along those rays. The radius augmentation itself is not new. Nu˜ nez-Antonio and Guti´ errez-Pe˜ na [2005] introduced latent length variables for the projected normal distribution in the circular case, and Hernandez-Stumpfhauser et al. [2017] extended this to arbitrary dimension under a reparameterization that yields closed-form Gaussian full conditionals and a slice sampler for the radii. We adopt the same augmentation, though its role here differs. In the projected normal literature, the latent length aids posterior simulation under an unconstrained projected normal likelihood, whereas in the ARC model the latent radius ensures support on the positive hypersphere and removes the need to evaluate the orthant probability, which is what renders the construction tractable in high dimensions. To obtain the density of the observed direction y+ 
+
+> i
+
+, we change variables from the latent active vector x+ 
+
+> i
+
+∈ Rmi to polar coordinates, namely the radius ri = ∥x+ 
+
+> i
+
+∥ and the direction y+ 
+
+> i
+
+=
+
+x+ 
+
+> i
+
+/∥x+ 
+
+> i
+
+∥; the direction lies in Smi−10,+ because x+ 
+
+> i
+
+is elementwise positive. The Euclidean volume element (i.e., the Lebesgue measure dx+ 
+
+> i
+
+on Rmi ) then factorizes as 
+
+dx+ 
+
+> i
+
+= rmi−1 
+
+> i
+
+dr i dσ (y+ 
+
+> i
+
+),
+
+where dσ is the surface measure on the unit sphere Smi−1 and rmi−1 
+
+> i
+
+is the Jacobian. Applying this factorization to the Gaussian density of x+ 
+
+> i
+
+, the joint density of {ri, y+ 
+
+> i
+
+} conditional on Ai is [ri, y+ 
+
+> i
+
+| Ai, μi, V] = (2 π)−mi/2|VAiAi |−1/2 rmi−1
+
+> i
+
+× exp 
+
+n
+
+− 12 (riy+ 
+
+> i
+
+− μ+ 
+
+> i
+
+)′V−1 
+
+> AiAi
+
+(riy+ 
+
+> i
+
+− μ+ 
+
+> i
+
+)
+
+o
+
+, ri > 0. (2) 8Integrating out ri gives the marginal density on the positive orthant of the unit hypersphere: [y+ 
+
+> i
+
+| Ai, μi, V] = 
+
+Z ∞
+
+> 0
+
+[ri, y+ 
+
+> i
+
+| Ai, μi, V] dr i. (3) In (2) and (3), the quantities {x+ 
+
+> i
+
+, y+ 
+
+> i
+
+, μ+ 
+
+> i
+
+} are mi-vectors indexed by the active components Ai; the full-dimensional latent means {μi} and the covariance V enter only through their active subvectors 
+
+{μ+ 
+
+> i
+
+} and the active submatrix VAiAi . Because the radius is retained as an auxiliary variable, (2) suffices for posterior computation. Equation (2) is written as an equality rather than a proportion-ality because the ARC construction does not normalize over the positive orthant. The Gaussian density serves as a likelihood kernel evaluated along observed positive rays, not as a generative distribution whose support coincides with Smi−10,+ . A truncated directional model would instead re-quire the orthant probability PAi (μi, V) = P (x+ 
+
+> i
+
+∈ Rmi 
+
+> +
+
+), which is the computationally prohibitive term that ARC avoids [Schwob et al., 2025]. Notably, the data y+ 
+
+> i
+
+∈ Smi−10,+ enter the likelihood along positive rays of the active subspace; the Gaussian behavior over the rest of Rmi never enters inference. The ARC construction provides two benefits, and the active set {Ai} is central to both. The first concerns scale. ARC infers dependence on the latent abundance scale rather than on the closed compositional scale; this matters because the unit-sum constraint induces structural negative de-pendence among the observed proportions even when the underlying components are positively associated through shared environmental drivers. A model fit directly on the simplex therefore conflates the latent biological signal with the distortion that closure imposes. Parameterizing dependence on the abundance-scale latent vector x+ 
+
+> i
+
+separates the two such that the recovered covariance V reflects biological co-response rather than the algebra of summing to one. The second benefit is computational. The construction in (2) contains no orthant normalizing constant; a trun-cated directional model, by contrast, would condition a projected Gaussian on y ∈ Sd−10,+ and incur the parameter-dependent orthant probability Pμi,V(Yi ∈ Sd−10,+ ), whose evaluation is computation-ally prohibitive. Here, y+ 
+
+> i
+
+is already positive and ri > 0, so conditioning on Ai places x+ 
+
+> i
+
+= riy+ 
+
+> i
+
+in the positive orthant by construction. Thus, the active set plays two roles at once: a scientific one, in separating presence from dominance, and a computational one, in keeping the ARC likelihood tractable at high dimension while preserving the latent Gaussian interpretation. The proposed likelihood-kernel approach also suggests where the ARC model is appropriate. It is best suited for inference on observed compositions, not for unconditional simulation. Given an observed positive direction y+ 
+
+> i
+
+∈ Smi−10,+ and active set Ai, the expression in (2) is the proper joint density of the polar decomposition of x+ 
+
+> i
+
+evaluated at the observed direction, and posterior inference proceeds along positive rays. An unconditional draw x+ 
+
+> i
+
+∼ Nmi (μ+ 
+
+> i
+
+, VAiAi ) followed by normalization is another matter; it can yield directions outside Smi−10,+ because the unrestricted Gaussian places mass throughout Rmi , which is exactly the limitation that truncated directional approaches handle through orthant conditioning. We trade unconditional generativity for tractable inference, which is most appropriate when the goal is to recover latent structure from observed 9compositions rather than to simulate new ones. 
+
+4.1 Regression, Structured Variation, and Scalable Covariance 
+
+Compositional analyses are frequently concerned with how environmental factors shape composi-tion, which we examine by regressing the latent mean μi on covariates wi:
+
+μi = Bw i + ∆h i, (4) where B ∈ Rd×p is a coefficient matrix whose kth row records how the latent abundance tendency of component k shifts with the covariates prior to simplex closure, ∆ ∈ Rd×L carries each compo-nent’s basis effects in its corresponding row, and hi ∈ RL holds the values of radial basis functions evaluated at the observation location. Modeling the mean in such a way brings the data-generating process closer to ecological and microbial settings, in which composition is shaped jointly by en-vironmental gradients and by residual structure that the covariates do not capture. We sketch a spatial extension to (4) in Section 7. The covariance matrix V captures the dependence among the active components and is the principal target of inference. Because a dense d × d covariance is infeasible at large dimension, we adopt the low-rank factor form 
+
+V = ΛΛ ′ + D, (5) which is built from a loading matrix Λ ∈ Rd×q (q ≪ d) and a diagonal matrix D = diag( σ21 , . . . , σ 2
+
+> d
+
+)that gathers the component-specific residual variances {σ2
+
+> k
+
+} (i.e., the uniquenesses of factor analy-sis). Equivalently, 
+
+xi = μi + Λf i + ϵi, fi ∼ Nq(0, Iq), ϵi ∼ Nd(0, D),
+
+which reduces the covariance from O(d2) to O(dq + d) free parameters and provides interpretable latent factors {fi}. For a given observation, only the active submatrix 
+
+VAiAi = ΛAi Λ′ 
+
+> Ai
+
++ DAi
+
+is needed, which is convenient when the active sets are sparse. Whenever mi ≪ d, the likelihood involves only the active components such that the factor-augmented sampler can replace repeated dense inversions of VAiAi with conditionally Gaussian updates over the active entries, and the effective per-observation dimension becomes the number of nonzero components mi rather than d.The columns of Λ stand for shared gradients or unobserved drivers that tie the components together. In microbial and ecological applications, components may behave as a functional group (e.g., a shared metabolic guild or a common response to an unobserved environmental gradient) that rises and falls together; that is, similar loadings covary. Thus, V is not a block of pairwise correlations but a small number of community-level drivers, which is precisely what ecological and microbial studies of shared environmental response investigate. In addition to interpretability, 10 another advantage is identifiability. The factor model inherits the usual rotational nonidentifiability of ΛΛ ′, but the quantities of interest V = ΛΛ ′ + D and R = diag( V)−1/2V diag( V)−1/2 remain fully identifiable [Anderson et al., 1956, Geweke and Zhou, 1996]. 
+
+# 5 Implementation 
+
+We implement the ARC framework as a Bayesian hierarchical model fit by MCMC with two aug-mentations doing most of the work. The first is the latent radius ri > 0, which turns the observed spherical direction into an augmented Gaussian vector along the observed ray. The second supplies latent factors for the covariance model together with Albert-Chib latent variables for the probit active-set model. Conditional on these augmented quantities, most of the model collapses into a collection of efficient Gaussian regression problems whose missing entries are induced by the active sets. 
+
+5.1 Radius Update 
+
+The radius density for observation i follows from (2). Its full conditional is [ri | y+ 
+
+> i
+
+, A i, μi, V] ∝ rmi−1 
+
+> i
+
+exp − 12 air2 
+
+> i
+
++ biri , ri > 0,
+
+with 
+
+ai = ( y+ 
+
+> i
+
+)′V−1 
+
+> AiAi
+
+y+ 
+
+> i
+
+, bi = ( y+ 
+
+> i
+
+)′V−1 
+
+> AiAi
+
+μ+ 
+
+> i
+
+.
+
+This update is one-dimensional regardless of d and never invokes an orthant probability, so its cost scales with mi through the construction of ai and bi rather than with d. We use a random-walk Metropolis update on log ri in the simulation and case study. Because the likelihood is scale-equivariant under the joint rescaling, the chain mixes slowly along the unidentified scale direction. To stabilize posterior summaries of the scale-dependent quantities 
+
+{ri, βk, δk, λk, σ k} without changing the model or the priors, we rescale each saved draw post hoc 
+
+such that 1
+
+> n
+
+P 
+
+> i
+
+ri equals its initial value √ ¯m, where ¯ m = 1
+
+> n
+
+P 
+
+> i
+
+mi. The rescaling simply selects one representative from each likelihood-equivalent orbit. Therefore, the identifiable summaries R
+
+and ρ are invariant, and inference on the active-set parameters {αk, γk, ωk} is unaffected. 
+
+5.2 Positive Subcomposition Layer 
+
+Conditional on ri, we represent the positive subcomposition as a Gaussian factor model with missing entries: 
+
+riyik = w′
+
+> i
+
+βk + h′
+
+> i
+
+δk + f ′ 
+
+> i
+
+λk + ϵik , ϵik ∼ N(0 , σ 2
+
+> k
+
+), k ∈ Ai, (6) where βk = [ B]′ 
+
+> k, ·
+
+∈ Rp is the vector of covariate effects for component k, δk = [ ∆]′ 
+
+> k, ·
+
+∈ RL is its vector of basis effects, and λk = [ Λ]′ 
+
+> k, ·
+
+∈ Rq is its factor-loading vector. This representation yields 11 conditionally Gaussian updates for the factors {fi}:[fi | · ] ∼ Nq
+
+
+
+Q−1 
+
+> fi
+
+hfi , Q−1
+
+> fi
+
+
+
+,
+
+where 
+
+Qfi = Iq + X
+
+> k∈Ai
+
+λkλ′
+
+> k
+
+σ2
+
+> k
+
+, hfi = X
+
+> k∈Ai
+
+λk e(−f )
+
+> ik
+
+σ2
+
+> k
+
+,
+
+and e(−f ) 
+
+> ik
+
+= riyik − w′
+
+> i
+
+βk − h′
+
+> i
+
+δk collects the residuals excluding the current factor term. The component-specific regression and loading vectors are likewise updated from Gaussian full conditionals once the factors {fi} are fixed. We let Ik = {i : k ∈ Ai} be the set of observations in which component k is active. For i ∈ Ik, we set x∗ 
+
+> ik
+
+= riyik such that 
+
+x∗ 
+
+> ik
+
+= w′
+
+> i
+
+βk + h′
+
+> i
+
+δk + f ′ 
+
+> i
+
+λk + ϵik , (7) which, given the factors {fi}, radii {ri}, and uniquenesses {σ2
+
+> k
+
+}, is a standard Gaussian linear model. Under Gaussian priors on {βk, δk, λk}, each parameter vector has a conjugate full conditional. Then, the uniquenesses {σ2
+
+> k
+
+} are drawn from an inverse-gamma full conditional built from the residual sum of squares over Ik under a conjugate inverse-gamma prior. 
+
+5.3 Active-Set Layer 
+
+The active-set process is modeled separately through a probit factor specification, which gives a clean conditionally Gaussian sampler. With Zik = 1(k ∈ Ai) indicating whether component k is active in composition i, the probit model thresholds a latent Gaussian variable 
+
+Z∗ 
+
+> ik
+
+= w′
+
+> i
+
+αk + h′
+
+> i
+
+γk + ω′
+
+> k
+
+oi + eik , eik ∼ N(0 , 1) , Zik = 1(Z∗ 
+
+> ik
+
+> 0) ,
+
+where αk and γk are component-specific covariate and basis coefficients for occurrence, oi ∈ Rqo
+
+is the occurrence factor for observation i, and ωk ∈ Rqo is the occurrence loading for component 
+
+k. Albert-Chib augmentation draws Z∗ 
+
+> ik
+
+from a normal distribution truncated above or below zero according to Zik [Albert and Chib, 1993], and, conditional on Z∗
+
+> ik
+
+, the updates for {αk, γk, oi, ωk}
+
+are conjugate Gaussian. 
+
+5.4 Computational Costs 
+
+Algorithm 1 summarizes the full sampler, which we implement in Julia for efficiency [Bezanson et al., 2017]. Its per-iteration cost is governed by the active-set size and the factor rank, not by d.We let M = P 
+
+> i
+
+mi ≤ nd denote the total number of active entries, with M ≪ nd under sparsity. The probit latent updates cost O(nd ), one truncated-normal draw per entry. Each component-specific update for {αk, γk, βk, δk, λk, ωk} solves a Gaussian system of dimension O(p + L + q), which accumulates to O d(p + L + q)3 + ( p + L + q)2M  across active entries. The factor updates 12 for fi and oi require q- and qo-dimensional Gaussian solves costing O(q3n+q2M ) and O(q3 
+
+> o
+
+n+q2 
+
+> o
+
+M ), respectively. Radius updates contribute quadratic forms in V−1 
+
+> AiAi
+
+at O P  
+
+> i
+
+m2
+
+> i
+
+, and the uniqueness updates are O(M ). Therefore, the dominant term is O d(p + L + q)3 + ( p + L + q)2M + q3n per iteration, which is linear in d for fixed factor rank and sparse active sets. 
+
+Algorithm 1 ARC MCMC sampler  
+
+> 1:
+
+Initialize {Z∗
+
+> ik
+
+}, {ri}, {oi}, {fi}, and component-specific parameters.  
+
+> 2:
+
+for iteration t = 1 , . . . , T do  
+
+> 3:
+
+Update radii {ri} from their one-dimensional full conditionals.  
+
+> 4:
+
+Update positive subcomposition factors {fi} from Gaussian full conditionals.  
+
+> 5:
+
+Update positive subcomposition regression coefficients {βk}, basis coefficients {δk}, factor loadings {λk}, and uniquenesses {σ2
+
+> k
+
+} from Gaussian and inverse-gamma full conditionals.  
+
+> 6:
+
+Update probit latent variables {Z∗
+
+> ik
+
+} for the active-set model.  
+
+> 7:
+
+Update active-set regression coefficients {αk}, basis coefficients {γk}, occurrence factors 
+
+{oi}, and occurrence loadings {ωk} from Gaussian full conditionals.  
+
+> 8:
+
+end for 
+
+In contrast, truncated directional approaches must evaluate a Gaussian orthant probability 
+
+Pμi,V(Yi ∈ Sd−10,+ ) at every observation and every iteration [Schwob et al., 2025]. If MMC is the number of Monte Carlo draws used per evaluation, this estimation costs O(MMC nd 2) per itera-tion, and the relative variance of standard orthant-probability estimators grows exponentially with 
+
+d [Ridgway, 2016]. Such an approach is feasible only at low dimensions. Dirichlet-multinomial constructions sidestep orthant probabilities and scale as O(nd ) per iteration through digamma or polynomial evaluations, but they impose restrictive dependence structures that cannot rep-resent arbitrary positive latent correlations [Tang and Chen, 2019, Koslovsky, 2023, Datta and Bandyopadhyay, 2024]. Logistic-normal multinomial constructions with factor-augmented covari-ance scale comparably to the ARC sampler at O(d(p + q)3 + nd ) per iteration, yet they require log-ratio transformation or hurdle-component zero handling that ties the inferred dependence to the count or log-ratio scale rather than the abundance scale of interest [Zeng et al., 2023]. Two further features help the framework scale. For very large d, shrinkage priors on Λ, sparse factor models, or adaptive rank selection can be incorporated without altering the construction [Bhattacharya and Dunson, 2011]. For very large n, the updates decouple across i (for fi, oi, ri)and across k (for βk, λk, ωk, σ2
+
+> k
+
+), so observation-wise and component-wise updates parallelize naturally. When a component is active in few observations relative to its coefficient dimension, the ex-pensive O(( p + L + q)3) Cholesky solve in the component-specific update can be avoided. The sampler of Bhattacharya et al. [2016] draws from the relevant conditionally Gaussian posterior in O |Ik|2(p + L + q) operations, which is linear rather than cubic in the coefficient dimension and advantageous whenever |Ik| is small (i.e., when a component is active in far fewer observa-tions than its coefficient dimension). The same approach applies to the occurrence coefficients 
+
+{αk, γk, ωk}. Settings in which the number of samples is far smaller than the number of taxa typify high-dimensional sparse applications [The Human Microbiome Project Consortium, 2012], 13 and they are exactly where ARC is most advantageous. 
+
+# 6 Simulation Study 
+
+Our simulation study asks whether the model can jointly recover two things: the active-set pro-cess that generates exact zeros and the latent positive dependence among components. That joint recovery is what separates ARC from models that treat zeros and dependence in isolation. Four goals motivate the study: (i) recovery of active-set structure at the observation-component level (classification of each cell ( i, k ) as active or structurally zero), the component level (each compo-nent’s prevalence 1
+
+> n
+
+P 
+
+> i
+
+Zik aggregated across observations), the sample level (each observation’s active count mi = P 
+
+> k
+
+Zik aggregated across components), and the pairwise level (each pair’s co-activation rate 1
+
+> n
+
+P 
+
+> i
+
+Zik Ziℓ aggregated across observations); (ii) recovery of abundance-scale latent dependence, set against recovery of the empirical observed-compositional correlation; (iii) perfor-mance across dimension and sparsity; and (iv) sensitivity to the dependence regime. The study comprises ten replicates for each combination of sparsity regime, compositional di-mension, and dependence structure described below. Each replicate has n = 350 observations and 
+
+d ∈ { 20 , 50 , 100 , 250 , 500 , 1000 } compositional components. Every observation carries covariates wi
+
+and a basis vector hi built from radial basis functions centered at random subsets of simulated locations and standardized column-wise. We generated the active set from a probit latent-factor model by simulating eik ∼ N(0 , 1), setting 
+
+Z∗ 
+
+> ik
+
+= w′
+
+> i
+
+αk + h′
+
+> i
+
+γk + ω′
+
+> k
+
+oi + eik ,
+
+and defining Zik = 1(Z∗ 
+
+> ik
+
+> 0) with active probability 
+
+ρik = Φ  w′
+
+> i
+
+αk + h′
+
+> i
+
+γk + ω′
+
+> k
+
+oi
+
+ ,
+
+where Φ is the standard normal distribution function. The occurrence factors {oi} induced de-pendence among the active indicators such that components with similar occurrence loadings tended to appear together. Sparsity was controlled through the active-set intercept, sampled as 
+
+αk ∼ N( μα, 0.35 2) for k = 1 , . . . , d with μα = 0 .70, −0.15, and −0.95 giving “low,” “moderate,” and “high” sparsity. We also enforced a minimum of two active components per observation to avoid degenerate directional observations. When fewer than two were drawn active, the two components with the largest active probabilities were activated; the same rule applied to the posterior predictive active sets, which kept the simulation and the predictive evaluation consistent. Conditional on the active set, abundance-scale latent active vectors x+ 
+
+> i
+
+were drawn from the factor model. For active component k ∈ Ai, we simulated ϵik ∼ N(0 , σ 2
+
+> k
+
+) and set 
+
+xik = w′
+
+> i
+
+βk + h′
+
+> i
+
+δk + f ′ 
+
+> i
+
+λk + ϵik ,
+
+14 with fi ∼ Nq(0, Iq) and λk fixing the latent dependence structure. Normalization gave the positive subcomposition 
+
+yik = xik 
+
+ P  
+
+> ℓ∈Ai
+
+x2
+
+> iℓ
+
+1/2 , k ∈ Ai,
+
+and yik = 0 for k / ∈ Ai such that the observed composition was uik = y2
+
+> ik
+
+. The fitted model saw only the compositions {ui} and the active set implied by exact zeros; the latent radii and the unnormalized vectors {x+ 
+
+> i
+
+} were hidden. The true latent covariance and correlation were V = ΛΛ ′+D and R = diag( V)−1/2V diag( V)−1/2,respectively, where Λ ∈ Rd×q is the factor-loading matrix of rank q = 3 and D = diag( σ21 , . . . , σ 2
+
+> d
+
+)collects the uniquenesses σ2 
+
+> k
+
+∼ Unif(0 .035 , 0.060) for k = 1 , . . . , d . We examined two regimes for 
+
+Λ. The block regime assigns components to G = 4 latent groups with within-group loadings 
+
+λk = 0 .70 Pg(k) + 0 .08 ek, where Pg ∈ Rq is a group-specific prototype and ek ∼ Nq(0, Iq); the re-sult is visually interpretable blocks of positive within-group correlation. The unstructured regime instead draws ˜λk ∼ Nq(0, 0.45 2Iq) and row-normalizes through λk = 0 .45 √q ˜λk/∥˜λk∥ such that each row has equal norm. We treat the unstructured regime as the realistic case, in which compo-nents share environmental drivers in graded, overlapping ways rather than partitioning into discrete groups. The block regime appears in Appendix B as a case whose latent structure can be visually inspected directly. 
+
+6.1 Evaluation Metrics 
+
+Recovery was assessed for both the active-set process and the latent positive-subcomposition depen-dence with active-set recovery summarized at four levels. Observation-component-level discrimina-tion, the model’s ability to classify each pair ( i, k ) as active or structurally zero, was measured by the active-set area under the receiver operating characteristic curve (AUC), computed from poste-rior mean active probabilities bρik [Hanley and McNeil, 1982]. The AUC is threshold-free and stays interpretable when the prevalence of active entries varies across regimes; balanced accuracy near the threshold bρik > 0.5 averages sensitivity and specificity and is preferable to true-zero recovery, which merely rewards matching the marginal zero rate. Component-level recovery was judged by the agreement between estimated and true component prevalence and sample-level recovery by the posterior predictive distribution of active counts. For the pairwise level, we estimated co-activation 
+
+CZkℓ = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+1(Zik = 1 , Z iℓ = 1) by bCZkℓ = 1
+
+> n
+
+Pni=1 bρik bρiℓ and report Corr {offdiag( bCZ ), offdiag( CZ )}, which captures whether the model recovers which component pairs tend to be active together rather than only the global zero rate. Latent dependence recovery was summarized by Corr {offdiag( bR), offdiag( R)}, where bR =diag( bV)−1/2 bV diag( bV)−1/2 and bV is the posterior mean of V = ΛΛ ′ + D. We complemented 15 this with the positive sign-recovery rate P
+
+n bRkℓ > 0.05 | Rkℓ > 0.05 
+
+o
+
+, which targets the claim of re-covering positive latent dependence directly; the 0 .05 threshold keeps numerically negligible correla-tions from counting as substantive. We also report an observed-compositional-correlation baseline Corr {offdiag(Corr( U)) , offdiag( R)}, which measures how much information about latent depen-dence the empirical correlation matrix of the observed compositions actually carries. This baseline is not a competing model; it summarizes how closure obscures information and is the natural benchmark against which the model’s latent recovery should be judged. 
+
+6.2 Joint Recovery under Realistic Latent Dependence 
+
+Table 1 reports active-set recovery across dimensions and sparsity regimes. Discrimination between active sets was consistently strong: AUC between 0 .83 and 0 .86, balanced accuracy between 0 .67 and 0 .76, and pairwise co-activation correlation at least 0 .97 in every cell, confirming that we recovered the structure of co-occurrence rather than merely the marginal zero rate. The same table shows that the positive subcomposition layer recovered the latent correlation structure on every metric. Latent correlation was at least 0 .93 across all cells and above 0 .99 in many, and positive sign recovery was at least 0 .89. In contrast, the observed-compositional baseline fell sharply as sparsity increased, reaching 0 .21 under high sparsity at d = 20. That decline reflects the inherent behavior of raw compositional correlations under simplex closure, not a deficiency of the model. The gap between latent recovery and the observed baseline widens precisely where the method is most useful. Figure 2 depicts the unstructured, moderate sparsity, d = 100 case. The posterior mean esti-mate (panel B) coincides with the true latent correlation (panel A), whereas panel C, the empirical observed-compositional correlation, is nearly indistinguishable from noise after closure. This con-trast is central to the paper: positive latent co-response can persist even when raw correlations among observed proportions carry almost no interpretable signal about the latent dependence. Active-set recovery graphics for the same setting appear in Appendix C. Active-set recovery stayed strong across sparsity regimes, though the interpretation of threshold-based metrics shifts with the zero rate, which is why we report AUC and balanced accuracy rather than raw true-zero recovery. Latent dependence recovery is most difficult when active sets are small because each pairwise latent association is informed only by observations in which both components are active. The factor structure partly relieves this bottleneck by borrowing strength across components. Two patterns in Table 1 deserve comment. First, latent correlation and positive sign recovery are weakest at the smallest dimension and strengthen as d grows with the weakest cell at high sparsity and d = 20. Higher sparsity reduces the number of observations informing each pairwise association; the  d
+
+> 2
+
+ pairwise correlations are generated by only q shared factors and become increasingly over-determined by a common factor subspace as d grows. Each additional component carries more information about the same q latent directions, and this borrowing of strength offsets the per-pair bottleneck that sparsity creates. Thus, the factor subspace and R are estimated more precisely at 16 Table 1: Simulation results under unstructured latent dependence. AUC and balanced accuracy (Bal. acc.) summarize observation-component-level active-set discrimination using posterior mean active probabilities. Pair co-act. is the correlation between estimated and true off-diagonal pairwise co-activation rates. Latent corr. is the correlation between estimated and true off-diagonal latent correlations. Pos. sign is the recovery rate for truly positive latent correlations beyond threshold 0.05. Obs. baseline is the correlation between the empirical observed-compositional correlation and the true latent correlation. The gap between Latent corr. and Obs. baseline summarizes how much closure obscures. Sparsity d AUC Bal. acc. Pair co-act. Latent corr. Pos. sign Obs. baseline low 20 0.858 0.717 0.996 0.991 0.957 0.689 low 50 0.840 0.703 0.996 0.992 0.963 0.655 low 100 0.850 0.724 0.996 0.991 0.968 0.626 low 250 0.847 0.720 0.997 0.990 0.958 0.643 low 500 0.838 0.711 0.996 0.993 0.965 0.652 low 1000 0.843 0.716 0.996 0.997 0.976 0.659 moderate 20 0.848 0.758 0.990 0.990 0.953 0.433 moderate 50 0.826 0.738 0.991 0.984 0.953 0.471 moderate 100 0.836 0.748 0.993 0.990 0.957 0.482 moderate 250 0.845 0.757 0.993 0.992 0.963 0.510 moderate 500 0.835 0.747 0.993 0.993 0.966 0.527 moderate 1000 0.830 0.743 0.993 0.996 0.975 0.543 high 20 0.845 0.668 0.978 0.930 0.891 0.207 high 50 0.860 0.710 0.987 0.977 0.942 0.262 high 100 0.848 0.688 0.983 0.976 0.944 0.284 high 250 0.853 0.700 0.986 0.986 0.954 0.325 high 500 0.853 0.700 0.986 0.982 0.954 0.303 high 1000 0.852 0.699 0.988 0.991 0.965 0.350 large d even while individual active sets remain small; this is similar to the blessing-of-dimensionality phenomenon that Chattopadhyay et al. [2024] established for covariance models of the form V =
+
+ΛΛ ′ + D. Holding the factor rank fixed, larger dimension makes more components load on the same factors and sharpens estimation of the shared subspace and the covariance; conditional on the radii and active sets, the ARC positive-subcomposition layer is exactly such a Gaussian factor model, so the same effect exists here with the active-set process restricting each observation to its active submatrix. The second pattern is that the active-set discrimination metrics are stable across d, which parallels the improving posterior concentration of inclusion-type rules in sparse high-dimensional multiple testing [Datta and Ghosh, 2013]. The simulation study supports three conclusions. First, the active-set model recovers exact-zero structure at several resolutions from observation-component-level active probabilities (the per-cell ( i, k ) probability that component k is active in observation i) to pairwise co-activation (the rate at which components k and ℓ are simultaneously active across observations). Second, ARC recovers latent positive and negative dependence even when the observed compositional correlations are heavily attenuated by simplex closure. Third, the active set and the latent dependence are 17 Figure 2: Dependence recovery under unstructured factor covariance dependence with moderate sparsity at d = 100. (A) True latent correlation R. (B) Posterior mean latent correlation bR. (C) Empirical observed-compositional correlation Corr( U), which carries little signal about the latent dependence structure. (D) Estimated against true off-diagonal latent correlations; the dashed line is the identity. recovered jointly on the same sparse high-dimensional data, which is what sets the framework apart from models that handle zeros and dependence separately. Throughout, the target is the latent correlation matrix R implied by ARC before closure, not the empirical correlation matrix Corr( U) of observed proportions, in which positive latent dependence is obscured. 
+
+# 7 Discussion 
+
+We developed the Active-set Ray-based Compositional (ARC) framework for sparse, high-dimensional compositional data with structural zeros and latent dependence. A composition is mapped to the nonnegative orthant of the unit hypersphere, structural zeros are handled by an active-set pro-cess, and the positive subcomposition is modeled by evaluating a latent Gaussian density along the 18 positive rays of the active subspace. This construction retains the latent Gaussian interpretation of projected Gaussian models, while avoiding the orthant normalizing constant that constrains truncated directional approaches. We implement the framework with a factor-augmented sampler, whose conditionally Gaussian updates facilitate high-dimensional inference and yield a tractable joint model for zeros and arbitrary dependence. The proposed framework brings together four properties that are difficult to accommodate at once: exact zeros, flexible latent dependence, high-dimensional scalability, and compositional geometry. The active-set process determines which components are present, the ARC density governs the relative direction of the positive subcomposition, and the low-rank covariance captures arbitrary dependence on the abundance scale. In contrast, a model that substitutes small values for zeros or that uses a single continuous density to account for both presence and dominance blurs mechanisms that are genuinely distinct. Therefore, the contribution here is conceptual as much as it is computational: a composition is regarded as the observed direction of a latent abundance vector whose magnitude is unobserved and whose support is fixed by an explicitly modeled active set. This reframing is what allows structural zeros, flexible dependence, and high-dimensional scalability to coexist in one model, and it is what makes the approach well-suited for microbial, ecological, and environmental settings in which zeros and positive co-responses are scientifically central rather than nuisances. The ARC model also clarifies the role of positive dependence in compositional data. On the observed simplex, the unit-sum constraint induces competition such that raw observed correlations may appear weak or even oppositely signed when the components in fact respond positively to shared latent drivers. ARC instead recovers the abundance-scale dependence that exists before closure, where two components may be positively correlated through a common response to an environmental gradient even while their observed proportions compete for a fixed total. The sim-ulations make the gap concrete. Across every setting, the latent abundance correlation was at least 0 .93, whereas the observed-compositional baseline was far weaker and degraded sharply with sparsity. The proposed construction also overcomes the principal computational obstacle to clipped pro-jected Gaussian models. Truncation to the positive orthant is conceptually appealing but introduces a parameter-dependent orthant probability whose evaluation in high dimensions is computationally prohibitive. By enforcing support directly along the observed ray, the ARC model eliminates any re-jection step or orthant normalizing constant. The composition-as-direction framing is beneficial for compositional data analysis for several reasons: (1) the observed quantities are relative directions and exact zeros, not rejected Gaussian vectors; (2) the latent radius represents the unobserved mag-nitude; and (3) the active set represents structural sparsity. The closest analogues to ARC either retain closure-based transformations and require positivity or retain truncated projected Gaussian likelihoods and require expensive orthant evaluations. We adopt the low-rank factor form in (5) for its scalability and its interpretation in terms of shared latent gradients; however, this factor covariance is just one route to flexible dependence. 19 An equally compatible alternative places sparsity directly on the precision matrix V−1, which yields a Gaussian graphical model whose nonzero entries encode conditional dependence among components on the abundance scale [Ha et al., 2020, Xu and Ma, 2026]. Because the ARC likelihood is conditionally Gaussian in x+ 
+
+> i
+
+given the radii and active sets, such a precision-based specification can be substituted for the factor covariance without altering the construction. Two features of the factor representation deserve attention. Under weakly informative Gaussian priors on {λk} and a fixed factor rank q, the posterior tends to attenuate the strongest latent correlations toward zero at finite sample sizes, which is a well-documented property of factor analysis models [Anderson et al., 1956, Bhattacharya and Dunson, 2011]. The posterior mean of R still recovers correlation structure with high fidelity, though credible intervals at the highest-magnitude pairs may be conservative. A second consideration is our use of a fixed q. When an appropriate rank is not known a priori , a prior that increasingly penalizes higher-order columns of Λ, such as the multiplicative gamma process of Bhattacharya and Dunson [2011], allows the effective number of factors to be learned adaptively. Such a cumulative shrinkage prior should widen the credible intervals at the highest-magnitude pairs and is compatible with the factor-augmented sampler without modification. Several extensions are natural in the ARC framework. In particular, a spatial or spatio-temporal extension would be relevant in many scientific disciplines, where the latent mean 
+
+μi = Bw i + η(si, t i)contains a multivariate spatial or spatio-temporal random effect η(si, t i). Such an extension is methodologically natural under the ARC framework but warrants its own treatment because it raises additional issues of spatial prediction, spatial confounding, and scalable Gaussian process computation. In high-dimensional applications, structure on η is typically imposed through sep-arable covariance [Genton, 2007], basis expansions [Cressie and Johannesson, 2008, Wikle, 2010], dynamic factor models [Lopes et al., 2011], or multivariate Gaussian Markov random fields [Rue and Held, 2005]. The ARC likelihood is compatible with such choices because, conditional on radii and active sets, the model becomes Gaussian in the augmented active-set vectors x+ 
+
+> i
+
+= ri y+ 
+
+> i
+
+.Another extension may include a detection model for sampling zeros in which a latent occupancy process is separated from the observed detection process. Then, the ARC model can be applied to the latent positive components, and the active-set layer can accommodate false negatives. The appendices contain the full Bayesian hierarchical model (Appendix A), an additional sim-ulation study under a block-structured dependence regime (Appendix B), and active-set recovery diagnostics (Appendix C). 
+
+# Acknowledgments 
+
+We thank the Virginia Tech CoDA reading group members for their thought-provoking discussion: Rebecca Catlett, Jacob Gareis, Charlie Keglovitz, Andrew Pope, Dylan Steberg. We would also 20 like to thank Brian D. Badgley, with whom we intend to collaborate for a future iteration of this manuscript containing a microbiome case study. 
+
+# References 
+
+John Aitchison. The statistical analysis of compositional data. Journal of the Royal Statistical Society: Series B (Methodological) , 44(2):139–160, 1982. James H Albert and Siddhartha Chib. Bayesian analysis of binary and polychotomous response data. Journal of the American Statistical Association , 88(422):669–679, 1993. Theodore W Anderson, Herman Rubin, et al. Statistical inference in factor analysis. In Proceedings of the Third Berkeley Symposium on Mathematical Statistics and Probability , volume 5, pages 111–150, 1956. Jeff Bezanson, Alan Edelman, Stefan Karpinski, and Viral B Shah. Julia: A fresh approach to numerical computing. SIAM Review , 59(1):65–98, 2017. Anirban Bhattacharya and David B Dunson. Sparse Bayesian infinite factor models. Biometrika ,98(2):291–306, 2011. Anirban Bhattacharya, Antik Chakraborty, and Bani K Mallick. Fast sampling with Gaussian scale mixture priors in high-dimensional regression. Biometrika , page asw042, 2016. Adam Butler and Chris Glasbey. A latent Gaussian model for compositional data with zeros. 
+
+Journal of the Royal Statistical Society Series C: Applied Statistics , 57(5):505–520, 2008. Shounak Chattopadhyay, Anru R Zhang, and David B Dunson. Blessing of dimension in Bayesian inference on covariance matrices. arXiv preprint arXiv:2404.03805 , 2024. Robert J Connor and James E Mosimann. Concepts of independence for proportions with a gener-alization of the Dirichlet distribution. Journal of the American Statistical Association , 64(325): 194–206, 1969. Noel Cressie and Gardar Johannesson. Fixed rank kriging for very large spatial data sets. Journal of the Royal Statistical Society Series B: Statistical Methodology , 70(1):209–226, 2008. Jyotishka Datta and Dipankar Bandyopadhyay. Bayesian variable shrinkage and selection in com-positional data regression: Application to oral microbiome. Journal of the Indian Society for Probability and Statistics , 25(2):491–515, 2024. Jyotishka Datta and David B Dunson. Bayesian inference on quasi-sparse count data. Biometrika ,103(4):971–983, 2016. Jyotishka Datta and Jayanta K Ghosh. Asymptotic properties of Bayes risk for the horseshoe prior. 
+
+Bayesian Analysis , pages 111–132, 2013. 21 Samuel Y Dennis. On the hyper-Dirichlet type 1 and hyper-Liouville distributions. Communications in Statistics-Theory and Methods , 20(12):4069–4081, 1991. Juan Jos´ e Egozcue, Vera Pawlowsky-Glahn, Gl` oria Mateu-Figueras, and Carles Barcelo-Vidal. Isometric logratio transformations for compositional data analysis. Mathematical Geology , 35(3): 279–300, 2003. Noah Fierer. Embracing the unknown: Disentangling the complexities of the soil microbiome. 
+
+Nature Reviews Microbiology , 15(10):579–590, 2017. Alan E Gelfand and Adrian FM Smith. Sampling-based approaches to calculating marginal densi-ties. Journal of the American Statistical Association , 85(410):398–409, 1990. Marc G Genton. Separable approximations of space-time covariance matrices. Environmetrics , 18 (7):681–695, 2007. John Geweke and Guofu Zhou. Measuring the pricing error of the arbitrage pricing theory. The Review of Financial Studies , 9(2):557–587, 1996. Gregory B Gloor, Jean M Macklaim, Vera Pawlowsky-Glahn, and Juan J Egozcue. Microbiome datasets are compositional: And this is not optional. Frontiers in Microbiology , 8:2224, 2017. Min Jin Ha, Junghi Kim, Jessica Galloway-Pe˜ na, Kim-Anh Do, and Christine B Peterson. Com-positional zero-inflated network estimation for microbiome data. BMC Bioinformatics , 21(Suppl 21):581, 2020. James A Hanley and Barbara J McNeil. The meaning and use of the area under a receiver operating characteristic (ROC) curve. Radiology , 143(1):29–36, 1982. Daniel Hernandez-Stumpfhauser, F Jay Breidt, and Mark J van der Woerd. The general projected normal distribution of arbitrary dimension: Modeling and Bayesian inference. Bayesian Analysis ,12(1):113–133, 2017. Karel Hron, Peter Filzmoser, Patrice de Caritat, Eva Fiˇ serov´ a, and Alˇ zbˇ eta Gardlo. Weighted pivot coordinates for compositional data and their application to geochemical mapping. Mathematical Geosciences , 49(6):797–814, 2017. Matthew D Koslovsky. A Bayesian zero-inflated Dirichlet-multinomial regression model for multi-variate compositional count data. Biometrics , 79(4):3239–3251, December 2023. ISSN 0006-341X, 1541-0420. Thomas J Leininger, Alan E Gelfand, Jenica M Allen, and John A Silander. Spatial regression modeling for compositional data with many zeros. Journal of Agricultural, Biological, and Envi-ronmental Statistics , 18(3):314–334, September 2013. ISSN 1085-7117, 1537-2693. 22 Maria Lea Correa Leite and Federica Prinelli. A compositional data perspective on studying the as-sociations between macronutrient balances and diseases. European Journal of Clinical Nutrition ,71(12):1365–1369, 2017. Hedibert Freitas Lopes, Dani Gamerman, and Esther Salazar. Generalized spatial dynamic factor models. Computational Statistics & Data Analysis , 55(3):1319–1330, 2011. Kanti V Mardia and Peter E Jupp. Directional Statistics . John Wiley & Sons, 2009. Josep A Mart´ ın-Fern´ andez, Carles Barcel´ o-Vidal, and Vera Pawlowsky-Glahn. Dealing with zeros and missing values in compositional data sets using nonparametric imputation. Mathematical Geology , 35(3):253–278, 2003. Josep-Antoni Mart´ ın-Fern´ andez, Karel Hron, Matthias Templ, Peter Filzmoser, and Javier Palarea-Albaladejo. Bayesian-multiplicative treatment of count zeros in compositional data sets. Statis-tical Modelling , 15(2):134–158, 2015. Gabriel Nu˜ nez-Antonio and Eduardo Guti´ errez-Pe˜ na. A Bayesian analysis of directional data using the projected normal distribution. Journal of Applied Statistics , 32(10):995–1001, 2005. Phillip J Paine, Simon P Preston, Michail Tsagris, and Andrew T A Wood. An elliptically sym-metric angular Gaussian distribution. Statistics and Computing , 28(3):689–697, May 2018. ISSN 0960-3174, 1573-1375. Vera Pawlowsky-Glahn, Juan Jos´ e Egozcue, and David Lovell. Tools for compositional data with a total. Statistical Modelling , 15(2):175–190, 2015. Thomas P Quinn, Ionas Erb, Mark F Richardson, and Tamsyn M Crowley. Understanding se-quencing data as compositions: An outlook and review. Bioinformatics , 34(16):2870–2878, 2018. Boyu Ren, Sergio Bacallado, Stefano Favaro, Tommi Vatanen, Curtis Huttenhower, and Lorenzo Trippa. Bayesian mixed effects models for zero-inflated compositions in microbiome data analysis. 
+
+The Annals of Applied Statistics , 14(1):494–517, 2020. James Ridgway. Computation of Gaussian orthant probabilities in high dimension. Statistics and Computing , 26(4):899–916, 2016. Havard Rue and Leonhard Held. Gaussian Markov Random Fields: Theory and Applications .Chapman and Hall/CRC, 2005. Janice L Scealy and Alan H Welsh. Regression for compositional data by using distributions defined on the hypersphere. Journal of the Royal Statistical Society Series B: Statistical Methodology , 73 (3):351–375, June 2011. ISSN 1369-7412, 1467-9868. 23 Michael R Schwob, Mevin B Hooten, Nicholas M Calzada, and Timothy H Keitt. Spatial hy-perspheric models for compositional data. The Annals of Applied Statistics , 19(4):2644–2663, 2025. Matthew Stephens. False discovery rates: A new deal. Biostatistics , 18(2):275–294, 2017. Michael A Stephens. Use of the von Mises distribution to analyse continuous proportions. 
+
+Biometrika , 69(1):197–203, 1982. Zheng-Zheng Tang and Guanhua Chen. Zero-inflated generalized Dirichlet multinomial regression model for microbiome compositional data analysis. Biostatistics , 20(4):698–713, 2019. The Human Microbiome Project Consortium. Structure, function and diversity of the healthy human microbiome. Nature , 486:207–214, 2012. Michail Tsagris. Modelling structural zeros in compositional data via a zero-censored multivariate normal model. arXiv preprint arXiv:2208.13073 , 2022. Fangpo Wang and Alan E Gelfand. Directional data analysis under the general projected normal distribution. Statistical Methodology , 10(1):113–127, 2013. Tao Wang and Hongyu Zhao. A Dirichlet-tree multinomial regression model for associating dietary nutrients with gut microorganisms. Biometrics , 73(3):792–801, 2017. Christopher K Wikle. Low-rank representations for spatial processes. Handbook of Spatial Statistics ,107:118, 2010. Tianchen Xu, Ryan T Demmer, and Gen Li. Zero-inflated Poisson factor model with application to microbiome read counts. Biometrics , 77(1):91–101, 2021. Zichun Xu and Jing Ma. Bayesian covariance regression for differential network analysis of zero-inflated microbiome data. arXiv preprint arXiv:2604.02286 , 2026. Yanyan Zeng, Daolin Pang, Hongyu Zhao, and Tao Wang. A zero-inflated logistic normal multi-nomial model for extracting microbial compositions. Journal of the American Statistical Associ-ation , 118(544):2356–2369, October 2023. ISSN 0162-1459, 1537-274X. doi: 10.1080/01621459. 2022.2044827. 24 Appendix A - Bayesian Hierarchical Model 
+
+We fit the ARC model using the following Bayesian hierarchical framework: 
+
+Zik = 1(Z∗ 
+
+> ik
+
+> 0) ,Z∗ 
+
+> ik
+
+∼ N w′
+
+> i
+
+αk + h′
+
+> i
+
+γk + ω′
+
+> k
+
+oi, 1 ,
+
+x+ 
+
+> i
+
+= riy+ 
+
+> i
+
+∼ Nmi (Bw i + ∆h i + Λf i, D) , restricted to Ai
+
+βk ∼ Np(β0, 25 Ip), β0 = (1 , 0, . . . , 0) ′,
+
+δk ∼ NL(0, 4 IL),
+
+λk ∼ Nq(0, 4 Iq),
+
+fi ∼ Nq(0, Iq),σ2 
+
+> k
+
+∼ IG(2 , 0.10) ,
+
+αk ∼ Np(0, 9 Ip),
+
+γk ∼ NL(0, 4 IL),
+
+ωk ∼ Nqo (0, 4 Iqo ),
+
+oi ∼ Nqo (0, Iqo ),
+
+where Z∗ 
+
+> ik
+
+is the Albert-Chib latent variable for the probit active-set model, αk ∈ Rp and γk ∈ RL
+
+are the occurrence covariate and basis coefficients, oi ∈ Rqo is the occurrence factor for observation 
+
+i, ωk ∈ Rqo is the occurrence loading for component k, y+ 
+
+> i
+
+is the active subvector of the square-root composition, ri > 0 is the latent radius, B = [ β1, . . . , βd]′ ∈ Rd×p collects component-specific covariate coefficients, ∆ = [ δ1, . . . , δd]′ ∈ Rd×L collects basis coefficients, Λ = [ λ1, . . . , λd]′ ∈ Rd×q
+
+collects positive subcomposition factor loadings, fi ∈ Rq is the positive subcomposition factor for observation i, D = diag( σ21 , . . . , σ 2
+
+> d
+
+) collects the uniquenesses, q is the rank of the positive subcomposition factor model, qo is the rank of the occurrence factor model, and ri is updated via random-walk Metropolis on log ri as described in Section 5. The prior mean β0 = (1 , 0, . . . , 0) ′
+
+assigns the intercept of each βk a prior mean of one rather than zero, which weakly anchors the latent abundance scale during sampling. We resolve the multiplicative scale invariance of the likelihood noted in Section 4 by the post hoc rescaling of Section 5, which affects neither the identifiable correlation matrix R nor the active probabilities ρ.25 Appendix B - Block-Structured Dependence as a Visualization 
+
+To complement the unstructured analysis, we repeat the simulation under a block-structured co-variance regime in which components are partitioned into latent groups with similar within-group loadings. The block, moderate-sparsity, d = 50 case is depicted in Figure 3. Panel (B) shows the posterior mean estimate, which closely reproduces the true block pattern in panel (A). Panel (C) shows the empirical observed-compositional correlation, which is substantially attenuated after closure, and panel (D) shows that the estimated off-diagonal correlations concentrate around the identity. The block regime is a stylized setting, but the visual contrast between panel (B) and panel (C) makes the closure-induced obscuring of latent dependence clear. 
+
+Figure 3: Dependence recovery under block-structured dependence with moderate sparsity at d =50. Panels are as in Figure 2. The block organization permits the latent dependence structure to be inspected visually, whereas the closure-obscured empirical correlation in panel (C) is substantially attenuated. Quantitative results for the block regime at d ∈ { 20 , 50 , 100 } are reported in Table 2. The pattern coincides with the unstructured results at comparable dimensions: AUC between 0 .84 and 0.88, balanced accuracy between 0 .71 and 0 .75, pairwise co-activation correlation at least 0 .98, 26 latent corr. at least 0 .96, and observed-compositional baseline degrading from approximately 0 .80 under low sparsity to 0 .41 at high sparsity and d = 20. The block table is presented at moderate dimensions for visual interpretability rather than as a high-dimensional scaling argument. Table 2: Simulation results under block-structured dependence at moderate dimensions. Columns are as in Table 1. The block regime is presented for visual interpretability of the latent dependence structure; scaling to higher d is reported in Table 1 under the unstructured regime. Sparsity d AUC Bal. acc. Pair co-act. Latent corr. Pos. sign Obs. baseline low 20 0.869 0.747 0.995 0.991 0.889 0.820 low 50 0.858 0.728 0.997 0.989 0.855 0.802 low 100 0.843 0.713 0.996 0.990 0.837 0.772 moderate 20 0.843 0.753 0.991 0.985 0.812 0.658 moderate 50 0.843 0.754 0.993 0.988 0.862 0.717 moderate 100 0.836 0.748 0.992 0.985 0.803 0.716 high 20 0.877 0.726 0.985 0.971 0.795 0.413 high 50 0.861 0.709 0.985 0.984 0.832 0.540 high 100 0.864 0.715 0.988 0.969 0.780 0.568 
+
+# Appendix C - Active-Set Recovery 
+
+We present active-set recovery diagnostics that complement the latent correlation results in Section 6. In particular, we depict observation-component-level active probability calibration, component-level prevalence agreement, sample-level active-count distributions, and pairwise co-activation re-covery for the unstructured, moderate-sparsity, d = 100 case (Figure 4) and the block, moderate-sparsity, d = 50 case (Figure 5). The four panels in each figure depict the four resolutions of active-set recovery summarized in Table 1 and Table 2, thereby providing visual confirmation of the quantitative metrics. 27 Figure 4: Active-set recovery diagnostics under unstructured factor covariance dependence with moderate sparsity at d = 100. (A) Posterior mean active probabilities bρik plotted against true active probabilities ρik . (B) Posterior mean component prevalence 1
+
+> n
+
+P 
+
+> i
+
+bρik plotted against true component prevalence 1
+
+> n
+
+P 
+
+> i
+
+Zik . (C) Posterior predictive distribution of the per-observation active count mi = P 
+
+> k
+
+Zik (replicated) overlaid on the empirical distribution (observed). (D) Posterior mean pairwise co-activation rate bCZkℓ plotted against true pairwise co-activation rate CZkℓ .28 Figure 5: Active-set recovery diagnostics under block factor covariance dependence with moder-ate sparsity at d = 50. (A) Posterior mean active probabilities bρik plotted against true active probabilities ρik . (B) Posterior mean component prevalence 1
+
+> n
+
+P 
+
+> i
+
+bρik plotted against true compo-nent prevalence 1
+
+> n
+
+P 
+
+> i
+
+Zik . (C) Posterior predictive distribution of the per-observation active count 
+
+mi = P 
+
+> k
+
+Zik (replicated) overlaid on the empirical distribution (observed). (D) Posterior mean pairwise co-activation rate bCZkℓ plotted against true pairwise co-activation rate CZkℓ .29
