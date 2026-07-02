@@ -1,0 +1,202 @@
+Title: BEAGLE 4.1: A high-performance library for computation on phylogenetic trees across diverse parallel architectures
+
+URL Source: https://arxiv.org/pdf/2606.27607v1
+
+Published Time: Mon, 29 Jun 2026 00:14:19 GMT
+
+Number of Pages: 18
+
+Markdown Content:
+Article (Methods) Version dated: June 29, 2026 
+
+# BEAGLE 4.1: A high-performance library for computa-tion on phylogenetic trees across diverse parallel archi-tectures 
+
+Karthik Gangavarapu 1, Xiang Ji 2, Yucai Shao 3, Philippe Lemey 4, Andrew Rambaut 5, Guy Baele 4, and Marc A. Suchard 3,6,7,∗
+
+> 1
+
+Department of Translational Medicine, The Scripps Research Institute, La Jolla, California, United States 
+
+> 2
+
+Department of Statistics, College of Liberal Arts and Sciences, Iowa State University, Ames, IA, United States 
+
+> 3
+
+Department of Biostatistics, Jonathan and Karin Fielding School of Public Health, University of California, Los Angeles, United States 
+
+> 4
+
+Department of Microbiology, Immunology and Transplantation, Rega Institute, KU Leuven, Leu-ven, Belgium 
+
+> 5
+
+Institute of Ecology and Evolution, University of Edinburgh, Edinburgh, EH9 3FL, UK 
+
+> 6
+
+Department of Biomathematics, David Geffen School of Medicine at UCLA, University of of Cal-ifornia, Los Angeles, United States 
+
+> 7
+
+Department of Human Genetics, David Geffen School of Medicine at UCLA, University of Cali-fornia, Los Angeles, United States * Corresponding author. E-mail: msuchard@ucla.edu 
+
+1
+
+> arXiv:2606.27607v1 [q-bio.PE] 25 Jun 2026
+
+Abstract Efficient evaluation of sequence data likelihoods and their high-dimensional gradi-ents on phylogenetic trees improves inference under both maximum-likelihood and Bayesian frameworks. Here, we present BEAGLE 4.1, a high-performance library for statistical phylo-genetics that incorporates new algorithms to evaluate these gradients on phylogenetic trees. We also provide new hardware implementations for both likelihoods and gradients support-ing ARM NEON intrinsics and optimized matrix multiplication units – called tensor cores – on NVIDIA graphics processing units (GPUs). We benchmark the performance scaling of the library across a number of patterns and taxa on multi-core CPUs and GPUs, and compare the speedup afforded by NVIDIA and AMD GPUs as well as performance scaling with an increasing number of GPUs. We show that multi-core CPU implementations provide up to a fourfold speedup over single-threaded CPU implementations and up to an tenfold speedup for nucleotide and codon models, respectively, with performance generally improv-ing as the number of taxa and site patterns increases. GPUs outperform multi-threaded CPU implementations for a realistic number of patterns, even for nucleotide models with a small state-space size of 4, while for codon models they provide substantially higher perfor-mance gains even for a single pattern or four taxa. Tensor cores on GPUs provide up to 2-fold speedup relative to standard CUDA cores for codon models. Using NEON instruc-tions on ARM CPUs affords up to a ∼ 1.3-fold speedup over non-SIMD implementation with the speedup going down to 1.1-fold at 8 CPU threads. Finally, we show that the CUDA implementation on NVIDIA devices is over 1.5-fold faster than the OpenCL implementation on a comparable AMD device and that using multiple GPUs can afford up to 4-fold higher performance over using a single GPU. We provide these new algorithms to evaluate the gra-dient and efficient hardware implementations for both likelihood and gradient calculations through BEAGLE 4.1, such that they can be readily integrated into phylogenetic software packages. 21 Introduction 
+
+BEAGLE (Ayres et al., 2012, 2019) is a high-performance computing library for statisti-cal phylogenetics that supports parallelization on multi-core CPUs through multi-threading and fine-grained vectorization using Streaming SIMD Extensions (SSE) instructions, and on graphics processing units (GPUs) through CUDA (Cook, 2012) and OpenCL (Stone et al., 2010). BEAGLE is used by popular phylogenetic software such as BEAST X (Baele et al., 2025), BEAST 2.5 (Bouckaert et al., 2019), MrBayes (Ronquist et al., 2012), RevBayes (Smith et al., 2024), and PhyML (Guindon et al., 2010). Since the last version of BEA-GLE (Ayres et al., 2019), advances in algorithms and computing hardware offer new oppor-tunities to accelerate phylogenetic inference. Efforts to parallelize numerical calculations for statistical phylogenetics have largely fo-cused on parallelizing Felsenstein’s pruning algorithm (Felsenstein, 1981) to calculate the likelihood on a phylogenetic tree of observed sequence data. Phylogenetic inference is pre-dominantly performed within maximum-likelihood and Bayesian frameworks, both of which benefit from efficient evaluation of the gradient of the log-likelihood with respect to (w.r.t.) model parameters. Maximum-likelihood estimation relies on gradient-based optimization methods – such as Broyden–Fletcher–Goldfarb–Shanno (BFGS) (Dennis Jr & Schnabel, 1996) – to find parameter values that maximize the likelihood, while Bayesian inference ben-efits from efficient gradient-based Markov Chain Monte Carlo (MCMC) algorithms such as Hamiltonian Monte Carlo (HMC) (Neal, 2011) to sample from posterior distributions. In this paper, we focus on algorithmic advances for efficiently evaluating the gradient of the log-likelihood w.r.t. branch-length-specific (BLS) parameters, such as branch-specific evolutionary rates (Ji et al., 2020), and substitution model parameters through an approx-imation of the gradient (Magee et al., 2024). In regard to hardware implementations, we target NEON SIMD instructions on ARM CPUs, whose adoption has grown steadily since the release of Apple Inc. M-series chips, and specialized matrix-multiplication cores available on modern NVIDIA GPUs for calculating the likelihood of observed sequence data on a phy-3logenetic tree and evaluate its gradient w.r.t. phylogenetic parameters. We describe these advances in BEAGLE 4.1 (Figure 1) which provides efficient hardware implementations for both calculating the likelihood and evaluating its gradient across heterogeneous computing hardware including multi-core CPUs and GPUs. Approximate gradient of the likelihood w.r .t. substitutio n model parameters Finit e-time t ransitio n probability Likelihood of observed sequence data BEAGLE NEON SSE CPU Tensor core CUDA core GPU 
+
+> New in v4.1
+
+streaming processors 
+
+> Algorithms  Hardware
+
+Gradient of the log-likelihood w.r.t. all BLS parameters 
+
+Multi-threading SIMD 
+
+> RAM RAM
+
+Figure 1: BEAGLE 4.1 is a high-performance library that accelerates numerical calculations for statistical phylogenetics with support for parallelization across CPUs and GPUs. To enable fine-scale parallelization on CPUs, BEAGLE supports SIMD instructions through SSE and NEON instructions. BEAGLE supports GPUs through the CUDA API for NVIDIA devices and OpenCL API for AMD devices. 
+
+# 2 Key Improvements 
+
+In this section, we describe new algorithms and hardware implementations supported by the BEAGLE 4.1 library. 42.1 Algorithmic advances 
+
+Ji et al. (2020) introduce an algorithm to calculate the gradient of the log-likelihood w.r.t. all BLS parameters in linear time w.r.t. N , the number of tips in a phylogenetic tree. In a Bayesian framework, this algorithm enables inference using gradient-based HMC achieving 7- to 23-fold speedup in terms of median effective sample size (ESS) per second relative to random-walk proposals. This algorithm also accelerates inference under a maximum-likelihood framework by 210- to 253-fold compared to evaluating the gradient numerically, which has a time complexity of O(N 2). The algorithm complements the post-order traversal of the tree with a pre-order traversal to calculate post- and pre-order partial likelihoods. The likelihood of the observed sequence data is then calculated as the inner product of the post- and pre-order partial likelihoods, enabling evaluation of the gradient of the log-likelihood w.r.t. all BLS parameters in a single pre-order traversal using O(N ) operations. This linear-time algorithm can also be used to simultaneously infer both the node heights and branch-specific evolutionary rates using HMC by applying a ratio transform on the node heights that inherently preserves topological constraints (Ji et al., 2023). Random-effects substitution models extend standard continuous time Markov chain (CTMC) substitution models by introducing multiplicative random effect parameters in every non-diagonal element of the instantaneous rate matrix, enabling the model to capture deviations from standard substitution processes. This substantially increases the number of parame-ters, making inference under these models computationally challenging. Magee et al. (2024) solve this problem by reformulating the gradient of the sequence likelihood w.r.t. all substi-tution model parameters as the product of the gradient w.r.t. elements of the rate matrix and the gradient of the matrix elements w.r.t. substitution model parameters, and exploit-ing a first-order approximation of the derivative of the matrix exponential to evaluate the former. Approximating the gradient of sequence likelihood w.r.t. all substitution model pa-rameters in this manner reduces the complexity from O(KN S 5) for a naive derivative to 
+
+O(KS 2 + N S 3), where S is the state-space size and K is the number of substitution model 5parameters which can range from 1 to S(S − 1). This allows for efficient inference under these models using HMC, yielding an average speedup of 6.6-fold for nucleotide models and 20.2-fold, in terms of ESS per second, for phylogeographic models with larger state-space sizes over standard random-walk proposals. 
+
+2.2 Hardware advances 
+
+2.2.1 ARM NEON 
+
+Starting with their M-series chips, Apple Inc. has transitioned to using ARM-based proces-sors making them widely available in consumer computing and research environments. ARM processors implement the NEON instruction set for SIMD operations while x86 processors use SSE. Support for SSE was introduced in BEAGLE 3 (Ayres et al., 2019). To enable vec-torized operations on ARM processors, we used sse2neon.h (DLTcollab contributors, 2026), a header-only library, to translate the existing SSE instructions into their NEON equiva-lents. By using this translation layer rather than maintaining two separate SSE and NEON implementations, we avoid duplicating our code while realizing the benefits of using SIMD operations on ARM processors. Early versions of sse2neon.h lacked NEON mappings for a subset of double-precision SSE intrinsics such as mm div pd, mm store sd, and mm dp pd. We initially provided manual implementations of these functions using native ARM NEON intrinsics and existing sse2neon.h utilities. We retired these custom implementations as sub-sequent releases of sse2neon.h incorporated support for these instructions, allowing us to rely entirely on the library for SSE-to-NEON translation. 
+
+2.2.2 Tensor cores 
+
+Modern GPUs are equipped with specialized hardware units optimized for general matrix multiplication (GEMM) called tensor cores on NVIDIA devices. Starting with the Am-pere architecture (NVIDIA, 2020), tensor cores have supported GEMM at double-precision floating-point format (FP64). Tensor cores can be utilized for matrix-multiply-and-accumulate 6(MMA) operations using warp-level instructions provided in the CUDA API where a warp represents a group of 32 threads, the smallest unit of parallel execution on a GPU. In recent work, we have shown that massively parallel, tensor core-based algorithms deliver 2 to 3-fold gains in performance for amino acid and codon models, accompanied by a ∼ 2-fold reduction in energy usage for codon models, relative to using standard GPU-based algorithms that rely on CUDA cores (Gangavarapu et al., 2026). BEAGLE 4.1 supports tensor cores on NVIDIA devices to calculate the likelihood of observed sequence data and evaluate the gradient of the log-likelihood w.r.t. all BLS parameters. 
+
+# 3 Performance evaluation 
+
+3.1 Scaling by number of taxa and site patterns 
+
+The number of unique site patterns and the number of taxa are the most important fac-tors that affect the performance gains afforded by parallelized and massively-parallelized implementations in statistical phylogenetics. We benchmarked the wall time of hardware implementations in BEAGLE 4.1 across these two factors by inferring branch-specific evolu-tionary rates given a fixed tree for two substitution models, a HKY nucleotide substitution model (Hasegawa et al., 1985) and a Goldman-Yang codon (GY94) model (Goldman & Yang, 1994), on a system equipped with an AMD EPYC 9334 32-core processor and an NVIDIA H100 NVL GPU. We measured speedup afforded by multi-core CPU and GPU implementa-tions relative to a single-threaded CPU instance for 10 iterations of the MCMC using HMC over the evolutionary rates as implemented in BEAST X (Baele et al., 2025). We measured performance scaling by increasing the number of site patterns while keeping the number of taxa fixed at 1 024, and by increasing the number of taxa while keeping the number of site patterns fixed at 1 024. (Figure 2). For nucleotide models with a state-space size of 4, the speedup from multi-threaded CPU implementations increased with the number of unique site patterns with 16 threads, starting 7at 2 048 patterns, achieving a maximum of 2- to 4-fold speedup over a single CPU thread (Figure 2A). Starting from 1 024 patterns, the GPU implementation outperformed the fastest CPU implementation delivering a further 1.25- to 1.5-fold speedup. The speedup from multi-threaded CPU implementations increased with the number of taxa, with 8 threads delivering speedups over 1.25-fold starting at 1 024 patterns (Figure 2B). The CPU implementation using 8 threads outperformed 16 threads starting at 1 024 patterns, indicating that the workload becomes memory-bound rather than compute-bound at this point. The GPU implementation affords over 1.1-fold speedup over the fastest CPU implementation starting at 64 taxa. We note that the performance of the GPU implementation saturates at 256 taxa and the diminishing speedup relative to the fastest CPU implementation reflects the growing speedup achieved by the 8-thread CPU implementation rather than a decline in GPU performance. Using tensor cores on the GPU provided no additional performance gain over standard CUDA cores for nucleotide models which is expected given the small state-space size of 4. For a codon model, adding more CPU threads consistently improved performance, with the 16-threaded implementation reaching over 10-fold speedup at 2 048 patterns (Figure 2C). The GPU implementation afforded over 30-fold speedup relative to the fastest CPU imple-mentation with 16 threads starting at just a single pattern. We note that the performance of the GPU implementation saturates at 256 patterns and the diminishing speedup relative to the fastest CPU implementation reflects the growing speedup achieved by the 16-threaded CPU implementation rather than a decline in GPU performance. Using tensor cores on GPUs for a codon model, with a larger state-space size of 61, delivered a further ∼ 1.25-fold speedup over standard GPU implementation at 256 patterns reaching a maximum of 2-fold at 2 048 patterns. The CPU implementation using 16 threads consistently offered over 4-fold speedup starting at 4 taxa with performance saturating at ∼ 8-fold speedup for 128 taxa (Figure 2D). The GPU implementation afforded ∼ 10-fold speedup over the fastest 16-thread CPU implementation at 4 taxa saturating at ∼ 40-fold speedup at 256 8taxa. GPU tensor cores provided additional speedup over the GPU implementation starting at ∼ 1.1-fold speedup at 4 taxa, saturating at ∼ 1.8-fold speedup starting with 512 taxa. To demonstrate the speedup afforded by the GPU over CPU to infer parameters under a GY94 codon model with random effects at every non-diagonal element, we measured the total time spent in BEAGLE for 10 iterations of the MCMC using HMC over substitution model pa-rameters. We observed a 94-fold speedup when using the GPU relative to a single-threaded CPU implementation. 9BEAGLE instances 1 2 4 6 8 16 
+
+A) CPU GPU GPU tensor core 
+
+B) 
+
+> 256 2000 4000 6000 8000
+
+1234Patterns Speedup (Relative to single thread) 256 2000 4000 6000 8000 0.75 1.00 1.25 1.50 Patterns Speedup (Relative to fastest CPU implementation) 256 2000 4000 6000 8000 0.75 1.00 1.25 1.50 Patterns Speedup (Relative to GPU) CPU 64 500 1000 1500 2000 0.50 0.75 1.00 1.25 1.50 Taxa Speedup (Relative to single thread) GPU 64 500 1000 1500 2000 1.0 1.2 1.4 1.6 Taxa Speedup (Relative to fastest CPU implementation)  GPU tensor core 64 500 1000 1500 2000 1.0 1.2 1.4 1.6 Taxa Speedup (Relative to GPU) 2048 4096 8192 2048 4096 8192 1024 512 1024 2048 512 2048 1024 256 128 
+
+C) CPU GPU GPU tensor core 
+
+D) 
+
+> 1500 1000 1500 2000
+
+2.5 5.0 7.5 10.0 Patterns Speedup (Relative to single thread) 1500 1000 1500 2000 010 20 30 40 50 Patterns Speedup (Relative to fastest CPU implementation) 1500 1000 1500 2000 1.00 1.25 1.50 1.75 2.00 Patterns Speedup (Relative to GPU) CPU 4500 1000 1500 2000 2.5 5.0 7.5 Taxa Speedup (Relative to single thread) GPU 4500 1000 1500 2000 010 20 30 40 Taxa Speedup (Relative to fastest CPU implementation)  GPU tensor core 4500 1000 1500 2000 1.0 1.2 1.4 1.6 1.8 Taxa Speedup (Relative to GPU) 256 512 1024 2048 256 512 1024 2048 256 512 1024 2048 512 1024 2048 256 128 512 1024 2048 256 128 512 1024 2048 256 128 Figure 2: Multi-threaded CPU implementations outperform single-threaded CPU, GPUs deliver additional speedup over the fastest CPU implementation, and for codon substitution models, GPU tensor core implementation provides further gains over the standard GPU implementation. Speedups are reported as follows: multi-threaded CPU relative to single-threaded CPU, GPU relative to the fastest CPU implementation, and GPU tensor core relative to the standard GPU. Results are shown for a nucleotide substitution model as a function of (A) the number of patterns with fixed 1 024 taxa and (B) the number of taxa with fixed 1 024 patterns, and for a codon substitution model as a function of (C) the number of patterns with fixed 1 024 taxa and (D) the number of taxa with fixed 1 024 patterns. 10 3.2 ARM NEON 
+
+We measured the speedup afforded by NEON SIMD instructions relative to a non-SIMD implementation on an M3 Pro ARM processor, using a dataset of 352 serotype 3 dengue viral genomes with 2 294 unique site patterns. We set up a phylogenetic model to infer branch-specific evolutionary rates with a fixed tree under a GTR nucleotide substitution model (Tavar´ e & Miura, 1986). We measured the wall-time for 10 000 iterations of the MCMC with HMC over the branch-specific evolutionary rates as implemented in BEAST X across 10 replicates and an increasing number of threads. NEON instructions afforded over 1.3-fold speedup on a single thread, and close to 1.1-fold speedup with 8 threads, compared to non-SIMD instructions for nucleotide substitution models with a state-space size of 4. (Figure S1). 
+
+3.3 Benchmarks on NVIDIA and AMD GPUs 
+
+BEAGLE 4.1 supports the two GPU providers NVIDIA and AMD through the CUDA and OpenCL APIs, respectively. To compare the hardware-specific implementations, we set up a Bayesian phylogenetic analysis to infer branch-specific evolutionary rates for a dataset of 1 024 taxa with an increasing number of patterns under a GY94 codon model with a fixed tree. We measured the wall-time for 10 iterations of the MCMC with HMC over the branch-specific evolutionary rates as implemented in BEAST X on two comparable GPUs: AMD MI300X and NVIDIA H100 PCIe on cloud instances also equipped with comparable AMD EPYC 9474 and AMD EPYC 9454 CPUs, respectively. In Figure 3A, we report the speedup afforded by CUDA implementation on the H100 over OpenCL implementation on the MI300X across ten replicates. Across all pattern counts, the CUDA implementation delivered over 1.5-fold higher performance relative to the OpenCL implementation. Systems equipped with multiple GPUs, typically up to 8, are becoming increasingly common in research environments. BEAGLE supports multiple GPUs by partitioning the sequence alignment into conditionally independent blocks running on separate GPUs. To 11 measure the speedup afforded by utilizing multiple GPUs, we measured the wall time for 10 iterations of MCMC with HMC over branch-specific evolutionary rates using the same dataset with 1 024 taxa under a GY94 codon model with a fixed tree. We observe that using multiple GPUs results in performance gain starting with 512 patterns relative to using a single GPU. Over 512 patterns, doubling the number of GPUs resulted in a 1.1- to 1.7-fold incremental gain in speedup (Figure 3B). 64 128 256 64 128 256 64 128 256 1
+
+A) B)          
+
+> 116 32 64 128 256 512 1024 2048 4096 8192 1.0 1.5 2.0 2.5 02000 4000 6000 8000 Patterns Speedup on H100 relative to MI300 512 1024 2048 4096 512 1024 2048 4096 512 1024 2048 4096 24128 512 2048 Patterns Speedup over a single GPU BEAGLE instances 248
+
+Figure 3: CUDA implementation on NVIDIA H100 delivers approximately 1.5-fold higher speedup than the one on AMD MI300X for codon models, and when using multiple GPUs, doubling the number of GPUs beyond 512 site patterns yields 1.1- to 1.7-fold incremental gain in speedup. (A) Speedup on an NVIDIA H100 relative to AMD MI300X for 10 iterations of MCMC for a codon substitution model across 10 replicates. (B) Speedup of using multiple GPUs with one BEAGLE instance per GPU over using a single GPU, measured on a system equipped with 8 AMD MI300X GPUs across 10 replicates. 
+
+# 4 Discussion 
+
+BEAGLE 4.1 advances computational infrastructure for statistical phylogenetics by provid-ing efficient hardware implementations to calculate the likelihood of observed sequence data and new algorithms to evaluate the gradient of the log-likelihood w.r.t. BLS and substi-tution model parameters. While multi-threaded CPU implementations afford performance gains over a single thread, GPUs consistently outperformed CPU implementations for a real-istic number of site patterns, even for nucleotide models with small state-space sizes. Tensor 12 cores on NVIDIA GPUs afford up to 2-fold speedup relative to standard CUDA cores for codon models with larger state-space size. In future work, we plan to improve the caching strategies during post- and pre-order traversals of the tree. For substitution models with several site patterns, transition proba-bility matrices are calculated through numerical eigendecomposition of the infinitesimal rate matrix and cached in memory for reuse across patterns. However, for phylogeographic prob-lems that typically have a large state-space size but only a single site pattern, the transition probability matrices are not reused, and it is more efficient to form the transition probabil-ity matrix on-the-fly while calculating the likelihood of observed sequence data in this case through Felsenstein’s pruning algorithm. The linear-time gradient w.r.t. all BLS parameters is evaluated in a single pre-order traversal, through a sandwich operation of a pre-order partial likelihood vector, the infinitesimal rate matrix, and a post-order partial likelihood vector. Currently, the post-order partial likelihood vectors and infinitesimal rate matrices are cached separately. Since the infinitesimal rate matrix is already available during the post-order traversal, the product of the infinitesimal rate matrix and the post-order partial likelihood vector at each node could be cached directly thus reducing memory burden from 
+
+S2 elements of the infinitesimal rate matrix to S partial likelihoods. Finally, reverse-mode gradients involving the adjoint of the matrix exponential (Monti et al., 2025) suggest exact substitution parameter gradients on trees in only O(S3 + N S 2) that we plan to introduce into BEAGLE. BEAGLE 4.1 currently supports AMD GPUs through OpenCL, which does not provide access to AMD matrix cores which are optimized matrix multiplication cores analogous to tensor cores on NVIDIA devices. In future work, we plan to add support for AMD devices through a Radeon Open Compute (ROCm) implementation in BEAGLE, which would en-able use of AMD matrix cores for accelerating GEMM operations. A second direction for future work is supporting inference at single precision, as commercial-grade GPUs, unlike data center GPUs, provide substantially higher performance at single-precision compared to 13 double-precision floating point format. BEAGLE is developed independent of tree-inference packages and hence, existing phylogenetic models can immediately take advantage of the advances described in this paper without requiring any explicit modifications to the models themselves. 
+
+# 5 Data Availability 
+
+Log files, XML files for BEAST X, and associated scripts to reproduce the results and figures have been deposited at https://doi.org/10.5281/zenodo.20404492 . The BEAST XMLs and instructions to replicate the benchmarks are available at https://github.com/ suchard-group/beagle4_supplement .
+
+# 6 Software Availability 
+
+BEAGLE 4.1 is available at https://github.com/beagle-dev/beagle-lib/tree/master .BEAST X is available at https://github.com/beast-dev/beast-mcmc/tree/main . We used compile-time constants to measure the time spent in BEAGLE and we have made this BEAST X JAR file available at https://github.com/suchard-group/beagle4_supplement .
+
+# 7 Acknowledgments 
+
+KG is partially supported by US National Institutes of Health (NIH) grant U19 AI135995. PL acknowledges support by the Research Foundation - Flanders (‘Fonds voor Wetenschap-pelijk Onderzoek - Vlaanderen’, G010326N, G005323N and G051322N). GB acknowledges support from the Research Foundation - Flanders (“Fonds voor Wetenschappelijk Onderzoek - Vlaanderen,” G098321N), from the European Union Horizon 2023 RIA project LEAPS (grant agreement no. 101094685), and from the DURABLE EU4Health project 02/2023-01/2027, which is co-funded by the European Union (call EU4H-2021-PJ4) under Grant 14 Agreement No. 101102733. XJ, YS and MAS are supported by NIH grants R01 AI153044 and R01 AI162611. This work was supported in part by Advanced Micro Devices, Inc. under the AMD University Program’s AI & HPC Cluster. 
+
+# Bibliography 
+
+Ayres, D. L. , Cummings, M. P. , Baele, G. , Darling, A. E. , Lewis, P. O. , Swof-ford, D. L. , Huelsenbeck, J. P. , Lemey, P. , Rambaut, A. & Suchard, M. A. 
+
+(2019). BEAGLE 3: Improved Performance, Scaling, and Usability for a High-Performance Computing Library for Statistical Phylogenetics. Systematic Biology 68 , 1052–1061. 
+
+Ayres, D. L. , Darling, A. , Zwickl, D. J. , Beerli, P. , Holder, M. T. , Lewis, P. O. , Huelsenbeck, J. P. , Ronquist, F. , Swofford, D. L. , Cummings, M. P. ,
+
+Rambaut, A. & Suchard, M. A. (2012). BEAGLE: An Application Programming In-terface and High-Performance Computing Library for Statistical Phylogenetics. Systematic Biology 61 , 170–173. 
+
+Baele, G. , Ji, X. , Hassler, G. W. , McCrone, J. T. , Shao, Y. , Zhang, Z. , Hol-brook, A. J. , Lemey, P. , Drummond, A. J. , Rambaut, A. & Suchard, M. A. 
+
+(2025). BEAST X for Bayesian phylogenetic, phylogeographic and phylodynamic infer-ence. Nature Methods 22 , 1653–1656. 
+
+Bouckaert, R. , Vaughan, T. G. , Barido-Sottani, J. , Duchˆ ene, S. , Fourment, M. , Gavryushkina, A. , Heled, J. , Jones, G. , K¨ uhnert, D. , De Maio, N. ,
+
+Matschiner, M. , Mendes, F. K. , M¨ uller, N. F. , Ogilvie, H. A. , du Plessis, L. , Popinga, A. , Rambaut, A. , Rasmussen, D. , Siveroni, I. , Suchard, M. A. ,
+
+Wu, C.-H. , Xie, D. , Zhang, C. , Stadler, T. & Drummond, A. J. (2019). BEAST 2.5: An advanced software platform for Bayesian evolutionary analysis. PLOS Computa-tional Biology 15 , 1–28. 15 Cook, S. (2012). CUDA Programming: A Developer’s Guide to Parallel Computing with GPUs . San Francisco, CA, USA: Morgan Kaufmann Publishers Inc., 1st ed. 
+
+Dennis Jr, J. E. & Schnabel, R. B. (1996). Numerical methods for unconstrained optimization and nonlinear equations , vol. 16. Siam. 
+
+DLTcollab contributors (2026). sse2neon: Translating intel sse intrinsics to arm neon. 
+
+https://github.com/DLTcollab/sse2neon . GitHub repository, accessed April 2026. 
+
+Felsenstein, J. (1981). Evolutionary trees from DNA sequences: A maximum likelihood approach. Journal of Molecular Evolution 17 , 368–376. 
+
+Gangavarapu, K. , Ji, X. , Shao, Y. , Rambaut, A. , Lemey, P. , Baele, G. &
+
+Suchard, M. A. (2026). Tensor cores unlock efficient and lower-energy massive par-allelization on phylogenetic trees. Systematic Biology , syag017. 
+
+Goldman, N. & Yang, Z. (1994). A codon-based model of nucleotide substitution for protein-coding DNA sequences. Molecular Biology and Evolution 11 , 725–736. 
+
+Guindon, S. , Dufayard, J.-F. , Lefort, V. , Anisimova, M. , Hordijk, W. & Gas-cuel, O. (2010). New algorithms and methods to estimate maximum-likelihood phylo-genies: Assessing the performance of PhyML 3.0. Systematic Biology 59 , 307–321. 
+
+Hasegawa, M. , Kishino, H. & Yano, T.-a. (1985). Dating of the human-ape splitting by a molecular clock of mitochondrial DNA. Journal of Molecular Evolution 22 , 160–174. 
+
+Ji, X. , Fisher, A. A. , Su, S. , Thorne, J. L. , Potter, B. , Lemey, P. , Baele, G. 
+
+& Suchard, M. A. (2023). Scalable Bayesian Divergence Time Estimation With Ratio Transformations. Systematic Biology 72 , 1136–1153. 
+
+Ji, X. , Zhang, Z. , Holbrook, A. , Nishimura, A. , Baele, G. , Rambaut, A. , Lemey, P. & Suchard, M. A. (2020). Gradients Do Grow on Trees: A Linear-Time O ( N )-16 Dimensional Gradient for Statistical Phylogenetics. Molecular Biology and Evolution 37 ,3047–3060. 
+
+Magee, A. F. , Holbrook, A. J. , Pekar, J. E. , Caviedes-Solis, I. W. , Matsen Iv, F. A. , Baele, G. , Wertheim, J. O. , Ji, X. , Lemey, P. & Suchard, M. A. (2024). Random-Effects Substitution Models for Phylogenetics via Scalable Gradient Approxima-tions. Systematic Biology 73 , 562–578. 
+
+Monti, F. , Ji, X. & Suchard, M. A. (2025). Nonparametric modeling of continuous-time markov chains. arXiv preprint arXiv:2511.03954 .
+
+Neal, R. M. (2011). MCMC using Hamiltonian dynamics. Handbook of Markov Chain Monte Carlo 2.
+
+NVIDIA (2020). NVIDIA Ampere architecture white paper. https://resources.nvidia. com/en-us-genomics-ep/ampere-architecture-white-paper .
+
+Ronquist, F. , Teslenko, M. , van der Mark, P. , Ayres, D. L. , Darling, A. ,
+
+H¨ ohna, S. , Larget, B. , Liu, L. , Suchard, M. A. & Huelsenbeck, J. P. (2012). MrBayes 3.2: Efficient bayesian phylogenetic inference and model choice across a large model space. Systematic Biology 61 , 539–542. 
+
+Smith, K. , Ayres, D. , Neumaier, R. , W¨ orheide, G. & H¨ ohna, S. (2024). Bayesian phylogenetic analysis on multi-core compute architectures: Implementation and evaluation of BEAGLE in RevBayes with MPI. Systematic Biology 73 , 455–469. 
+
+Stone, J. E. , Gohara, D. & Shi, G. (2010). OpenCL: A Parallel Programming Standard for Heterogeneous Computing Systems. Computing in Science & Engineering 12 , 66–73. 
+
+Tavar´ e, S. & Miura, R. M. (1986). Lectures on mathematics in the life sciences. In Am. Math. Soc , vol. 17. 17 S1 Supplementary Material 1.0 1.1 1.2 1.3    
+
+> 1248
+> Threads
+> Speedup of NEON
+
+Figure S1: NEON SIMD instructions deliver up to 1.3-fold speedup over non-SIMD imple-mentations on the Apple Inc. M3 Pro ARM processor for a nucleotide substitution model with a state-space size of 4. 18
