@@ -1,0 +1,1490 @@
+Title: Minimum flow decomposition guided by saturating subflows
+
+URL Source: https://www.biorxiv.org/content/10.64898/2025.12.11.693570v3.full.pdf
+
+Published Time: Fri, 03 Jul 2026 21:36:15 GMT
+
+Number of Pages: 26
+
+Markdown Content:
+# Minimum flow decomposition guided by saturating subflows 1
+
+Ke Chen 1, Abhishek Talesara 1, Sanchal Thakkar 1, and Mingfu Shao 1,2, ∗
+
+> 2
+> 1
+
+Department of Computer Science and Engineering, The Pennsylvania State University, PA 3
+
+16803, USA 4
+
+> 2
+
+Huck Institutes of the Life Sciences, The Pennsylvania State University, PA 16803, USA 5
+
+July 2, 2026 6
+
+Abstract 7
+
+The minimum flow decomposition problem abstracts a set of key tasks in bioinformatics, 8
+
+including metagenome and transcriptome assembly. These tasks, collectively known as multi-9
+
+assembly, aim to reconstruct multiple genomic sequences from reads obtained from mixed sam-10 
+
+ples. The reads are first organized into a directed graph (e.g., overlap graph, splice graph), 11 
+
+where each edge has an integer weight representing the number of supporting reads. By viewing 12 
+
+the graph as a flow network, the underlying sequences and their abundances can be extracted 13 
+
+through decomposition into a minimum number of weighted paths. Although this problem is 14 
+
+NP-hard, prior work has proposed an efficient heuristic that transforms the graph by identi-15 
+
+fying nontrivial equations in the flow values. However, for graphs with complex structures, 16 
+
+many equations cannot be fully resolved by existing mechanisms, leading to suboptimal de-17 
+
+compositions. In this study, we revisit the theoretical framework of the flow decomposition 18 
+
+problem and extend the equation-resolving mechanisms to jointly model all equations in the 19 
+
+graph, enabling safe merge operations that iteratively simplify the graph. Experimental results 20 
+
+demonstrate that our new algorithm substantially improves decomposition quality over existing 21 
+
+heuristics, achieving near-optimal solutions for complex graphs, while running several orders 22 
+
+of magnitude faster than the ILP formulation. Source code of our algorithm is available at 23 
+
+https://github.com/Shao-Group/catfish-LP .24 
+
+> ∗
+
+Correspondence should be addressed to mxs2589@psu.edu. 
+
+1
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint
+
+## 1 Introduction 25 
+
+Minimum flow decomposition (MFD) is a fundamental problem in graph theory that asks to de-26 
+
+compose a directed acyclic graph with a unique source s, a unique sink t, and a valid flow on 27 
+
+its edges into a minimum set of weighted s-t paths whose combined contributions exactly explain 28 
+
+the given flow. MFD abstracts a broad class of computational biology tasks collectively known 29 
+
+as multi-assembly. In the general setting, sequencing reads are obtained from an unknown col-30 
+
+lection of sequences with unknown counts and are aggregated into an assembly graph; the goal 31 
+
+is then to reconstruct those sequences and estimate their relative abundances. A prominent ex-32 
+
+ample is reference-based transcriptome assembly [24, 11, 23, 22, 16, 18, 15, 19, 29, 25]. For each 33 
+
+gene, mapped RNA-seq reads are combined into a splice graph whose edge weights represent the 34 
+
+number of reads supporting each splice junction. Decomposing this graph into s-t paths recovers 35 
+
+the expressed RNA isoforms from the gene. Similarly, the decomposed paths can represent contigs 36 
+
+or strain haplotypes from a microbial community in metagenomic assembly [21]; or viral strains 37 
+
+inferred from infected hosts in the study of virus quasispecies [1]. 38 
+
+Despite being a clean and idealized theoretical model for the above multi-assembly tasks, MFD 39 
+
+is computationally challenging. It is known to be strongly NP-hard [26] and hard to approximate 40 
+
+within some fixed constant factor [12]. To compute optimal solutions, Kloster et al. [14] proposed a 41 
+
+fixed-parameter tractable (FPT) algorithm whose running time grows exponentially in the number 42 
+
+of paths in the solution. More recently, a series of studies introduced integer linear programming 43 
+
+(ILP) formulations for MFD [5, 9], which can handle larger instance sizes than the FPT approach 44 
+
+and are versatile enough to incorporate extensions such as inexact flows [27, 4], safety and subpath 45 
+
+constraints [7, 13, 28, 3], as well as graphs with cycles [6]. However, despite improvements in 46 
+
+modeling and steady progress in commercial solvers such as Gurobi [10], the intrinsic NP-hardness 47 
+
+of ILP limits their scalability on large practical datasets. 48 
+
+A complementary line of research focuses on heuristics that aim to produce practically accept-49 
+
+able decompositions efficiently. Among these, the greedy-width algorithm [26], which iteratively 50 
+
+extracts the path with maximum possible flow, is widely used and often outperforms methods with 51 
+
+stronger theoretical guarantees [12], even though it can be exponentially worse than optimal in 52 
+
+the worst case [2]. This disconnection between theoretical guarantees and empirical performance 53 
+
+2
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint
+
+suggests a major gap in our understanding of the structure of MFD and the behavior of its algo-54 
+
+rithms. A major step toward bridging this gap was made in catfish [20], where an efficient heuristic 55 
+
+was introduced based on analyzing the linear algebraic structures of optimal decompositions. By 56 
+
+identifying and resolving linear equations among edge flows, catfish substantially improves decom-57 
+
+position quality on both simulated and real transcriptomic graphs. The graph instances introduced 58 
+
+in [20] have since become a standard benchmark, and even the most advanced ILP formulations 59 
+
+still struggle to solve all of them within a reasonable amount of time. 60 
+
+While efficient and generally superior to greedy-width, catfish remains vulnerable to suboptimal 61 
+
+solutions due to the presence of superficial equations—linear relations between the edge flows that 62 
+
+are not supported by any minimum decomposition. Distinguishing good equations from superficial 63 
+
+ones often requires global structural information that local flow values alone cannot capture. Our 64 
+
+work addresses this limitation through two key insights. First, many structural dependencies among 65 
+
+edge flows can be tested using an efficient linear programming (LP) formulation that checks whether 66 
+
+the subflows saturating each edge are compatible with a candidate set of linear equations. Note 67 
+
+that, unlike ILP, LP can be solved in polynomial time, so this filtering step incurs only modest 68 
+
+computational overhead. Second, while the primary goal is to determine whether the LP system is 69 
+
+feasible, the feasible solution returned by the solver often reveals additional opportunities to further 70 
+
+simplify a complex graph, making it possible to tackle equations that were previously unresolvable. 71 
+
+Building on these observations, we propose catfish-LP (Algorithm 2), an LP system that models 72 
+
+the saturating subflows required for optimal decomposition. This single LP formulation is highly 73 
+
+versatile, enabling more effective filtering of superficial equations, safer edge-merging operations, 74 
+
+and a principled LP-guided greedy extraction strategy. Through extensive experiments, we show 75 
+
+that catfish-LP produces significantly higher-quality decompositions than previous heuristic meth-76 
+
+ods, while remaining orders of magnitude faster than state-of-the-art ILP formulations. 77 
+
+## 2 Preliminaries 78 
+
+We first formally define the MFD problem. Let G = ( V, E ) be a directed acyclic graph with a 79 
+
+unique source vertex s, a unique sink vertex t, and an integral flow f : E → Z. Let P be the set of 80 
+
+all s-t paths in G. A subset of paths P ⊆ P together with an integral weight function w : P → Z+81 
+
+3
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint
+
+is called a decomposition of the flow network ( G, f ) if the weighted paths in P fully account for the 82 
+
+flow in G, namely, f (e) = P 
+
+> p∈P,e ∈p
+
+w(p) for all e ∈ E. The minimum flow decomposition problem 83 
+
+asks for a decomposition ( P, w ) that minimizes the number of paths |P | in it. See an example in 84 
+
+Figure 1. Next, we recall a few key concepts from [20] that are relevant to catfish-LP. 85 
+
+2.1 Null space of a set of paths 86 
+
+Assigning arbitrary indices E = {e1, e 2, . . . , e |E|} and P = {p1, p 2, . . . , p |P| } allows us to write P as 87 
+
+a binary matrix of size |P| × | E|, where P[i, j ] = 1 if pi contains ej and 0 otherwise. Consequently, 88 
+
+any subset of paths P ⊆ P can be viewed as a binary matrix of size |P | × | E| by keeping only 89 
+
+the rows of P corresponding to the paths in P . We slightly abuse notation by using P (and P )90 
+
+to denote both the set of paths and the corresponding matrix; the intended meaning should be 91 
+
+clear from context. A column vector q with |E| entries is called a null vector of a matrix P if 92 
+
+P · q = 0. The set of all such vectors forms the null space N (P ) = {q | P · q = 0}. For each vertex 93 
+
+v ∈ V − { s, t }, its incidence vector qv ∈ { 0, ±1}|E|× 1 is defined by setting qv[i] = 1 if ei enters v,94 
+
+qv[j] = −1 if ej leaves v, and qv[k] = 0 for all remaining entries. It is straightforward to verify that 95 
+
+every qv is a null vector for any matrix P . We denote by N0 the linear space spanned by the set 96 
+
+{qv | v ∈ V − { s, t }} and call vectors in N0 trivial null vectors. 97 
+
+2.2 Optimality gap 98 
+
+Let ( P ∗, w ∗) be a minimum decomposition. An upper bound |P ∗| ≤ ∆ = |E| − | V | + 2 is known 99 
+
+from [26]. In [20], the authors define the optimality gap to be ∆ − | P ∗| and show that it is positive 100 
+
+if and only if there exist null vectors outside of N0.101 
+
+Proposition 1 (Proposition 4 in [20]) 
+
+dim( N (P ∗)) − dim( N0) = ∆ − | P ∗|.
+
+See Figure 1 (Left) for an example. 102 
+
+Since the upper bound ∆ applies to any decomposition algorithm that produces independent 103 
+
+paths, including the greedy algorithm that repeatedly selects and removes the s-t path with the 104 
+
+largest flow value, reducing the optimality gap can potentially improve the performance of the 105 
+
+4
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint
+
+s a b t  
+
+> e1(5)
+> e4(3)
+> e5(7) e3(6)
+> e2(4) e6(2)
+> 3
+> 2
+> 4
+
+s a b t    
+
+> e1(5)
+> e4(3)
+> e5(7)
+> e7(4) = {e2, e ′
+> 3}
+> e8(2) = {e′′
+> 3, e 6}
+> 3
+> 24
+
+Figure 1: An example of reducing the optimality gap by resolving an equation. The flow value for each edge is shown in parentheses. Left: Observe that ∆ = 6 − 4 + 2 = 4. An optimal (minimum) decomposition ( P ∗, w ∗) has three paths: p∗ 
+
+> 1
+
+= {e1, e 4, e 5} with weight 3, p∗ 
+
+> 2
+
+= {e1, e 3, e 6} with weight 2, and p∗ 
+
+> 3
+
+= {e2, e 3, e 5} with weight 4. So the optimality gap is 1. The matrix P ∗ has a nontrivial null vector (0 , 1, −1, 0, 0, 1) T . It corresponds to an equation of flow values f (e2) + f (e6) = f (e3). Right: The equation can be resolved by splitting e3 into f (e′
+
+> 3
+
+) = 4 and f (e′′  
+
+> 3
+
+) = 2, merging e2 with 
+
+e′ 
+
+> 3
+
+to get e7, and merging e′′  
+
+> 3
+
+with e6 to get e8. In the resulting graph, ∆ = 5 − 4 + 2 = 3, so the optimality gap has been reduced from 1 to 0. Applying a greedy algorithm on this graph can successfully produce the optimal decomposition P ∗.greedy algorithm. Our goal is to apply transformations to the input flow network that reduce ∆ 106 
+
+without altering the (unknown) optimal solution. An example is shown in Figure 1 (Right). 107 
+
+2.3 Equations of flow values 108 
+
+Both f and w can be represented as integral row vectors, and an equivalent formulation of ( P, w )109 
+
+being a valid decomposition of ( G, f ) is simply f = w·P . Let ( P ∗, w ∗) be a minimum decomposition. 110 
+
+For any null vector q ∈ N (P ∗), we have f · q = ( w∗ · P ∗) · q = w∗ · (P ∗ · q) = w∗ · 0 = 0. Thus, each 111 
+
+null vector of P ∗ induces a linear equation among the edge flow values, providing a way to reason 112 
+
+about the structure of an optimal decomposition without explicitly knowing it. 113 
+
+Restricting attention to null vectors with entries in {0, ±1} yields equations involving two 114 
+
+disjoint sets of edges, corresponding to coefficients +1 and −1. For example, in Figure 1 (Left), the 115 
+
+nontrivial null vector (0 , 1, −1, 0, 0, 1) T gives rise to the equation f (e2) + f (e6) = f (e3). Such an 116 
+
+equation has a clear structural interpretation: there exists an optimal decomposition in which every 117 
+
+path using an edge on the left-hand side must also use some edge on the right-hand side. In this 118 
+
+example, the equation implies that all flow through e2 must eventually pass through e3, resolving the 119 
+
+ambiguity at node a in Figure 1 and allowing e2 and e3 to be safely merged. Equations of this type 120 
+
+provide strong, structure-based guidance toward the underlying (unknown) optimal decomposition. 121 
+
+The catfish algorithm [20] builds directly on this observation by iteratively identifying and 122 
+
+resolving such equations through local graph transformations. To handle equations involving non-123 
+
+adjacent edges, catfish introduces a mechanism known as the reverse operation , which transforms 124 
+
+5
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint
+
+the graph structure while preserving the set of feasible flow decompositions. Reverse operations 125 
+
+operate on closed subgraphs and flip their internal orientations to make distant edges adjacent, while 126 
+
+maintaining a one-to-one correspondence between decompositions of the original and transformed 127 
+
+graphs. 128 
+
+For completeness, we outline the original catfish algorithm in Algorithm 1, which will serve as 129 
+
+a conceptual foundation for the methods developed in subsequent sections. 130 
+
+Algorithm 1: Catfish 
+
+Input: A flow network ( G, f ) without cycles 
+
+Output: A path decomposition ( P, w ) of ( G, f )
+
+// Attempt to resolve equations, potentially transforming (G, f )
+
+while (G, f ) has equations do 
+
+Find a fully resolvable equation and resolve it using reverse operations 
+
+if no equations is resolvable then break 
+
+end 
+
+// Run the greedy decomposition algorithm of [26] and map the resulting paths back to the original graph 
+
+return Greedy-width (G, f )
+
+> 131
+
+## 3 Limitations of catfish 132 
+
+The while-loop in catfish reduces the optimality gap by iteratively resolving equations on edge 133 
+
+flows. While efficient and empirically effective on simpler graphs, catfish exhibits three fundamental 134 
+
+limitations that restrict its performance on more complex instances. 135 
+
+3.1 Superficial equations hurt decomposition 136 
+
+The equation-resolving mechanisms in catfish provide an effective way to exploit good equations, 137 
+
+but they rely critically on the assumption that the equations being resolved correspond to nontrivial 138 
+
+null vectors of an optimal decomposition. The difficulty is that this correspondence is only one-139 
+
+directional. Although every nontrivial null vector induces a linear equation on edge flow values, 140 
+
+the converse does not hold: a flow graph may satisfy linear equations that do not correspond to 141 
+
+any null vector of a minimum decomposition. We call an equation superficial if it does not arise 142 
+
+6
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint
+
+from any nontrivial null vector, and good otherwise. 143 
+
+For example, in Figure 1 (Left), the equation f (e1) + f (e6) = f (e5) corresponds to the vector 144 
+
+q = (1 , 0, 0, 0, −1, 1) T , which is not in N (P ∗) (e.g., p∗ 
+
+> 2
+
+· q = 2 ̸ = 0). Resolving such equations is 145 
+
+therefore not justified by the structure of any minimum decomposition. 146 
+
+In [20], it was shown that under certain uniformity assumptions, most equations encountered 147 
+
+during the execution of catfish are good and informative, particularly when the graph structure 148 
+
+is not overly convoluted, which explains its strong empirical performance on simpler instances. In 149 
+
+more complex graphs, however, superficial equations are more likely to be selected, and resolving 150 
+
+them can distort the graph structure in ways that are incompatible with any minimum decompo-151 
+
+sition, leading to suboptimal results (see Figure 2 for an example). This exposes a key missing 152 
+
+component in the original framework: a principled mechanism for validating whether an equation 153 
+
+is consistent with all feasible decompositions. 154 s a b c t
+
+> e1(1)
+> e2(3)
+> e3(6)
+> e4(4)
+> e5(1)
+> e6(2)
+> e7(7)
+> e8(6)
+> e9(3)
+> 1
+> 3
+> 2
+> 4
+
+s a b c t    
+
+> e1(1)
+> e2(3)
+> e3(6)
+> e10 (4) = {e4, e ′
+> 7}
+> e5(1)
+> e6(2)
+> e11 (3) = {e′′
+> 7, e 9}
+> e8(6)
+> 1
+> 32
+> 3
+> 1
+
+Figure 2: An example where resolving a superficial equation leads to suboptimal decomposition. Left: Original graph with four paths in a minimum decomposition: p∗ 
+
+> 1
+
+= {e1, e 4, e 5} with weight 1, 
+
+p∗ 
+
+> 2
+
+= {e2, e 4, e 7, e 9} with weight 3, p∗ 
+
+> 3
+
+= {e3, e 6, e 8} with weight 2, and p∗ 
+
+> 4
+
+= {e3, e 7, e 8} with weight 4. Right: After resolving the superficial equation f (e4) + f (e9) = f (e7) by splitting e7(7) into e′
+
+> 7
+
+(4) and e′′  
+
+> 7
+
+(3) and merging with e4 and e9 respectively, the new graph requires five paths in a minimum decomposition. 
+
+3.2 Fully resolving an equation is difficult 155 
+
+While the equation-resolving mechanisms of catfish come with strong theoretical guarantees, namely, 156 
+
+that optimal decompositions are preserved, they also limit the algorithm’s effectiveness in practice. 157 
+
+In particular, in complex graphs, closed subgraphs on which reverse operations can act are often 158 
+
+rare, making it difficult or impossible to fully resolve many equations. 159 
+
+When an equation cannot be fully resolved, catfish discards all information provided by that 160 
+
+equation. In the extreme case where no equation is fully resolvable, the algorithm falls back entirely 161 
+
+to greedy decomposition. This behavior trades safety for effectiveness: although partial resolution 162 
+
+may be safe in some cases, catfish lacks a systematic mechanism for determining which aspects 163 
+
+7
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint
+
+of an unresolvable equation can be applied without violating optimality, and therefore opts to 164 
+
+ignore them altogether. This limitation suggests the need for a framework that can exploit partial 165 
+
+information from good equations in a principled manner. 166 
+
+3.3 Premature fallback to greedy decomposition 167 
+
+A related limitation is that catfish may revert to greedy decomposition even when the graph still 168 
+
+contains equations with substantial structural information. Empirically, greedy decomposition often 169 
+
+performs poorly on complex instances, producing solutions with sizes close to the theoretical upper 170 
+
+bound ∆ and leaving a large optimality gap. 171 
+
+In such situations, a more effective strategy would be to perform an informed greedy decomposition— 172 
+
+one that remains consistent with the constraints implied by the unresolved equations—rather than 173 
+
+abandoning equation-based guidance entirely. The absence of such a mechanism further limits the 174 
+
+performance of catfish on challenging graphs. 175 
+
+These observations motivate the need for a more robust framework that can validate equations, 176 
+
+exploit partial information, and guide decomposition beyond purely combinatorial rules. 177 
+
+## 4 Method 178 
+
+Rather than introducing ad hoc heuristic fixes for each limitation of catfish in isolation, we address 179 
+
+them in a unified manner by augmenting its equation-resolving framework with a lightweight yet 180 
+
+expressive linear programming (LP) formulation, named catfish-LP. The key idea is to use LP not 181 
+
+as an exact solver for MFD, but as a structural oracle that validates equations, extracts consistent 182 
+
+subflow information, and guides safe graph transformations. 183 
+
+4.1 The base model 184 
+
+Let m = |E| be the number of edges in G. The base model introduces m2 continuous variables 185 
+
+xe(a), indexed by ordered pairs of edges e, a ∈ E. Intuitively, xe(·) is intended to represent a valid 186 
+
+s-t-subflow in G that saturates edge e; equivalently, it encodes the collective flow of all paths in a 187 
+
+decomposition that traverse e. We enforce this interpretation through the following constraints: 188 
+
+Constraint 1. xe(e) = f (e) for all e ∈ E: the subflow associated with xe(·) saturates edge e.189 
+
+8
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint
+
+Constraint 2. 0 ≤ xe(a) ≤ f (a) for all e, a ∈ E: each edge in each subflow carries a valid amount 190 
+
+of flow. 191 
+
+Constraint 3. P 
+
+> (s,v )∈E
+
+xe(( s, v )) = xe(e): the subflow defined by xe(·) must all pass through the 192 
+
+edge e.193 
+
+Constraint 4. P 
+
+> (u,v )∈E
+
+xe(( u, v )) = P 
+
+> (v,w )∈E
+
+xe(( v, w )) for all e ∈ E and all v ∈ V − { s, t }: each 194 
+
+subflow satisfies flow conservation at every intermediate vertex. 195 
+
+Note that the above constraints, particular Constraints 3 and 4, already imply 196 
+
+X
+
+> (v,t )∈E
+
+xe(( v, t )) = xe(e), for all e ∈ E. 
+
+In other words, the subflow saturating edge e must eventually all reach the sink t. We therefore do 197 
+
+not include these constraints explicitly. 198 
+
+We also do not impose constraints of the form P 
+
+> e∈E
+
+xe(a) ≤ f (a), which would require the total 199 
+
+flow through edge a across all subflows to remain within its capacity. Such constraints are invalid 200 
+
+because the subflows are allowed to overlap. For example, if a path in P ∗ saturates both edges 201 
+
+e1 and e2, then the corresponding subflows defined by xe1 (·) and xe2 (·) coincide along the entire 202 
+
+path. In particular, xe1 (e1) + xe2 (e1) = 2 f (e1) > f (e1), showing that the aggregate contribution of 203 
+
+multiple subflows may exceed the edge capacity. 204 
+
+At the same time, subflows must not be entirely independent. To encode this dependency, we 205 
+
+further impose the following symmetry constraint: 206 
+
+Constraint 5. xe(a) = xa(e) for all edges e, a ∈ E: both variables represent the total amount of 207 
+
+flow that passes through both edges e and a.208 
+
+The above constraints collectively model necessary conditions satisfied by any optimal decom-209 
+
+position ( P ∗, w ∗). For each edge e, aggregating all weighted paths in P ∗ that traverse e yields a 210 
+
+solution for xe(·) that satisfy all above constraints. In particular, for any two edges e, a ∈ E,211 
+
+xe(a) = X     
+
+> p∈P∗
+> pgoes through both eand a
+
+w∗(p).
+
+9
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint
+
+Thus, xe(a) represents the amount of flow on edge e that must pass through edge a, for all pairs of 212 
+
+edges. Equivalently, the solution encodes pairwise co-occurrence information between edges under 213 
+
+the optimal decomposition. 214 
+
+However, these base constraints capture only necessary conditions and may therefore admit 215 
+
+solutions that do not correspond to an optimal decomposition. (From this point of view, the above 216 
+
+base model serves as a relaxation of the optimal decomposition.) To further restrict the feasible 217 
+
+region, we introduce the following equation constraints, which steer the LP toward the structure of 218 
+
+the optimal decomposition. 219 
+
+4.2 Equation constraints 220 
+
+We consider only equations on edge flow values with coefficients in {0, ±1}. Such an equation can 221 
+
+be specified by two subsets EL, E R ⊆ E: writing f (E1) = P 
+
+> e∈E1
+
+f (e) for any E1 ⊆ E, the equation 222 
+
+takes the form f (EL) = f (ER) (see Figures 1 and 2 for examples). Since linear combinations of 223 
+
+equations are also equations, we restrict attention to indivisible equations—those that admit no 224 
+
+strict subsets E′ 
+
+> L
+
+⊂ EL and E′ 
+
+> R
+
+⊂ ER with f (E′
+
+> L
+
+) = f (E′
+
+> R
+
+)—because they are smaller in size and 225 
+
+already encode all relevant information. Note that being indivisible implies that EL and ER are 226 
+
+disjoint. If an indivisible equation f (EL) = f (ER) indeed arises from a nontrivial null vector of 227 
+
+some minimum decomposition P ∗, then it captures the structural dependency that any path in 228 
+
+P ∗ using an edge in EL must also use some edges in ER, and vice versa. Moreover, the subflow 229 
+
+saturating an edge in EL should not use any other edges of EL (same for ER). To model these 230 
+
+relationships, we add the following 2 m constraints for an equation: 231 
+
+Constraint 6. P 
+
+> e∈EL
+
+xe(a) = P 
+
+> e∈ER
+
+xe(a) for all a ∈ E: for each edge, the total subflow through 232 
+
+edges in EL must equal that through edges in ER.233 
+
+Constraint 7. P 
+
+> e∈EL
+
+xe(a) ≤ f (a) for all a ∈ E: the combined subflow contributed by edges in 234 
+
+EL (and therefore ER) must not exceed the total flow on each edge. 235 
+
+This LP formulation checks a necessary condition for the equation f (EL) = f (ER) to correspond 236 
+
+to a nontrivial null vector of a minimum decomposition P ∗: if the equation is good with respect 237 
+
+to P ∗, then the induced subflows saturating each edge (obtained by aggregating all paths in P ∗238 
+
+that use the edge) satisfy all the above constraints, and hence the LP model is feasible. Taking the 239 
+
+10 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint
+
+contrapositive, an infeasible LP instance certifies that the equation cannot arise from a nontrivial 240 
+
+null vector of any minimum decomposition, and thus the equation should be discarded. 241 
+
+Better yet, this formulation also allows us to test whether a set of equations is compatible 242 
+
+(since all good equations arising from nontrivial null vectors of P ∗ must be mutually compatible). 243 
+
+Starting from the base model, we can add equation constraints sequentially and check feasibility 244 
+
+at each step. If the LP becomes infeasible after adding a particular equation, that equation (and 245 
+
+its associated constraints) is removed. This procedure further filters out superficial equations, 246 
+
+preventing structurally invalid resolutions from distorting the graph and thereby improving the 247 
+
+quality of the final decomposition. 248 
+
+Our LP formulation can effectively leverage the graph structures, flow constraints, and equation 249 
+
+constraints all together to filter out superficial equations. As a concrete example, consider the left 250 
+
+graph in Figure 2. Observe that Constraint 6 applied to the equation f (e1) = f (e5) requires all 251 
+
+flow on e1 to eventually pass through e5. Since the path e1 → e4 → e5 is the only path capable 252 
+
+of satisfying this requirement, we can conclude that it must appear in the final decomposition. 253 
+
+The equations f (e2) = f (e9) and f (e3) = f (e8) are both compatible with this requirement while 254 
+
+the superficial equation f (e4) + f (e9) = f (e7) is not. Indeed, one unit of flow on e4 is forced to 255 
+
+continue through e5, and hence cannot all pass through e7. Consequently, this equation is rejected, 256 
+
+preventing the suboptimal decomposition shown in Figure 2 (Right). 257 
+
+It is worth noting that the LP model could be strengthened to check for more conservative 258 
+
+conditions, for example, by adapting the ILP formulation of [5]. However, our experiments indicate 259 
+
+that the proposed LP model is orders of magnitude more efficient, and its filtering quality is already 260 
+
+sufficient for practical use. 261 
+
+4.3 Transform G with a feasible LP 262 
+
+The LP-based verification can be directly integrated into Algorithm 1. The primary remaining 263 
+
+bottleneck is that not all good equations can be successfully resolved with existing mechanisms, 264 
+
+especially when the graph structure is complex. A feasible LP model, after filtering out superficial 265 
+
+equations, provides valuable structural information that can be used to simplify the graph. When 266 
+
+no equation can be fully resolved, we apply the following two heuristics: 267 
+
+11 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint
+
+1. Recall that a feasible LP solution provides, for each edge e ∈ E, a valid subflow xe(·) that 268 
+
+saturates e. If, in this subflow, an edge e′ satisfies xe(e′) = f (e), then there exists a valid 269 
+
+decomposition (consistent with all remaining equations) in which every unit of flow through 270 
+
+e also uses e′. Moreover, if e and e′ are adjacent, they can be conveniently merged while 271 
+
+preserving the decomposition. However, this merge may be only supported by some feasible 272 
+
+decompositions discovered by the LP and is not guaranteed to be correct for an optimal one. 273 
+
+To err on the safe side, we again use LP to determine whether e and e′ must be merged in 274 
+
+all decompositions consistent with the current equation set. This can be done by adding a 275 
+
+temporary constraint xe(e′) < f (e) − ϵ and test for feasibility. If the LP becomes infeasible, 276 
+
+the merge is deemed safe, and we contract e and e′ to simplify the graph. Such merges can 277 
+
+have meaningful downstream effects, for example, enabling the resolution of equations that 278 
+
+are otherwise unresolvable. 279 
+
+2. If no further safe simplifications are possible, Algorithm 1 exits the while-loop and proceeds 280 
+
+to greedy decomposition. Empirically, we observe that greedy decomposition almost always 281 
+
+yields inferior solutions when unresolvable equations remain. In such cases, the feasible LP 282 
+
+solution itself may lead to a better outcome. We examine the LP solution to identify any 283 
+
+saturating subflow xe(·) that is actually a simple path through e. Among all such paths, we 284 
+
+extract the one carrying the maximum flow f (e), remove it from the graph, and add it to the 285 
+
+final decomposition. Unlike the previous heuristic, this operation is not guaranteed to be safe 286 
+
+as the extracted path may not appear in all compatible decompositions. Instead, it serves as 287 
+
+an “informed greedy” step: selecting the heaviest path that is consistent with all remaining 288 
+
+equations, rather than the heaviest path in the graph overall. 289 
+
+In summary, catfish-LP employs a structure-based LP model that, within a unified framework, 290 
+
+addresses the three limitations of catfish described in Section 3. The method orchestrates three 291 
+
+components, all derived from the same underlying LP formulation. First, the LP model is used 292 
+
+to distinguish good equations from superficial ones by enforcing necessary conditions for compati-293 
+
+bility with a minimum decomposition. Second, saturating subflows are extracted from feasible LP 294 
+
+solutions, which encode partial yet reliable information implied by good equations and enable safe 295 
+
+graph simplifications even when full resolution is not achievable. Finally, the LP solutions guide 296 
+
+12 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint
+
+an informed greedy extraction strategy, deferring the error-prone greedy-width heuristic by priori-297 
+
+tizing paths that remain consistent with all good equations. The complete algorithm is outlined in 298 
+
+Algorithm 2. 299 
+
+Algorithm 2: Catfish-LP 
+
+Input: A flow network ( G, f ) without cycles 
+
+Output: A path decomposition ( P, w ) of ( G, f )
+
+// Attempt to resolve equations, potentially transforming (G, f )
+
+while (G, f ) has equations do 
+
+Build the base LP model Add equations to the LP in increasing size to filter out incompatible ones Find a fully resolvable equation in the filtered set and resolve it with reverse operations 
+
+if the graph has been updated then continue 
+
+// Otherwise, apply LP-based simplification heuristics 
+
+Identify mergeable edges using LP tests and merge them 
+
+if succeed then continue Extract from the LP solution a heaviest simple path (if any) consistent with all remaining equations 
+
+if such a path exists then Remove it from the graph, and add it to the decomposition 
+
+end 
+
+// Run the greedy decomposition algorithm of [26] and map the resulting paths back to the original graph 
+
+return Greedy-width (G, f )
+
+## 5 Experimental results 300 
+
+We evaluate four algorithms for the MFD problem: the greedy-width and catfish algorithms as 301 
+
+implemented in [20], the optimized ILP formulation from [9], and our enhanced catfish-LP. All 302 
+
+experiments are conducted on an Ubuntu server equipped with an Intel(R) Xeon(R) Gold 6148 303 
+
+CPU @ 2.40GHz and 566 GB RAM. Both ILP and catfish-LP rely on the same Gurobi installation; 304 
+
+ILP uses the Python API whereas catfish-LP uses the C++ interface. Although ILP performs 305 
+
+model construction in Python and catfish-LP in C++, the impact of the implementation language 306 
+
+on overall performance is negligible, since the Gurobi solver dominates the runtime in both cases. 307 
+
+Each method is limited to at most five cores per instance. Greedy-width and catfish are entirely 308 
+
+single-threaded. ILP and catfish-LP are also single-threaded outside the solve, but their Gurobi 309 
+
+13 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint
+
+calls utilize multiple cores. The five-core limit was chosen to match the computational resources 310 
+
+of our experimental setup. Because we report total CPU time recorded using time(1) -v rather 311 
+
+than wall-clock time, variations in parallelism do not affect the measured performance. For each 312 
+
+instance, ILP requires a valid initial decomposition to enable its safety optimizations, for which we 313 
+
+supply the greedy-width solution. Since the running time of greedy-width is negligible compared 314 
+
+to ILP, its execution time is not included in ILP’s total time. A wall-clock time limit of 30 minutes 315 
+
+is imposed for each instance. 316 
+
+5.1 Results on perfect splice graphs 317 
+
+We first evaluate all methods on a now-standard benchmark introduced by Shao and Kingsford [20]. 318 
+
+It includes four datasets of perfect splice graphs. The first dataset is derived from human RNA-319 
+
+seq samples quantified using Salmon [17]. For each gene in each sample, perfect splice graphs are 320 
+
+constructed by superimposing all expressed transcripts with their estimated abundances. We refer 321 
+
+to this dataset as Salmon. 322 
+
+The remaining three datasets are generated via simulation using the Flux-Simulator [8] on 323 
+
+three well-annotated species: human, mouse, and zebrafish. We refer to these datasets by the 324 
+
+corresponding species name. 325 
+
+Table 1 summarizes the decomposition quality of each method on the four datasets. Because 326 
+
+the input graphs are constructed from ground-truth paths, we use the total number of such paths, 327 
+
+|P †|, as a baseline for evaluating all algorithms. Note that |P †| does not necessarily correspond 328 
+
+to the minimum possible decomposition; indeed, both Catfish-LP and ILP frequently produce 329 
+
+even smaller solutions. However, the ground-truth paths are biologically meaningful: in transcript 330 
+
+assembly, pursuing a strictly minimum decomposition is somewhat arbitrary, whereas recovering 331 
+
+the true underlying isoforms is a more relevant objective (though difficult to assess on real data 332 
+
+where ground truth is unavailable). For this reason, we also report the precision and recall of 333 
+
+each algorithm in Table 2. Precision is defined as the fraction of reconstructed paths that exactly 334 
+
+match a ground-truth path, while recall is defined as the fraction of ground-truth paths that are 335 
+
+successfully recovered. A reconstructed path is considered correct only if both its node sequence 336 
+
+and its weight exactly match those of a ground-truth path. 337 
+
+Observe that catfish-LP outperforms both greedy-width and catfish in producing smaller de-338 
+
+14 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint
+
+Table 1: Decomposition results on perfect splice graphs. The column |P †| shows the total number of ground-truth paths (RNA isoforms) in each dataset. For the ILP column, the number in parentheses is the number of ground-truth paths in instances that ILP timed out. Dataset Graphs |P †| |P | − | P †|
+
+greedy-width catfish catfish-LP ILP Salmon 13,300,893 32,889,145 1,330,137 86,355 15,093 -11,072 (43,476) human 1,169,083 2,139,559 13,252 491 -142 -763 (169) mouse 1,316,058 2,142,500 11,410 -1 -817 -1,332 (233) zebrafish 1,549,373 2,140,200 2,928 -387 -386 -508 (16) compositions. Although ILP appears to obtain even smaller decompositions, it timed out on some 339 
+
+of the most complex instances (see also Table 3), which artificially improves its reported numbers. 340 
+
+At the same time, catfish-LP consistently achieves the highest precision and recall on all datasets 341 
+
+except Salmon, suggesting that the saturating subflows it relies on successfully capture meaningful 342 
+
+structural information within splice graphs. 343 
+
+Table 2: Precision and recall on perfect splice graphs. The best results are highlighted for each dataset. Dataset Precision% Recall% greedy-width catfish catfish-LP ILP greedy-width catfish catfish-LP ILP Salmon 83.97 95.86 96.54 96.67 87.37 96.11 96.58 96.64 
+
+human 95.40 97.73 97.81 97.73 95.99 97.75 97.80 97.70 mouse 95.69 97.72 97.84 97.68 96.20 97.72 97.81 97.62 zebrafish 98.32 98.92 98.92 98.83 98.45 98.90 98.90 98.80 Table 3 reports the CPU time of all methods on the four datasets. As expected, catfish-LP 344 
+
+is slower than catfish due to the additional LP-based filtering, which is the key contributor to its 345 
+
+improved decomposition quality. Nonetheless, because LP is polynomial-time solvable, catfish-LP 346 
+
+remains orders of magnitude faster than ILP. Among the four methods, only ILP exceeds the 30-347 
+
+minute time limit on certain instances, suggesting that its true time to completion would, in many 348 
+
+cases, be even larger. 349 
+
+15 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint
+
+Table 3: Running time on perfect splice graphs. The ILP timeout column shows the number of instances/total number of ground-truth paths in those instances, for which ILP failed to produce a decomposition within the 30 minutes time limit. Dataset CPU time (seconds) ILP timeout greedy-width catfish catfish-LP ILP Graphs/ |P †|
+
+Salmon 2,713 2,945 158,862 24,182,561 2,106/43,476 human 174 159 7,772 179,445 12/169 mouse 178 152 8,820 216,275 15/233 zebrafish 195 151 9,752 13,421 1/16 
+
+5.2 Results on simulated graphs 350 
+
+As reported in [20], and as reflected in the second and third columns of Table 1, most perfect 351 
+
+splice graphs in the above datasets are relatively simple: the vast majority admit ground-truth 352 
+
+decompositions of at most ten paths. To better assess algorithmic performance on more challenging 353 
+
+instances, we generated additional synthetic graphs with 20 or 30 vertices, between 10 and 30 354 
+
+ground-truth paths, and maximum path lengths ranging from 10 to 23. Increasing the number and 355 
+
+length of ground-truth paths on a fixed vertex set naturally creates more entangled graph structures, 356 
+
+making accurate decomposition substantially harder. This dataset contains 1 , 440 simulated graphs, 357 
+
+comprising 20 graphs for each of the 72 configurations (details in Appendix A), and it allows us to 358 
+
+systematically evaluate algorithm performance across a range of graph complexities and difficulty 359 
+
+levels. 360 
+
+Figure 3 summarizes both decomposition quality and running time on this simulated dataset. 361 
+
+Observe that catfish-LP consistently produces smaller decompositions and recovers more ground-362 
+
+truth paths than all other heuristic methods. ILP, by contrast, fails to finish within the time 363 
+
+limit on a large fraction of the more complex graphs—precisely the instances that also challenge 364 
+
+the heuristic methods—making its results less directly comparable in this experiment. This is 365 
+
+also evident from its runtime profile: nearly 90% of ILP’s total reported CPU time is spent in 366 
+
+timeout instances. On the remaining, easier graphs where ILP does terminate, its total runtime 367 
+
+is 524 ,656 seconds, whereas catfish-LP requires less than 3% of that time, or 15 ,553 seconds, to 368 
+
+achieve comparable decomposition quality. See Figures 4 and 5 for more details. 369 
+
+For a fairer comparison, we report in Figure 4 both decomposition quality and running time on 370 
+
+the subset of 22 configurations in which ILP successfully completed all 20 instances within the time 371 
+
+16        
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint greedy-width catfish catfish-LP ILP
+> 0
+> 10000
+> 20000
+> 30000
+> 40000
+> 50000
+> Number of decomposed paths
+> 47,677
+> 3,872
+> 33,574
+> 13,836
+> 25,706
+> 21,300
+> 13,609
+> 13,506 greedy-width catfish catfish-LP ILP
+> 0
+> 1
+> 2
+> 3
+> 4
+> 5
+> Time in seconds
+> 1e6
+> 18 213
+> 696,757
+> 5,188,840
+
+Figure 3: Decomposition quality and runtime on the full simulated dataset. In the left subfigure, the dashed horizontal line marks the total number of ground-truth paths across all instances ( |P †| =24 , 600). For each method, the full bar represents the total number of paths produced, while the shaded portion denotes the number of decomposed paths that exactly match a ground-truth path. The ILP bar is heavily skewed because ILP failed to decompose 498 graph instances (35%) within the time limit. limit. This subset corresponds to relatively easier instances, on which the original catfish already 372 
+
+achieves near-perfect decomposition performance. Even in this setting, catfish-LP further improves 373 
+
+upon catfish by reducing the total number of reconstructed paths while also increasing the number 374 
+
+of correctly recovered ground-truth paths. Its decomposition quality is within 1% of ILP, while it 375 
+
+completes all instances in 3 minutes compared to 6 .8 hours for ILP. 376 
+
+Next, we consider a more challenging subset of graphs corresponding to configurations in which 377 
+
+ILP completed only a subset of instances within the time limit. This dataset contains 502 graphs 378 
+
+from 43 configurations, with a total of 8 , 396 ground-truth paths. The results are shown in Figure 5. 379 
+
+On this harder dataset, catfish exhibits a noticeable drop in decomposition quality, whereas catfish-380 
+
+LP achieves substantial improvements and remains on par with ILP whiling using only 3% of its 381 
+
+runtime. 382 
+
+For the remaining 498 most challenging graphs, on which ILP timed out on every instance, we 383 
+
+report the decomposition quality and runtime of greedy-width, catfish, and catfish-LP in Figure 6. 384 
+
+On these instances, catfish struggles to produce high-quality decompositions for two reasons. First, 385 
+
+17         
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint greedy-width catfish catfish-LP ILP
+> 0
+> 1000
+> 2000
+> 3000
+> 4000
+> 5000
+> 6000
+> 7000
+> 8000
+> Number of decomposed paths
+> 8,097
+> 1,866
+> 5,230
+> 4,984
+> 5,168
+> 5,114
+> 5,160
+> 5,149 greedy-width catfish catfish-LP ILP
+> 0
+> 5000
+> 10000
+> 15000
+> 20000
+> 25000
+> Time in seconds
+> 1.17 1.83 189.5
+> 24,659.37
+
+Figure 4: Decomposition quality and runtime on the subset of 22 configurations where ILP finished all 20 instances within time limit. In the left subfigure, the dashed horizontal line marks the total number of ground-truth paths across all instances ( |P †| = 5 , 160). greedy-width catfish catfish-LP ILP     
+
+> 0
+> 2000
+> 4000
+> 6000
+> 8000
+> 10000
+> 12000
+> 14000
+> 16000
+> Number of decomposed paths
+> 16,210
+> 1,353
+> 9,924
+> 6,119
+> 8,435
+> 8,183
+> 8,396
+> 8,304 greedy-width catfish catfish-LP ILP
+> 0
+> 100000
+> 200000
+> 300000
+> 400000
+> 500000
+> Time in seconds
+> 2.03 31.31
+> 15,363.59
+> 499,996.68
+
+Figure 5: Decomposition quality and runtime on harder configurations where ILP finished some instances within time limit. There are 502 graphs and the number of ground-truth paths is |P †| =8, 396. the number of superficial equations increases substantially, interfering with the graph simplification 386 
+
+heuristics. Second, the increasingly tangled graph structure makes it difficult to fully resolve the 387 
+
+18 
+
+.CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint greedy-width catfish catfish-LP    
+
+> 0
+> 5000
+> 10000
+> 15000
+> 20000
+> Number of decomposed paths
+> 23,370
+> 653
+> 18,420
+> 2,733
+> 12,103
+> 8,003 greedy-width catfish catfish-LP
+> 0
+> 100000
+> 200000
+> 300000
+> 400000
+> 500000
+> 600000
+> Time in seconds
+> 2.82 178.39
+> 597,497.4
+
+Figure 6: Decomposition quality and runtime on the hardest instances where ILP timed out. There are 498 graphs and the number of ground-truth paths is |P †| = 11 , 044. good equations even if they are identified. As a result, the performance of catfish degrades towards 388 
+
+that of greedy-width. In contrast, catfish-LP is able to capture substantially more structural 389 
+
+information to guide the decomposition process. Consequently, it achieves a threefold improvement 390 
+
+in the number of recovered ground-truth paths while reducing the total number of reconstructed 391 
+
+paths by roughly one third. 392 
+
+## 6 Summary and discussion 393 
+
+This work introduced catfish-LP, a new algorithm for the minimum flow decomposition problem that 394 
+
+augments the state-of-the-art heuristic framework, catfish, with a lightweight yet highly informative 395 
+
+use of linear programming. By leveraging LP both as a filter for identifying structurally consistent 396 
+
+equations and as a guide for graph simplification via saturating subflows, catfish-LP addresses 397 
+
+a central challenge in the theoretically motivated equation-resolving-based strategy: determining 398 
+
+which equations are good for an unknown optimal decomposition and how to exploit them when 399 
+
+direct resolution fails. Unlike ILP-based approaches, which offer exact solutions but scale poorly, our 400 
+
+LP-based design remains computationally efficient while capturing much of the structural insight 401 
+
+needed for high-quality decompositions. 402 
+
+19 
+
+.CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint Across a broad collection of datasets, including splice graphs derived from real RNA-seq data 403 
+
+and a controlled suite of simulated graphs with diverse levels of complexity, catfish-LP consistently 404 
+
+produces decompositions that are nearly as small as those obtained by ILP while achieving sub-405 
+
+stantially higher recall, outperforming classical heuristics such as greedy-width and the original 406 
+
+catfish. These improvements validate the central premise of the method: feasible LP solutions ex-407 
+
+pose structurally meaningful saturating subflows that can validate good equations, guide safe graph 408 
+
+transformations, and enable informed greedy extractions in situations where purely combinatorial 409 
+
+heuristics frequently stuck or make suboptimal choices. 410 
+
+Our experiments further show that catfish-LP provides a compelling balance between accuracy 411 
+
+and scalability. Although slower than the purely combinatorial catfish algorithm due to the nec-412 
+
+essary LP invocations, it remains orders of magnitude faster than ILP and scales effectively to 413 
+
+large and entangled graphs where ILP routinely hits time limits. Moreover, the LP formulation 414 
+
+introduced here provide a flexible foundation that can be adapted to other MFD variants with 415 
+
+meaningful bioinformatics applications. 416 
+
+Overall, catfish-LP demonstrates that incorporating LP into the combinatorial structure of MFD 417 
+
+yields both practical benefits and conceptual insights. Practically, it produces smaller and more 418 
+
+accurate decompositions within realistic computational budgets. Conceptually, it highlights how 419 
+
+LP-feasible subflows can encode structural information about the decomposition space, suggesting 420 
+
+new directions for hybrid optimization-combinatorial approaches for MFD and related flow-based 421 
+
+problems. Future directions include exploring strengthened LP formulations, integrating domain-422 
+
+specific constraints, and developing probabilistic interpretations of LP-guided decompositions for 423 
+
+transcriptome assembly and beyond. 424 
+
+## 7 Acknowledgments 425 
+
+This work is supported by the US National Science Foundation (2145171 to M.S.) and by the US 426 
+
+National Institutes of Health (R01HG011065 to M.S.). 427 
+
+20 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint
+
+## References 428 
+
+[1] Jasmijn A Baaijens, Leen Stougie, and Alexander Sch¨ onhuth. Strain-aware assembly of 429 
+
+genomes from mixed samples using flow variation graphs. In International Conference on 430 
+
+Research in Computational Molecular Biology , pages 221–222. Springer, 2020. 431 
+
+[2] Manuel C´ aceres, Massimo Cairo, Andreas Grigorjew, Shahbaz Khan, Brendan Mumey, Romeo 432 
+
+Rizzi, Alexandru I Tomescu, and Lucia Williams. Width helps and hinders splitting flows. 433 
+
+ACM Transactions on Algorithms , 20(2):1–20, 2024. 434 
+
+[3] Fernando HC Dias, Manuel C´ aceres, Lucia Williams, Brendan Mumey, and Alexandru I 435 
+
+Tomescu. A safety framework for flow decomposition problems via integer linear program-436 
+
+ming. Bioinformatics , 39(11):btad640, 2023. 437 
+
+[4] Fernando HC Dias and Alexandru I Tomescu. Accurate flow decomposition via robust integer 438 
+
+linear programming. IEEE/ACM Transactions on Computational Biology and Bioinformatics ,439 
+
+2024. 440 
+
+[5] Fernando HC Dias, Lucia Williams, Brendan Mumey, and Alexandru I Tomescu. Efficient min-441 
+
+imum flow decomposition via integer linear programming. Journal of Computational Biology ,442 
+
+29(11):1252–1267, 2022. 443 
+
+[6] Fernando HC Dias, Lucia Williams, Brendan Mumey, and Alexandru I Tomescu. Minimum 444 
+
+flow decomposition in graphs with cycles using integer linear programming. Journal of Global 445 
+
+Optimization , 93:1145–1176, 2025. 446 
+
+[7] Daniel Gibney, V Sharma, Srinivas Aluru, et al. Feasibility of flow decomposition with subpath 447 
+
+constraints in linear time. In 22nd International Workshop on Algorithms in Bioinformatics 448 
+
+(WABI 2022) , 2022. 449 
+
+[8] Thasso Griebel, Benedikt Zacher, Paolo Ribeca, Emanuele Raineri, Vincent Lacroix, Roderic 450 
+
+Guig´ o, and Michael Sammeth. Modelling and simulating generic RNA-Seq experiments with 451 
+
+the flux simulator. Nucleic acids research , 40(20):10073–10083, 2012. 452 
+
+[9] Andreas Grigorjew, Fernando HC Dias, Andrea Cracco, Romeo Rizzi, and Alexandru I 453 
+
+Tomescu. Accelerating ILP solvers for minimum flow decompositions through search space 454 
+
+21 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint
+
+and dimensionality reductions. In 22nd International Symposium on Experimental Algorithms 455 
+
+(SEA 2024) , pages 14–1. Schloss Dagstuhl–Leibniz-Zentrum f¨ ur Informatik, 2024. 456 
+
+[10] Gurobi Optimization, LLC. Gurobi Optimizer Reference Manual, 2024. 457 
+
+[11] Mitchell Guttman, Manuel Garber, Joshua Z Levin, Julie Donaghey, James Robinson, Xian 458 
+
+Adiconis, Lin Fan, Magdalena J Koziol, Andreas Gnirke, Chad Nusbaum, et al. Ab initio 459 
+
+reconstruction of cell type-specific transcriptomes in mouse reveals the conserved multi-exonic 460 
+
+structure of lincRNAs. Nature Biotechnology , 28(5):503–510, 2010. 461 
+
+[12] Tzvika Hartman, Avinatan Hassidim, Haim Kaplan, Danny Raz, and Michal Segalov. How to 462 
+
+split a flow? In 2012 Proceedings IEEE INFOCOM , pages 828–836. IEEE, 2012. 463 
+
+[13] Shahbaz Khan, Milla Kortelainen, Manuel C´ aceres, Lucia Williams, and Alexandru I Tomescu. 464 
+
+Improving RNA assembly via safety and completeness in flow decompositions. Journal of 465 
+
+Computational Biology , 29(12):1270–1287, 2022. 466 
+
+[14] Kyle Kloster, Philipp Kuinke, Michael P O’Brien, Felix Reidl, Fernando S´ anchez Villaamil, 467 
+
+Blair D Sullivan, and Andrew van der Poel. A practical FPT algorithm for flow decomposi-468 
+
+tion and transcript assembly. In 2018 Proceedings of the Twentieth Workshop on Algorithm 469 
+
+Engineering and Experiments (ALENEX) , pages 75–86. SIAM, 2018. 470 
+
+[15] Sam Kovaka, Aleksey V Zimin, Geo M Pertea, Roham Razaghi, Steven L Salzberg, and Mihaela 471 
+
+Pertea. Transcriptome assembly from long-read RNA-Seq alignments with StringTie2. Genome 472 
+
+Biology , 20:1–13, 2019. 473 
+
+[16] Juntao Liu, Ting Yu, Tao Jiang, and Guojun Li. TransComb: genome-guided transcriptome 474 
+
+assembly via combing junctions in splicing graphs. Genome Biology , 17:1–9, 2016. 475 
+
+[17] Rob Patro, Geet Duggal, Michael I Love, Rafael A Irizarry, and Carl Kingsford. Salmon pro-476 
+
+vides fast and bias-aware quantification of transcript expression. Nature methods , 14(4):417– 477 
+
+419, 2017. 478 
+
+[18] Mihaela Pertea, Geo M Pertea, Corina M Antonescu, Tsung-Cheng Chang, Joshua T Mendell, 479 
+
+and Steven L Salzberg. StringTie enables improved reconstruction of a transcriptome from 480 
+
+RNA-Seq reads. Nature Biotechnology , 33(3):290–295, 2015. 481 
+
+22 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint
+
+[19] Mingfu Shao and Carl Kingsford. Accurate assembly of transcripts through phase-preserving 482 
+
+graph decomposition. Nature Biotechnology , 35(12):1167–1169, 2017. 483 
+
+[20] Mingfu Shao and Carl Kingsford. Theory and a heuristic for the minimum path flow decom-484 
+
+position problem. IEEE/ACM Transactions on Computational Biology and Bioinformatics ,485 
+
+16(2):658–670, 2017. 486 
+
+[21] Jim Shaw, Jean-Sebastien Gounot, Hanrong Chen, Niranjan Nagarajan, and Yun William 487 
+
+Yu. Floria: fast and accurate strain haplotyping in metagenomes. Bioinformatics , 40(Supple-488 
+
+ment 1):i30–i38, 2024. 489 
+
+[22] Li Song, Sarven Sabunciyan, and Liliana Florea. CLASS2: accurate and efficient splice variant 490 
+
+annotation from RNA-Seq reads. Nucleic Acids Research , 44(10):e98–e98, 2016. 491 
+
+[23] Alexandru I Tomescu, Anna Kuosmanen, Romeo Rizzi, and Veli M¨ akinen. A novel min-cost 492 
+
+flow method for estimating transcript expression with RNA-Seq. In BMC Bioinformatics ,493 
+
+volume 14, pages 1–10. Springer, 2013. 494 
+
+[24] Cole Trapnell, Brian A Williams, Geo Pertea, Ali Mortazavi, Gordon Kwan, Marijke J 495 
+
+Van Baren, Steven L Salzberg, Barbara J Wold, and Lior Pachter. Transcript assembly and 496 
+
+quantification by rNA-Seq reveals unannotated transcripts and isoform switching during cell 497 
+
+differentiation. Nature Biotechnology , 28(5):511–515, 2010. 498 
+
+[25] Laura H Tung, Mingfu Shao, and Carl Kingsford. Quantifying the benefit offered by transcript 499 
+
+assembly with Scallop-LR on single-molecule long reads. Genome Biology , 20:1–18, 2019. 500 
+
+[26] Benedicte Vatinlen, Fabrice Chauvet, Philippe Chr´ etienne, and Philippe Mahey. Simple 501 
+
+bounds and greedy algorithms for decomposing a flow into a minimal set of paths. Euro-502 
+
+pean Journal of Operational Research , 185(3):1390–1401, 2008. 503 
+
+[27] Lucia Williams, Gillian Reynolds, and Brendan Mumey. Rna transcript assembly using inexact 504 
+
+flows. In 2019 IEEE International Conference on Bioinformatics and Biomedicine (BIBM) ,505 
+
+pages 1907–1914. IEEE, 2019. 506 
+
+23 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint
+
+[28] Lucia Williams, Alexandru I Tomescu, and Brendan Mumey. Flow decomposition with sub-507 
+
+path constraints. IEEE/ACM Transactions on Computational Biology and Bioinformatics ,508 
+
+20(1):360–370, 2022. 509 
+
+[29] Qimin Zhang, Qian Shi, and Mingfu Shao. Accurate assembly of multi-end RNA-Seq data 510 
+
+with Scallop2. Nature Computational Science , 2(3):148–152, 2022. 511 
+
+## A Configurations of simulated graphs 512 
+
+The 72 configurations used in Section 5.2 are listed in the following table. 513 
+
+Configuration Number of vertices Number of paths Maximum path length 1 20 10 10 2 20 10 11 3 20 10 12 4 20 10 13 5 20 10 14 6 20 10 15 7 20 10 16 8 20 12 10 9 20 12 11 10 20 12 12 11 20 12 13 12 20 12 14 13 20 12 15 14 20 12 16 15 20 14 10 16 20 14 11 17 20 14 12 18 20 14 13 19 20 14 14 24 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint
+
+Configuration Number of vertices Number of paths Maximum path length 20 20 14 15 21 20 14 16 22 20 16 10 23 20 16 11 24 20 16 12 25 20 16 13 26 20 16 14 27 20 16 15 28 20 16 16 29 20 18 10 30 20 18 11 31 20 18 12 32 20 18 13 33 20 18 14 34 20 18 15 35 20 18 16 36 20 20 10 37 20 20 11 38 20 20 12 39 20 20 13 40 20 20 14 41 20 20 15 42 20 20 16 43 30 10 15 44 30 10 17 45 30 10 19 46 30 10 21 47 30 10 23 25 
+
+.CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint Configuration Number of vertices Number of paths Maximum path length 48 30 14 15 49 30 14 17 50 30 14 19 51 30 14 21 52 30 14 23 53 30 18 15 54 30 18 17 55 30 18 19 56 30 18 21 57 30 18 23 58 30 22 15 59 30 22 17 60 30 22 19 61 30 22 21 62 30 22 23 63 30 26 15 64 30 26 17 65 30 26 19 66 30 26 21 67 30 26 23 68 30 30 15 69 30 30 17 70 30 30 19 71 30 30 21 72 30 30 23 26 
+
+.CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2025.12.11.693570 doi: bioRxiv preprint
