@@ -1,0 +1,1229 @@
+Title: Models trained with noisy genomes extend bacterial phenotype prediction into deep time
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.06.29.735159v1.full.pdf
+
+Published Time: Mon, 06 Jul 2026 18:51:59 GMT
+
+Number of Pages: 16
+
+Markdown Content:
+# Models trained with noisy genomes extend bacterial 1
+
+# phenotype prediction into deep time 234
+
+Anzhelika Koldaeva 1, Olga Bagrova 1, Joshua A. M. Mitchell 3,Philip Hugenholtz 4, Anja Spang 5,6,Ben Woodcroft 3, Tom A. Williams 7, and Gergely Sz¨ oll˝ osi 1,21Model-Based Evolutionary Genomics Unit, Okinawa Institute of Science and Technology Graduate University, Okinawa, Japan 
+
+2 Institute of Evolution, HUN-REN Center for Ecological Research, H-1121 Budapest, Hungary 3Centre for Microbiome Research, School of Biomedical Sciences, Queensland University of Technology (QUT), Translational Research Institute, Woolloongabba, Queensland, Australia 
+
+4Australian Centre for Ecogenomics, School of Chemistry and Molecular Biosciences, The University of Queensland, Brisbane, Australia 
+
+5Department of Marine Microbiology and Biogeochemistry, NIOZ, Royal Netherlands Institute for Sea Research, 1790 AB Den Burg, The Netherlands 
+
+6Department of Evolutionary & Population Biology, Institute for Biodiversity and Ecosystem Dynamics (IBED), University of Amsterdam, 1090 GE Amsterdam, The Netherlands 
+
+7Centre for Evolution, Department of Life Sciences, University of Bath, BA2 7AX, United Kingdom 
+
+> 56
+
+Abstract 7
+
+Predicting phenotype from genotype in extant organisms is increasingly tractable through the accumulation of genome se-8
+
+quences and the development of machine-learning algorithms. Here we show that machine learning can be applied to reconstructed 9
+
+ancestral gene content, extending these predictions into the past. We trained models on a diverse set of bacterial phenotypes and 10 
+
+found that introducing noise into gene content profiles allows predictions to generalize over larger evolutionary distances. For 11 
+
+phenotypes with signal spread across many genes - such as metabolic oxygen use, cell envelope architecture and optimal growth 12 
+
+temperature - noise augmentation extends resolution back to the root of the bacterial domain, while for other phenotypes -13 
+
+including GC content and sporulation - the range remains more limited. We therefore conclude that the last bacterial common 14 
+
+ancestor (LBCA) was likely an anaerobic, double-membraned, and moderately thermophilic bacterium (46-75 ◦C). Moreover, this 15 
+
+work provides a general approach for learning about the genomic basis of phenotypes and drawing inferences about their early 16 
+
+evolution. 17 
+
+I. I NTRODUCTION 18 
+
+Understanding how genome features give rise to organismal phenotypes is a central question in evolutionary biology [1], [2], 19 
+
+[3]. In microbes, phenotypes such as metabolism, oxygen use, cell envelope architecture, and temperature preference define 20 
+
+ecological niches and shape evolutionary success in a given environment. 21 
+
+Prediction of microbial phenotypes from genomic data has traditionally relied on comparative genomics: identifying specific 22 
+
+genes and pathways through curated functional annotations linked to a target phenotype [4], [5]. These approaches work well 23 
+
+for traits whose genetic basis is already known, but lose resolution when a phenotype is encoded by many genes distributed 24 
+
+across the genome [6], [7], or when functional annotations are incomplete or biased by the absence of close homologs in 25 
+
+model organisms [8], [9]. 26 
+
+The accumulation of microbial genome sequences has enabled a shift toward data-driven approaches. Machine-learning 27 
+
+(ML) models learn predictive patterns directly from genome-wide features, integrating information across thousands of genes 28 
+
+and capturing non-linear and partially redundant associations that are difficult to identify by hand [10], [11]. ML has been 29 
+
+applied to a broad range of microbial phenotypes, including antibiotic resistance [12], [13], metabolic traits [14], [15], and 30 
+
+environmental adaptations [16]. 31 
+
+Phenotypes are encoded in genomes in many ways: through the presence - or sequence - of individual genes, combinations 32 
+
+of genes, gene dosage, and broader regulatory architecture. How this information is encoded and distributed across the genome 33 
+
+remains an open question. From an ML perspective, prediction that generalizes requires genomic patterns that remain informative 34 
+
+beyond closely related taxa and across deep evolutionary distances, rather than lineage-specific shortcuts that inflate accuracy 35 
+
+on near relatives [10], [17]. Whether a phenotype’s signal is concentrated in a few key genes or distributed redundantly across 36 
+
+many, how much of the genome is needed to recover it, and how robust it is to gene loss are therefore not only questions 37 
+
+.CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.735159 doi: bioRxiv preprint ancestral genome noise-robust model XGBoost noise level in the ancestral genomes reconstructed ancestral genomes are noisy aerob anaerob . . . . . . genomeM genome(M-1) . . . anaerob 
+
+1. Train/test data preparation 2. Model training 
+
+> Accuracy score Accuracy score
+> Prediction accuracy across different noise levels
+> noise-robust model original model Noise level in the test genomes + noise New train X: true genomes + noisy copies
+> Train data augmentation
+
+4. Noise-robust model training 
+
+> 0 1 0 3 0 0 1 1 1 2 0 0 0 1 0 0 0 1 0 0 0 2 1 1 0 0 0 2 1 0 0 3 0 2 0 0 1 0 0 0 0 1 anaerob genome4 Importance Score feature5 feature4 feature3 feature2 feature1 Family level split Order level split Class level split Phylum level split Domain level split Random split . . .
+> Prediction accuracy across evolutionary distancies Extant genomes represented as COG counts
+> Random split Test Train Domain level split
+
+3. Feature Selection 5. Ancestral Phenotype Prediction 
+
+> aerob anaerob aerob genome6 genome5 genome4 anaerob anaerob aerob genome3 genome2 genome1 Test X Train X anaerob anaerob aerob evolutionary distance between train and test data Phenotype Y Data X genome3 genome2 genome1 XGBoost aerob anaerob aerob genome6 genome5 genome4 Test X XGBoost anaerob anaerob anaerob anaerob anaerob anaerob aerob aerob aerob genome k genome j genome i
+
+Figure 1: Schematic overview of the pipeline for phenotype signal exploration across evolutionary distances, feature selection, and ancestral phenotype prediction. of model interpretation: they determine whether the signal persists across lineages and how far back in evolutionary time a 38 
+
+phenotype can still be read from genomic data. 39 
+
+Robust phenotype predictors also enable inference beyond extant organisms, in particular the prediction of phenotypes 40 
+
+for ancestral genomes [18], [14]. Such inferences can reconstruct how key biological traits have evolved through time and 41 
+
+link phenotypic change to environmental and biological conditions across Earth history. In this setting, models are trained 42 
+
+on present-day genomes and applied to reconstructed ancestral ones. However, strong performance on extant data does not 43 
+
+guarantee reliable ancestral inference, for two reasons. First, predictive power decreases over deep evolutionary distances, both 44 
+
+because models generalize poorly and because the way a phenotype is encoded can itself shift over time [19], [20]. Second, 45 
+
+reconstructed ancestral genomes are inherently incomplete and noisy, which can obscure even persistent phenotype signals [21], 46 
+
+[22]. Reliable ancestral prediction therefore requires understanding how phenotype signal is distributed across the genome and 47 
+
+how robust it is to gene loss and noise. 48 
+
+In this work we focus on five microbial phenotypes that span distinct biological mechanisms and levels of predictive difficulty: 49 
+
+oxygen use, cell envelope structure, sporulation ability, optimal growth temperature (OGT), and genomic GC content. Together 50 
+
+they provide a diverse testbed for studying genome-based phenotype prediction across evolutionary scales. We represent each 51 
+
+genome by gene family copy numbers, using COGs assigned by eggNOG-mapper [23], [24] because they map robustly across 52 
+
+prokaryotic genomes. This representation provides a compact summary of functional gene content and matches the output 53 
+
+of ancestral-genome reconstruction methods based on phylogenetic reconciliation [21], [25], [26]. Training predictors directly 54 
+
+on copy-number profiles therefore makes them applicable to reconstructed ancestral genomes, enabling phenotype inference 55 
+
+beyond extant taxa and across deep timescales. 56 
+
+To investigate how phenotypes can be predicted across deep evolutionary distances, and where in the genome they are 57 
+
+encoded, we have built the pipeline in Fig. 1. We start with extant phenotype-annotated genomes, represented as gene family 58 
+
+copy numbers, and systematically evaluate predictive performance under taxonomy-aware train–test splits that progressively 59 
+
+increase the evolutionary distance between training and test sets. We then examine how phenotype signals are distributed 60 
+
+2
+
+.CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.735159 doi: bioRxiv preprint a) Oxygen use 
+
+b) Cell envelope 
+
+> Sporulation
+
+c) Figure 2: Distribution of genome counts per phylum for different phenotype datasets and MCC scores of phenotype predictors across evolutionary distance (black: phylogeny based prediction; red: model performance on test data; light grey: baseline performance of random guessing). a) Oxygen use phenotype. b) Cell envelope phenotype. c) Sporulation phenotype. across the genome using feature subsampling and feature-importance analyses. Next, we train noise-robust models by aug-61 
+
+menting training data with noisy genome replicates. Finally, we apply these models to incomplete, noisy genomes, including 62 
+
+reconstructed ancestral ones, to infer ancestral phenotypes across the bacterial tree. 63 
+
+II. R ESULTS 64 
+
+A. Data preparation and phenotype prediction across evolutionary distance 65 
+
+We use five datasets to train and evaluate our predictors. Each dataset is a count matrix X whose rows are genomes 66 
+
+and whose columns are homologous gene families, defined as Clusters of Orthologous Groups (COGs) [5] and assigned 67 
+
+to Genome Taxonomy Database (GTDB) genomes [27] using eggNOG-mapper [23]. Phenotype labels Y are obtained by 68 
+
+integrating annotations from multiple external sources, described separately for each phenotype below. Projecting the count 69 
+
+data into two dimensions with t-distributed stochastic neighbor embedding (t-SNE) [28], we recover known phylogenetic 70 
+
+structure, with clusters corresponding to major taxonomic groups, see Fig. 1 in Supplementary Material. Phenotype labels 71 
+
+often separate cleanly in this embedding, suggesting that phenotype signal is reflected in genome-wide feature patterns and is 72 
+
+3
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.735159 doi: bioRxiv preprint
+
+a) b) Figure 3: Distribution of genome counts per phylum for different phenotype datasets, MCC and RMSE scores of phenotype predictors across evolutionary distance (black: phylogeny based prediction; red: model performance on test data; light grey: baseline performance of random guessing). a) Optimal growth temperature. b) GC content. at least partially separable in the original feature space [29]. The distribution of samples and labels across phyla, however, is 73 
+
+highly imbalanced, motivating phylogenetically informed train–test splits. 74 
+
+Models trained on closely related genomes can exploit lineage-specific shortcuts that inflate performance on randomly sampled 75 
+
+test sets. To assess generalization across evolutionary distances, we perform taxonomy-aware train–test splits at five taxonomic 76 
+
+levels (family, order, class, phylum, and domain), generating 30 independent splits per level and phenotype.Given the substantial 77 
+
+class imbalance, we use the Matthews correlation coefficient (MCC) as the primary performance metric, complemented by 78 
+
+balanced accuracy, recall, F1 score, and the Expected Calibration Error (ECE) to assess the calibration of predicted probabilities. 79 
+
+Since some phenotypes show high within-group homogeneity, see Supplementary Section 2; Figs. 2, and 3, a phylogeny-only 80 
+
+predictor could perform reasonably well by exploiting shared ancestry rather than genomic content. To distinguish these cases, 81 
+
+we compared XGBoost predictions against a phylogeny-based predictions that infers each test genome’s phenotype from its 82 
+
+position on the GTDB tree alone, see Methods, Section IV-B), using identical train–test splits and evaluation metrics. Results 83 
+
+for each phenotype are summarized below. 84 
+
+1) Oxygen use: We here define oxygen use as the ability of organisms to grow in the presence of molecular oxygen. It has 85 
+
+recently been predicted from genomic data based on a machine learning classifiers using genomic features at multiple levels of 86 
+
+resolution, including Pfam protein families [30], [16], annotation-free amino-acid triplet representations [31], and COG-based 87 
+
+genome profiles [14]. Here, we use GTDB genomes annotated with oxygen-use information from the BacDive database [32] 88 
+
+and focus on the binary classification of aerobic and anaerobic organisms. We extend the framework of [14] by evaluating 89 
+
+prediction performance across large evolutionary distances. 90 
+
+Aerobes substantially outnumber anaerobes in our dataset, see Fig. 2(a), left, yet XGBoost maintains strong predictive 91 
+
+performance with well-calibrated confidence estimates even under domain-level holdout splits, see Fig. 2(a), right; Supple-92 
+
+mentary Table 1, where phylogeny-based predictions show a rapid decline in accuracy. This contrast suggests that the learned 93 
+
+signal reflects functional genomic properties of oxygen use rather than mere phylogenetic proximity, generalizing across deep 94 
+
+evolutionary distances. 95 
+
+4
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.735159 doi: bioRxiv preprint
+
+2) Cell envelope: The cell envelope is a deeply conserved physiological trait used to broadly classify bacteria as monoderms 96 
+
+(single membrane, thick peptidoglycan) or diderms (inner and outer membranes, thin peptidoglycan). This classification broadly, 97 
+
+though imperfectly, overlaps with Gram-positive and Gram-negative staining [33], [34]. 98 
+
+We formulate a binary classification task distinguishing between monoderm and diderm organisms. Genomes in the 1007-99 
+
+taxon dataset from [14] were classified as monoderm or diderm based on a literature search [35]. The dataset is highly biased 100 
+
+toward diderm organisms, with most phyla being exclusively monoderm or diderm, see Fig. 2(b), left. Despite substantial 101 
+
+class imbalance, cell envelope phenotype remains highly predictable under deep taxonomic holdout splits, reflecting broadly 102 
+
+conserved genomic signatures across bacterial diversity. Model calibration was also strong across splits, suggesting that 103 
+
+predicted probabilities are reliable and not merely a consequence of class imbalance, see Fig. 2(b), right. Notably, phylogeny-104 
+
+based predictions also perform well up to the phylum level, suggesting that monoderm/diderm identity largely follows deep 105 
+
+phylogenetic structure with limited within-phylum variation. 106 
+
+3) Sporulation: Sporulation is a survival strategy in which some bacteria produce dormant, highly resistant spores in response 107 
+
+to unfavorable conditions [36], [37]. 108 
+
+We used sporulation annotations from [38] and formulated a binary classification task distinguishing sporulating from non-109 
+
+sporulating organisms. In contrast to oxygen use and cell envelope structure, sporulation is phylogenetically restricted, with 110 
+
+sporulating taxa concentrated within a limited number of phyla and most samples annotated as non-sporulating, see Fig. 2(c), 111 
+
+left. Accordingly, predictive performance declines sharply at class and phylum level holdouts, see Fig. 2(c), right; Table 3), 112 
+
+despite models remaining well calibrated across splits, suggesting the model captures lineage-specific genomic signatures rather 113 
+
+than universally conserved sporulation signals, which is consistent with the known restriction of sporulation to specific bacterial 114 
+
+lineages [37]. Notably, cell envelope biosynthesis and sporulation are evolutionarily linked, with multiple independent co-losses 115 
+
+of both traits observed across the class Bacilli, suggesting shared regulatory and biosynthetic dependencies between the two 116 
+
+phenotypes. 117 
+
+4) Optimal growth temperature (OGT): Unlike the previous binary phenotypes, optimal growth temperature (OGT) is a 118 
+
+continuous trait reflecting organismal adaptation to environmental temperatures that impose constraints on microbial metabolism, 119 
+
+protein stability, and cellular organization [39]. Predicting OGT from genomic data has been widely explored using machine 120 
+
+learning approaches that leverage features such as amino acid composition [40], and protein family profiles [16], [41]. 121 
+
+Growth temperature optima and ranges were sourced from the BacDive [32] and TEMPURA [42] databases. Annotations 122 
+
+from primary literature were used when multiple sources were available and only species with at least 3 recorded growth 123 
+
+temperatures were included. 124 
+
+To predict OGT, we used a two-step XGBoost approach in which genomes were first classified as mesophiles or thermophiles, 125 
+
+and the final temperature estimate was calculated as a probability-weighted combination of predictions from the corresponding 126 
+
+regressors, see Eq. 2. The binary classifier remains well calibrated across splits, and the performance of both the classifier 127 
+
+and the final regression model is summarized in Fig. 3(a), right and Table 4. Prediction accuracy decreases gradually with 128 
+
+increasing evolutionary distance between the training and test sets, indicating reduced transferability across deep phylogenetic 129 
+
+splits. 130                                                                                                                                
+
+> Random Family Order Class Phylum Domain (a-b) Domain (b-a) Oxygen use, MCC 0.06 ±0.02 0.06 ±0.02 0.07 ±0.03 0.16 ±0.12 0.25 ±0.18 0.62 ±0.30.2±0.15
+> Cell envelope, MCC 0.07 ±0.03 0.09 ±0.03 0.1±0.05 0.32 ±0.13 0.33 ±0.3––Sporulation, MCC 0.06 ±0.02 0.06 ±0.02 0.11 ±0.14 0.65 ±0.27 0.47 ±0.38 ––OGT, MCC 0.16 ±0.07 0.12 ±0.07 0.33 ±0.14 0.09 ±0.05 0.09 ±0.06 –0.4±0.35
+> OGT, R20.21 ±0.07 0.28 ±0.11 0.53 ±0.17 0.17 ±0.22 0.1±0.05 –0.31 ±0.22
+> GC content, MCC 0.05 ±0.01 0.2±0.19 0.05 ±0.01 ––––GC content, R20.06 ±0.02 0.25 ±0.13 0.06 ±0.01 ––––
+
+Table I: Genome completeness test. Phenotype predictors were retrained using progressively increasing fractions of randomly selected genes from each genome. The values in the table report the mean ± standard deviation of the minimum fraction of the genome required to reach 95% of the predictive performance achieved using complete genomes. Rows correspond to different phenotypes and evaluation metrics, while columns correspond to different taxonomic holdout levels used for testing. Results are not reported for cases where the predictive performance on complete genomes is low (MCC < 0.5, or R2 < 0.5). 
+
+5) GC content: Finally, we examined GC content, a genomic property reflecting underlying mutational biases, genome 131 
+
+stability, and long-term evolutionary processes [43]. GC content has frequently been used as an informative feature in machine 132 
+
+learning models for predicting microbial traits such as optimal growth temperature, habitat, and taxonomy [44], [45]. 133 
+
+In this study, we use GC annotations from the prokaryotic trait database of [38] and adopt a similar two-step approach 134 
+
+as for OGT predictions to predict continuous GC content values, see Eq. 3. The results of the binary classifier and the final 135 
+
+regression model are summarized in Fig. 3(b), right and Table 5. Both predictive performance and model calibration decrease 136 
+
+5
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.735159 doi: bioRxiv preprint (n = 2670±1.5) (n = 7±1.5) (n = 2677)
+> (n = 2677) = 311 ± 64.4 rem train
+> f
+> = 6.9 ± 5.8 rem test
+> f
+> = 4.3 ± 3.8 add train
+> f
+> Markov Blanket SHAP value order
+
+Re-trained without features Test-time feature removal train on test on train on test on 
+
+c) 
+
+Oxygen use: phylum level train/test splits SHAP-based feature ranking a) Markov Blanket b)    
+
+> 1. Top-k added SHAP features 2. Top-k removed SHAP features Features ranked with respect to their SHAP values high SHAP low SHAP Markov blanket features non-Markov blanket features target phenotype featureA featureB featureC featureD featureY featureX featureF featureE
+
+d) Figure 4: (a) SHAP feature ranking experiments. In the first setting, we train and evaluate a model using the top-k features with the highest SHAP values. In the second setting, we remove the top-k SHAP features and train and evaluate the model on the remaining features.(b) Schematic representation of the Markov blanket in a Bayesian network. The Markov blanket features (blue) informationally shield the target node (pink) from all remaining features (white), such that conditioning on the Markov blanket renders the target independent of the rest of the network. (c) Difference between re-training and test-time feature removal. In re-training, selected features are removed from both the training and test sets, whereas in test-time feature removal, the features are removed only at test time. (d) Oxygen use predictor performance under phylum-level test holdout using selected features. Left: Top-SHAP feature addition and removal experiments. For feature removal, we evaluate two settings: removal during both training and testing, and removal at test time only. Right: Model accuracies obtained using Markov blanket and non-Markov blanket features, compared with the full feature set. with increasing evolutionary distance, indicating that the model largely relies on lineage-specific correlations with GC content 137 
+
+and is less able to extract a phylogenetically generalizable signal. 138 
+
+To assess how much genomic information is required for accurate prediction, we retrained and evaluated models on randomly 139 
+
+selected feature subsets of varying size, applied consistently to both training and test data, see Table I. Oxygen use, cell envelope, 140 
+
+and the mesophile–thermophile binary classification all retain comparable performance even when 60 − 70% of features are 141 
+
+removed, including under distant train–test splits, indicating broadly distributed, redundant signal. The minimum completeness 142 
+
+required increases with evolutionary distance, reflecting the need for broader genomic coverage to generalize across deep splits. 143 
+
+Fine-grained quantitative prediction of OGT requires higher completeness, suggesting it integrates many weak signals rather 144 
+
+than a few strongly discriminative markers.” 145 
+
+B. Determining the conserved genomic basis of phenotypes 146 
+
+While the genome completeness experiments discussed in Section II-A reveal how much genomic information on average is 147 
+
+required for accurate phenotype prediction across evolutionary distances, they do not explain which genes carry the predictive 148 
+
+signal or how this signal is distributed across the genome. For annotated data and a trained predictive model, feature selection 149 
+
+methods fall into two broad categories: model-specific, and model-agnostic. 150 
+
+A commonly used model-specific approach is SHAP (SHapley Additive exPlanations), see Fig. 4(a), which quantifies a 151 
+
+feature’s contribution to prediction by measuring its effect across all possible feature subsets [46]. SHAP identifies the features 152 
+
+most strongly used by the model, but reflects model behavior rather than direct biological or causal relationships [47], and can 153 
+
+be difficult to interpret when features are correlated [48]. 154 
+
+6
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.735159 doi: bioRxiv preprint
+
+To address these limitations, we additionally apply a model-agnostic method based on Markov blanket (MB) discovery [49]. 155 
+
+In this framework, genomic features and the target phenotype are treated as nodes in a Bayesian network, see Fig. 4(b), and 156 
+
+the MB is defined as the minimal set of features that renders the target conditionally independent of all others: 157 
+
+P (target | MB ) = P (target | all features ). (1) Together, these methods allow us to move beyond model accuracy toward biological insight. Features identified by both 158 
+
+SHAP and the Markov blanket represent high-confidence, conditionally indispensable signals, whereas SHAP-only features 159 
+
+likely reflect predictive but redundant correlations, and Markov-blanket-only features capture weak yet essential dependencies 160 
+
+underexploited by the model. 161                                                                    
+
+> Oxygen use Cell envelope Sporulation OGT (binary) GC content (binary)
+> ftrain add 4.3±3.82.3±1.913 .4±7.198 .1±13 .244 .7±17 .2
+> ftrain rem 311 ±64 .41095 ±71 1159 .3±141 .31539 .3±114 729 ±71 .1
+> ftest rem 6.9±5.82±0.13.2±0.9114 .3±28 79 .5±21 .7
+> MB size 7±1.54.3±0.97.4±2.522 .3±2.819 .1±2.5
+
+Table II: Markov blanket (MB) sizes and SHAP-based feature counts across phenotypes. f train add denotes the minimum number of top SHAP-ranked features that must be added during training to reach 95% of the MCC obtained with the full training feature set. f train rem denotes the maximum number of top SHAP-ranked features that can be removed during training while maintaining at least 95% of the MCC achieved with the full training feature set. f test rem denotes the maximum number of top SHAP-ranked features that can be removed only at test time while maintaining at least 95% of the MCC achieved with the full training feature set. Values represent the mean ± standard deviation across phylum-level train–test splits. To assess the robustness and minimality of the feature sets identified by SHAP, we perform a controlled feature ranking 162 
+
+and reduction analysis. For each train/test data split, we rank all features according to their SHAP values and sort them from 163 
+
+the most SHAP-important to the least important, see Fig. 4(a). Then we re-train and re-evaluate the model on the reduced 164 
+
+feature set in two ways, see Fig. 4(c), top. In the first strategy, features are added sequentially in order of decreasing SHAP 165 
+
+importance. This procedure identifies the minimal set of top SHAP-ranked features required for the predictor to reach 95% of 166 
+
+the MCC obtained with the full training feature set. In the second strategy, features are removed sequentially, starting from 167 
+
+the most important ones, which identifies the maximal set of top SHAP-ranked features that can be removed during training 168 
+
+while maintaining at least 95% of the MCC obtained with the full training feature set. We denote these quantities by f train add and 169 
+
+f train rem for feature addition and feature removal, respectively. In addition, we perform a test-time feature removal experiment, 170 
+
+see Fig. 4(c), bottom. In this setting, the model is trained on the full feature set but evaluated on progressively reduced feature 171 
+
+sets obtained by removing features in order of decreasing SHAP importance. Feature removal is applied at test time only by 172 
+
+erasing their information, implemented by setting the corresponding count values to NaN in XGBoost [50] (see Supplementary 173 
+
+Materials for details). Analogously, we determine the maximal number of top SHAP-ranked features that can be removed at 174 
+
+test time while maintaining at least 95% of the MCC obtained with the full training feature set, and denote this quantity by 175 
+
+f test rem .176 
+
+Finally, we identify the MBs for each phenotype and each data fold, and evaluate model performance using the MB feature 177 
+
+sets in a similar manner to the SHAP-based analysis, see Fig. 4(d), right. Corresponding plots for the remaining phenotypes, 178 
+
+analogous to Fig. 4(d,e), are provided in the Supplementary Materials. The Markov blanket sizes and the SHAP-derived 179 
+
+statistics f train add , f train rem , and f test rem across all phenotypes are summarized in Table II. 180 
+
+For oxygen use, both f train add and the MB size are small, indicating that most predictive performance can be recovered from 181 
+
+only a few features. However, prediction accuracy remains high after removing hundreds of top-SHAP features or retraining on 182 
+
+non-MB features alone, revealing substantial redundancy in the genomic signal. Despite this, the predictor relies strongly on a 183 
+
+small subset of informative features, as their removal at test time causes a rapid decline in performance. Cell envelope structure 184 
+
+and sporulation show a similar pattern of distributed signal coupled with strong dependence on a few highly informative features. 185 
+
+In contrast, OGT and GC content rely on a broader feature set, allowing more features to be removed before performance 186 
+
+deteriorates. 187 
+
+Finally, oxygen use, cell envelope, and sporulation have f train add values smaller than their MB sizes, indicating that a small 188 
+
+subset of features is sufficient for accurate prediction, while the full Markov Blanket captures a broader set of statistical 189 
+
+dependencies with the target variable. Conversely, the smaller MB sizes of OGT and GC content relative to f train add suggest that 190 
+
+many top SHAP-ranked features are redundant. 191 
+
+We next examined the composition of the MB and top-SHAP feature sets for each phenotype. To obtain robust feature lists, 192 
+
+we retained the features most frequently identified across phylum-level train–test folds. We then quantified the association 193 
+
+7
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.735159 doi: bioRxiv preprint blank = statistically insignificant data with the total number of present COGs per group < 6
+> shared SHAP and MB feature Match between the COG presence and oxygen use by Phylum COG present in anaerobs only COG present in aerobs only SHAP feature MB feature
+
+Figure 5: Top SHAP-ranked features and Markov blanket (MB) features associated with the oxygen use phenotype, and their presence–phenotype pattern overlap across phyla. Feature colors indicate membership in the top-SHAP set (orange), the MB (dark blue), or their intersection (purple). The score quantifies the overlap between COG presence and phenotype occurrence (see Methods). A score of +1 (red) indicates perfect agreement between COG presence and oxygen use, whereas a score of -1 (blue) indicates perfect agreement between COG presence and and the anaerobic (phenotype-negative) class, i.e. the COG is present exclusively in anaerobic organisms. between COG presence and phenotype occurrence within each phylum using a signed enrichment score (Eq. 6); positive values 194 
+
+indicate enrichment in phenotype-positive organisms, and negative values indicate enrichment in phenotype-negative organisms. 195 
+
+For oxygen use, the most important features and their correlations with phenotype occurrence are shown in Fig. 5. We 196 
+
+find that ferredoxin oxidoreductase (COG1014), rubrerythrin (COG1592), and anaerobic ribonucleoside-triphosphate reductase 197 
+
+(COG1328) are strong predictors of anaerobic metabolism, whereas heme A synthase (COG1612) and heme O synthase 198 
+
+(COG0109) are strong predictors of aerobic metabolism. These results are consistent with previous observations [14] and are 199 
+
+readily interpretable in terms of known biology: the strongest predictors of anaerobic metabolism are hallmark enzymes of 200 
+
+anaerobes, while the strongest predictors of aerobic metabolism are involved in biogenesis of the aerobic electron transport 201 
+
+chain. In addition, phosphoribosylaminoimidazole carboxylase (COG0026) and type II dihydrodipicolinate synthase (COG1002) 202 
+
+appear as predictors of aerobic metabolism, and a two-component system response regulator (COG1350) also emerges as an 203 
+
+aerobic predictor that, to our knowledge, has not been highlighted previously in this context. Analogous plots for other 204 
+
+phenotypes can be found in Supplementary Materials, Fig. 10 for sporulation, Fig. 11 for optimal growth temperature, and 205 
+
+Fig. 14 for GC content. 206 
+
+The most important gene families for the cell envelope predictor also make biological sense. The 8 genes in the top-207 
+
+SHAP and Markov blanket set include core components of outer membrane biogenesis and maintenance, including genes for 208 
+
+lipopolysaccharide synthesis and export to the outer membrane (COG0763, LpxB - lipid-A-disaccharide biosynthesis; COG0795, 209 
+
+LptF/G - LPS export; COG0767, MlaE - intermembrane phospholipid transport), genes involved in cell wall biosynthesis 210 
+
+(COG5009, membrane-bound penicillin-binding protein) along with diderm-specific genes that localise to the periplasm or 211 
+
+outer membrane such as COG1706, FlgI - flagellar basal body P-ring protein, see Supplementary Fig. 9. Interestingly, the 212 
+
+most important genes are either specific to diderms or mainly found in diderms. This finding suggests that didermy is specified 213 
+
+by a defined, common genetic toolkit that is conserved across diderm lineages, consistent with previous work [51], [35]. By 214 
+
+contrast, monoderms appear to be characterised by an absence of the diderm toolkit rather than the presence of monoderm-215 
+
+8
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.735159 doi: bioRxiv preprint RMSE (percent)
+> RMSE (degrees)
+
+b)   
+
+> false negative rate false negative rate false negative rate false negative rate false negative rate false negative rate false positive rate false negative rate
+> GC content Optimal Growth Temperature Sporulation Cell envelope Oxygen use
+> original model noise-robust model false positives false negatives noisy genome true genome 0 1 0 0 1 0 0 2 0 0 1 2 0 1 0 0 3 1 x noisy clones for each true genome
+> Mx noise augmented genomes
+> Mtrue genomes
+
+Noise injection to train genomes Train data augmentation a) 
+
+> 1 1 0 0 1 1 0 2 0
+
+Figure 6: a) Training data augmentation scheme. Each genome is augmented with x noisy replicates, where noise is introduced by injecting false-positive and false-negative COG counts. b) Performance comparison between the original models trained on noise-free datasets (semi-transparent lines) and the best noise-robust models trained on noise-augmented datasets (solid lines). Prediction accuracy is shown across different false-positive ( rF P ) and false-negative ( rF N ) noise rates applied to the test data. specific genes. Given the interleaving of monoderm and diderm lineages on the bacterial phylogeny, these results are consistent 216 
+
+with the hypothesis that monodermy evolved convergently, and on different genetic backgrounds, on multiple occasions [51]. 217 
+
+As in the case of the phenotypes discussed above, the SHAP and Markov Blanket analyses identified many expected gene 218 
+
+families with a known biological link to the trait of interest. However, each of these traits also had a larger number of relevant 219 
+
+features than in the case of oxygen use or cell envelope architecture, and - while performance was competitive with existing 220 
+
+approaches - were generally less well predicted by the best-fitting models. Unsurprisingly, the most important gene families for 221 
+
+predicting sporulation were those directly involved in the process, including spore coat (COG5577), maturation (COG2715) and 222 
+
+control (COG4326) proteins, among others, see Supplementary Fig. 10. Top-ranked gene families for predicting thermophily 223 
+
+included the hallmark enzyme of hyperthermophiles, reverse gyrase (COG1110) (add refs to reverse gyrase papers and its use as 224 
+
+hallmark), an enzyme involved in DNA repair of 8-oxoguanine mutations (COG4047) that are elevated at high temperatures [52] 225 
+
+along with other proteins including tRNA modification enzymes (COG1590, COG1818) that have previously been implicated 226 
+
+in thermoadaptation [53], see Supplementary Fig. 11. The top-ranked genes for predicting high-GC organisms were somewhat 227 
+
+more difficult to interpret. Several of the top-ranked genes are involved in DNA repair (COG4544), including in the context 228 
+
+of UV damage (COG1533), or trehalose biosynthesis (COG1877, COG3280); these are all functions that are important for 229 
+
+high-GC soil bacteria (e.g. Actinomycetota), which experience a range of environmental stressors. In this case, it may be that 230 
+
+the predictive power comes from the indirect association between high-GC genomes and soil ecology, rather than a direct link 231 
+
+between the predictive gene families and the trait. 232 
+
+9                
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.735159 doi: bioRxiv preprint COG present in mesoph. only COG present in high GC only GC content (percent)
+> 4500 4000 3500 3000 2500 2000 1500 1000 500
+> temperature (degrees)
+> 4500 4000 3500 3000 2500 2000 1500 1000 500
+> (Mya) (Mya) 0.5 0.5 0.5 probability of sporulation probability of aerobes (Mya)
+
+GC content e) Optimal growth temperature d) Sporulation c) Oxygen use b) f) probability of monoderms Cell envelope a) Bacteroidota Acidobacteriota Desulfobacteriota Cyanobacteria Patescibacteria Actinobacteriota Chloroflexota Bacillota Pseudomonadota                         
+
+> 104500 4000 3500 3000 2500 2000 1500 1000 500 104500 4000 3500 3000 2500 2000 1500 1000 500 104500 4000 3500 3000 2500 2000 1500 1000 500 81.2 16.5 75.04 27.02
+> (binary) (binary) model confidence
+
+Node age (Mya) Average model confidence vs node age  
+
+> LBCA
+> Node age (Mya) OGT (degrees) Predicted OGT distributions vs node age
+> LBCA
+> Node age (Mya) GC content (percent)  Predicted GC content distributions vs node age (Mya) (Mya)
+
+Figure 7: Ancestral phenotype prediction for the bacterial species tree from [14]. Branch colors represent the predicted class probability for the binary classifiers (a-c) and the final predicted value for the continuous regressors (d-e). (a) Cell envelope. (b) Oxygen use. (c) Sporulation. (d) Top: Optimal growth temperature tree. Bottom: predicted OGT distributions across nodes binned by age; the red line indicates the mean of each distribution and the dashed horizontal line corresponds to the predicted mean OGT of extant genomes in the dataset. (e) Top: GC content tree. Bottom: predicted GC content distributions across nodes binned by age, as in (d). (f) Average prediction confidence of the binary classifiers as a function of node age for the phenotypes shown in (a-c). 
+
+C. Ancestral phenotype prediction 233 
+
+A key motivation for representing genomes as gene family copy numbers is that ancestral copy number profiles can be inferred 234 
+
+using phylogenetic reconciliation methods [26], enabling phenotype prediction beyond extant taxa [14]. However, ancestral 235 
+
+genomes are reconstructed probabilistically rather than observed directly, and inferred gene content becomes increasingly 236 
+
+uncertain toward the root due to cumulative gene duplications, transfers, and losses [54]. Robust phenotype predictors must 237 
+
+therefore tolerate substantial noise and incompleteness in genomic features. 238 
+
+Training on noise-augmented data improves robustness by exposing models to controlled perturbations, encouraging noise-239 
+
+invariant representations that are less sensitive to feature corruption at inference time [55], [56], [57], [58]. We augmented 240 
+
+the training data with synthetic noisy genomes. For each genome, multiple noisy replicas were generated by introducing 241 
+
+false-negative and false-positive gene counts, simulating gene loss and spurious gene presence that can arise during genome 242 
+
+assembly and annotation, see Fig. 6 (a). The noise levels were sampled from predefined distributions to capture a range of 243 
+
+10 
+
+.CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.735159 doi: bioRxiv preprint possible error regimes. For each phenotype, we evaluated multiple augmentation configurations and selected the scheme that 244 
+
+maximized predictive performance on noisy test datasets. Full details of the noise model and parameter selection procedure 245 
+
+are provided in Section 8 in Supplementary Materials. 246 
+
+For oxygen use and cell envelope phenotypes, we observe a clear improvement in model accuracy across the full range of 247 
+
+noise levels in the test datasets, see Fig. 6 (a,b). For the sporulation phenotype, this approach not only improves performance 248 
+
+under high noise conditions but also acts as an effective regularization mechanism, leading to improved accuracy even on 249 
+
+nearly noise-free test data, see Fig. 6(c). For optimal growth temperature, we observe a modest performance improvement 250 
+
+without compromising baseline performance at low noise levels, see Fig. 6(d). In contrast, for GC content prediction, gains at 251 
+
+higher noise levels are accompanied by a slight reduction in performance at low noise levels, indicating a trade-off between 252 
+
+robustness and accuracy in low-noise regimes, see Fig. 6(e). 253 
+
+Next, we applied the best-performing models to ancestral phenotype inference. Our predictions suggest that the last bacterial 254 
+
+common ancestor (LBCA) was likely an anaerobic, non-sporulating, moderately thermophilic diderm, see Fig. 7(a-e) and 255 
+
+Supplementary Table 7. The models differ in prediction confidence across the ancestral timescale, with cell envelope showing 256 
+
+the highest confidence and GC content the lowest, see Fig. 7(f). For GC content, ancestral states therefore cannot be inferred 257 
+
+with comparable confidence. This is consistent with its lineage-restricted genomic signal identified in Section II-B: even after 258 
+
+noise augmentation, the GC content predictor recovers only modest accuracy on noisy genomes, see Fig. 6(e) and already 259 
+
+degrades sharply at class- and phylum-level holdouts in extant data, see Fig. 3; Table I, suggesting that noise augmentation 260 
+
+can reinforce a redundant signal but cannot recover one whose informative components are inherently lineage-specific. 261 
+
+III. D ISCUSSION 262 
+
+Overall, our results suggest that many bacterial phenotypes of evolutionary interest can be inferred from gene content 263 
+
+reconstructions back to the root of the bacterial domain, because information pooled from multiple phenotype-relevant genes 264 
+
+can help to overcome the uncertainty inherent in single gene reconstructions. To understand why some ancient phenotypes can 265 
+
+be predicted and some cannot, we investigated how their genomic signal is structured and how well prediction generalizes across 266 
+
+evolutionary distances. We found that oxygen use and cell envelope structure are underpinned by broadly conserved, genome-267 
+
+wide signals: even after removing the majority of genomic features, predictive performance is largely retained, and models 268 
+
+generalize well even under phylum- and domain-level holdout splits. Sporulation, OGT, and GC content, by contrast, show 269 
+
+sharper performance declines with evolutionary distance, consistent with more lineage-restricted or environmentally contingent 270 
+
+genomic encoding. At least part of the explanation may be that cell envelope architecture and oxygen metabolism are directly 271 
+
+implemented by specific gene families (for example, those encoding components of the aerobic electron transport chain, or the 272 
+
+enzymes that produce outer-membrane lipopolysaccharides and their transporters). By contrast, organisms with particular OGTs 273 
+
+or genomic GC contents may tend to possess certain gene families (enabling prediction over shorter evolutionary distances), 274 
+
+but these properties are not, as far as is currently known, directly “caused” by a specific set of genes. This explanation does not 275 
+
+account for the relatively narrow predictive power of the sporulation classifier, since this trait is also encoded by specific gene 276 
+
+families. However, unlike cell envelope and metabolic phenotypes, sporulation is found in only a handful of modern bacterial 277 
+
+lineages, which may explain its different behaviour in our analyses. 278 
+
+Despite the broad signal availability for at least some of these traits, our test-time feature removal experiments reveal an 279 
+
+important asymmetry: models tend to exploit a small subset of highly informative features rather than the full distributed signal. 280 
+
+When these features are missing or corrupted at inference time (as they inevitably are in reconstructed ancestral genomes), 281 
+
+performance drops sharply even though alternative informative features exist. This distinction between signal availability and 282 
+
+signal usage has practical consequences for ancestral inference and motivates our noise augmentation strategy. By exposing 283 
+
+models to controlled false-positive and false-negative perturbations during training, we encourage reliance on redundant, 284 
+
+distributed signals rather than fragile feature subsets, substantially improving robustness across the full range of noise levels. 285 
+
+Crucially, however, noise augmentation can only reinforce signal that is already broadly distributed: for GC content, whose 286 
+
+predictive signal is inherently lineage-specific, augmentation improves robustness at high noise but ancient GC content cannot 287 
+
+be inferred. 288 
+
+After noise augmentation, the models stay well calibrated even in the presence of substantial false-positive and false-negative 289 
+
+noise. Their predicted class probabilities remain meaningful on the kind of incomplete, error-prone feature vectors produced 290 
+
+by ancestral genome reconstruction. Because expected gene copy numbers can be inferred at internal nodes by phylogenetic 291 
+
+reconciliation [26], this combination lets us carry prediction — and a calibrated estimate of its confidence — back along the 292 
+
+bacterial tree to its root. We exploited this by tracking model confidence as a function of node age, from extant tips to the last 293 
+
+bacterial common ancestor (LBCA), see Fig. 7(f). For phenotypes underpinned by broadly conserved, genome-wide signal, 294 
+
+confidence decays only slowly toward the root and remains high at the deepest nodes, whereas for lineage-restricted phenotypes 295 
+
+such as GC content it falls to near-random well before the LBCA. The practical consequence is that some phenotypes can be 296 
+
+reconstructed confidently into the Archaean. 297 
+
+11 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.735159 doi: bioRxiv preprint
+
+Applying our pipeline to a species tree of 1007 bacteria, we infer that the LBCA was likely an anaerobic, non-sporulating, 298 
+
+moderately thermophilic diderm, with the cell envelope and oxygen-use predictions in particular retaining high confidence at 299 
+
+the root, consistent with and extending recent work linking genomic signatures to early Earth history [14]. These ancestral 300 
+
+predictions are broadly consistent with current hypotheses about early bacterial evolution. The inference of an anaerobic LBCA 301 
+
+agrees with the prevailing view that most bacterial lineages predate the Great Oxidation Event and with the conclusions of 302 
+
+[14]. 303 
+
+The inference that the LBCA and the ancestors of Gracilicutes and Terrabacteria were diderms agrees with a growing body 304 
+
+of work suggesting that the double membrane is an ancestral bacterial feature and that monodermy represents a derived state 305 
+
+[51], [59], [60], [61]. The genes most predictive of didermy in our analysis overlap with the canonical diderm machinery — 306 
+
+lipid A and lipopolysaccharide (LPS) biosynthesis and outer-membrane assembly (Section II-B) — consistent with previous 307 
+
+candidate-gene analyses [62], [63], supporting the biological validity of the learned signal. The classifier further predicts multiple 308 
+
+independent losses of the outer-membrane machinery within Terrabacteria, including on the lineages leading to Patescibacteria 309 
+
+and to Firmicutes, in agreement with recent reconstructions [51], [60], [61]. The best-supported scenario is therefore one 310 
+
+in which the double membrane is ancestral in Bacteria and was lost convergently on multiple independent lineages — a 311 
+
+conclusion that stands in contrast to earlier views of early bacteria as monoderm organisms resembling modern Firmicutes or 312 
+
+Actinobacteria [64], [65], and that highlights the outer membrane as an under-appreciated distinguishing feature between early 313 
+
+Bacteria and Archaea. 314 
+
+Although the precise optimal growth temperature of the LBCA cannot be inferred with high confidence, our analysis is 315 
+
+broadly consistent with previous work suggesting a thermophilic LBCA [66], [67], with optimal temperatures in the 46 –75 ◦C316 
+
+range (Fig. 7). In more recent times, Bacteria adapted to somewhat cooler conditions, with some signal of bimodality and a 317 
+
+peak emerging at 37 ◦C. This might result from adaptation to eukaryote-associated lifestyles - including most recently human 318 
+
+guts - although it may also reflect the nature of how experimental OGT data is collected, with 37 ◦C a frequently-tested value 319 
+
+[68]. 320 
+
+While our results encourage optimism about the detail with which ancient life can be reconstructed given modern data, 321 
+
+several limitations should be noted. Ancestral gene content is reconstructed probabilistically, and expected copy numbers 322 
+
+at deep nodes carry substantial uncertainty that compounds toward the root. Our noise augmentation scheme simulates this 323 
+
+uncertainty but cannot fully capture its phylogenetic covariance structure. Published experimental information on phenotypes 324 
+
+collated in BacDive and related databases is highly valuable but incomplete and unevenly distributed across lineages, which 325 
+
+may bias both training and the interpretation of ancestral predictions. In addition, our pipeline was evaluated on five phenotypes 326 
+
+chosen to span a range of biological and predictive complexity; how well these findings generalize to other traits, particularly 327 
+
+those with more complex polygenic architectures or stronger environmental contingency, remains to be explored. 328 
+
+Beyond ancestral inference, the framework developed here offers a general approach for probing the evolutionary signal 329 
+
+of any phenotype encoded in genomic gene content, and for identifying new gene families that appear to be associated with 330 
+
+phenotypes of interest. The combination of taxonomy-aware evaluation, feature redundancy analysis, and noise-robust training 331 
+
+provides a principled basis for assessing which phenotypes are tractable targets for deep-time reconstruction and which are not 332 
+
+— a question of broad relevance as ancestral genome reconstruction methods continue to improve. An immediate extension 333 
+
+would be to apply the same pipeline to other phenotypes of evolutionary and ecological interest, such as nitrogen fixation, 334 
+
+photosynthesis, or antibiotic resistance, and to use the resulting ancestral predictions as calibration points in molecular clock 335 
+
+analyses, as demonstrated previously [14]. 336 
+
+IV. M ETHODS 337 
+
+A. Two stage OGT and GC content prediction 338 
+
+OGT values are heavily concentrated between 20 and 40 ◦C, see Fig. 3(a), left. To predict continuous OGT, we employ a 339 
+
+two-stage gating approach. An XGBoost classifier first partitions genomes into mesophiles (OGT ≤ 45 ◦C) and thermophiles 340 
+
+(OGT ≥ 45 ◦C), yielding probabilities pmeso and pthermo . Two separate XGBoost regressors are then trained on each group, 341 
+
+producing predictions OGT meso and OGT thermo . The final OGT estimate is their probability-weighted combination: 342 
+
+OGT final = pmeso OGT meso + pthermo OGT thermo . (2) The GC annotation distribution in our dataset is bimodal, with two prominent peaks around 38 % and 62 %, suggesting 343 
+
+the presence of two major genomic composition groups, see Fig. 3(b), left. Similarly to the OGT, we perform the binary 344 
+
+classification, and split the data into the low GC content ( ≤ 50 ), and high GC content ( ≥ 50 ) categories: 345 
+
+GC final = plow GC low + phigh GC high . (3) 12 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.735159 doi: bioRxiv preprint Unknown annotation is inferred from the closest genome annotation is inferred from the majority phenotype within the closest training taxonomic group Anaerob Aerob
+
+Random splits Test Train Taxonomy-aware splits Figure 8: Phylogeny-based annotation predictions. The training data ( 80% of genomes) are treated as known annotations from which the remaining 20% are inferred. In taxonomy-aware train/test splits, the phenotype of each test genome is inferred as the majority phenotype in the binary case or the mean phenotype in the continuous case among genomes belonging to the closest taxonomic group contained in the training set. In random train/test splits, the phenotype is inferred from the single closest genome. 
+
+B. Phylogeny-based phenotype prediction 346 
+
+In this section, we describe the algorithm used for phenotype prediction based solely on phylogenetic relatedness. We reused 347 
+
+the same 30 train–test splits generated for the XGBoost predictor at each taxonomic level. In each split, 80% of the genomes 348 
+
+constitute the training set and are treated as annotated reference genoms, while the remaining 20% form the test set whose 349 
+
+phenotypes must be inferred. 350 
+
+For each test genome, we traverse the phylogenetic tree to identify the nearest ancestral clade whose descendant leaves 351 
+
+belong entirely to the training set. The taxonomy-aware splits ensure that such a clade exists for every test genome. The 352 
+
+phenotype of the test genome is then inferred from the phenotypes of the genomes within this closest training clade. For 353 
+
+continuous phenotypes, the prediction is defined as the mean phenotype value across the clade. For binary phenotypes, the 354 
+
+predicted class corresponds to the majority class among the genomes in the clade. We note that at the domain level, phenotypes 355 
+
+of bacterial genomes are inferred as the average (or majority class) of archaeal phenotypes, and vice versa. 356 
+
+For random train–test splits, where such taxonomic separation is not guaranteed, we instead assign the phenotype of the 357 
+
+single closest training genome identified using the pairwise phylogenetic distance matrix derived from the genome tree of the 358 
+
+GTDB, see Fig. 8. 359 
+
+C. Feature selection: Pattern overlap score 360 
+
+Let yi ∈ { 0, 1} encode the phenotype of genome i (e.g. 0 = anaerobe, 1 = aerobe; 0 = diderm, 1 = monoderm etc). Let 361 
+
+gi ∈ { 0, 1} denote the presence or absence of a given COG in the genome i. We define the pattern overlap as 362 
+
+TP = X
+
+> i
+
+I(gi = 1 , y i = 1) , (4) which counts the number of genomes in which both the COG and the phenotype encoded by 1 are present. Conversely, we 363 
+
+define the pattern mismatch as 364 
+
+FP = X
+
+> i
+
+I(gi = 1 , y i = 0) , (5) which counts the number of genomes that contain the COG but exhibit the phenotype encoded by 0. 365 
+
+Combining Eq. 4, and Eq. 5, we define the final pattern overlap score 366 
+
+S =
+
+
+
+TP − FP TP + FP , for P 
+
+> i
+
+ci ≥ 6,
+
+undefined , for P 
+
+> i
+
+ci < 6.
+
+(6) We note that S is not defined for COGs with fewer than six total occurrences across all genomes, as such cases lack sufficient 367 
+
+statistical support. 368 
+
+13 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.735159 doi: bioRxiv preprint
+
+D. Noise-based training data augmentation 369 
+
+We augment the train datasets by generating x noisy clones of each true genome Gtrue = {gtrue i }1≤i≤N , where gtrue i370 
+
+denotes the true count of gene i. Noise is introduced by injecting false negative and false positive counts as follows. 371 
+
+• To model false negatives, for each gene count gi, we subtract a Poisson-distributed number of counts proportional to gtrue i372 
+
+gnoisy i = max( gtrue i − Poisson (gtrue i sF N ), 0) , (7) where sF N denotes the false negative rate. 373 
+
+• False positives are then introduced for genes with zero observed counts by adding Poisson-distributed counts: 374 
+
+gnoisy i = gtrue i + Poisson (sF P ), (8) where sF P is the false positive rate. 375 
+
+Together, this procedure simulates gene loss and spurious gene presence, approximating the uncertainty induced by genome 376 
+
+reconstruction errors while preserving the overall structure of the genome. 377 
+
+Rather than fixing the false negative sF N and false positive sF P rates, we consider stochastic noise regimes in which these 378 
+
+rates are independently sampled from predefined probability distributions for each noisy genome. Specifically, we focus on three 379 
+
+distribution families: uniform, exponential, and gamma. Each distribution is parameterized by its mean value, denoted λF N ,380 
+
+and λF P for false negatives and false positives, respectively. Each noise augmentation scheme is thus defined by the choice of 381 
+
+the three parameters (x, λ F N , λ F P ). For each phenotype, we systematically explore combinations of these parameters, retrain 382 
+
+XGBoost models for each configuration, and evaluate performance gains on noisy test datasets with varying noise levels. The 383 
+
+test-time noise is introduced by setting non-zero gene counts to zero at rate rF N and incrementing all counts by one at rate 384 
+
+rF P . We then quantify model robustness across the full test-noise range by computing the area under the MCC-versus-noise 385 
+
+curves, similar to those shown in Fig. 6. Finally, for each phenotype, we select the augmentation scheme that maximizes the 386 
+
+average MCC curve integral, corresponding to the greatest overall robustness improvement on noisy test data. The performance 387 
+
+improvements of the best-performing models for each phenotype are summarized in Fig. 6 (see Section 8 in Supplementary 388 
+
+Materials for additional details on model selection and augmentation configurations). 389 
+
+V. D ATA AND CODE AVAILABILITY 390 
+
+All code is available at https://github.com/oist/gene-context. Data and trained models are deposited at Zenodo (DOI: 10.5281/zen-391 
+
+odo.21018005). 392 
+
+REFERENCES 393 
+
+[1] Sewall Wright et al. The roles of mutation, inbreeding, crossbreeding, and selection in evolution. 1932. 394 
+
+[2] Pere Alberch. From genes to phenotype: dynamical systems and evolvability. 1991. 395 
+
+[3] Massimo Pigliucci. Genotype–phenotype mapping and the end of the ‘genes as blueprint’metaphor. Philosophical Transactions of the Royal Society B: 396 
+
+Biological Sciences , 365(1540):557–566, 2010. 397 
+
+[4] Ross Overbeek, Tadhg Begley, Ralph M Butler, Jomuna V Choudhuri, Han-Yu Chuang, Matthew Cohoon, Val´ erie de Cr´ ecy-Lagard, Naryttza Diaz, 398 
+
+Terry Disz, Robert Edwards, et al. The subsystems approach to genome annotation and its use in the project to annotate 1000 genomes. Nucleic acids 399 
+
+research , 33(17):5691–5702, 2005. 400 
+
+[5] Michael Y Galperin, Kira S Makarova, Yuri I Wolf, and Eugene V Koonin. Expanded microbial genome coverage and improved protein family annotation 401 
+
+in the cog database. Nucleic acids research , 43(D1):D261–D269, 2015. 402 
+
+[6] Evan A Boyle, Yang I Li, and Jonathan K Pritchard. An expanded view of complex traits: from polygenic to omnigenic. Cell , 169(7):1177–1186, 2017. 403 
+
+[7] Aaron Weimann, Kyra Mooren, Jeremy Frank, Phillip B Pope, Andreas Bremges, and Alice C McHardy. From genomes to phenotypes: Traitar, the 404 
+
+microbial trait analyzer. mSystems , 1(6), 2016. 405 
+
+[8] Trudy FC Mackay, Eric A Stone, and Julien F Ayroles. The genetics of quantitative traits: challenges and prospects. Nature Reviews Genetics ,406 
+
+10(8):565–577, 2009. 407 
+
+[9] Steven L Salzberg. Next-generation genome annotation: we still struggle to get it right. Genome biology , 20(1):92, 2019. 408 
+
+[10] Maxwell W Libbrecht and William Stafford Noble. Machine learning applications in genetics and genomics. Nature Reviews Genetics , 16(6):321–332, 409 
+
+2015. 410 
+
+[11] Christof Angermueller, Tanel P¨ arnamaa, Leopold Parts, and Oliver Stegle. Deep learning for computational biology. Molecular systems biology , 12(7):878, 411 
+
+2016. 412 
+
+[12] Bruna F Fistarol, Joao D Gervasio, and Gergely J Sz¨ oll˝ osi. Gene copy-number features generalize better than snps for antimicrobial resistance prediction 413 
+
+in staphylococcus aureus. npj Antimicrobials and Resistance , 3(1):100, 2025. 414 
+
+[13] Yichen He, Xiujuan Zhou, Lida Zhang, Yan Cui, Yiping He, Andrew Gehring, Xiangyu Deng, and Xianming Shi. Prediction of antibiotic resistance 415 
+
+phenotypes and minimum inhibitory concentrations in salmonella using machine learning analysis of its pan-genome and pan-resistome features. 416 
+
+Foodborne Pathogens and Disease , 2025. 417 
+
+[14] Adri´ an A Dav´ ın, Ben J Woodcroft, Rochelle M Soo, Benoit Morel, Ranjani Murali, Dominik Schrempf, James W Clark, Sandra ´Alvarez-Carretero, 418 
+
+Bastien Boussau, Edmund RR Moody, et al. A geological timescale for bacterial evolution and oxygen adaptation. Science , 388(6742):eadp1853, 2025. 419 
+
+[15] Guido Zampieri, Supreeta Vijayakumar, Elisabeth Yaneske, and Claudio Angione. Machine and deep learning meet genome-scale metabolic modeling. 420 
+
+PLoS computational biology , 15(7):e1007084, 2019. 421 
+
+[16] Julia Koblitz, Lorenz Christian Reimer, R¨ udiger Pukall, and J¨ org Overmann. Predicting bacterial phenotypic traits through improved machine learning 422 
+
+using high-quality, curated datasets. Communications Biology , 8(1):897, 2025. 423 
+
+[17] James Zou, Mikael Huss, Abubakar Abid, Pejman Mohammadi, Ali Torkamani, and Amalio Telenti. A primer on deep learning in genomics. Nature 424 
+
+genetics , 51(1):12–18, 2019. 425 
+
+14 
+
+.CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.735159 doi: bioRxiv preprint [18] Liang Xu, Emily Zakem, and JL Weissman. Improved maximum growth rate prediction from microbial genomes by integrating phylogenetic information. 426 
+
+Nature Communications , 16(1):4256, 2025. 427 
+
+[19] Alex D Washburne, Justin D Silverman, Jonathan W Leff, Dominic J Bennett, John L Darcy, Sayan Mukherjee, Noah Fierer, and Lawrence A David. 428 
+
+Phylogenetic factorization of compositional data yields lineage-level associations in microbiome datasets. PeerJ , 5:e2969, 2017. 429 
+
+[20] Jennifer B Hughes Martiny, Brendan JM Bohannan, James H Brown, Robert K Colwell, Jed A Fuhrman, Jessica L Green, M Claire Horner-Devine, 430 
+
+Matthew Kane, Jennifer Adams Krumins, Cheryl R Kuske, et al. Microbial biogeography: putting microorganisms on the map. Nature Reviews 431 
+
+Microbiology , 4(2):102–112, 2006. 432 
+
+[21] Bastien Boussau, Gergely J Sz¨ oll˝ osi, Laurent Duret, Manolo Gouy, Eric Tannier, and Vincent Daubin. Genome-scale coestimation of species and gene 433 
+
+trees. Genome research , 23(2):323–330, 2013. 434 
+
+[22] Gergely J Sz¨ oll˝ osi, Eric Tannier, Vincent Daubin, and Bastien Boussau. The inference of gene trees with species trees. Systematic biology , 64(1):e42–e62, 435 
+
+2015. 436 
+
+[23] Carlos P. Cantalapiedra, Ana Hern´ andez-Plaza, Ivica Letunic, Peer Bork, and Jaime Huerta-Cepas. eggnog-mapper v2: Functional annotation, orthology 437 
+
+assignments, and domain prediction at the metagenomic scale. Molecular Biology and Evolution , 38(12):5825–5829, 2021. 438 
+
+[24] Ana Hern´ andez-Plaza, Damian Szklarczyk, Jorge Botas, Carlos P Cantalapiedra, Joaqu´ ın Giner-Lamia, Daniel R Mende, Rebecca Kirsch, Thomas Rattei, 439 
+
+Ivica Letunic, Lars J Jensen, et al. eggnog 6.0: enabling comparative genomics across 12 535 organisms. Nucleic Acids Research , 51(D1):D389–D394, 440 
+
+2023. 441 
+
+[25] Mukul S Bansal, Manolis Kellis, Misagh Kordi, and Soumya Kundu. Ranger-dtl 2.0: rigorous reconstruction of gene-family evolution by duplication, 442 
+
+transfer and loss. Bioinformatics , 34(18):3214–3216, 2018. 443 
+
+[26] Benoit Morel, Tom A Williams, Alexandros Stamatakis, and Gergely J Sz¨ oll˝ osi. Alerax: a tool for gene and species tree co-estimation and reconciliation 444 
+
+under a probabilistic model of gene duplication, transfer, and loss. Bioinformatics , 40(4):btae162, 2024. 445 
+
+[27] Donovan H Parks, Maria Chuvochina, David W Waite, Christian Rinke, Adam Skarshewski, Pierre-Alain Chaumeil, and Philip Hugenholtz. A standardized 446 
+
+bacterial taxonomy based on genome phylogeny substantially revises the tree of life. Nature biotechnology , 36(10):996–1004, 2018. 447 
+
+[28] Laurens van der Maaten and Geoffrey Hinton. Visualizing data using t-sne. Journal of Machine Learning Research , 9:2579–2605, 2008. 448 
+
+[29] Martin Wattenberg, Fernanda Vi´ egas, and Ian Johnson. How to use t-sne effectively. Distill , 2016. 449 
+
+[30] Siqi Wan, Haida Liu, Geyi Zhu, Yuanming Geng, Wenhao Li, Lijuan Chen, Yunhua Zhang, and Guomin Han. Decoding oxygen preference: machine 450 
+
+learning discovers functional genes in bacteria. Genomics , page 111095, 2025. 451 
+
+[31] Avi I Flamholz, Joshua E Goldford, Philippa A Richter, Elin M Larsson, Adrian Jinich, Woodward W Fischer, and Dianne K Newman. Annotation-free 452 
+
+prediction of microbial dioxygen utilization. Msystems , 9(10):e00763–24, 2024. 453 
+
+[32] Lorenz Christian Reimer, Anna Vetcininova, Joaquim Sard` a Carbasse, Carola S¨ ohngen, Dorothea Gleim, Christian Ebeling, and J¨ org Overmann. Bac 454 
+
+dive in 2019: bacterial phenotypic data for high-throughput biodiversity analysis. Nucleic acids research , 47(D1):D631–D636, 2019. 455 
+
+[33] Radhey S. Gupta. Origin and evolution of the diderm (gram-negative) cell envelope in bacteria. Antonie van Leeuwenhoek , 100:171–182, 2011. 456 
+
+[34] I. C. Sutcliffe. A phylum-level perspective on bacterial cell envelope architecture. Journal of Molecular Microbiology and Biotechnology , 18:1–12, 2010. 457 
+
+[35] Daniela Megrian, Najwa Taib, Jerzy Witwinowski, Christophe Beloin, and Simonetta Gribaldo. One or two membranes? diderm firmicutes challenge 458 
+
+the gram-positive/gram-negative divide. Molecular microbiology , 113(3):659–671, 2020. 459 
+
+[36] Patrick Stragier and Richard Losick. Molecular genetics of sporulation in bacillus subtilis. Annual review of genetics , 30(1):297–341, 1996. 460 
+
+[37] Michael Y Galperin, Sergei L Mekhedov, Pere Puigbo, Sergey Smirnov, Yuri I Wolf, and Daniel J Rigden. Genomic determinants of sporulation in 461 
+
+bacilli and clostridia: towards the minimal set of sporulation-specific genes. Environmental microbiology , 14(11):2870–2890, 2012. 462 
+
+[38] Joshua S Madin, Daniel A Nielsen, Maria Brbic, Ross Corkrey, David Danko, Kyle Edwards, Martin KM Engqvist, Noah Fierer, Jemma L Geoghegan, 463 
+
+Michael Gillings, et al. A synthesis of bacterial and archaeal phenotypic trait data. Scientific data , 7(1):170, 2020. 464 
+
+[39] Nicolas Galtier and JR Lobry. Relationships between genomic g+ c content, rna secondary structures, and optimal growth temperature in prokaryotes. 465 
+
+Journal of molecular evolution , 44(6):632–636, 1997. 466 
+
+[40] Tyler P Barnum, Alexander Crits-Christoph, Michael Molla, Paul Carini, Henry H Lee, and Nili Ostrov. Predicting microbial growth conditions from 467 
+
+amino acid composition. bioRxiv , pages 2024–03, 2024. 468 
+
+[41] Haida Liu, Geyi Zhu, Lijuan Chen, Hui Ye, Yunhua Zhang, and Guomin Han. Machine learning prediction of bacterial optimal growth temperature 469 
+
+from protein domain signatures reveals thermoadaptation mechanisms. BMC genomics , 26(1):957, 2025. 470 
+
+[42] Yu Sato, Kenji Okano, Hiroyuki Kimura, and Kohsuke Honda. Tempura: database of growth temperatures of usual and rare prokaryotes. Microbes and 471 
+
+environments , 35(3):ME20074, 2020. 472 
+
+[43] Jonathan Romiguier and Camille Roux. Analytical biases associated with gc-content in molecular evolution. Frontiers in Genetics , 8:16, 2017. 473 
+
+[44] H´ ector Musto, Hugo Naya, Alejandro Zavala, H´ ector Romero, Fernando Alvarez-Val´ ın, and Giorgio Bernardi. Genomic gc level, optimal growth 474 
+
+temperature, and genome size in prokaryotes. Biochemical and biophysical research communications , 347(1):1–3, 2006. 475 
+
+[45] Jake L Weissman, Shengwei Hou, and Jed A Fuhrman. Estimating maximal microbial growth rates from cultures, metagenomes, and single cells via 476 
+
+codon usage patterns. Proceedings of the National Academy of Sciences , 118(12):e2016810118, 2021. 477 
+
+[46] Scott M Lundberg and Su-In Lee. A unified approach to interpreting model predictions. Advances in neural information processing systems , 30, 2017. 478 
+
+[47] Christoph Molnar, Gunnar K¨ onig, Julia Herbinger, Timo Freiesleben, Susanne Dandl, Christian A Scholbeck, Giuseppe Casalicchio, Moritz Grosse-479 
+
+Wentrup, and Bernd Bischl. General pitfalls of model-agnostic interpretation methods for machine learning models. In International Workshop on 480 
+
+Extending Explainable AI Beyond Deep Models and Classifiers , pages 39–68. Springer, 2020. 481 
+
+[48] Kjersti Aas, Martin Jullum, and Anders Løland. Explaining individual predictions when features are dependent: More accurate approximations to shapley 482 
+
+values. Artificial Intelligence , 298:103502, 2021. 483 
+
+[49] Sisi Ma and Roshan Tourani. Predictive and causal implications of using shapley value for model interpretation. In Proceedings of the 2020 KDD 484 
+
+workshop on causal discovery , pages 23–38. PMLR, 2020. 485 
+
+[50] Wanyi Chen and Mary Cummings. To impute or not to impute: How machine learning modelers treat missing data. arXiv preprint arXiv:2503.16644 ,486 
+
+2025. 487 
+
+[51] Najwa Taib, Daniela Megrian, Jerzy Witwinowski, Panagiotis Adam, Daniel Poppleton, Guillaume Borrel, Christophe Beloin, and Simonetta Gribaldo. 488 
+
+Genome-wide analysis of the firmicutes illuminates the diderm/monoderm transition. Nature ecology & evolution , 4(12):1661–1672, 2020. 489 
+
+[52] Vadim I Bruskov, Lyudmila V Malakhova, Zhaksylyk K Masalimov, and Anatoly V Chernikov. Heat-induced formation of reactive oxygen species and 490 
+
+8-oxoguanine, a biomarker of damage to dna. Nucleic acids research , 30(6):1354–1363, 2002. 491 
+
+[53] Takayuki Ohira and Tsutomu Suzuki. Transfer rna modifications and cellular thermotolerance. Molecular Cell , 84(1):94–106, 2024. 492 
+
+[54] Tom A Williams, Adrian A Davin, L´ en´ ard L Sz´ anth´ o, Alexandros Stamatakis, Noah A Wahl, Ben J Woodcroft, Rochelle M Soo, Laura Eme, Paul O 493 
+
+Sheridan, Cecile Gubry-Rangin, et al. Phylogenetic reconciliation: making the most of genomes to understand microbial ecology and evolution. The 494 
+
+ISME Journal , 18(1):wrae129, 2024. 495 
+
+[55] Raphael Gontijo Lopes, Dong Yin, Ben Poole, Justin Gilmer, and Ekin D Cubuk. Improving robustness without sacrificing accuracy with patch gaussian 496 
+
+augmentation. arXiv preprint arXiv:1906.02611 , 2019. 497 
+
+[56] Nicholas Keone Lee, Ziqi Tang, Shushan Toneyan, and Peter K Koo. Evoaug: improving generalization and interpretability of genomic deep neural 498 
+
+networks with evolution-inspired data augmentations. Genome Biology , 24(1):105, 2023. 499 
+
+15 
+
+.CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.735159 doi: bioRxiv preprint [57] Hyunjung Lee, Utku Ozbulak, Homin Park, Stephen Depuydt, Wesley De Neve, and Joris Vankerschaver. Assessing the reliability of point mutation as 500 
+
+data augmentation for deep learning with genomic data. BMC bioinformatics , 25(1):170, 2024. 501 
+
+[58] Tri Dao, Albert Gu, Alexander Ratner, Virginia Smith, Chris De Sa, and Christopher R´ e. A kernel theory of modern data augmentation. In International 502 
+
+conference on machine learning , pages 1528–1537. PMLR, 2019. 503 
+
+[59] GA Coleman, AA Dav´ ın, TA Mahendrarajah, LL Sz´ anth´ o, A Spang, P Hugenholtz, GJ Sz¨ oll˝ osi, and TA Williams. A rooted phylogeny resolves early 504 
+
+bacterial evolution. science 372: eabe0511, 2021. 505 
+
+[60] Jerzy Witwinowski, Anna Sartori-Rupp, Najwa Taib, Nika Pende, To Nam Tham, Daniel Poppleton, Jean-Marc Ghigo, Christophe Beloin, and Simonetta 506 
+
+Gribaldo. An ancient divide in outer membrane tethering systems in bacteria suggests a mechanism for the diderm-to-monoderm transition. Nature 507 
+
+Microbiology , 7(3):411–422, 2022. 508 
+
+[61] Basile Beaud Benyahia, Najwa Taib, Christophe Beloin, and Simonetta Gribaldo. Terrabacteria: redefining bacterial envelope diversity, biogenesis and 509 
+
+evolution. Nature Reviews Microbiology , 23(1):41–56, 2025. 510 
+
+[62] Luisa C. S. Antunes, Daniel Poppleton, Andreas Klingl, Alexis Criscuolo, Bruno Dupuy, C´ eline Brochier-Armanet, Christophe Beloin, and Simonetta 511 
+
+Gribaldo. Phylogenomic analysis supports the ancestral presence of LPS-outer membranes in the Firmicutes. eLife , 5:e14589, 2016. 512 
+
+[63] Chris Whitfield and M. Stephen Trent. Biosynthesis and export of bacterial lipopolysaccharides. Annual Review of Biochemistry , 83:99–128, 2014. 513 
+
+[64] Jeff Errington. L-form bacteria, cell walls and the origins of life. Open Biology , 3(1):120143, 2013. 514 
+
+[65] Elitza I. Tocheva, Davi R. Ortega, and Grant J. Jensen. Sporulation, bacterial cell envelopes and the origin of life. Nature Reviews Microbiology ,515 
+
+14(8):535–542, 2016. 516 
+
+[66] Massimo Di Giulio. The universal ancestor and the ancestor of bacteria were hyperthermophiles. Journal of Molecular Evolution , 57(6):721–730, 2003. 517 
+
+[67] Mathieu Groussin and Manolo Gouy. Adaptation to environmental temperature is a major determinant of molecular evolutionary rates in archaea. 518 
+
+Molecular biology and evolution , 28(9):2661–2674, 2011. 519 
+
+[68] Isabel Schober, Julia Koblitz, Joaquim Sard` a Carbasse, Christian Ebeling, Marvin Leon Schmidt, Adam Podstawka, Rohit Gupta, Vinodh Ilangovan, 520 
+
+Javad Chamanara, J¨ org Overmann, and Lorenz Christian Reimer. Bacdive in 2025: the core database for prokaryotic strain data. Nucleic Acids Research ,521 
+
+53(D1):D748–D756, 2025. 522 
+
+VI. A CKNOWLEDGMENTS 523 
+
+We are grateful for the help and support provided by the Scientific Computing and Data Analysis section of Core Facilities 524 
+
+at OIST. Our research is funded by the John Templeton Foundation (63451 to T.A.W., G.Sz. and A.S.); the opinions expressed 525 
+
+in this publication are those of the authors and do not necessarily reflect the views of the John Templeton Foundation. 526 
+
+16 
+
+.CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 2, 2026. ;https://doi.org/10.64898/2026.06.29.735159 doi: bioRxiv preprint
