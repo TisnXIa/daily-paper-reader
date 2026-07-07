@@ -1,0 +1,2508 @@
+Title: First community challenge for automated virus taxonomy
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.07.04.736517v1.full.pdf
+
+Published Time: Tue, 07 Jul 2026 19:41:34 GMT
+
+Number of Pages: 53
+
+Markdown Content:
+First community challenge for automated 1
+
+# virus tax onomy 2
+
+3
+
+Running title : The ICTV Computational Virus Taxono my Challenge 4
+
+Cédric Lood 1,2 ,*, Swapnil P. Doijad 2, Evelien M. Adriaenssens 3, Yiming Bao (鲍一明 )4,5 , Jakub 5
+
+Baryl ski 6, Ben Bolduc 7,8,9 , George Bouras 10,11 , J. Rodney Brister 12 , C. Titus Brown 13 , Antonio 6
+
+Pedro Camargo 14,15 , Lander De Coninck 16 , Sebastian Deorowicz 17 , Robert Edgar 18 , Robert A. 7
+
+Edwards 19 , Shitao Gong 20 , Arthur Gruber 21 , Adam Gudys 17 , Ernestina Hauptfeld 22 , Anneliek 8
+
+ter Horst 13 , Tianyang Huang 20 , Jingzhe Jiang 23 , Lars Kaderali 24 , Jaebeom Kim 25,26 , Mart 9
+
+Krupovic 27 , Jens H. Kuhn 28 , Elliot J. Lefkowitz 29 , Mathieu Leobold 30 , Shuai -Cheng Li 31 , Yiyun 10 
+
+Liu 4,5 , F. A. Bastiaan von Meijenfeldt 32 , Uri Neri 14 , Judit J. Penzes 33 , N. Tessa Pierce -Ward 13 ,11 
+
+Janina Ra hlff 34,35,36 , Alejand ro Reyes Muñoz 37 , Luisa Rubino 38 , Sead Sabanadzovic 39 ,40 , Jiayu 12 
+
+Shang 41 , Peter Simmonds 43 , Martin Steinegger 25,26,44 ,45 , Matthew B. Sullivan 7,8,9 , Yanni Sun 46,13 
+
+Lili Tian (田莉莉 )4,5 , Yi -Gang Tong 47, Robert Turnbull 48, Dann Turner 49, Arvind Varsan i50 ,51 , Ziye 14 
+
+Wang 52, Yasas Wijesekara 24 , Wytamma Wirth 53 ,54 , Haolong Xia 55, Shuo Yang 31 , TzeChing Yeo 34 ,15 
+
+Jinbei Zhang 46 , Xianglilan Zhang 56,57 , Shanfeng Zhu 20 , Andrzej Zielezinski 58, Simon Roux 14 , Bas 16 
+
+E. Dutilh 2,22, *
+
+17 
+
+Correspond ence:  bedutilh@gmail.com  and  cedric.lood@gmail.com 18 
+
+Affiliations : see final section of the manuscript 19 
+
+20 
+
+.CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint Abstract 21 
+
+The rapid rate of virus discovery renders manual curation by taxonomy experts increasingly 22 
+
+impractical , creating a need for reliabl e software that can reproducibly assign viral contigs 23 
+
+to taxa at all fifteen ranks of the virus taxonomy. We led an open community challenge for 24 
+
+the computational taxonom ic classification of viruses and assembled a dataset of virus 25 
+
+sequences combining expert -curated and metagenomic sequences . Seventeen teams 26 
+
+contribu ted a total of thirty -four automated , fully reproducible classification pipelines . Most 27 
+
+tools correctly assign ed virus es belong ing to established species, gene ra, or families, but 28 
+
+viruses that are unclassified at those lower ranks remain challenging . This study provides 29 
+
+dataset s, open -source softwar e, novel approaches , and recommendations to benchmark 30 
+
+computational taxonom ic classification of viru ses , and support or ganiz ing the many vir uses 31 
+
+discovered in big omics data .32 
+
+33 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+# Introduction 34 
+
+Viruses dominate Earth's biosphere in both abundance and genetic diversity, yet no single 35 
+
+method can completely resolve their taxonomy. Taxonomy provides far more than names: it 36 
+
+anchors inferences about host range, replication strategies, virulence potential, and 37 
+
+ecological roles. This information is essential for interpreting virom ics data , tracking 38 
+
+emerging pathogens, designing phage therapies , and engineering viral vectors. There is 39 
+
+consensus that viruses are so divers e that no single taxonomic method can be used to 40 
+
+classify them all (Simmonds et al., 2023) . Since its inception , the International Committee 41 
+
+for the Taxonomy of Viruses ( ICTV ) has relied on the expertise of the global community of 42 
+
+virologists to classify viruse s into a ranked taxonomy (Gorbalenya, Krupovic, et al., 2020) .43 
+
+This has generated a patchwork of methods and criteria that, ideally, capture the features 44 
+
+of different viral li neages into meaning ful taxa that reflect the biology and evolutionary 45 
+
+relationships of viruses . This information is formalized in taxonomy proposals , written by 46 
+
+expert groups , evaluat ed and ratified by the ICTV (Siddell et al., 2023) . These documents 47 
+
+provide evidence on how viruses within each taxon shall be classified, ideally based on 48 
+
+specific demarcation criteria , and are available via the ICTV website at 49 
+
+https://ictv.global/files/proposals/approved  (Black et al., 2026) .50 
+
+Over the past decades, the exponential increase in DNA and RNA sequencing capacity and 51 
+
+the rel ated discovery of new vir us es has brought new challenges. An important source of 52 
+
+new viral genome sequenc es is metagenomic s, i.e., the direct sequencing of genomic 53 
+
+material from complex samples , also referred to as viromics when viruses are targeted 54 
+
+specifically  (Mokili et al., 2012; Simmonds et al., 2017) . Viromics involves sampling, sample 55 
+
+preparation, and assembly , which may result in incomplete or inaccurate sequences  (Cook 56 
+
+et al., 2024; Roux et al., 2019) . Th e resulting viral sequ ences can be broadly organized in to 57 
+
+tens of millions of viral operational taxonomic units . Given the diverse methods that are 58 
+
+currently used to classify viruses, it is unclear wh ich approaches can be applied to 59 
+
+metagenome -derived sequences. While viromics is rapidly expanding our view of the 60 
+
+virosphere, researchers turn to taxonomy for structur ing the resulting data (Dutilh et al., 61 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+2021) , and for reasons of practicality and reproducibility, their taxo nomic classification 62 
+
+would ideally be automated .63 
+
+There is currently no single ICTV -endorsed method for assigning viruses , often known only 64 
+
+by their sequence , to established taxonomic ranks. Members of the ICTV Study Groups 65 
+
+routinely use computational aids for taxonomy prop os al writing , but a bioinformatic s66 
+
+approach that enables researchers to compare the viral sequence s representing viruses to 67 
+
+those of all ICTV -established virus taxa and classify these viruses at an appropriate 68 
+
+taxon omic rank is not availa ble (Dutilh et al., 2021; Simmonds et al., 2023) . An example for 69 
+
+the challenges facing taxonomy is Caudoviricetes , a large class for bacterial and archaeal 70 
+
+viruses. Currently, newly determined sequences that are ≥95% identical to sequences of 71 
+
+already classified viruses are considered to represent viruses of the same caudoviricete 72 
+
+species. Sequences that are ≥70% identical are considered to represent novel viruses 73 
+
+requiring the establishment of novel species while being assignable to established genera 74 
+
+(Turner et al., 2021) . Implemented to accommodate the vast diversity of caudoviricetes ,75 
+
+such universal , numerical demarcation criteria are un common in other viral cl ades , making 76 
+
+the classification of novel or highly divergent viral sequences far from trivial . In the realm 77 
+
+Riboviria , coronavir ids are classified using pairwise distances between nodes on a 78 
+
+phylogenetic tree derived from multiple seque nce alignments of five concatenated protein 79 
+
+domains  (Gorbalenya et al., 2020; Woo et al., 2023) . Further illustrations of the intrica cy of 80 
+
+classification criteria for virus es in the order s Chitovirales and Picornavirales are s hown in 81 
+
+Box 1 AB .82 
+
+The ICTV Computational Virus Taxonom y Challenge wa s designed to assess the urgent need 83 
+
+for automatic taxonom ic classification of new virus sequences by assessing different 84 
+
+publicly available computational virus taxonomy tools or pipelines . We comp il ed a dataset 85 
+
+of nearly 60,000 viral sequences and provided it online. Some of the sequences were 86 
+
+generated specifically for the Challenge , derived from newly isolated and sequenced viruses 87 
+
+with suggested classifi cation by experts from ICTV Study Group s. Others were derived from 88 
+
+virus genomic and metagenomic sequence repositories and edited to resemble genomic 89 
+
+fragments that one might find in a metagenomic or viromic dataset . An open invitation was 90 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+offered and broadly relayed online to any b ioinfor matics teams interested in participating in 91 
+
+assign ing the se viral sequence s using methods of their choice . A n important requirement 92 
+
+wa s that the ir pipelines we re made available as open -source repositories, so that th ey might 93 
+
+be readily use d by others . Here w e report the results, challenges, opportunities , and 94 
+
+perspectives gathered during this first ICTV Taxonomy C hallenge. 95 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+# Results 96 
+
+## Creation of a virus contig dataset for the taxonomy challenge 97 
+
+The dataset used for the ICTV C omputational Virus Taxonomy Challenge was assembled 98 
+
+from three separate sources . First, To verify whether the classification pipelines could 99 
+
+correctly identify officially recognized taxa, we generated a dataset of 15,900 virus contigs 100 
+
+representing 12,9 53 species from the ICTV Virus Metadata Resource (VMR38v3; Figure 1A). 101 
+
+This total includes 617 contigs from non -viral mobile genetic elements that are within the 102 
+
+remit of the ICTV (viroids, viriforms, and satellites). Sec ond, to assess the performance of 103 
+
+the pipeline s in assign ing novel viruses, we collected 840 previously uncharacterized virus 104 
+
+contigs and invited ICTV Study Group member s to suggest their classification (Figure 1B, see 105 
+
+Methods) . Except for two sequences associated with established caudoviricete genera 106 
+
+(0. 2%) , these novel sequences wer e not ass ign ed t o established genera or species, but 107 
+
+experts could assign them at the family or higher rank . The distribution across realms and 108 
+
+kingdoms of these two datasets is shown in Figure 1C. Third, to challenge the various 109 
+
+pipelines with unknown viruses , we included 3,151 predicted viral contig s from assembled 110 
+
+metagenom ic sequences available in the MGnify database (Richardson et al., 2023) . The 111 
+
+sequences were edited , as de novo sequencing and assembly commonly results in contigs 112 
+
+with sequencing errors , or in fragmented or c ircularly permuted contigs (Figure 1 ABD ). This 113 
+
+resulted in a dataset of 59, 673 contig s, tailored to assess different strengths and 114 
+
+weaknesses of the contributed pipeline s. Each entry was assigned a random label, and the 115 
+
+dataset was made available via GitHub (Supplementary Data 1) . Participants were blinded 116 
+
+to the sequence origins, classifications, and editing status for the duration of the challenge. 117 
+
+Th is complete annotation for the dataset of 59,673 contigs can be found in Supplementary 118 
+
+Table 1 .119 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+120 Figure 1 The dataset for the first ICTV Taxonomy Challenge consisted of 59, 673 sequences that were 121 
+
+derived from three sources as follows. (A) The ICTV Virus Metadata Resource (VMR 38v3 ) was 122 
+
+downloaded and a ll 15,9 00 sequences were edited by (i) cutting them in to four equal parts, selecting 123 
+
+two of the fragments at random then adding 1% or 5% random nucleotide substitutions , (ii) from 1—124 
+
+1,000 nucleotides of circular permutation and trimming 1% off the ends (10% of sequences), (iii) 125 
+
+reverse complementing and trimming 1% off the ends (10% of sequences), or (iv) only trimming 1% 126 
+
+off the ends (80% of sequences). (B) 840 diverse viral sequences were newly sequenced or identified 127 
+
+in metagenomic datasets and assign ed by experts from the respective ICTV Study Groups. These 128 
+
+sequences were added either unchanged or cut ( selecting two out of four fragments and adding 1% 129 
+
+or 5% random nucleotide substitutions). (C) The sequences in A and B covered all realms defined in 130 
+
+the virus taxonomy , specifically the Master Species List 39, version 4 (available at 131 
+
+https://ictv.global/msl ). Areas in the Voronoi plot represent the number of sequences contained in 132 
+
+each realm. The labels correspond to the kingdoms with in each realm , and the number of phyl a133 
+
+within each kingdom is indicated between parentheses. (D) We identified viral contigs in assembled 134 
+
+metagenomes from the MGnify database, selected 3,151 sequence s, and added them unchanged 135 
+
+(90% of sequences), reverse complemented (10% of sequences), or cut in four (selecting two out of 136 
+
+four random fra gments and adding 1% or 5% random nucleotide substitutions). (E) This composite 137 
+
+dataset with 59, 637 contigs was made available online for the challenge via the GitHub platform. 138 
+
+Legend : 1selected at random, 2rotated at random from 1—1000 nt, 3nucleotide subs titutions at 139 
+
+random. 140 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+## Description of the entries 141 
+
+By the deadline for submission to the challenge (1st January 202 5), seventeen teams of 142 
+
+bioinformaticians and virologists had entered a total of thirty -four separate sets of 143 
+
+taxonomic classifica tions and made their pipelines publicly available via GitHub (Table 1). 144 
+
+One parameter of the challenge was that participants use the Master Species List 39 version 145 
+
+4 (MSL39v4, available at https://ictv.global/msl ) for assigning taxonomic labels , and a n146 
+
+initial screen revealed that some of the entries had systematic encoding errors consisting of 147 
+
+illegal string s for the taxa names at various ranks . Thus, we provide d a validation script and 148 
+
+gave all teams the opportunity to identify and fix any issue s in their pipelines . We also 149 
+
+encouraged the teams to improve the documentation of the ir tools in the form of dedicated 150 
+
+“readme ” files on the respective GitHub repositorie s ( see also the Supplementary Methods 151 
+
+contain ing extensive description s of each pip eline) . These files were a required part of the 152 
+
+challenge and used to assess reproducibility . The final c lassifications from all teams for all 153 
+
+contigs can be found in Supplementary Data 2.154 
+
+Most final submission s resolved the issue of incorrect names within the ranks 155 
+
+(Supplementary Table 2). The o ne clear outlier was CAT -ncbi , a pipeline consist ing of contig 156 
+
+annotation tool CAT (von Meijenfeldt et al., 2019) with its default NCBI database . Although 157 
+
+NCBI implement s ICTV taxonomy on all viruses in the database (Schoch et al., 2020) , non -158 
+
+viral sequences are far more abundant , and includ e integrated proviruses that will be 159 
+
+assigned to the taxonomy of their host . While CAT was proven to be efficient at classifying 160 
+
+bacteria (Meyer et al., 2021) , in the ICTV taxonomy challenge , CAT -ncbi assigned 31.5 % of 161 
+
+the viral sequences to non -vir al taxa , highlighting the difficulty of annotating truly un charted 162 
+
+sequences , which might include both viral and non -viral contig s (Meyer et al., 2021) . The 163 
+
+remaining pipelines assigned valid taxa to the ranks used to assign the sequences, and most 164 
+
+pipelines were error -free with five pipelines having further issues (incorrect fraction :165 
+
+1.2%±2.6 %) . A separate analysis of the comb inations of names across ranks (i.e., lineages) 166 
+
+revealed that inconsistent lineage strings were common in ten pipeline s, when evaluated 167 
+
+based on the MSL39v4 (incorrect fraction :15.0%±21. 6%, Supplementary Table 2). 168 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+Teams were not required to submit a n assignment for all contigs but could also provide 169 
+
+partial results . Eight teams submitted a total of 21 complete entries , wh ereas the remaining 170 
+
+thirteen entries were partial , assign ing between 14.5% ( VISTA ) and 99.9% (Sourmash ) of the 171 
+
+59,673 sequences in the cha llenge dataset . VISTA  (Zhang et al., 2025)  was trained on 172 
+
+complete geno me sequences from 38 viral families and Caudoviricetes , and  does not 173 
+
+attempt taxonomic assignment for other sequences  (see Supplementary Methods) , limiting 174 
+
+its scope and output . Sourmash  (Irber et al., 20 24; Pierce et al., 2019)  uses sketching, 175 
+
+storing only a subset of the k-mers in a sequence , which captur es the overall sequence 176 
+
+composition while reducing data size. This may miss short sequences that do not contain 177 
+
+enough of the sketch k-mer s or fall below the length threshold (≥200 nt) . Among the 178 
+
+pipelines that submitted incomplete entries, the fast nucleotide -based search tools 179 
+
+Sourmash and Vclust  (Zielezinski et al., 2025)  delivered high sensitivity (94.8% and 98.4%, 180 
+
+respectively) and low false -positive rates for sequences derived from known VMR viruses, 181 
+
+but classified only a marginal number of entries from the Expert or MGnify datasets (Table 182 
+
+1).  These tools are thus particularly suitable for rapid detection of viruses with high 183 
+
+sequence similarity to those in the reference database.  Some tools also included 184 
+
+classification scores ( marked with asterisks in Table 1), and changing such cutoffs may be 185 
+
+valuable for sequences where classification is challenging, especially at higher taxonomic 186 
+
+ranks. 187 
+
+Table 1: List of entries received for the ICTV Taxonomy C hallenge. In total , 34 entries were received 188 
+
+from 1 7 different teams . An asterisk in the first column indicates that confidence scores when189 
+
+available . The “M ethods ” column provides a high -level description of the pipeline (see 190 
+
+Supplementary Methods for extensive description ). All pipelin es are publicly available on GitHub. 191 
+
+The coverage columns indicate the fraction of sequences that were assigned a virus classification 192 
+
+(solid color) , Not Available (NA, transparent color) , or completely missing (white color) in the VMR 193 
+
+(red, n=47, 700 ), Expert ( blue, n=2,520) , and MGnify ( purple , n=9,453 ) datasets . Note that we 194 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+distinguish pipelines without entries for a given sequence in the dataset (white color) and entries 195 
+
+filled with NA (transparent). 196 
+
+197 
+
+## Accuracy for sequences associated with classified viruses 198 
+
+The VMR section of the challenge dataset included sequences from tax a of all ma jor ranks 199 
+
+of the ICTV taxonomy (Figure 1 A) and was used to evalu at e the classification accuracy for 200 
+
+sequences derived from classified viruses or their close relatives . These query sequences 201 
+
+should all be classifiable , given their high sequence similarity to reference viruses in the 202 
+
+VMR . Figures 2A and 2B show the accuracy for all the VMR -derived sequences , and for the 203 
+
+entries that were predicted by each pipeline , respectively . The latter excludes sequences 204 
+
+that were not predicted , despite their close sequence similarity to reference viruses , and are 205 
+
+represented by the white and transparent ba rs in the “Dataset coverage ” section of Table 1. 206 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+In general, m ost pipelines were more accura te at high er tax onomic ranks than at lower ones ,207 
+
+indicating that sequences are commonly mis assigned to different species within the same 208 
+
+genus or family . For example, for geNomad  , PhaGCN Cluster (Xia et al., 2026) , and VISTA 209 
+
+(Zhang et al., 2025) the accuracy decrease d sharply below the family rank, wh ereas 210 
+
+vConTACT2  (Bin Jang et al., 2019)  drop ped below the order rank.  Similarly, PhaBOX (Shang 211 
+
+et al., 2023) retained accuracy down to the genus rank and then decrease d sharply . Vc lust ,212 
+
+Sourmash , and Metabuli (Kim & Steinegger, 2024) maintain ed a high accuracy across ranks 213 
+
+with a slight decrease below the genu s rank, wh ereas VCAT ha d a different pattern, as its 214 
+
+accuracy marginally increase d for species .215 
+
+Next, we evaluate d the classification performance on the VMR and Expert datasets 216 
+
+separately ( left and right half circles in Figure 2C , respectively ). Within the VMR dataset, 217 
+
+Metabuli, Sourmash, Vclust, VirTaxon -2, and VCAT  assign ed most sequences with high 218 
+
+accuracy at all ranks down to species , wh ereas CAT -ICTV,  geNomad , PhaBOX, PhaGCN 219 
+
+Cluster , and VISTA assigned a subset of the sequences down to the family rank with high 220 
+
+accuracy . T ogether, these results highlight the ability of these tools to detect similar 221 
+
+sequences with up to 5% of random mutations , even when only a fragment was available .222 
+
+For the VMR dataset, accuracy at higher taxonomic ranks may depend on the ability to trace 223 
+
+the annotations of parent clades. As virus taxonomy is traditionally built bottom -up, i.e., 224 
+
+beginning with species and genera, certain viruses may belong to “floating” taxa, i.e., taxa 225 
+
+that have not been included into higher -ranking taxa. For instance, the most current ICTV 226 
+
+taxonomy (Hendrickson et al., 2026) includes one floating g enus (Dinodnavirus), 29 floating 227 
+
+families, and a floating class ( Naldaviricetes ). None of these floating taxa could yet be 228 
+
+reliably linked to any established realm, but it is also unclear whether they represent novel 229 
+
+realms. Floating taxa may be connected to the virus taxonomy as it is further resolved. For 230 
+
+example, the family Anelloviridae , floating in the MSL39v4 , was assigned a full lineage in 231 
+
+realm Monodnaviria in the MSL40 v1 . Note that Monodnaviria has been recently reorganized 232 
+
+into four separate realms (Krupovic & Koonin, 2026) . However, here we refer to the former 233 
+
+taxon to remain consistent with the taxonomy at the time of the  Challenge.  Floating taxa 234 
+
+have also been established when, for instance, realm membership is clear but the lower 235 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+taxa are not. For instance, the realm Riboviria includes a floating family, Tonesaviridae, 236 
+
+which could not yet confidently be assigned to an order, class, phylum, or kingdom. 237 
+
+In case of absent labels in the taxonomic lineage of a reference virus , pipeline s that did not 238 
+
+assign the seq uence to any taxon were considered correct. As expected , all the pipelines 239 
+
+predicted les s accurate ly for the Expert dataset , which included novel sequences that were 240 
+
+not yet present in the database (Supplementary Table 3) . For the upper rank s from Realm to 241 
+
+Cl ass , to which the Study Group experts assign ed most contigs (76% -> 94% , Figure 2C ),242 
+
+geNomad, MMSeqs2 -2, PhaBOX, PhaGCN Cluster , vConTACT2 , VCAT, Metabuli , VirTaxon1 -243 
+
+2, Sourmash2 -3, and DNN -ICTV maintain ed an accuracy >50% . For the order and family 244 
+
+ranks , a lack of expert annotation (20% and 2 2% , respectively) made the data difficult to 245 
+
+interpret .246 
+
+247 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+Figure 2. (A) Classification a ccuracy of the entries across the primary virus taxonomy ranks for 248 
+
+sequences in the VMR datasets . Best -scoring contribution are shown w hen a team provided multiple 249 
+
+entries (based on score for the species rank) . (B) Classification accuracy restricted to the predicted 250 
+
+entries , i.e., excluding empty , “NA”, or “unclassified” calls . (C) Split -bubble plot showing the fraction 251 
+
+of sequences classified ( radius ) and classifica tion accuracy (color) at each taxonom ic rank for the 252 
+
+VMR and Expert dataset s (left and right half circle s, respectively ). As o nly 2/840 sequences were 253 
+
+assign ed below the family rank in the Expert dataset , the bottom two lines lack the right -hand half 254 
+
+circles. 255 
+
+## Consistent classifica tions across sequence transformations and 256 
+
+## pipeline configurations 257 
+
+One of the aims of the ICTV Computational Virus Taxonomy Challenge was to identify the 258 
+
+strengths and weaknesses of different pipelines in the face of de novo assembled contig 259 
+
+sequences such as may be obtained from metagenomics . To this end, sequences were 260 
+
+edited in different ways, including the introduction of single nucleotide replacements to 261 
+
+reflect sequencing errors or substitution mutations , fragmentation of viral genome 262 
+
+sequences into shorter contigs, reverse complement ation , and circular permut ation of the 263 
+
+viral sequences to mimic results from de novo assembly (Figure 1 AB D). This was used to 264 
+
+assess how the classification accuracies of all the pipelines are impacted b y these 265 
+
+transformations (Figure 3A , Supplementary Figure 1 , Supplementary Table 4 ). A general 266 
+
+emerging trend was a decrease in classification accuracy as transformations and random 267 
+
+substitutions were introduced , but these effects varied among pipelines . Some pipelines ,268 
+
+including Metabuli , Vclust, VCAT , geNomad, and VISTA , appear ed to be resilient to such 269 
+
+changes , wh ereas for PhaBOX and Vanjari, accuracy decreased with increasing substitution 270 
+
+rate . Vanjari wa s strongly impacted by reverse complemen tation , an issue that has been 271 
+
+addressed by the Vanjari team (Supplementary Methods) , and PhaBOX 2 was recently 272 
+
+rel eased that addres s some of these limi tat ions (Shang et al., 2026) .273 
+
+Several pipelines had high accuracy scores for genus and species classifications in the 274 
+
+Expert dataset. As only two sequences were assigned below the family rank, these high 275 
+
+scores reflect the fact that these pipelines did not assign most sequences at these ranks. 276 
+
+While the lack of taxonomic assignment is considered correct in this particular case, such 277 
+
+high accuracy values should still be interpreted with caution. Other pipelines, including 278 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+MMSeqs2 -1, Sourmash, Vanjari, and DNN -ICTV , did spuriously assign many sequences at 279 
+
+the lowest two ranks that could not be ascertained by experts , and had lower accuracy 280 
+
+scores as a direct result. 281 
+
+Seven pipeline s were run with several different parameter setting s (Metabuli, Vanjari, 282 
+
+VirTaxon , g eNomad 1.11, Sourmash ) or different data base s (CAT, MMS eqs2 ). In these cases, 283 
+
+consistency among the multiple entrie s was assessed by calculating the proportion of 284 
+
+sequences assigned consist ent labels , including the empty label (or NA), across the variants 285 
+
+of each of the pipeline s, at the main ranks (Figure 3B) . The mo st consisten t pipeline s were 286 
+
+Sourmash and g eNomad 1.11, assigning consistent labels to the sequences in both VMR 287 
+
+and Expert datasets , while VirTaxon and Metabuli showed consistency within the VMR 288 
+
+dataset . Finally, MMSeqs2 and Vanjari results had lower consisten cy within the lower 289 
+
+ranking taxa .290 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+291 
+
+Figure 3 : ( A) The VMR and Expert dataset s includ ed sequences with known taxonom ic classification 292 
+
+that were edited by fragment ation , random nucleotide substitutions, reverse complement ation , and 293 
+
+circular permut ation . Shown is how these various transformations impacted classifica tion accuracy 294 
+
+at all taxonomic ranks . Note that the VISTA and Vclust pipelines did not assign any sequences in the 295 
+
+Expert dataset (Table 1). (*) VirTaxon1 * and VirTax on3 * do not pro duce species rank predictions . (B)296 
+
+When multiple classification s were made by the same overall pipeline with different configurations 297 
+
+(number indicated between parentheses after the pipeline name), the within -pipeline fraction of 298 
+
+consistently predicted taxonomic labels was calculated to assess the ir consistency .299 
+
+## Classification performance across vi ral families 300 
+
+To assess how well different types of viruses could be computationally classified, we 301 
+
+calculated classification metrics for each of th e 278 virus famil ies in our combined VMR and 302 
+
+Expert datasets . The results are shown in Figure 4 for families in realm s with RNA -based 303 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+genomes , and in Figure 5 for DNA -based genomes and the families with an “Undefined” 304 
+
+group (i.e., families not assigned to any realm), consisting of DNA -based viruses except 305 
+
+Pospiviroidae , Ovaliviridae , Halspiviridae , and Avsunviroidae . The 18,258 sequences in 306 
+
+“Undefined” families were not evaluated here, as they may not represent single taxonomic 307 
+
+unit s. The number of availabl e sequences varied widely among families, ranging from 47 308 
+
+families represented by three sequences each, to others with thousands (maximum: 309 
+
+Geminiviridae with 2,814 sequences). The accuracy and false discovery rate (FDR) of e ach 310 
+
+entry was separately assessed on sequences without and with muta tion s (paired heatmap 311 
+
+column s in Figures 4 and 5). Some pipelines , such as PhaBOX, vConTACT2, and vConTACT3 312 
+
+differed considerably among realms, with good performance for Duplodnaviria (Figure 5) but 313 
+
+poor performance for Riboviria and Ribozyviria (Figure 4) . Although vConTACT2 was 314 
+
+designed for the classification of prokaryotic viruses and this constraint was removed in 315 
+
+vConTACT 3, the pipeline , at the time of testing (though not in latest versions), did still require 316 
+
+information about the domain of the host . As the default wa s set to a prokaryotic host, this 317 
+
+complicated its testing under the conditions of the Taxonomy Challenge. Similarly, PhaBOX 318 
+
+was mainly tailored to prokaryotic viruses , its successor PhaBOX2 has expanded its 319 
+
+database and updated its underlying models to cover a broader viral diversity (Shang et al., 320 
+
+2026) . Other pipeline s, including Metabuli, Sourmash, Viratax, Virtaxon, VCAT , and DNN -321 
+
+ICTV, had simila r accuracy scores for most families , with some exception s discussed below .322 
+
+Depending on the pipeline, accuracy was associated with the number of reference 323 
+
+sequences with in a family, as reflected by the sequence count , with correlation values 324 
+
+ranging from -0.2 for PhaBOX to 0.4 for Vanjari -4 (Supplementary Figure 3). The value was 325 
+
+positive for most tools, s how ing that it was generally easier to classify viruses in large 326 
+
+families than those in smaller ones. 327 
+
+Analysis of the viruses with RNA -based genome s (Figure 4) reveal ed that for all families, 328 
+
+sequences could be correctly assigned by at least one o f th e pipelines . Vclust, Sourmash, 329 
+
+Viratax, VCAT, Metabuli, and VirTaxon assigned sequences to families correctly , even in the 330 
+
+presence of random substitutions and fragmentation . Strikingly, s equences in specific 331 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+famili es were poorly predicted by some pipelines . For example , sequences from the 332 
+
+Pararnavirae kingdom or Abyssoviridae family were challenging for most teams .333 
+
+334 
+
+Figure 4: Result s for all 122 taxonomic famil ies of viruses with RNA genomes . (A) Cladogram showing 335 
+
+families organiz ed by realm , including Riboviria (Rb.) and the Ribozyviria (Rz.) . (B) Bar chart show ing 336 
+
+the number of sequences in the VMR and Expert datasets combined (log scale) . (C) Heatmap 337 
+
+showing the accuracy (color) and inverse false discovery rate (tile width ) on i) sequences without 338 
+
+substitution s, rotatio ns , or reverse comple mentation (left column for each entry ) and ii) sequences 339 
+
+that were cut and included 1% of random substitutions (right column ). For 5% mutations , see 340 
+
+Supplementary Figure 2. Floating f amilies not included in higher ranks are not shown . (D ) Number of 341 
+
+sequences within the MGnify dataset that were assign ed with high confidence (accuracy * (1 - FDR) 342 
+
+> 0.9) into each famil y by each pipeline .343 
+
+The analysis of viruses with DNA -based genomes (Figure 5) revealed a single famil y,344 
+
+Finnlakeviridae , which was challenging for all pipelines. Notably , the VMR dataset includ ed 345 
+
+a single sequence associated with that fam ily (i.e., that for Flavoba cterium phage FLiP ),346 
+
+wh ereas ten were present in the Expert dataset . Sequences associated with Microviridae 347 
+
+were also challenging to assign , as well as those of several floating families ( e.g. ,348 
+
+Fuselloviridae and Polydnaviriform idae ). A cause of this poor performance may be hidden 349 
+
+diversity within the family . F or example , the ICTV currently recognizes only two Microviridae 350 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+subfamilies ( Bullavirinae and Gokushovirinae ), fall ing short of the extensive diversity within 351 
+
+the family (dos Santos et al., 2025) .352 
+
+353 
+
+Figure 5 : Results for the 15 2 taxonomic families for viruses with DNA genomes (+4 floating families 354 
+
+with RNA genomes ). (A) Cladogram showing families organized by realm, including Duplodnaviria 355 
+
+(Dd.) , Monodnaviria (Md.) , Varidnaviria (Vd.) , and Adnaviri a (Ad.) , and Undefined . Four RNA virus 356 
+
+families are indicated with asterisks . (B) Bar chart showing the number of sequences in the VMR and 357 
+
+Expert datasets combined (log scale) . (C) Heatmap showing the accuracy (color) and inverse false 358 
+
+discovery rate (tile width ) on i) sequences without substitutions , rotatio ns , or reverse 359 
+
+comple mentation (left column for each entry) and ii) sequences that were cut and included 1% of 360 
+
+random substitutions (right column) . For 5% mutations, see Supplementary Figure 2. Floating 361 
+
+families not included in higher ranks are not shown . (D) Number of sequences within the MGnify 362 
+
+dataset that were assign ed with high confidence (accuracy * (1 - FDR) > 0.9) into each famil y by each 363 
+
+pipeline. 364 
+
+## Classification of viruses with unknown taxonomic position 365 
+
+Be sides the VMR and Expert datasets for which taxonomic information was available , we 366 
+
+in cluded 3,151 predicted viral contigs with unknown taxonomic affiliation , all found in 367 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+shotgun metagenomes in the MGnify database (Figure 1 D). To assess how consistently 368 
+
+these viruses wer e assigned , we compared the annotations by different tools and 369 
+
+contrasted the ir Shannon entropy values with those of the VMR dataset (Figure 6A B). The 370 
+
+assignment entropy was lower for sequences in the VMR dataset , illustrating that the 371 
+
+different pipelines generally agre ed on the assignment of sequences with a known taxonomy ,372 
+
+but less so for unknown ones that were missing from the training or reference databases .373 
+
+We next assessed the assignment consistency among the three se quence s derived from 374 
+
+each MGnify contig, to which different transformation operations were applied (“trim”, 375 
+
+“fragment + 1% substitutions”, “fragment + 5% substitutions” , see Figure 1). For each 376 
+
+pipeline, we calculated the fraction of cases for which assignments were consistent an d377 
+
+defined strict consistency as at least two out of three sequences being assign ed 378 
+
+consistently (the third can be blank) . When only one sequence was assign ed and the other 379 
+
+two were assigned as blank, we call ed it simply consistent (Figure 6C) . Only f ew MGnify 380 
+
+contigs wer e classified by most tools (Figure 6C) , especially in comparison with the VMR 381 
+
+dataset ( See Figure s 4 and 5 at family rank ). Exceptions were Vanjari and MMSeqs2 -1, which 382 
+
+assign ed most of the MGnify contigs , albeit less consistent ly than pipelines with lower 383 
+
+assignment rate s (Figure 6D , Supplementary Figure 3). Vanjari assign ed the most MGnify 384 
+
+contigs but also had the greatest assignment inconsistency amongst the three connected 385 
+
+se gment s.386 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+387 
+
+Figure 6 : (A) Distributions of Shannon entropy scores for assignment s of sequences in the VMR and 388 
+
+MGnify datasets at different taxonomic ranks . (B) Mean and median Shannon entropy scores and 389 
+
+estimated number of effective labels (median) at each taxonomic rank. (C , D) : Three sequence s were 390 
+
+derived from each of the 3,151 initial MGnify contigs, and underwent the operations “trim”, “fragment 391 
+
++1% substitutions , or “fragmen t +5% substitutions ” (Figure 1) . When the classification was the same 392 
+
+for three operations , or for two operations and a blank for the third, it was defined as strict 393 
+
+consistency . When assignment is present for a single operation and blank for the other two, it was 394 
+
+define d simply as consistent . (C) Heatmap show ing the per centage of sequences assign ed by each 395 
+
+pipeline in each cate gory ; bar chart shows the number of consistently assign ed entries for the family 396 
+
+rank . S trictly consistent in light blue (at least two out of three sequences being assign ed consistently, 397 
+
+the third can be blank) , and simply consistent in dark blue (one assignment and the two others are 398 
+
+blank ). (D) Fraction of assign ed sequences versu s ratio strict consistency (the number of perfect 399 
+
+agreement for the three sequences when at least two sequences out of three have been predicted) .400 
+
+The graph shows this at the family rank (s ee Supplementary Figure 4 for other ranks) .401 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+Next, we selected which assignments of the novel viral sequences might be most reliable. 402 
+
+Figures 4D and 5D show how many of the MGnify sequences were assigned to each family 403 
+
+with high confidence [accuracy * (1 - FDR) > 0.9]. These results were integrated into an 404 
+
+ensemble prediction that combines all family -specific accuracy scores and FDR metrics 405 
+
+(Figure 7A). In total, 498 sequences from 148 families were retrieved from the “tri m” section 406 
+
+of the MGnify dataset ( n=3,151). To benchmark the assignments with a tree -based approach 407 
+
+and prior to adding MGnify sequences, we generated viral proteomic trees (ViPTrees) for the 408 
+
+sequences that were assigned within each realm by using genome -wide sequence -409 
+
+similarities based on t BLAST x (Nishimura et al., 2017) . T his enabled assessing whether the 410 
+
+sequences assigned to families within the realms formed monophyletic clades. From the 411 
+
+VMR dataset, we randomly selected five sequences (or all available if fewer) for each of the 412 
+
+families and realms and built one tree per realm (Supplementary Figure 5). This information 413 
+
+was used to filter families for which monophylies could not be verified by this method. In a 414 
+
+second step, the MGnify sequences within the families predicted through the ensemble 415 
+
+method were selected and the tree was rebuilt, this time including both selected reference 416 
+
+and these ensemble sequences (Figure 7B, Supplementary Figure 6). The monophyletic 417 
+
+clades within the Monodnaviria and Adnaviria realms are shown in Figure 7B (see 418 
+
+Supplementary Figure 6 for all realms). The analysis (Figure 7A) reveal ed that nine and four 419 
+
+families contained MGnify sequences obtained using the ensemble method, yielding six and 420 
+
+three monophyletic clade assignments, respectively. Considering all realms together 421 
+
+(Figure 7C, Suppl ementary Figure 6), monophylies confirmed the classification of 212/498 422 
+
+sequences (42.6%) selected in the ensemble MGnify pipeline. 423 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+424 
+
+Figure 7 : (A) Pseudo -code of the ensemble selection (left -hand side) and validation pipeline with 425 
+
+VipTree (right -hand side) . (B) Circular ViPTree s for the Monodnaviria and Adnaviria realms (for other 426 
+
+realms , see Supplementary Figure 6), including “trim -only” sequences from the MGnify dataset .427 
+
+These sequences were assigned to families in the realm s via the ensemble selection process and 428 
+
+(up to) five random ly selected VMR reference sequences per family (blue dots) . The outer ring 429 
+
+represents the monophyly ratio of each family , i.e. , the ratio between the number of leaves for a given 430 
+
+family divided by the number of leaves within the clade of the Most Recent Common Ancestor 431 
+
+(MRCA) that includ es all members of that family . The inner ring alternates colors to highlight different 432 
+
+families. (C) Summary of the number of families per realm for the VMR -only and MGnify +VMR data .433 
+
+Only famili es with sequences assign ed by the pipelines are indicated (monophyletic families 434 
+
+between par entheses ). 435 
+
+## Usa bility and c omputational p erformance 436 
+
+An important goal of the ICTV Computational Virus Taxonomy Challenge was to bring 437 
+
+together reproducible virus taxonomy pipelines that are freely accessible in the public 438 
+
+domain . Thus, a ll scripts , pipeline s, and configuration files are available through GitHub 439 
+
+(Table 1, Supplementary Table 5 ). To assess the openness, reproducibility, and usability of 440 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+these resources, a ten -point evaluation framework was applied, encompassing repository 441 
+
+accessibility, documentation quality, installation guidance, dependency management, 442 
+
+automation, issue tracking, and overall organization. All repositories were accessible and 443 
+
+included clear documentation with installation instructions, enabling deployment in both 444 
+
+local and high -performance computing (HPC) environments. While the degree of 445 
+
+automation and workflow integration varied, many repositories were well -structured and 446 
+
+implemented best bioinformatics practices that support reproducible and transparent 447 
+
+software use. 448 
+
+To benchma rk the different pipeline s, we accessed all submitted GitHub repositories and 449 
+
+tested them on an HPC cluster , using the same CPU or GPU node for consistency . We 450 
+
+observed s ubstantial differences in runtime and memory requirements among the pipeline s451 
+
+(Figure 8, Supplementary Table 5) . For example, Sourmash , Vclust , and Viratax were very 452 
+
+fast and efficient (1.5, <5 , and <6 minutes , with 1. 5 GB , <16 GB , and <0.2 GB RAM ,453 
+
+respectively ). Metabuli variants were also very fast (3 –6 minutes ) but with high memory 454 
+
+requirement (>70 GB RAM ), although we note that the maximum memory can be set with the 455 
+
+"--max -ram" parameter , enabl ing it to run on con sumer grade computers (Lee et al., 2025) .456 
+
+The performance of Vanjari depend ed strongly on model configurations , with its ensemble 457 
+
+and fast models taking about one hour but with high memory usage ( ≈76 GB RAM ), wh ereas 458 
+
+its main models failed to complete within 72 h despite relatively low memory consumption 459 
+
+(≈16 GB RAM ). VISTA also did not complete within the 72 -h time limit ( ≈52 GB RAM). 460 
+
+Overall, the computational benchmarking revealed three broad ca tegories : (i) fast pipeline s461 
+
+with high memory requirements (Metabuli), (ii) moderate runtime pipelines with moderate 462 
+
+to high memory requirements (CAT, PhaBOX, vCon TACT 2, and VirTaxon), and (iii) fast and 463 
+
+memory -efficient pipeline s ( geNomad, Sourmash, Vclus t, V CAT , Viratax , and MMS eq s2-1). 464 
+
+In addition, some pipeline s had clear limit ations : V ISTA and the main Vanjari version s ran 465 
+
+prohibitively slow ly , wh ereas MMSeqs2 -2 and geNomad 1.11 had high memory 466 
+
+requirement s. These trade -offs underscore that pipeline selection will also need to consider 467 
+
+the availability of computational resources and time constraints. 468 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+469 
+
+Figure 8: Runtime and peak memory usage of all entrie s to the ICTV Taxonomy Challenge . Pipeline s470 
+
+were downloaded from the respective GitHub repositories and ran on the 59,907 sequences in the 471 
+
+challenge dataset , either on a CPU node (40 CPUs, 100 GB RAM) or a GPU node (40 CPUs, 100 GB 472 
+
+RAM, NVIDIA H100) o n a high -performance computing cluster . Jobs that exceeded three days of wall -473 
+
+clock time were terminated and are not shown cross ed on the graph (Vista, Vanjari5 -6), as the 474 
+
+runtimes were capped at 72 h. The a ccuracy displayed was calculated for the predicted fraction of 475 
+
+the VMR dataset at the family rank (Figure 2B) .476 
+
+477 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+# Discussion 478 
+
+## Classifying the virosphere 479 
+
+Thi s first ICTV Computational Virus Taxonomy Challenge asked a n important question for 480 
+
+modern virology : to what extent can automated, high - throughput computational tools 481 
+
+assign unannotated viral sequences to the fifteen ranks in the ICTV virus taxonomy ? The 482 
+
+dataset was compos ed of sequences derived from reference genomes of classified viruses 483 
+
+(VMR dataset ), sequences of previously unclassified viruses (Expert dataset), and 484 
+
+hypothetical vir us sequences predicted from metagenomic data (MGnify contigs) . The VMR 485 
+
+dataset generally had high assignment rates , suggesting that most tools perform well in 486 
+
+assign ing known viruses , wh ereas the Expert and MGnify datasets proved to be more 487 
+
+challenging . Together, the dataset enabled a rigorous benchmarking of the strengths and 488 
+
+limitations of current bioinformatic approaches .489 
+
+The submitted pipelines varied g reatly on the evaluated metrics of accuracy , false discovery 490 
+
+rate , and computational performance (time/memory) . The ability of fast tools with low o r491 
+
+configurable memory requirement s, such as Vclust, Sourmash, Metabuli, and VCAT , to 492 
+
+accurately assign known virus sequences , even when fragmented or mutated (VMR dataset), 493 
+
+suggests immediate utility in clinical and environmental surveillance pipelines or rapid 494 
+
+detection of known pathogens. Pipelines such as geNomad, MMSeqs2 -2, Metabuli, PhaB OX ,495 
+
+PhaGCN Cluster , vConTACT2, and VCAT maintained accuracy for the Expert dataset , albeit 496 
+
+with variable sensitivity , supporting their use for characterizing sequences from unexplored 497 
+
+viromes . As these viruses await official classification at lower taxonomic ranks , the 498 
+
+sequences from the Expert dataset were more accurately assign ed at high er ranks starting 499 
+
+at the family rank . VirTaxon uses a hybrid approach that integrates alignment -based and 500 
+
+deep -learning methods, resulting in high accuracy at the family and order ranks within the 501 
+
+Expert dataset. 502 
+
+The assignment gap between known and novel viruses remains substantial. While a 503 
+
+significant fraction of unknown sequences from the MGnify dataset could be consistently 504 
+
+placed into established families, many also remained unassigned . The se sequences may 505 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+represent deep -branching taxa whose affiliation is unresolved by the current ICTV 506 
+
+framework. Also , the sequences in the MGnify dataset were predicted to be virus -derived, 507 
+
+but they may not be. In metagenomic datasets, a common source of mis assignment 508 
+
+consists of human, bacterial, and other host -derived sequence s, whic h may be spuriously 509 
+
+interpret ed as viral . An important caveat in the design of this first Virus Taxonomy Challenge 510 
+
+was that we assumed that all sequences were derived from viruses, which made it possible 511 
+
+for tools such as VCAT to utilize a small, targeted reference database consisting only of 512 
+
+sequences belonging to ICTV -classified viruses. When a full database is used, 513 
+
+contaminating sequences from hosts or other cellular organisms may be more readily 514 
+
+detected, but it a lso complicates the classification of virus sequences, which may be 515 
+
+spuriously a nnotated. This is illustrated by the CAT -ncbi results , since this pipeline use d the 516 
+
+full NCBI non -redundant protein database and did not attempt to filter out non -viral hits .517 
+
+## Technical considerations 518 
+
+More often than expected, pipeline results included illegal labels (e.g., “ Flaviviridae -like”, 519 
+
+“Cluster 19”) and invalid combinations of labels along the taxonomic lineage (e.g., a genus 520 
+
+assigned to the wrong family) . Such anomalies have a direct negative impact on accuracy 521 
+
+but are easy to prevent, as they can be automatically detected . Another limitation that 522 
+
+became apparent during the evaluation of the pipelines is relat ed to the progressing nature 523 
+
+of virus taxonomy , and its yearly assessment by experts . Taxon names at different ranks may 524 
+
+change, e.g. , they may be abolished (removed entirely), renamed (given a new name), 525 
+
+demoted (moved to a lower rank), promoted (moved to a higher rank) , split into two or more 526 
+
+taxa, or merged (Simmonds et al., 2025) . Ideally, a classification pipeline would allow user s527 
+
+to specify which MSL version to use , e.g. , by implementing a command line parameter such 528 
+
+as “--msl_version 39v 4” or “ --msl_version latest” , which would make it more sustainably 529 
+
+applicable . Currently, VCAT is the only pipeline that enable s users to choose between 530 
+
+MLS39 or MSL40 with the “--dbversion ” option. Automatically updating the reference 531 
+
+database would benefit greatly from a single access point for download ing all ICTV -532 
+
+classified sequences (i.e. , those listed in the VMR or MSL) , which is possible in the recently 533 
+
+published VirJenD B database (Saghaei et al., 2026) .534 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+A critical challenge fo r automated virus classification is th e inconsistency , and sometimes 535 
+
+even the absence , of species and genus demarcation criteria , even for ICTV -ratified taxa 536 
+
+(Box 1AB) . One of the premises of th is Taxonomy Challenge was that viruses are so diverse 537 
+
+that no single taxonomic method can be used to classify them all (Simmonds et al., 2023) .538 
+
+However, only few of the pipelines were biased for specific families or realms , even though 539 
+
+they used very different computational methodologies (Extended Methods) . This holds 540 
+
+promise for computational virus taxonom ic classification and suggests that diverse virus 541 
+
+sequences may be confidently assigned with a single approach . Some ICTV Subcommittees 542 
+
+and Expert Groups have already adopted genome -based criteria that standardize 543 
+
+demarcation of low -rank taxa , supported by evolutionary analyses  (Chiumenti et al., 2021; 544 
+
+Deng et al., 2022; Turner et al., 2021; Van Doorslaer, 2022) . As the virus taxonomy remains 545 
+
+a living project that depends on the contributions of exper ts around the world who feed it 546 
+
+with new insights, we hope that the findings described above , including any inconsistencies 547 
+
+between the pipeline assignments and the ICTV taxonomy , will inspire these experts to dig 548 
+
+deeper an d unravel the underlying causes and patterns , further improv ing the taxonom y.549 
+
+## Outlook 550 
+
+In t he ICTV Taxonomy Challenge , the focus was to assess the assignm ent of unlabeled virus 551 
+
+sequences into the established ICTV taxonomy using computational methods. F uture 552 
+
+studies might also assess the potential of computational tools to suggest novel taxa at all 553 
+
+ranks , or even the need for additional ranks. An important direction for future computational 554 
+
+research is thus to shift from assign ing sequences to established tax a to propos ing and 555 
+
+delineat ing novel taxa. Integration of reproducible, data -driven computational methods is 556 
+
+essential to transition the virus taxonomy into a sustainable platform that can scale with the 557 
+
+rate of virus discovery. As the availability of complete genome sequences is a main criterion 558 
+
+for approval of a taxonomy proposal by the ICTV, completeness evaluation would be a 559 
+
+critical aspect of such tools. 560 
+
+An important finding of our benchmarking study is the observation that for most tools, 561 
+
+viruses were more accurately classified in large families with many reference sequences 562 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+than in smaller families. This highlights the importance of further charting the virosphere, 563 
+
+and the value for ICTV of validating and formally classifying rare viruses associated with less 564 
+
+well -described taxa. The availability of multiple and diverse genome sequences will clarify 565 
+
+the genomic profile of these taxa and improve the overall performance of automated 566 
+
+classification tools. 567 
+
+This first ICTV Computational Virus Taxonom y Challenge highlight s the rapidly maturing field 568 
+
+of vir us bioinformatics . As virus discovery accelerates, tools and pipelines with 569 
+
+complementary strengths will provide a foundation for scalable, reproducible , and 570 
+
+replicable classification of known and novel viruses. Continued community -driven 571 
+
+benchmarking and close collaboration between computational developers and taxonomic 572 
+
+experts, promises a future where computational methods enable us to keep pace with the 573 
+
+expanding view of the virosphere , actively sup port ing a more complete, accurate, and 574 
+
+adaptable virus taxonomy. 575 
+
+576 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+# Materials and Methods 577 
+
+## Organization of the community -driven challenge 578 
+
+The foundations for community engagement in the ICTV Computational Virus Taxonomy 579 
+
+Challenge were laid during the ICTV Computational Taxonomy workshop that was organized 580 
+
+in the Summer of 202 3 in Jena , Germany. The workshop gathered virologists and 581 
+
+bioinformaticians for two days of discussion about the future of virus taxonomy 582 
+
+(https://evbc.uni -jena.de/events/virus -taxonomy -workshop/ ). Virologists from multiple 583 
+
+ICTV Study Groups were contacted and request ed to weigh in with their expertise as part of 584 
+
+the Challenge. Following this initial interaction , and upon rece ipt of expert classification s of 585 
+
+the novel viral sequences , we developed a website to communicate the challenge, specify 586 
+
+its goals, and provide access to the dataset of unlabeled query sequences ( https://ictv -587 
+
+vbeg.github.io/ICTV -TaxonomyChallenge/ ). 588 
+
+## Description of the input datasets used in the challenge 589 
+
+Three separate datasets were used in the challenge: i) VMR dataset: GenBank accession 590 
+
+numbers listed in the ICTV Virus Metadata Resource file VMR_MSL38_v2 were used to 591 
+
+download the corresponding genome sequences from NCBI GenBank , yielding 12,624 592 
+
+entries (Sayers et al., 2025) . Because some genome sequences (e.g., those of segmented 593 
+
+viruses) are covered by multiple GenBank files, the final yield of s equences of known 594 
+
+taxonomic affiliation was 15,978 nucleotide sequences . We subsequently removed 78 595 
+
+sequences from version MSL 39v4 of the ICTV taxonomy that was published by the end of the 596 
+
+challenge submission period; ii) Expert dataset: 840 viral sequences were retrieved from a 597 
+
+curated subset of the IMG metagenome database  (Chen et al., 2023; F ong et al., 2024; 598 
+
+Martinez -Garcia et al., 2024) . These sequences were tentatively assigned to the following 599 
+
+established taxa or groups:  Amalgaviridae , Caudoviricetes , Cressdnavi ricota , DJR phages, 600 
+
+Finnlakeviridae , Fuselloviridae , Huolima viricetes/ Laserviricetes,  Huolimaviricetes ,601 
+
+Microviridae , Preplasmiviricota , Naldaviricetes , Parvoviridae , virophage s, and  polinton -like 602 
+
+viruses . We subsequently contacted ICTV Study Group experts to aid in the taxonomic 603 
+
+classification of these sequences, who confirmed the proposed classifications for 62% of 604 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+this dataset (521 sequences); and iii) MGnify dataset : for this dataset, we downloaded all 605 
+
+16,702 publicly available assembled metagenomes from the MGnify database as of August 606 
+
+2023, predicted contigs of viral origin with Jaeger (total: 16,152,059 contigs ), and provided a 607 
+
+preliminary taxonomic classifi cation with geNomad (Camargo et al., 2024; Richardson et al., 608 
+
+2023; Wijesekara et al., 2024) . The preliminary geNomad classifications were used t o obtain 609 
+
+a diverse set of contigs between 5 kb and 300 kb : w e randomly selected 20 contigs from 610 
+
+each classified taxon (at any rank) that was represented by >20 contigs , 10 contigs from tax a611 
+
+represented by more than 10 but less than 20 contigs, all the contigs from the remaining 612 
+
+classified taxa , 500 o f the contigs that were only classified as "Virus" , and 1 ,000 contigs that 613 
+
+had no geNomad classification. This yielded a total of 3,151 metagenomic contigs. 614 
+
+## Creating the dataset of sequences for the challenge 615 
+
+The combined dataset was duplicated, enabling different operations, and systematically 616 
+
+edited to introduce error s typically found in virus contigs discovered in metagenomic 617 
+
+assemblie s (Figure 1) . In half of the data (one duplicate of the full dataset ), sequences were 618 
+
+split in to four equal fragmen ts, of which two we re randomly selected , and 1% or 5% single 619 
+
+nucleotide substitu tions were randomly introduced , respectively. Sequences in t he other 620 
+
+half of the data were processed depending on the source: i) sequences from the VMR 621 
+
+dataset were trimmed, rotated, reverse -complemented, or no t modifi ed , ii) sequences from 622 
+
+the Expert dataset were not modified , and iii) sequences from the MGnify dataset were 623 
+
+reverse -complemented or not modified . The final dataset available to the participants 624 
+
+consisted of 59,907 sequences, from wh ich 234 (i.e., 3x 78) were subsequently removed as 625 
+
+they were abolished in ICTV MSL39v4 used for the challenge. Th is dataset was provided as 626 
+
+fasta file s with anonymized entry header s. 627 
+
+## Evaluation of the classification metrics 628 
+
+The scoring of the entrie s was divided in to two parts . W e first focused on sequences for 629 
+
+which “ground truth” taxonomy information was available , either because the sequences 630 
+
+were derived from virus es previously classified by the ICTV (VMR dataset) , or classification 631 
+
+was proposed by ICTV Study Group e xpert s (Expert dataset ). Then we focused on sequences 632 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+for which taxonomy information was not available (MGnify dataset) . Accuracy was 633 
+
+calculated at all ranks by tallying exact matches of the annotations with the ground truth 634 
+
+dataset . Accuracy was further broken down by the various sequence transformatio n635 
+
+operations (see previous section) and by dataset (VMR, Expert, or combined) . Unavailable 636 
+
+taxa of any ranks were encoded as “ nan ” in the ground truth dataset . When considering the 637 
+
+predictions, m issing names (empty string) or the value “NA” were considered as equal . We 638 
+
+calcu lated the False Discovery Rate (FDR) by considering explicit calls only , i.e. , not 639 
+
+considering missing names , with FDR = (false positives ) / (true positives + false positives) .640 
+
+## Benchmarking the classification of unknown sequences (MGnify 641 
+
+## dataset) 642 
+
+To assess the predictions of entries related to the MGnify dataset (9,454 sequences 643 
+
+available, see Figure 1), the following benchmarkin g strategies were applied: 1) calculating 644 
+
+the Shan non entropy of the predictions between -pipelines , 2) comparing the consistency of 645 
+
+predictions within -pipeline across the transformation processes (“trim”, “fragment +1% 646 
+
+substitutions, and “fragment +5% substitutions”) , and 3) an ensemble method to select 647 
+
+sequences with consistent predictions across multiple pipelines, followed by comparative 648 
+
+genomics with known viral sequences to assess their assignment . For the latter 649 
+
+benchmarking strategy, initial VMR -only trees were calculated fo r each of th e realms exce pt 650 
+
+Ribozyviria (for which no sequences were predicted to belong across all pipelines) . This was 651 
+
+done by selecting five sequences (or all i f fewer were available) at random from the VMR 652 
+
+dataset for each of the component families and analyz ing them using VipTree v1.1.2 with 653 
+
+default options (Nishimura et al., 2017) . Resulting BIONJ trees were loaded into R, mid -654 
+
+point -rooted, and visualized together with the metadata using ggtree v3.10.1 (Yu et al., 2017) .655 
+
+Monophyly analysis was performed using the ape::is.monophyletic() function in ap e v5.8 656 
+
+(Paradis & Schliep, 2019) . T he monophyly ratio was defined as follow s: for a given family (F), 657 
+
+take all the related tips in the tree (size(F)), and determine their Most Recent Common 658 
+
+Ancest or (MRCA) . The monophyly ration is then: size(F)/size(MRCA(F)). In a second step, the 659 
+
+sequences from the MGnify dataset that had undergone the “trim” operation were analyzed 660 
+
+using an ense mble approach. For each family and for each pipeline, the metric (accuracy * 661 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+(1 - FDR) ) was used to subset predicted sequences , retaining sequences where the metric 662 
+
+was greater than 0.9 . When a team provided multiple pipelines, a union operation was 663 
+
+applied to keep a sing le representative sequence . The sequences were then kept if they were 664 
+
+predicted to belong to a family by >50% of the pipelines and were added to the VMR 665 
+
+sequences to build VMR+MGnify trees , which were then assessed again for monophyly. 666 
+
+## Benc hmarking computational performance 667 
+
+Computational performance was benchmark ed using the full Taxonomy Challenge dataset ,668 
+
+consisting of 59, 634 sequences in fasta file s. Each pipeline was executed either on a CPU 669 
+
+node (40 CPUs, 100 GB RAM) or a GPU node (40 CPUs, 100 GB RAM, NVIDIA H100) on a High -670 
+
+Performance Computing (HPC) cluster. Default parameters were used unless a tool -671 
+
+specific configuration was required (for version information, key command s, and other 672 
+
+details see Supplementary Table 5 ). Runtime and pe ak memory usage were recorded. Job s673 
+
+that exceeded three days of wall -clock time were terminated , and their runtimes were 674 
+
+capped at 72 h. PhaGCN Cluster and DNN -ICTV could not be benchmarked due to 675 
+
+conflicting installation requirements (see comments in Supplementary Table 5) .676 
+
+# Data availability statement 677 
+
+The ICTV Taxonomy Challenge D ataset and processing scripts are available through Zenodo 678 
+
+at  https://doi.org/10.5281/zenodo.20694980 679 
+
+# Acknowledgments 680 
+
+Y.B. National Natural Science Foundation of China (Grant No. 32270019). G.B. was 681 
+
+supported by resources provided by the Pawsey Supercomputing Research Centre’s 682 
+
+Setonix Supercomputer (https://doi.org/10.48569/18sb -8s43), with funding from the 683 
+
+Australian Government and the Government of Western Australia. R.B. was supported [in 684 
+
+part] by the National Center for Biotechnology Information of the National Library of 685 
+
+Medicine (NLM), National Institutes of Health (NIH). The contributions of the NIH author(s) 686 
+
+are considered Works of the United States Government. The findings and conclusions 687 
+
+presented in this paper are those of the author(s) and do not necessarily reflect the views of 688 
+
+the NIH or the U.S. Department of Health and Human Services. A.P.C. was supported by the 689 
+
+São Paulo Research Foundation (FAPESP, grant 2021/10577 -0) and the National Institutes 690 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+of Health (NIH, grant 5U01DE034196 -02). L.D.C. was funded by the Research Foundation 691 
+
+Flanders (11L1325N) . S.D. was supported by the National Science Centre, P oland, project 692 
+
+DEC -2022/45/B/ST6/03032 . B.E.D. was funded by the European Research Council (ERC) 693 
+
+Consolidator grant 865694: DiversiPHI, the Deutsche Forschungsgemeinschaft (DFG, 694 
+
+German Research Foundation) under Germany’s Excellence Strategy – EXC 2051 – Project -695 
+
+ID 39071386, the Alexander von Humboldt Foundation in the context of an Alexander von 696 
+
+Humboldt -Professorship founded by the German Federal Ministry of Education and 697 
+
+Research. R.A. E. was supported by awards from the Australian Research Council 698 
+
+DP250 103825 and FL250100019. A.G. was supported by the National Science Centre, 699 
+
+Poland, project DEC -2022/45/B/ST6/03032 . L.K. was funded by the European Union, ViroInf 700 
+
+grant number 955974, APPEAL grant number 101137311 . J.K. was funded by the National 701 
+
+Research Foundation of Korea (grants 2020M3 -A9G7 -103933, RS -2021 -NR061659, RS -702 
+
+2021 -NR056571 and RS -2024 -00396026), Samsung DS research fund, Creative -Pioneering 703 
+
+Researchers Program and AI -Bio Research Grant through Seoul National University, Novo 704 
+
+Nordisk Foundation (NNF24SA0092560) . C.L. acknowledge a Marie Skłodowska -Curie 705 
+
+Actions Postdoctoral Fellowship from the UKRI Horizon Europe Guarantee program (grant 706 
+
+agreement no. EP/Y029585/1), Deutsche Forschungsgemeinschaft (DFG, German 707 
+
+Research Foundation) under Germany's Excellence Strategy – EXC 2051 – Project -ID 708 
+
+390713860. E.J.L. was supported by the National Institute of Allergy and Infectious Diseases 709 
+
+of the U.S. National Institutes of Health under Award Number U24AI162625. Y.L. was funded 710 
+
+by the National Natural Sci ence Foundation of China (Grant No. 32270019). J.R. was f und ed 711 
+
+by the Swedish Research Council Starting Grant ID 2023 -03310_VR . L. R. ackno wledges the 712 
+
+contribution and support from the Italian national Node (MIRRI -IT) of the Europ ean Research 713 
+
+Infrastructure MIRR I-ERIC. S.S. acknowledges support from the Mississippi Agricultural and 714 
+
+Forestry Experiment Station (MAFES), USDA -ARS agreement 58 -6066 -3-044, USDA -NIFA 715 
+
+SCRI Grant 1029242, and NIFA -USDA Hatch Project 7006130. M.S. was funded by the 716 
+
+National Research Foundation of Korea (grants 2020M3 -A9G7 -103933, RS -2021 -NR061659, 717 
+
+RS -2021 -NR056571 and RS -2024 -00396026), Samsung DS research fund, Creative -718 
+
+Pioneering Researchers Program and AI -Bio Research Grant through Seoul National 719 
+
+University, Novo Nordisk Foundation (NNF24SA0092560) . Y.S. High performance 720 
+
+computing support from City University of Hong Kong, the Hong Kong Innovation and 721 
+
+Technology Fund (ITF) [MRP/071/20X] , RGC GRF CityU 11209823, and CityU 9667256 . L.T. 722 
+
+was supported by the National Natural Science Foundation of China (Grant No. 32270019). 723 
+
+R.T. was supported by The University of Melbourne’s Research Computing Services and the 724 
+
+Petascale Cam pus Initiative. A.V. is partly funded by a National Science Foundation grant # 725 
+
+2412446. Y.W. was f und ed by the European Union, ViroInf grant number 955974, APPEAL 726 
+
+grant number 101137311 . A.Z. was f unded by computational grant number pl0074 -02 from 727 
+
+the Poznan Supercomputing and Networking Center . S.R. thank s Patrick Chain, Manuel 728 
+
+Martinez -Garcia, Thomas Mock, and their respective teams, for agreeing to share specific 729 
+
+viral sequences identified in their unpublished datasets as part of this challenge. The work 730 
+
+conducted by the U.S. Department of Energy Joint Genome Institute 731 
+
+(https://ror.org/04xm1d337), a DOE Office of Science User Facility, is supported by the 732 
+
+Office of Science of the U.S. Department of Energy operated under Contract No. DE -AC02 -733 
+
+05CH11231. 734 
+
+735 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+# References 736 
+
+Bin Jang, H., Bolduc, B., Zablocki, O., Kuhn, J. H., Roux, S., Adriaenssens, E. M., Brister, J. 737 
+
+R., Kropinski, A. M., Krupovic, M., Lavigne, R., Turner, D., & Sullivan, M. B. (2019). 738 
+
+Taxonomic assignment of uncultivated prokaryotic virus genomes is enabled by 739 
+
+gene -sharing networks. Nature Biotechnology , 37 (6), 632 –639. 740 
+
+https://doi.org/10.1038/s41587 -019 -0100 -8741 
+
+Black, E. J., Powell, C. S., Dempsey, D. M., Hendrickson, R. C., Mims, L. R., & Lefkowitz, E. 742 
+
+J. (2026). Virus taxonom y: The database of the International Committee on 743 
+
+Taxonomy of Viruses. Nucleic Acids Research , 54 (D1), D776 –D789. 744 
+
+https://doi.org/10.1093/nar/gkaf1159 745 
+
+Camargo, A. P., Roux, S., Schulz, F., Babinski, M., Xu, Y., Hu, B., Chain, P. S. G., Nayfach, 746 
+
+S., & Kyrpides, N. C. (2024). Identification of mobile genetic elements with 747 
+
+geNomad. Nature Biotechnology , 42 (8), 1303 –1312. 748 
+
+https://doi.org/10.1038/s41587 -023 -01953 -y749 
+
+Chen, I. -M. A., Chu, K., Palaniappan, K., Ratner , A., Huang, J., Huntemann, M., Hajek, P., 750 
+
+Ritter, S. J., Webb, C., Wu, D., Varghese, N. J., Reddy, T. B. K., Mukherjee, S., 751 
+
+Ovchinnikova, G., Nolan, M., Seshadri, R., Roux, S., Visel, A., Woyke, T., … Ivanova, 752 
+
+N. N. (2023). The IMG/M data management and analysis system v.7: Content 753 
+
+updates and new features. Nucleic Acids Research , 51 (D1), D723 –D732. 754 
+
+https://doi.org/10.1093/nar/gkac976 755 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+Chiumenti, M., Navarro, B., Candresse, T., Flores, R., & Di Serio, F. (2021).  Reassessi ng 756 
+
+species demarcation criteria in viroid taxonomy by pairwise identity matrices. Virus 757 
+
+Evolution , 7(1), veab001. https://doi.org/10.1093/ve/veab001 758 
+
+Cook, R., Brown, N., Rihtman, B., Michniewski, S., Redgwell, T., Clokie, M., Stekel, D. J., 759 
+
+Chen, Y., Scanlan, D. J., Hobman, J. L., Nelson, A., Jones, M. A., Smith, D., & Millard, 760 
+
+A. (2024). The long and short of it: Benchmarking viromics using Illumina, Nanopore 761 
+
+and PacBio sequencing technologies. Microbial Genomics , 10 (2), 001198. 762 
+
+https://doi.org/10.1099/mgen.0.001198 763 
+
+Deng, Z., Xia, X., Deng, Y., Zhao, M., Gu, C., Geng, Y., Wang, J., Yang, Q., He, M., Xiao, Q., 764 
+
+Xiao, W., He, L., Liang, S., Xu, H., Lü, M., & Yu, Z. (2022). ANI analysis of poxvirus 765 
+
+genomes reveals its potential application to viral species rank demarcation.  Virus 766 
+
+Evolution , 8(1), veac031. https://doi.org/10.1093/ve/veac031 767 
+
+dos Santos, I. C., de Souza, R. di S., Tolstoy, I., Oliveira, L. S., & Gruber, A. (2025). 768 
+
+Integrating Sequence - and Structu re -Based Similarity Metrics for the Demarcation 769 
+
+of Multiple Viral Taxonomic Levels. Viruses , 17 (5), 642. 770 
+
+https://doi.org/10.3390/v17050642 771 
+
+Dutilh, B. E., Varsani, A., Tong, Y., Simmonds, P., Sabanadzovic, S., Rubino, L., Roux, S., 772 
+
+Muñoz, A. R., Lood, C., Lefkowitz, E. J., Kuhn, J. H., Krupovic, M., Edwards, R. A., 773 
+
+Brister, J. R., Adriaenssens, E. M., & Sullivan, M. B. (2021). Perspective on taxonomic 774 
+
+classification of uncultivated viruses. Current Opinion in Virology , 51 , 207 –215. 775 
+
+https://doi.org/10.1016/j.coviro.2021.10.011 776 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+Fong, A. A., Hoppe, C. J. M., Aberle, N., Ashjian, C. J., Assmy, P., Bai, Y., Bakker, D. C. E., 777 
+
+Balmonte, J. P., Barry, K. R., Bertilsson, S., Boulton, W., Bowman, J., Bozzato, D., 778 
+
+Bratbak, G., Buck, M., Campbell, R. G., Castellani, G., Chamberlain, E. J., Chen, J., 779 
+
+… Gradinger, R. R. (2024). Overview of the MOSAiC expedition: Ecosystem. 780 
+
+Elementa: Science of the Anthropocene , 12 (1), 00135. 781 
+
+https://doi.org/10.1525/elementa.2023.00135 782 
+
+Gorbalenya, A. E., Baker, S. C., Baric, R. S., de Groot, R. J., Drosten, C., Gulyaeva, A. A., 783 
+
+Haagmans, B. L., Lauber, C., Leontovich, A. M., Neuman, B. W., Penzar, D., 784 
+
+Perlman, S., Poon, L. L. M., Samborskiy, D. V., Sidorov, I. A., Sola, I., Ziebuhr, J., & 785 
+
+Coronaviridae Study Group of the International Committee on Taxonomy of Viruses. 786 
+
+(2020). The species Severe acute respiratory syndrome -related coronavirus: 787 
+
+Classifying 2019 -nCoV and naming it SARS -CoV -2. Nature Microbiology , 5(4), 536 –788 
+
+544. https://doi.org/10.1038/s41564 -020 -0695 -z789 
+
+Gorbalenya, A. E., Krupovic, M., Mushegian, A., Kropinski, A. M., Siddell, S. G., Varsani, A., 790 
+
+Adams, M. J., Davison, A. J., Dutilh, B. E., Harrach, B., Harrison, R. L., Junglen, S., 791 
+
+King, A. M. Q., Knowles, N. J., Lefkowitz, E. J., Nibert, M. L., Rubino, L., 792 
+
+Sabanadzovic, S., Sanfaçon, H., … International Committee on Taxonomy of Viruses 793 
+
+Executive Committee. (2020). The new scope of virus taxonomy: Partitioning the 794 
+
+virosphere into 15 hierarchical ranks. Nature Microbiology , 5(5), 668 –674. 795 
+
+https://doi.org/10.1038/s41564 -020 -0709 -x796 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+Hendrickson, C., Mims, L., & Lefkowitz, E. (2026). ICTV -Virus -797 
+
+Knowledgebase/ICTVdatabase: Taxonomy Release: MSL41.v1 20260320 [Computer 798 
+
+software]. Zenodo. https://doi.org/10.5281/zenodo.19339543 799 
+
+Irber, L., Pierce -Ward, N. T., Abuelanin, M., Alexander, H., Anant, A., Barve, K., Baumler, C., 800 
+
+Botvinnik, O., Brooks, P., Dsouza, D., Gautier, L., Hera, M. R., Houts, H. E., Johnson, 801 
+
+L. K., Klö tzl, F., Koslicki, D., Lim, M., Lim, R., Nelson, B., … Brown, C. T. (2024). 802 
+
+sourmash v4: A multitool to quickly search, compare, and analyze genomic and 803 
+
+metagenomic data sets. Journal of Open Source Software , 9(98), 6830. 804 
+
+https://doi.org/10.21105/joss.06830 805 
+
+Kim, J., & Steinegger, M. (2024). Metabuli: Sensitive and specific metagenomic 806 
+
+classification via joint analysis of amino acid and DNA. Nature Methods , 21 (6), 971 –807 
+
+973. https://doi.org/10.1038/s41592 -024 -02273 -y808 
+
+Krupovic, M., & Koonin, E. V. (2026). Organization and evolution of the virosphere and the 809 
+
+replicator space. Comptes Rendus. Biologies , 349 (G1), 35 –75. 810 
+
+https://doi.org/10.5802/crbiol.193 811 
+
+Lee, S., Kim, J., Mirdita, M., Gilchrist, C. L. M., & Steinegger, M. (2025). Easy and interactive 812 
+
+taxonomic profiling with Metabuli App. Bioinformatics , 41 (10), btaf557. 813 
+
+https://doi.org/10.1093/bioinformatics/btaf557 814 
+
+Martinez -Garcia, M., Martinez -Hernandez, F., Gomez, M. L., Vila -Nistal, M., Roux, S., & 815 
+
+Fornas, O. (2024).  Limited consensus of marine viral diversity observed across 816 
+
+techniques . Research Square. https://doi.org/10.21203/rs.3.rs -5482008/v1 817 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+Mayne, R., Aiewsakun, P., Turner, D., Adriaenssens, E. M., & Simmonds, P. (2024). 818 
+
+GRAViTy -V2: A grounded viral taxonomy application. NAR Genomics and 819 
+
+Bioinformatics , 6(4), lqae183. https://doi.org/10.1093/nargab/lqae183 820 
+
+Meyer, F., Lesker, T. -R., Koslicki, D., Fritz, A., Gure vich, A., Darling, A. E., Sczyrba, A., 821 
+
+Bremges, A., & McHardy, A. C. (2021). Tutorial: Assessing metagenomics software 822 
+
+with the CAMI benchmarking toolkit. Nature Protocols , 16 (4), 1785 –1801. 823 
+
+https://doi.org/10.1038/s41596 -020 -00480 -3824 
+
+Mokili, J. L., Rohwer, F., & Dutilh, B. E. (2012). Metagenomics and future perspectives in 825 
+
+virus discovery. Current Opinion in Virology, Virus Entry/Environmental Virology ,826 
+
+2(1), 63 –77. https://doi.org/10.1016/j.coviro.2011.12.004 827 
+
+Nishimura, Y., Yoshida, T., Kuronishi, M., Uehara, H., Ogata, H., & Goto, S. (2017). ViPTree: 828 
+
+The viral proteomic tree server. Bioinformatics , 33 (15), 2379 –2380. 829 
+
+https://doi.org/10.1093/bioinformatics/btx157 830 
+
+Paradis, E., & Schliep, K. (2019). ape 5.0: An environment for modern phylogenetics and 831 
+
+evolutionary analyses in R. Bioinformatics , 35 (3), 526 –528. 832 
+
+https://doi.org/10.1093/bioinformatics/bty633 833 
+
+Pierce, N. T., Irber, L., Reiter, T., Brooks, P., & Brown, C. T. (2019). Large -scale sequence 834 
+
+comparisons with sourmash. F1000Research. 835 
+
+https://doi.org/10.12688/f1000research.19675.1 836 
+
+Richardson, L., Allen, B., Baldi, G., Beracochea, M., Bileschi, M. L., Burdett, T., Burgin, J., 837 
+
+Caballero -Pérez, J., Cochrane, G., Colwell, L. J., Curtis, T., Escobar -Zepeda, A., 838 
+
+Gurbich, T. A., Kale, V., Korobeynikov, A., Raj, S., Rogers, A. B., Sakharova, E., 839 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+Sanchez, S., … Finn, R. D. (2023). MGnify: The microbiome sequence data analysis 840 
+
+resource in 2023. Nucleic Acids Research , 51 (D1), D753 –D759. 841 
+
+https://doi.org/10.1093/nar/gkac1080 842 
+
+Roux, S., Adriaenssens, E. M., Dutilh, B. E., Koonin, E. V., Kropinski, A. M., Krupovic, M., 843 
+
+Kuhn, J. H., Lavigne, R., Brister, J. R., Varsani, A., Amid, C., Aziz, R. K., Bordenstein, 844 
+
+S. R., Bork, P., Breitbart, M., Cochrane, G. R., Daly, R. A., Desnues, C., Duhaime, M. 845 
+
+B., … Eloe -Fadrosh, E. A. (2019). Minimum Information about an Uncultivated Virus 846 
+
+Genome (MIUViG). Nature Biotechnology , 37 (1), 29 –37. 847 
+
+https://doi.org/10.1038/nbt.4306 848 
+
+Saghaei, S., Siemers, M., Ossetek, K. L., Richter, S., Edwards, R. A., Roux, S., Zielezinski, 849 
+
+A., Dutilh, B. E., Marz, M., & Cassman, N. A. (2026). VirJenDB: A FAIR (meta)data and 850 
+
+bioinformatics platform for all viruses. Nucleic Acids Research , 54 (D1), D912 –851 
+
+D924. https://doi.org/10.1093/nar/gkaf1224 852 
+
+Sayers, E. W., Beck, J., Bolton, E. E., Brister, J. R., Chan, J., Connor, R., Feldgarden, M., 853 
+
+Fine, A. M., Funk, K., Hoffman, J., Kannan, S., Kelly, C., Klimke, W., Kim, S., Lathrop, 854 
+
+S., Marchler -Bauer, A., Murphy, T. D., O’Sullivan, C., Schmieder, E., … Pruitt, K. D. 855 
+
+(2025). Database resources of the National Center for Biotechnology Information in 856 
+
+2025. Nucleic Acids Research , 53 (D1), D20 –D29. 857 
+
+https://doi.org/10.1093/nar/gkae979 858 
+
+Schoch, C. L., Ciufo, S., Domrachev, M., Hotton, C. L., Kannan, S., Khovanskaya, R., Leipe, 859 
+
+D., Mcveigh, R., O’Neill, K., Robb ertse, B., Sharma, S., Soussov, V., Sullivan, J. P., 860 
+
+Sun, L., Turner, S., & Karsch -Mizrachi, I. (2020). NCBI Taxonomy: A comprehensive 861 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+update on curation, resources and tools. Database , 2020 , baaa062. 862 
+
+https://doi.org/10.1093/database/baaa062 863 
+
+Shang, J., Peng, C., Guan, J., Cai, D., Wang, D., & Sun, Y. (2026). PhaBOX2: An enhanced 864 
+
+web server for discovering and analyzing viral contigs in metagenomic data. Nucleic 865 
+
+Acids Research , gkag382. https://doi.org/10.1093/nar/gkag382 866 
+
+Shang, J., Pen g, C., Liao, H., Tang, X., & Sun, Y. (2023). PhaBOX: A web server for identifying 867 
+
+and characterizing phage contigs in metagenomic data. Bioinformatics Advances ,868 
+
+3(1), vbad101. https://doi.org/10.1093/bioadv/vbad101 869 
+
+Siddell, S. G., Smith, D. B., Adriaenssens, E., Alfenas -Zerbini, P., Dutilh, B. E., Garcia, M. L., 870 
+
+Junglen, S., Krupovic, M., Kuhn, J. H., Lambert, A. J., Lefkowitz, E. J., Łobocka, M., 871 
+
+Mushegian, A. R., Oksanen, H. M., Robertson, D. L., Rubino, L., Sabanadzovic, S., 872 
+
+Simmonds, P., Suzuki, N., … Zerbini, F. M. (2023). Virus taxonomy and the role of the 873 
+
+International Committee on Taxonomy of Viruses (ICTV). Journal of General 874 
+
+Virology , 104 (5), 001840. https://doi.org/10.1099/jgv.0.001840 875 
+
+Simmonds, P., Adams, M. J., Benkő, M., Breitbart, M., Brister, J. R., Carstens, E. B., 876 
+
+Davison, A. J., Delwart, E., Gorbalenya, A. E., Harrach, B., Hull, R., King, A. M. Q., 877 
+
+Koonin, E. V., Krupovic, M., Kuhn, J. H., Lefkowitz, E. J., Nibert, M. L., Orton, R., 878 
+
+Roossinck, M. J., … Zerbini, F. M. (2017). Virus taxonomy in the age of 879 
+
+metagenomics. Nature Reviews Microbiology , 15 (3), 161 –168. 880 
+
+https://doi.org/10.1038/nrmicro.2016.177 881 
+
+Simmonds, P., Adriaenssens, E. M., Zerbini, F. M., Abrescia, N. G. A., Aiewsakun, P., 882 
+
+Alfenas -Zerbini, P., Bao, Y., Barylski, J., Drosten, C., Duffy, S., Duprex, W. P., Dutilh, 883 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+B. E., Elena, S. F., García, M. L., Junglen, S., Katzourakis, A., Koonin, E. V., Krupovic, 884 
+
+M., Kuhn, J. H., … Vasilakis, N. (2023). Four principles to establish a universal virus 885 
+
+taxonomy. PLOS Biology , 21 (2), e3001922. 886 
+
+https://doi.org/10.1371/journal.pbio.3001922 887 
+
+Simmonds, P., Butković, A., Grove, J., Mayne, R., Mifsud, J. C. O., Beer, M., Bukh, J., 888 
+
+Drexler, J. F., Kapoor, A., Lohmann, V., Smith, D. B., Stapleton, J. T., Vasilakis, N., & 889 
+
+Kuhn, J. H. (2025). Taxonomic expansion and reorganization of Flaviviridae. Nature 890 
+
+Microbiology , 10 (11), 3026 –3037. https://doi.org/10.1038/s41564 -025 -02134 -0891 
+
+Turner, D., Kropinski, A. M., & Adriaenssens, E. M. (2021). A Roadmap for Genome -Based 892 
+
+Phage Taxonomy. Viruses , 13 (3), 506. https://doi.org/10.3390/v13030506 893 
+
+Van Doorslaer, K. (2022). Revisiting Papillomavirus Taxonomy: A Proposal for Updating the 894 
+
+Current Classification in Line with Evolutionary Evidence. Viruses , 14 (10), 2308. 895 
+
+https://doi.org/10.3390/v14102308 896 
+
+von Meijenfeldt, F. A. B., Arkhipova, K., Cambuy, D. D., Coutinho, F. H., & Dutilh, B. E. 897 
+
+(2019). Robust taxonomic classification of uncharted microbial sequences and bins 898 
+
+with CAT and BAT. Genome Biology , 20 (1), 217. https://doi.org/10.1186/s13059 -899 
+
+019 -1817 -x900 
+
+Wijesekara, Y., Wu, L. -Y., Beeloo, R., Rozwalak, P., Hauptfeld, E., Doijad, S. P., Dutilh, B. 901 
+
+E., & Kaderali, L. (2024). Jaeger: An accurate and fast deep -learning tool to detect 902 
+
+bacteriophage sequences (p. 2024.09.24.612722). bioRxiv. 903 
+
+https://doi.org/10.1101/2024.09.24.612722 904 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+Woo, P. C. Y., de Groot, R. J., Haagma ns, B., Lau, S. K. P., Neuman, B. W., Perlman, S., 905 
+
+Sola, I., van der Hoek, L., Wong, A. C. P., & Yeh, S. -H. (2023). ICTV Virus Taxonomy 906 
+
+Profile: Coronaviridae 2023. Journal of General Virology , 104 (4), 001843. 907 
+
+https://doi.org/10.1099/jgv.0.001843 908 
+
+Xia, H. -L., Liang, P. -Y., Yuan, W. -G., Cao, X. -D., Sun, Y., Jiang, J. -Z., & Yuan, L. -H. (2026). 909 
+
+PhaGCN_Cluster: A Scalable and Robust Framework for Automated Classification 910 
+
+and Discovery of Viral Dark Matter from Metagenomes. Interdisciplinary Sc iences, 911 
+
+Computational Life Sciences . https://doi.org/10.1007/s12539 -026 -00820 -z912 
+
+Yu, G., Smith, D. K., Zhu, H., Guan, Y., & Lam, T. T. -Y. (2017). ggtree: An r package for 913 
+
+visualization and annotation of phylogenetic trees with their covariates and other 914 
+
+associated data. Methods in Ecology and Evolution , 8(1), 28 –36. 915 
+
+https://doi.org/10.1111/2041 -210X.12628 916 
+
+Zhang, T., Liu, Y., Guo, X., Zhang, X., Zheng, X., Zhang, M., & Bao, Y. (2025). VISTA: A Tool for 917 
+
+Fast Taxonomic Assignment of Viral Genome Sequences. Genomics, Proteomics & 918 
+
+Bioinformatics , 23 (1), qzae082. https://doi.org/10.1093/gpbjnl/qzae082 919 
+
+Zielezinski, A., Gudyś, A., Barylski, J., Siminski, K., Rozwalak, P., Dutilh, B. E., & Deorowicz, 920 
+
+S. (2025). Ultrafast and accurate sequence alignment and clustering of viral 921 
+
+genomes. Nature Methods , 22 (6), 1191 –1194. https://doi.org/10.1038/s41592 -025 -922 
+
+02701 -7923 
+
+924 
+
+925 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+# Boxes 926 
+
+## Box 1 927 
+
+Box 1A : DNA virus order Chitovirales Taxon Demarcation Criteria 928 
+
+Family demarcation criteria (for the single family Poxviridae , in the order Chitovirales )
+
+Virion 
+
+• Generally oval or brick -shaped, 220 –450 nm × 140 –260 nm × 140 –260 nm 
+
+• Lipoprotein surface membrane displaying tubular or globular units or a regular 
+
+spiral filament. 
+
+Genome 
+
+• Single linear molecule of dsDNA with covalently -closed ends. 128 –375 kbp. 
+
+Replication 
+
+• Cytoplasmic, mediated by virus -encoded proteins with self -priming. DNA 
+
+replicated as long concatemers that are resolved by a viral HJ endonuclease. 
+
+Gene and protein conservation 
+
+• Conserved, partly syntenic genome organization 
+
+• Conserved set of functional mature proteins 
+
+o 49 core, conserved, mostly syntenic genes 
+
+Translation 
+
+• Polyadenylated, capped mRNA transcripts, synthesized from both DNA strands 
+
+by virus -encoded RNA polymerase. 
+
+Subfamily demarcation criteria (for the subfamilies in the family Poxviridae )
+
+Host range 
+
+• Vertebrate or insect 
+
+Gene content and synteny 
+
+• Conserved gen e content and synteny 
+
+Genus demarcation criteria (for the genera in the subfamily Chordopoxvirinae )
+
+Phylogeny 
+
+• Taxonomic groupings can in most cases be readily inferred from the 
+
+monophyletic evolutionary clades observed following phylogenetic inference 
+
+Gene content 
+
+• The variability in the content and conservation of gene sequences serve as a 
+
+distinguishing characteristic 
+
+Genome organization 
+
+• Syntenic relationships between genes may serve to distinguish taxa. However, 
+
+conservation of gene synteny, particular ly in the central core, region of the 
+
+genome, can be so high that the resolving power is not available to distinguish 
+
+between taxa 
+
+Natural Host range 
+
+• Narrow in some cases, broad in others, but in either case, a defining 
+
+characteristic of the genus 
+
+Species demarcation criteria (species in all genera in subfamily Chordopoxvirinae )
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+Phylogeny 
+
+• Genera fall into clear, monophyletic lineages 
+
+Sequence similarity 
+
+• Amino acid or nucleotide sequence identity between specific, commonly 
+
+shared genes. 
+
+o Single gene compa risons include the hemagglutinin or A -type inclusion 
+
+protein 
+
+o Multiple, concatenated comparisons include the 49 proteins conserved 
+
+at the family level 
+
+Growth characteristics and host range in cell culture 
+
+• Characteristic production and morphology of pocks produced on the 
+
+chorioallantoic membranes of embryonated chicken eggs 
+
+• Plaque characteristics on monolayers of specific cell types may distinguish 
+
+between members of different species. 
+
+Disease characteristics 
+
+• The morbidity, mortality, host and other distingui shing features of the disease 
+
+resulting from poxvirus infection can be used as demarcation criteria 
+
+Serological criteria 
+
+• Plaque neutralization tests and cross -protection in animals have been used as 
+
+criteria for taxonomic demarcation. 
+
+Box 1B : RNA virus, order Picornavirales Taxon Demarcation Criteria 929 
+
+Family demarcation criteria (for the family Picornaviridae in the order Picornavirales )
+
+Virion 
+
+• Non -enveloped, 30 –32 nm virions comprising 60 protomers 
+
+• Capsid proteins composed of three distantly related jell y-roll domains forming 
+
+icosahedral particles with pseudo -T=3 symmetry 
+
+Genome 
+
+• One positive -sense, monocistronic, single stranded genome segment with a 
+
+poly(A) tail 
+
+• Length: 6.7 –10.1 kb 
+
+Gene and protein conservation 
+
+• The orthologous proteins 1B, 1C, 1D, 2C, 3C and 3D are conserved between 
+
+genera 
+
+• Proteins 1A, 2A, 2B, 3A and 3B are highly divergent among members of different 
+
+genera. 
+
+• Conserved genome organization 
+
+Proteins 
+
+• Proteins are translated directly from genomic RNA using an internal ribosomal 
+
+entry site (IRE S) 
+
+• Primary polyprotein translation product proteolytically cleaved into mature 
+
+proteins by one or more virus -encoded proteinases 
+
+Host Range 
+
+• Vertebrates 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+Subfamily demarcation criteria (for the subfamilies in the family, Picornaviridae )
+
+Phylogeny 
+
+• Phylogenic reconstruction of conserved proteins form monophyletic subfamily 
+
+evolutionary lineages 
+
+Genome conservation 
+
+• GRAViTy analysis (Mayne et al., 2024) distinguishes between subfamilies based 
+
+on phylogenetic analysis and metrics of sequence conservation 
+
+Genus demarcation criteria (for the genera in the subfamily Ensavirinae )
+
+Phylogeny 
+
+• Monophyletic phylogenetic lineages 
+
+Protein 
+
+• At least 50% amino acid identity over the length of the polyprotein 
+
+• VPg protein sequ ence conservation 
+
+• May possess a Type -I, II, or IV internal ribosomal entry site (IRES) 
+
+Host 
+
+• Virus replication primarily in (but not limited to) the gastrointestinal tract 
+
+Species demarcation criteria (for species in the genus Enterovirus )
+
+Phylogeny 
+
+• Monophyletic phylogenetic lineage 
+
+Genes 
+
+• Essentially identical genome map 
+
+Proteins 
+
+• Less than 30% divergent in polyprotein aa sequence 
+
+• Less than 40% divergent in P1 aa sequence 
+
+• Less than 30% divergent in aa sequence of the non -structural proteins 2C + 
+
+3CD 
+
+• Share a common genome organization 
+
+930 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+# Supplementary files 931 
+
+## Supplementary Methods 932 
+
+See Supplementary Methods do cument. 933 
+
+## Supplementary Table 1 934 
+
+This text file (.csv) contains a description of every sequence entered in the challenge. In total, 935 
+
+the file has 59,907 entries stemming from the three dataset s investigated (VMR, Expert, 936 
+
+MGnify, Figure 1). There are 22 column s as follow s: [Columns 1 -6] capture information 937 
+
+about the sequence including: “SequenceID”, “ Operation ”, “Dataset”, “KnownTaxonomy”, 938 
+
+“EntryVMR”, “ExpertReviewed”. [Column 7 -21] capture the lineage of the entry across the 939 
+
+15 ranks of the virus taxonomy: “Realm ( -viria )”, “Subrealm ( -vira )”, “Kingdom ( -virae )”, 940 
+
+“Subkingdom ( -virites )”, “Phylum ( -viricota )”, “Subphylum ( -viricotina )”, “Class ( -viricetes )”, 941 
+
+“Subclass ( -viricetidae )”, “Order ( -virales )”, “Suborder ( -virineae )”, “Family ( -viridae )”, 942 
+
+“Subfamily ( -virinae )”, “Genus ( -virus )”, “Subgenus ( -virus )”, “Species (binomial)” , [Column 943 
+
+22 : “Found in MSL39v4?” ] captures whether the VMR 38v 3 entry is found in the MSL39v4 or 944 
+
+had been retired ( 234 entries corresponding to 78 species had to be removed after being 945 
+
+removed from the MSL39v4 )946 
+
+## Supplementary Table 2947 
+
+This Excel spreadsheet tabulates the various invalid values for labels or lineage combination 948 
+
+collected across the pipelines. The first tab “1.by_rank_invalid_values” contain the 949 
+
+problematic labels at each rank separately, while the second tab 950 
+
+“2.by_lineage_invalid_values” contains the invalid lineages. Subsequent tabs provide the 951 
+
+invalid lineages in the various pipelines where such issues ar ose. 952 
+
+## Supplementary Table 3953 
+
+This text file (.csv) contains the accuracy and false discovery rate (FDR) for each of the 30 954 
+
+different pipelines, segregated by sections of the dataset with taxonomic information (VMR 955 
+
+dataset + Expert dataset). For each of the fifteen ranks of the taxonomy, one column 956 
+
+provides the accuracy value and the FDR value (numbers from 0 to 1). The accuracy and FDR 957 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+values are further discriminated based on the entire dataset of VMR and Expert (_fixed), or 958 
+
+considering only the pipelines predicted fraction (_ attempted ).959 
+
+## Supplementary Table 4960 
+
+This text file (.csv) contains the accuracy and false discovery rate (FDR) for each of the 30 961 
+
+different pipelines, segregated by sections of the dataset with taxonomic information (VMR 962 
+
+dataset + Expert dataset), and segregated by types of operation s applied to the sequen ces 963 
+
+(see Figure 1). For each of the fifteen ranks of the taxonomy, one column provides the 964 
+
+accuracy value and the FDR value (numbers between 0 and 1) , further discriminated based 965 
+
+on the entire dataset of VMR and Expert (_fixed), or considering only the pipelines predicted 966 
+
+fraction (_attempted , as shown in Figure 3 ).967 
+
+## Supplementary Table 5 968 
+
+Summary of the ICT V virus -classification tools evaluated in this study. Summary tab: Th e969 
+
+Excel spreadsheet contains information about the tool name, version, classification 970 
+
+methodology, installation , and GitHub documentation relative scor es , key command of the 971 
+
+tool, running time, and memory usage on CPU ( Intel Xeon Gold 8360Y 96 CPU, 256 GB RAM) 972 
+
+and GPU ( H100, 512 GB RAM) , and the comments informing additional information noted 973 
+
+during the run. Chart tab: Classification appro ach based on computational resources .974 
+
+Points tab: criteria used to score tool installation of the tool and GitHub documentation. 975 
+
+## Supplementary Data 1 976 
+
+This archive file contains the sequences supplied to t he participants of the challenge. It 977 
+
+contains 59,907 individual fasta files with headers of the form “ICTVTaxoChallenge_X” with 978 
+
+X being a randomly generated ID from 1 to 100,000 and is referred to as the “SequenceID” in 979 
+
+other supplementary files. During the evaluation of the predictions, 234 individual fasta files 980 
+
+were ignored as the corresponding species were abolished later by the ICTV 981 
+
+( Supplementary Table 1, last column “Found in MSL39v4”). 982 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+## Supplementary Data 2 983 
+
+This archive file contains the final thirt y-four individual entries (or predictions) to the 984 
+
+Computational Virus Taxonomy Challenge. Each entry was retrieved from the submitter’s 985 
+
+GitHub repository (See table 1). In total, 3 4 individual files are present with either .tsv or .csv 986 
+
+formats and with a defined set of columns consisting of the “SequenceID” followed by thirty 987 
+
+columns that capture the 15 ranks of the "ICTV virus taxonomy, together with (optional) 988 
+
+confidence scores. 989 
+
+## Supplementary Data 3 990 
+
+This archive file contains the accuracy and false disco very rate values of the different 991 
+
+families for the thirty -four individual pipelines, segregated by operations , further 992 
+
+discriminated based on the entire dataset of VMR and Expert (_fixed), or considering only the 993 
+
+pipelines predicted fraction (_attempted). 994 
+
+## Supplementary Data 4 995 
+
+This archive file contains all the trees (newick files) and metadata for the VMR -only analysis 996 
+
+and the VMR+MGnify analysis discussed in the result section and Figure 7 .997 
+
+## Supplementary Figure 1 998 
+
+This multi -facet figure shows the values of both accuracy (top) and false discovery rate 999 
+
+(bottom) metrics across the main ranks of the taxonomy for the transformation operations 1000 
+
+implemented on the sequences. 1001 
+
+## Supplementary Figure 21002 
+
+Left -hand side cladogram indicates each of the family clades found in the various realms 1003 
+
+(including the Riboviria (Rb.), Ribozyviria (Rz.), Duplodnaviria (Dd.), Monodnaviria (Md.), 1004 
+
+Varidnaviria (Vd.), and Adnaviria (Ad.), and Undefined (Un.). The heatmap shows the 1005 
+
+accuracy (color) and false discovery rate (cell width) on trimmed (VMR dataset ) and 1006 
+
+unchanged (Expert dat aset ) sequences (left column for each entry) , sequences that were 1007 
+
+cut and included 1% of random substitutions (middle column), and 5% (right hand side 1008 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+column). Th is figure is split into two parts based on the pipelines (indicated at the bottom of 1009 
+
+the heatmap) to increase readability. 1010 
+
+## Supplementary Figure 31011 
+
+Pearson correlation score measuring association between the size of the families (how 1012 
+
+many constituent sequences were present in the VMR) and both assignment metrics 1013 
+
+Accuracy and FDR at the family rank of the VMR dataset for each of the pipelines. 1014 
+
+## Supplementary Figure 41015 
+
+This multi -facet figure shows the scatterplot for the Ratio of strict consistency rate and 1016 
+
+predicted fraction (shown in Su pplementary Figure 1). This is shown across the major ranks 1017 
+
+of the virus taxonomy. This ratio is calculated by dividing the number of entries where all 1018 
+
+three sequences (“trim”, “fragment + 1% substitutions”, “fragment + 5% substitutions”) 1019 
+
+have identical predictions (strict co nsistency), divided by the number of entries where at 1020 
+
+least two sequences (from “trim”, “fragment + 1% substitutions”, “fragment + 5% 1021 
+
+substitutions”) have non -NA values. 1022 
+
+## Supplementary Figure 51023 
+
+This figure contains visualizations of the trees obtained from VipTree, together with their 1024 
+
+annotation with metadata. The six trees cover the six realms and were built using the VMR 1025 
+
+sequences (five sequences taken at random for each of the families of given realm ). The 1026 
+
+realm Ribozyviria was not considered as it did n ot yield predictions by the various pipelines 1027 
+
+in the MGnify dataset and only includes a single family (2024) .1028 
+
+## Supplementary Figure 61029 
+
+This figure contains visualizations of the trees obtained from VipTree, together with their 1030 
+
+annotation with metadata. These six trees were built similarly to those of Supplementary 1031 
+
+figure 5, taking the same VMR sequences but adding the MGnify predicted sequences from 1032 
+
+the Ensemble selection. The annotation of the trees consists of (i) a blue dots in the last six 1033 
+
+trees to indica te a sequence from VMR, (ii) a ring with two colors alternating to indicate 1034 
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint
+
+alternating family memberships of the clade, (iii) a second annotation ring that denotes 1035 
+
+whether the family forms a monophyletic clade or not, and (iv) the family names. 1036 
+
+1037 
+
+.CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint Affiliations 1038 
+
+Cédric Lood 1,2,* , Swapnil P. Doijad 2, Evelien M. Adriaenssens 3, Yiming Bao ( 鲍一明 )4,5 , Jakub 1039 
+
+Barylski 6, Ben Bolduc 7,8,9 , George Bouras 10,11 , J. Rodney Brister 12 , C. Titus Brown 13 , Antonio 1040 
+
+Pedro Camargo 14,15 , Lander De Coninck 16 , Sebastian Deorowicz 17 , Robert Edgar 18 , Robert A. 1041 
+
+Edwards 19 , Shitao Gong 20 , Arthur Gruber 21 , Adam Gudys 17 , Ernestina Hauptfeld 22 , Anneliek 1042 
+
+ter Horst 13 , Tianyang Huang 20 , J ingzhe Jiang 23 , Lars Kaderali 24 , Jaebeom Kim 25,26 , Mart 1043 
+
+Krupovic 27 , Jens H. Kuhn 28 , Elliot J. Lefkowitz 29 , Mathieu Leobold 30 , Shuai -Cheng Li 31 , Yiyun 1044 
+
+Liu 4,5 , F. A. Bastiaan von Meijenfeldt 32 , Uri Neri 14 , Judit J. Penzes 33 , N. Tessa Pierce -Ward 13 ,1045 
+
+Janina Ra hlff 34,35,36 , Alejandro Reyes Muñoz 37 , Luisa Rubino 38 , Sead Sabanadzovic 39,40 , Jiayu 1046 
+
+Shang 41 , Peter Simmonds 43 , Martin Steinegger 25,26,44 ,45 , Matthew B. Sullivan 7,8,9 , Yanni Sun 46,1047 
+
+Lili Tian ( 田莉莉 )4,5 , Yi -Gang Tong 47, Robert Turnbull 48, Dann Turner 49, Arvind Varsan i50 ,51 , Ziye 1048 
+
+Wang 52, Yasas Wijesekara 24 , Wytamma Wirth 53 ,54 , Haolong Xia 55, Shuo Yang 31 , TzeChing Yeo 34 ,1049 
+
+Jinbei Zhang 46 , Xianglilan Zhang 56 ,57 , Shanfeng Zhu 20 , Andrzej Zielezinski 58, Simon Roux 14 , Bas 1050 
+
+E. Dutilh 2,22,* 
+
+1051  
+
+> 1
+
+Department of Biology, University of Oxford, Oxford, UK 1052  2 Institute of Biodiversity, Faculty of Biological Sciences, Cluster of Excellence Balance of 1053 
+
+the Microverse, Friedrich -Schiller -University Jena, Jena, Germany 1054  3 Quadram Institute Bioscience, Norwich Research Park, Norwich, UK 1055  4 National Genomics Data Center, China National Center for Bioinformation, Beijing 1056 
+
+Institute of Genomics, Chinese Academy of Sciences, Beijing, China 1057  5 University of Chinese Academy of Sciences, Beijing, China 1058  6 Department of Molecular Virology, Faculty of Biology, Adam Mickiewicz University, Poznan, 1059 
+
+Poland 1060  7 Department of Microbiology, Ohio State University, Columbus, OH, USA 1061  8 Center of Microbiome Science, Ohio State University, Columbus, OH, USA 1062  9 EMERGE Biology Integration Institute, Ohio State University, Columbus, OH, USA 1063  10 Adelaide Medical School, Faculty of Health and Medical Sciences, The University of 1064 
+
+Adelaide, Adelaide, South Australia, Austr alia. 1065  11 Department of Surgery - Otolaryngology Head and Neck Surgery, University of Adelaide 1066 
+
+and the Basil Hetzel Institute for Translational Health Research, Central Adelaide Local 1067 
+
+Health Network, South Australia, Australia. 1068  12 National Center for Biotechnology Information, National Library of Medicine, National 1069 
+
+Institutes of Health, Bethesda, MD, USA. 1070  13 Department of Population Health and Reproduction, University of California, Davis, CA, 1071 
+
+USA 1072  14 DOE Joint Genome Institute, Lawrence Berkeley National La boratory, Berkeley, CA, USA 1073  15 Department of Biochemistry, Institute of Chemistry, University of São Paulo, São Paulo, 1074 
+
+SP, Brazil 1075  16 Department of Microbiology, Immunology and Transplantation, Laboratory of Viral 1076 
+
+Metagenomics, KU Leuven, Leuven, Belgium 1077  
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint 17
+
+Faculty of Automatic Control, Electronics and Computer Science, Silesian University of 1078 
+
+Technology, Gliwice, Poland 1079  18 Unaffiliated (independent scientist) 1080  19 Flinders Accelerator for Microbiome Exploration, Flinders University, Bedford Park, SA, 1081 
+
+Australia 1082  20 Institute of Science and Technology for Brain -Inspired Intelligence and MOE Frontiers 1083 
+
+Center for Brain Science, Fudan University, Shanghai, China 1084  21 Instituto de Ciências Biomédicas, Universidade de São Paulo, São Paulon, Brazil 1085  22 Theoretical Biology and Bioinformatics, Science4Life, Utrecht University, Utrecht, the 1086 
+
+Netherlands 1087  23 Key Laboratory of South China Sea Fishery Resources Exploitation & Utilization, Ministry 1088 
+
+of Agriculture and Rural Affairs, South China Sea Fisheries Research Institute, Chine se 1089 
+
+Academy of Fishery Sciences, Guangdong, China 1090  24 Institute of Bioinformatics, University Medicine Greifswald, Germany 1091  25 School of Biological Sciences, Seoul National University, Seoul, Republic of Korea 1092  26 Interdisciplinary Program in Bioinformatics, Seoul National University, Seoul, Republic of 1093 
+
+Korea 1094  27 Institut Pasteur, Université Paris Cité, Cell Biology and Virology of Archaea Unit, Paris, 1095 
+
+France 1096  28 Frederick, Maryland, USA 1097  29 Department of Microbiology, University of Alabama at Birmingham, Birmingh am, AL, USA 1098  30  Institut de Recherche sur la Biologie de l'Insecte, UMR 7261 CNRS -Université de Tours, 1099 
+
+Tours, France 1100  31 Department of Computer Science, City University of Hong Kong, Hong Kong SAR, China 1101  32 Department of Marine Microbiology and Biogeochemistry, NIOZ Royal Netherlands 1102 
+
+Institute for Sea Research, Texel, The Netherlands 1103  33 Texas A&M University, Department of Entomology, College Station, TX, USA 1104  34 Aero -Aquatic Virus Research Group, Faculty of Mathematics and Computer Science, 1105 
+
+Friedrich Schiller University Jena, Germany 1106  35 Centre for Ecology and Evolution in Microbial Model Systems (EEMiS), Department of 1107 
+
+Biology and Environmental Science, Linnaeus University, Kalmar, Sweden 1108  36 Leibniz Institute on Aging - Fritz Lipmann Institute (FLI), Jena, Germany 1109  37 Department of Biological Sciences, Universidad de los Andes, Bogotá, Colombia 1110  38  Consiglio Nazionale delle Ricerche, Istituto per la Protezione Sostenibile delle Piante, 1111 
+
+Sede Secondaria di Bari, Bari, Italy 1112  39 Department of Agricultural Science and P lant Protection, Mississippi State University, 1113 
+
+Mississippi State, MS, USA 1114  40 Institute for Genomics, Biocomputing and Biotechnology, Mississippi State University, 1115 
+
+Mississippi State, MS, USA 1116  41 Department of Information Engineering, Chinese University of Hong Kong, Hong Kong SAR, 1117 
+
+China 1118  42 Institute of Biomedicine, University of Turku, Turku, Finland 1119  43 Nuffield Department of Medicine, University of Oxford, Oxford, UK 1120  
+
+> .CC-BY-NC 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.04.736517 doi: bioRxiv preprint 44
+
+Institute of Molecular Biology and Genetics, Seoul National University, Seoul, Republic of 1121 
+
+Korea 1122  45 Artificial Intelligence Institute, Seoul National University, Seoul, Republic of Korea 1123  46 Department of Electrical Engineering, City University of Hong Kong, Hong Kong SAR, China 1124  47 BAICSM, State Key Laboratory of Green Biomanufacturing, College of Life Science and 1125 
+
+Technology, Beijing University of Chemical Technology, Beijing, China 1126  48 Melbourne Data Analytics Platform, The University of Melbourne, Parkville, VIC, Australia 1127  49 School of Applied Sciences, College of Health, Science and Society, University of the West 1128 
+
+of England, Bristol, UK 1129  50 The Biodesign Center for Fundamental and Applied Microbiomics, School of Life Sciences, 1130 
+
+Arizona State University, Center of Evolution and Medicine, Tempe, AZ, USA 1131  51 Structural Biology Research Unit, Department of Integrative Biomedical Sciences, 1132 
+
+University of Cape Town, Cape Town, South Africa 1133  52 School of Mathematical Sciences and LPMC, Nankai University, Tianjin, China. 1134  53 Department of Microbiology and Immunology at The Peter Doherty Institute for Infection 1135 
+
+and Immunity, The University of Melbourne, Melbourne, Victoria, Australia 1136  54 Centre fo r Pathogen Genomics, University of Melbourne, Victoria, Australia 1137  55 School of Life Sciences and Biopharmaceutics, Guangdong Pharmaceutical University, 1138 
+
+Guangdong, China 1139  56 Department of Anaesth esia and Intensive Care, Faculty of Medicine, The Chinese 1140 
+
+Uni ver sity of Hong Kong, Hong Kong SAR, China 1141  57 Li Ka Shing Instit ute of Health Sciences, The Chinese University of Hong Kong, Hong Kong 1142 
+
+SAR, China 1143  58 Computational Biology Research Unit , Faculty of Biology, Adam Mickiewicz University, 1144 
+
+Poznan, Poland 1145 
+
+1146

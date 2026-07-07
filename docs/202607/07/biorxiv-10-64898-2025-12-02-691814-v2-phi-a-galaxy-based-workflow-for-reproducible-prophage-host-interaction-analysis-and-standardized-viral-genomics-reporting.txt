@@ -1,0 +1,248 @@
+Title: 47282706
+
+URL Source: https://www.biorxiv.org/content/10.64898/2025.12.02.691814v2.full.pdf
+
+Published Time: Tue, 07 Jul 2026 21:53:57 GMT
+
+Number of Pages: 23
+
+Markdown Content:
+1
+
+PHI: a Galaxy-based workflow for reproducible prophage-host interaction analysis and 1
+
+standardized viral-genomics reporting 2Joao Pedro Saraiva 1❖* , Felipe Borim Corrêa 1❖ , Matthias Bernt 2 , Nawras Ghanem 1 , Esteban 3Nieto 3 , Rodolfo Brizola Toscan 4 , Lukas Y. Wick 1, Antonis Chatzinotas 1,5,6,* 41 Helmholtz Centre for Environmental Research - UFZ, Department of Applied Microbial 5Ecology, 04318 Leipzig, Germany 62 Helmholtz Centre for Environmental Research - UFZ, Department of Computational 7Biology and Chemistry, 04318 Leipzig, Germany 83 Department of Biochemistry and Biotechnology, University of Thessaly, Viopolis, 41500, 9Larissa, Greece 10 4 Małopolska Centre of Biotechnology, Jagiellonian University, Kraków, Poland 11 5 Institute of Biology, Leipzig University, 04103 Leipzig, Germany 12 6 German Centre for Integrative Biodiversity Research (iDiv) Halle-Jena-Leipzig, 04103 13 Leipzig, Germany 14 
+
+> ❖
+
+Authors contributed equally to this study. 15 *Corresponding authors: Joao Saraiva, joao.sarraiva@ufz.de; Antonis Chatzinotas, 16 antonis.chatzinotas@ufz.de 17 18 
+
+Abstract 19 
+
+Background: Viruses that infect bacteria, known as bacteriophages or phages, are 20 widespread in nature and play important roles in shaping microbial communities and 21 ecosystem functions. Some phages can integrate into bacterial genomes as “prophages”, 22 where they may influence the biology of their host by carrying genes that affect metabolism, 23 virulence, or environmental adaptation. Despite their importance, studying prophages and 24 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2025.12.02.691814 doi: bioRxiv preprint
+
+2their interactions with bacterial hosts remains challenging because it typically requires 25 combining many complex computational tools and can be resource-intensive. 26 
+
+Results: In this study, we introduce the Prophage-Host Interaction Toolkit (PHI), a user-27 friendly and automated workflow available through the Galaxy platform. PHI brings together 28 multiple established tools into a single, reproducible pipeline that identifies candidate 29 prophages, evaluates their quality, predicts host relationships, and characterizes key 30 functional genes. Importantly, all results are summarized in an interactive report that 31 simplifies interpretation. When applied to a mock community composed of 22 bacteria as a 32 workflow demonstration, PHI detected 41 prophages across 14 hosts, classifying them into 33 high- and medium-quality phage genomes. Host assemblies exhibited > 99 % completeness 34 and < 1 % contamination for most genomes, while DefenseFinder revealed between 3 and 24 35 antiviral systems per genome. 36 
+
+Conclusions: By removing installation barriers and consolidating the outputs of multiple 37 established tools, PHI lowers the barrier to advanced phage analysis, enabling both specialists 38 and non-experts to explore phage-host interactions and their implications in areas such as 39 microbiome research, biotechnology, and environmental science. 40 41 
+
+Keywords: Bioinformatics; galaxy-server; virology; host-phage interactions 42 43 
+
+Background 44 Phages are viruses that infect bacterial cells. After infection, lytic viruses can replicate while 45 lysogenic phages can integrate their genome into the chromosome of their bacterial hosts [1]. 46 Prophages often carry auxiliary metabolic genes (AMGs) that affect host metabolic and 47 broader ecosystem functions [2, 3]. The automated discovery and comprehensive profiling 48 (e.g., taxonomic assignment, functional annotation, and life-cycle prediction) of phages 49 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2025.12.02.691814 doi: bioRxiv preprint
+
+3within host genomes remains challenging due to the complexity of building bioinformatic 50 pipelines and useful summaries and visualizations of their results. Existing workflows 51 typically focus on either identification and gene annotation [4, 5] or specific interaction 52 aspects [6], lacking a comprehensive approach that addresses a wide spectrum of phage-host 53 relationships within genomic data. 54 Several methods have advanced the field of phage identification and host prediction, such as 55 PHASTEST [5], VirSorter2 [7], and CHERRY [8] but they often provide limited information 56 on both host and phage perspectives, require extensive computational resources, or lack user-57 friendly interfaces, thereby limiting their use by the scientific community. 58 We present the Prophage-Host Interaction Toolkit (PHI), a comprehensive and automated 59 framework within the Galaxy [9] platform (e.g., publicly usable via https://usegalaxy.eu), for 60 the identification and profiling of phages within host genomes that unifies established tools 61 into a reproducible workflow. PHI overcomes the limitations of existing tools, such as the 62 complexity and difficulty that arise with installing and running multiple tools. PHI also 63 compiles all results in a single report, facilitating knowledge extraction and enabling 64 researchers from diverse backgrounds to benefit from bioinformatics applications without 65 requiring extensive technical training. 66 Key features of PHI include its modular architecture, allowing for easy updates and 67 customization. PHI incorporates tools for reproducible detection and contextual profiling of 68 candidate prophages, identification of phage-host pairs, and analysis of CRISPR spacer 69 relationships. Furthermore, it provides comprehensive visualization tools for depicting phage 70 genomic features and host interaction networks, facilitating the interpretation of complex 71 data. 72 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2025.12.02.691814 doi: bioRxiv preprint
+
+4The following sections describe the PHI toolkit, including the integrated tools and its 73 application to a mock-community case study, demonstrating its utility for reproducible 74 workflow execution and integrated reporting. 75 76 
+
+Implementation 77 
+
+Workflow. The workflow is implemented in Galaxy [9] and it is publicly available through 78 the Galaxy Europe server (https://usegalaxy.eu/u/maze/w/phi-toolkit). To achieve the full 79 functionality described in this manuscript, we pre-tailored the pipeline with established tools 80 and analyses that generate an HTML report through an R Markdown script. Additionally, the 81 flexibility of Galaxy allows for full customization of the pipeline. Any modification or 82 expansion of the pipeline is possible as long as the desired tools are available on the server 83 and the code used to generate the report is updated. 84 85 
+
+Pipeline description. A simplified schematic of the workflow is shown in Figure 1. A more 86 detailed workflow schema produced by Galaxy’s workflow editor is available in the 87 Additional File 1: Figure S1). The PHI pipeline accepts bacterial genomes 88 in FASTA format as input files. These genomes are submitted in parallel to the following 89 host-analysis tools: CheckM2 1.0.2+galaxy1 using the CheckM diamond DB [10] to assess 90 the quality, GTDB-Tk 2.4.1+galaxy0 using the full DB release 220 [11, 12] to assign 91 taxonomy, Defense-Finder 2.0.1+galaxy1 using models 2.0.2 [13] to detect known anti-phage 92 systems, and finally geNomad 1.11.1+galaxy0 using reference data version 1.9 [14] to predict 93 and annotate prophages. Once a genome has been processed and prophages have been 94 identified by geNomad, several virus-analysis tools also run in parallel, which are: (i) 95 CheckV 1.0.3+galaxy0 using reference data version 1.5 [15] to evaluate the quality of 96 prophage genomes, (ii) dRep compare 3.6.2+galaxy1 using an ANI threshold of 0.95 [16] to 97 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2025.12.02.691814 doi: bioRxiv preprint
+
+5cluster and compare prophage genomes recovered from the same host, thereby distinguishing 98 identical from distinct prophage sequences, (iii) ABRicate 1.0.1 [17] using the Virulence 99 Factor Database (VFDB) [18] to identify virulence genes in the predicted prophage genomes 100 with the, (iv) iPHoP 1.3.3+galaxy0 [6] to predict other potential hosts and (v) VIBRANT 101 1.2.1+galaxy2 using reference data version 1.2.1 [19] to identify auxiliary metabolic genes 102 (AMGs) in the prophages. Unless stated otherwise, default parameters were used. The dRep 103 ANI threshold to form secondary clusters was set to 0.95 instead of the default 0.99 to 104 decrease clustering stringency. The database used by ABRicate was set to VFDB instead of 105 the default Resfinder since we are interested in virulence factors. Technically, CheckV and 106 VIBRANT can also predict prophages, but we decided to restrict this task to geNomad due to 107 its regular and active maintenance and to avoid redundancy in predictions. The workflow 108 concludes with the automated report generation via R Markdown, producing a structured 109 HTML summary (Additional File 2: Figure S2). The generated HTML report is organized 110 into multiple thematic sections that integrate host, prophage, and interaction-level analyses. 111 In addition to summary tables of genome quality, taxonomy, and prophage content, the report 112 includes interactive visualizations such as host-virus association networks, CRISPR spacer-113 protospacer matching outputs, and genome-level feature maps. These components allow users 114 to explore relationships between prophages and their predicted hosts, assess host range, and 115 evaluate genomic context in a unified framework. Tool versions, parameters, and database 116 releases are documented inside the workflow run to ensure reproducibility. 117 118 
+
+Workflow decision logic and edge-case handling. PHI first runs host-level analyses on all 119 submitted genome FASTA files and then triggers downstream viral analyses only when 120 geNomad reports candidate viral or prophage sequences. If no candidate viral sequences are 121 recovered for a genome, the downstream viral modules (CheckV, dRep, ABRicate/VFDB, 122 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2025.12.02.691814 doi: bioRxiv preprint
+
+6iPHoP, and VIBRANT) are skipped for that genome and the final report indicates that no 123 viral output was available. If only one or too few viral sequences are available, dereplication 124 or clustering outputs are not interpreted as comparative evidence. Missing module outputs are 125 reported as unavailable rather than silently omitted. These rules make the workflow 126 transparent and reproducible, but they do not modify the underlying predictions generated by 127 each integrated tool. 128 129 
+
+Figure 1 - Workflow of PHI toolkit. The user submits one or more FASTA files for 130 processing. The pipeline begins with the parallel execution of the host analysis tools for each 131 submitted genome. Prophages identified by geNomad [14] are then submitted to several virus 132 analysis tools (which are also executed in parallel). If no candidate prophage or viral 133 sequence is identified for a genome, downstream viral analyses are skipped for that genome 134 and the final report records the absence of viral outputs. To generate the HTML report, a 135 script written in R Markdown renders an interactive and user-friendly HTML document. This 136 script first loads several key outputs for each tool, plus the input host genomes. Host genome 137 analysis includes: the geNomad summary table (*_virus_summary.tsv), which reports 138 detected prophages within bacterial genomes; the CheckM2 quality report 139 (quality_report.tsv), which contains completeness and contamination estimates; the 140 taxonomic classification from GTDB-Tk (gtdbtk.bac120.summary.tsv); and the predicted 141 defense systems identified by DefenseFinder (*_defense_finder_systems.tsv). Prophage 142 genome analysis includes: the VIBRANT annotations of auxiliary metabolic genes 143 (VIBRANT_AMG_individuals_*_virus.tsv); the CheckV quality summary file 144 (quality_summary.tsv); the host prediction results from iPHoP 145 (Host_prediction_to_genome_m90.csv); the prophage clustering and comparison output from 146 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2025.12.02.691814 doi: bioRxiv preprint
+
+7dRep (Cdb.csv) and the clustering dendrogram (Primary_clustering_dendrogram.pdf); and 147 the virulence factor annotations generated by Abricate (*_virus_vfdb.tsv). 148 To calculate the quality classes for host genomes that are displayed on the Overview Table, 149 we used the quality definitions described by the Minimum Information about a Single 150 Amplified Genome (MISAG)/ Minimum Information about a Metagenome-Assembled 151 Genome (MIMAG) standards [20]. 'High-quality draft' indicates that a Single Amplified 152 Genome (SAG) or Metagenome-Assembled Genome (MAG) is >90% complete with less 153 than 5% contamination. 'Medium-quality draft' SAGs and MAGs are those genomes with 154 completeness estimates of ≥50% and less than 10% contamination. All other SAGs and 155 MAGs (<50% complete with <10% contamination) should be reported as 'low-quality drafts' 156 [21]. The quality score is defined as completeness – 5* contamination [22]. 157 158 
+
+Demonstration dataset 159 To demonstrate workflow execution, output integration, and report interpretability, we 160 applied PHI to 22 bacterial genomes from a defined mock community dataset [23]. This 161 community is routinely used as a baseline for testing bioinformatics analyses and data 162 interpretation. As we were focusing on phages, we downloaded the FASTA sequences of the 163 complete genomes of 22 bacterial strains from the National Centre for Biotechnology 164 Information (NCBI), except for the reference genome NC_010067.1, which was marked as 165 "Record suppressed". The mock community is hereafter named as MBARC22. The accession 166 numbers for each genome are shown in the HTML report (Additional File 2: Figure S2). 167 168 
+
+Results 169 
+
+Workflow-level runtime and resource usage 170 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2025.12.02.691814 doi: bioRxiv preprint
+
+8The total runtime for the MBARC22 dataset was approximately 3.6 hours. GTDB-Tk 171 required the highest amount of CPU cores (32). In terms of memory, iPHoP was the most 172 demanding, requiring over 130 GB of RAM. In contrast to CheckM and GTDB-Tk which 173 processes all genomes in a single run, all other tools process each genome separately. Of the 174 latter tools, geNomad required the longest time to process a genome on average (21 minutes) 175 while Abricate was the quickest (nine seconds). The average memory peaks and runtimes are 176 shown in Table 1. 177 178 
+
+Table 1 -Average computational resources used by each tool for processing MBARC22. 179 
+
+Tool Average Runtime (s) Standard deviation (+/-) Average memory peak (Gb) Standard deviation (+/-) CheckM 1560 0 11.0 0
+
+GTDB -Tk 8700 0 91.8 0
+
+dRep 26 11.3 0.407 0.0351 
+
+DefenseFinder 136.2 64.2 0.957 0.0919 
+
+geNomad 1260 618 18.2 0.55 
+
+Abricate 9 6.5 0.270 0.023 
+
+CheckV 100 56.9 3.5 0.71 
+
+iPHoP 846 178.8 112.9 21 
+
+VIBRANT 85.6 108.6 1.80 0.68 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2025.12.02.691814 doi: bioRxiv preprint
+
+9180 The complete values of memory peaks and runtime per run are available in Additional File 3: 181 Table S1. Note that the resource requirements exceed the resources typically available to 182 researchers. Additionally, this resource-use analysis should be interpreted as computational 183 profiling of the workflow rather than as a predictive-performance benchmark of the 184 underlying tools. 185 To further evaluate scalability, we performed an additional analysis in which individual tool 186 runtimes were grouped by input file-size intervals, and mean runtime values were calculated 187 for each interval (Additional File 4: Table S2). This analysis showed that runtime did not 188 increase linearly with file size for most tools. Lightweight tools such as ABRicate remained 189 below one minute on average across the tested intervals, whereas tools involving larger 190 database searches or more complex sequence characterization, including geNomad, CheckV, 191 and DefenseFinder, showed greater runtime variability. This suggests that runtime is 192 influenced not only by input file size, but also by sequence composition, contig structure, 193 number of detected viral regions, and fixed initialization costs. iPHoP showed relatively 194 stable runtime across the tested small-file intervals but remained the most memory-intensive 195 step, indicating that memory availability rather than runtime is the main practical constraint 196 for full PHI analyses. Batch-level tools such as GTDB-Tk and CheckM2 should be 197 interpreted separately because they process the complete submitted genome set 198 simultaneously rather than individual genome files. 199 Implementation in Galaxy improves accessibility because usegalaxy.eu provides public 200 access to the required computational infrastructure. 201 
+
+202 
+
+Host genome analyses 203 
+
+Completeness and Contamination 204 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2025.12.02.691814 doi: bioRxiv preprint
+
+10 Except for NC_014008 (14.1% completeness), most bacterial genomes were classified as 205 high-quality drafts (>90% completeness, <5% contamination) (Figure 2). 206 
+
+207 
+
+Figure 2 - Visualization of the HTML report showing a summary of host genome 208 
+
+metrics. The table shows the sample IDs, the taxonomy assignment, the number of viruses 209 identified in the sample, quality metrics such as completeness and contamination, and 210 genome statistics. 211 212 
+
+Detection and Distribution of Antiviral Defense Systems Across Samples 213 PHI integrated DefenseFinder outputs to summarize the presence of prokaryotic antiviral 214 defense systems across multiple genome assemblies (Table 2). The results revealed a diverse 215 array of defense mechanisms distributed unevenly among the samples. The number of 216 detected defense systems per genome ranged from 3 to 24, with NC_021184.1 exhibiting the 217 highest count (24 systems) and NC_014168.1 presenting the fewest (3 systems). In terms of 218 diversity, NC_021184.1 displayed the greatest richness in both system types (13 unique 219 types) and subtypes (n=18), followed by NC_019904.1, which contained 12 system types and 220 13 subtypes. Conversely, samples such as NC_014168.1 showed limited diversity, with only 221 2 unique types. Gene content associated with defense systems also varied substantially. The 222 sample NC_021184.1 encoded the largest number of defense-related genes (n=75), while 223 NC_014168.1 had the fewest (n=4). These results illustrate how PHI integrates and reports 224 DefenseFinder outputs to enable comparison of antiviral defense repertoires across genomes. 225 The observed variation highlights the level of detail that can be captured using the 226 DefenseFinder module within the Phage Toolkit. 227 
+
+228 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2025.12.02.691814 doi: bioRxiv preprint
+
+11 
+
+Table 2 - Filtered DefenseFinder (13) results presented in the HTML report. The filtered 229 contents include the identification of defense systems, the type, subtype, and their locations in 230 the contig list. 231 sys_id type subtype protein_in_syst genes_ count name_of_profiles_in_sys NC_000913.3_Lit_3 Lit Lit NC_000913.3_1111 1 Lit__Lit NC_000913.3_RM_T ype_IV_9 RM RM_Type_ IV NC_000913.3_1130 1 RM_Type_IV__Type_IV_05 NC_000913.3_Hachi man_1 Hachiman Hachiman NC_000913.3_2589, NC_000913.3_2590 2Hachiman__HamA_2,Hachiman __HamB NC_000913.3_RnlAB _6 RnlAB RnlAB NC_000913.3_2591, NC_000913.3_2592 2 RnlAB__RnlA,RnlAB__RnlB NC_000913.3_CAS_ Class1-Subtype-I-E_11 Cas CAS_Class 1-Subtype-I-E NC_000913.3_2706, NC_000913.3_2707, NC_000913.3_2708, NC_000913.3_2709, NC_000913.3_2710, NC_000913.3_2711, NC_000913.3_2712, NC_000913.3_2713 8cas1_I-E_1,cas2_I-E_2,cas3_I_5,cas5_I-E_3,cas6e_I_II_III_IV_V_VI_1, cas7_I-E_2,cas8e_I-E_1,cse2gr11_I-E_1 NC_000913.3_MazE F_4 MazEF MazEF NC_000913.3_2734, NC_000913.3_2735 2 MazEF__MazE,MazEF__MazF NC_000913.3_MazE F_5 MazEF MazEF NC_000913.3_4140, NC_000913.3_4141 2 MazEF__MazE,MazEF__MazF NC_000913.3_RM_T ype_IV_10 RM RM_Type_ IV NC_000913.3_4262, NC_000913.3_4263 2RM_Type_IV__FAM_1,RM_Ty pe_IV__FAM_2 NC_000913.3_RM_T ype_I_8 RM RM_Type_ INC_000913.3_4265, NC_000913.3_4266, NC_000913.3_4267 3RM__Type_I_MTases_FAM_2, RM__Type_I_REases_FAM_2.e insi_trimmed,RM__Type_I_S_5 2
+
+232 
+
+Identification and quality of prophages 233 In the demonstration dataset, the report showed that 14 out of the 22 analyzed bacterial 234 genomes were hosting candidate prophages (Figure 2). A total of 41 prophages were found in 235 the sample pool, with seven and nine being classified as high- and medium-quality, 236 respectively. The sequences were also categorized using MIUViG standards. Prophages 237 carried varying numbers of genes, typically ranging between 19 and 58 genes, with sequence 238 lengths ranging from approximately 9.8kb to 28.6kb. A visual representation of the identified 239 prophages, their length, and location within the host genome is provided in Figure 3. 240 241 
+
+Figure 3 - Example visualization of the Host Genome Ideogram. The graph shows the 242 location and length of the predicted prophages. 243 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2025.12.02.691814 doi: bioRxiv preprint
+
+12 244 
+
+Prophage Genome annotation 245 A visual representation of the prophage genome and features such as quality, number of 246 genes (and viral genes) is shown for each predicted prophage (Figure 4). The integrated 247 annotation outputs reported 4350 predicted genes (783 marked as viral hallmark), with the 248 most common annotations being capsid and structural connector proteins. No plasmid 249 signatures, AMR, or conjugation genes were predicted. 250 251 
+
+Figure 4 - Example visualization of a prophage genome and its associated features. 252 The PHI report generates a separate visualization tab for each predicted phage, showing 253 sequence location, quality, taxonomy, and annotated genes. 254 255 
+
+Conclusions 256 The PHI Toolkit, available through the Galaxy platform, addresses a critical bottleneck in 257 phage research by enabling worldwide access to powerful, yet accessible, computational 258 analyses for both bioinformatics experts and non-experts. Rather than introducing novel 259 predictive methods and algorithms, PHI consolidates tools into a streamlined web interface 260 with a modular, cloud-hosted architecture, eliminating the need for local hardware and 261 advanced bioinformatics expertise. Researchers can therefore avoid manual data wrangling 262 and devote their efforts to biological discovery rather than software installation, maintenance, 263 or resource management. Because each module is version-tracked and can be updated, users 264 can rely on established and actively maintained tools without manual upgrades, while still 265 retaining the flexibility to swap in new tools as the field evolves. Furthermore, the 266 integration of these results within a single interactive report facilitates biological 267 interpretation by linking host identity, prophage content, genome context, and functional 268 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2025.12.02.691814 doi: bioRxiv preprint
+
+13 annotations. For instance, host genome ideograms and prophage feature maps allow users to 269 examine the genomic location, size, and characteristics of predicted prophages within their 270 bacterial hosts, while CRISPR spacer matching tables provide additional evidence for 271 potential host-phage relationships. When combined with prophage annotations, virulence 272 screening, AMG detection, and host prediction outputs, this integrated structure enables rapid 273 identification of biologically relevant patterns that would be difficult to infer from individual 274 result files alone. Future development of PHI will focus on expanding the workflow with 275 additional prophage-detection, host-prediction, annotation, and visualization modules as new 276 methods become available. Beyond general phage–host interaction studies, PHI may support 277 applied microbiome research by enabling systematic screening of prophage content, 278 virulence-associated genes, auxiliary metabolic genes, and host defense systems in 279 biotechnologically relevant bacteria. In the future, this could include microbial strains 280 considered for bioinoculants or low-risk pesticide applications [24, 25], provided that 281 dedicated validation datasets are used and the outputs are interpreted as part of a broader 282 strain-characterization and risk-assessment framework. 283 
+
+Availability and requirements 284 
+
+Project name: PHI: Prophage-Host Interaction Toolkit 285 
+
+Project home page: https://github.com/Helmholtz-UFZ/galaxy-tools/tree/main/tools/phi-286 toolkit 287 
+
+Galaxy workflow: https://usegalaxy.eu/published/workflow?id=c62d65832377e376 288 
+
+Operating system(s): Platform independent through Galaxy 289 
+
+Programming language: Galaxy workflow format; R/R Markdown for report generation; 290 integrated tools use their respective languages 291 
+
+Other requirements: None 292 
+
+License: Galaxy Web Portal Service Agreement (https://usegalaxy.org/static/terms.html) 293 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2025.12.02.691814 doi: bioRxiv preprint
+
+14 
+
+Any restrictions to use by non-academics: None 294 295 
+
+List of abbeviations 296 
+
+AMG — Auxiliary metabolic gene 297 
+
+ANI — Average nucleotide identity 298 
+
+GTDB-Tk — Genome Taxonomy Database Toolkit 299 
+
+HTML — HyperText Markup Language 300 
+
+MAG — Metagenome-assembled genome 301 
+
+MIMAG — Minimum Information about a Metagenome-Assembled Genome 302 
+
+MISAG — Minimum Information about a Single Amplified Genome 303 
+
+MIUViG — Minimum Information about an Uncultivated Virus Genome 304 
+
+NCBI — National Center for Biotechnology Information 305 
+
+PHI — Prophage-Host Interaction 306 
+
+SAG — Single amplified genome 307 
+
+VFDB — Virulence Factor Database 308 
+
+309 
+
+Declarations 310 
+
+Ethics approval and consent to participate 311 Not applicable. 312 
+
+313 
+
+Consent for publication 314 Not applicable. 315 316 
+
+Availability of data and materials 317 The PHI Toolkit consists of the Galaxy workflow itself and a utility Galaxy tool (the final 318 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2025.12.02.691814 doi: bioRxiv preprint
+
+15 step of the workflow) that integrates the results of all used tools. The utility tool is 319 developed at https://github.com/Helmholtz-UFZ/galaxy-tools/tree/main/tools/phi-toolkit and 320 has been deployed to the Galaxy tool shed (which allows installation on any 321 Galaxy instance). The full set of results can be exported from the Galaxy server via 322 https://usegalaxy.eu/workflows/invocations/e3ee09d9ef3af4a4). Tool, workflow and 323 workflow invocation has been deposited at Zenodo 324 (https://zenodo.org/records/20050288). The MBARC22 genome accessions used for the 325 demonstration are listed in Additional File S2 and were obtained from NCBI, except for 326 NC_010067.1, which was suppressed and therefore excluded. 327 328 
+
+Competing interests 329 The authors declare that they have no competing interests. 330 331 
+
+Funding 332 JS and EN are funded by the European Union’s Horizon Europe Research and Innovation 333 programme under Grant Agreement N° 101084163 in the frame of Risk AssessmenT 334 InnOvatioN for low-risk pesticides (RATION www.ration-lrp.eu). FBC was funded by the 335 Deutsche Forschungsgemeinschaft (DFG, German Research Foundation)—SFB 1076— 336 Project Number 218627073 as part of the Collaborative Research Centre AquaDiva of the 337 Friedrich Schiller University Jena. RBT was partially funded through the NCN Sonata BIS 338 grant number 2020/38/E/NZ2/0059. LW, NG, MB and AC received no specific funding for 339 this study. The funders had no role in study design, data collection and analysis, decision to 340 publish, or preparation of the manuscript. 341 342 
+
+Authors’ contributions 343 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2025.12.02.691814 doi: bioRxiv preprint
+
+16 JS and FBC conceived the workflow. JS, FBC, MB, NG, EN, and RBT contributed to 344 workflow implementation, tool integration, testing, and report generation. JS drafted the 345 original manuscript. LW and AC supervised the study and contributed to manuscript 346 development. All authors reviewed and approved the final manuscript. 347 
+
+348 
+
+Acknowledgments 349 Not applicable. 350 
+
+351 
+
+References 352 1. Kasman LM, Porter LD. Bacteriophages. In: StatPearls. Treasure Island (FL): StatPearls 353 Publishing; 2025. 354 2. Forcone K, Coutinho FH, Cavalcanti GS, Silveira CB. Prophage Genomics and Ecology in 355 the Family Rhodobacteraceae. Microorganisms. 2021;9:1115. 356 https://doi.org/10.3390/microorganisms9061115. 357 3. Middelboe M, Traving SJ, Castillo D, Kalatzis PG, Glud RN. Prophage-encoded chitinase 358 gene supports growth of its bacterial host isolated from deep-sea sediments. ISME J. 359 2025;19:wraf004. https://doi.org/10.1093/ismejo/wraf004. 360 4. Rangel-Pineros G, Almeida A, Beracochea M, Sakharova E, Marz M, Muñoz AR, et al. 361 VIRify: an integrated detection, annotation and taxonomic classification pipeline using virus-362 specific protein profile hidden Markov models. 2022. 363 https://doi.org/10.1101/2022.08.22.504484. 364 5. Wishart DS, Han S, Saha S, Oler E, Peters H, Grant JR, et al. PHASTEST: faster than 365 PHASTER, better than PHAST. Nucleic Acids Research. 2023;51:W443–50. 366 6. Roux S, Camargo AP, Coutinho FH, Dabdoub SM, Dutilh BE, Nayfach S, et al. iPHoP: 367 An integrated machine learning framework to maximize host prediction for metagenome-368 derived viruses of archaea and bacteria. PLOS Biology. 2023;21:e3002083. 369 7. Guo J, Bolduc B, Zayed AA, Varsani A, Dominguez-Huerta G, Delmont TO, et al. 370 VirSorter2: a multi-classifier, expert-guided approach to detect diverse DNA and RNA 371 viruses. Microbiome. 2021;9:37. https://doi.org/10.1186/s40168-020-00990-y. 372 8. Shang J, Sun Y. CHERRY: a Computational metHod for accuratE pRediction of virus– 373 pRokarYotic interactions using a graph encoder–decoder model. Brief Bioinform. 374 2022;23:bbac182. https://doi.org/10.1093/bib/bbac182. 375 9. The Galaxy platform for accessible, reproducible, and collaborative data analyses: 2024 376 update. Nucleic Acids Research. 2024;52:W83–94. 377 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2025.12.02.691814 doi: bioRxiv preprint
+
+17 10. Chklovski A, Parks DH, Woodcroft BJ, Tyson GW. CheckM2: a rapid, scalable and 378 accurate tool for assessing microbial genome quality using machine learning. Nature 379 Methods. 2023;20:1203–12. 380 11. Chaumeil P-A, Mussig AJ, Hugenholtz P, Parks DH. GTDB-Tk: a toolkit to classify 381 genomes with the Genome Taxonomy Database. Bioinformatics. 2020;36:1925–7. 382 https://doi.org/10.1093/bioinformatics/btz848. 383 12. Parks DH, Chuvochina M, Rinke C, Mussig AJ, Chaumeil P-A, Hugenholtz P. GTDB: an 384 ongoing census of bacterial and archaeal diversity through a phylogenetically consistent, rank 385 normalized and complete genome-based taxonomy. Nucleic Acids Research. 2022;50:D785– 386 94. 387 13. Tesson F, Hervé A, Mordret E, Touchon M, d’Humières C, Cury J, et al. Systematic and 388 quantitative view of the antiviral arsenal of prokaryotes. Nature Communications. 389 2022;13:2561. 390 14. Camargo AP, Roux S, Schulz F, Babinski M, Xu Y, Hu B, et al. Identification of mobile 391 genetic elements with geNomad. Nature Biotechnology. 2024;42:1303–12. 392 15. Nayfach S, Camargo AP, Schulz F, Eloe-Fadrosh E, Roux S, Kyrpides NC. CheckV 393 assesses the quality and completeness of metagenome-assembled viral genomes. Nat 394 Biotechnol. 2021;39:578–85. https://doi.org/10.1038/s41587-020-00774-7. 395 16. Olm MR, Brown CT, Brooks B, Banfield JF. dRep: a tool for fast and accurate genomic 396 comparisons that enables improved genome recovery from metagenomes through de-397 replication. ISME Journal. 2017;11:2864–8. 398 17. Seemann T. tseemann/abricate. 2025. https://github.com/tseemann/abricate. 399 18. Chen L, Zheng D, Liu B, Yang J, Jin Q. VFDB 2016: hierarchical and refined dataset for 400 big data analysis—10 years on. Nucleic Acids Research. 2016;44:D694–7. 401 https://doi.org/10.1093/nar/gkv1239. 402 19. Kieft K, Zhou Z, Anantharaman K. VIBRANT: automated recovery, annotation and 403 curation of microbial viruses, and evaluation of viral community function from genomic 404 sequences. Microbiome. 2020;8:90. https://doi.org/10.1186/s40168-020-00867-0. 405 20. Bowers RM, Kyrpides NC, Stepanauskas R, Harmon-Smith M, Doud D, Reddy TBK, et 406 al. Minimum information about a single amplified genome (MISAG) and a metagenome-407 assembled genome (MIMAG) of bacteria and archaea. Nature Biotechnology. 2017;35:725– 408 31. https://doi.org/10.1038/nbt.3893. 409 21. Rocha U, Coelho Kasmanas J, Kallies R, Saraiva JP, Toscan RB, Štefani č P, et al. 410 MuDoGeR: Multi-Domain Genome recovery from metagenomes made easy. Molecular 411 Ecology Resources. 2024;24. https://doi.org/10.1111/1755-0998.13904. 412 22. Parks DH, Rinke C, Chuvochina M, Chaumeil P-A, Woodcroft BJ, Evans PN, et al. 413 Recovery of nearly 8,000 metagenome-assembled genomes substantially expands the tree of 414 life. Nat Microbiol. 2017;2:1533–42. https://doi.org/10.1038/s41564-017-0012-7. 415 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2025.12.02.691814 doi: bioRxiv preprint
+
+18 23. Singer E, Andreopoulos B, Bowers RM, Lee J, Deshpande S, Chiniquy J, et al. Next 416 generation sequencing data of a defined microbial mock community. Scientific Data. 417 2016;3:160081. 418 24. Ruiu L. Microbial Biopesticides in Agroecosystems. Agronomy. 2018;8:235. 419 https://doi.org/10.3390/agronomy8110235. 420 25. Papadopoulou K Κ, Chatzinotas A, Diaz-Otero BG, Brader G, Karpouzas DG, Garces 421 Ruiz M, et al. Benefits and challenges of upcoming microbial plant protection applications 422 sustaining planetary health. iScience. 2025;28:113557. 423 https://doi.org/10.1016/j.isci.2025.113557. 424 425 
+
+Additional File 1: Figure S1 . Detailed workflow schema of the PHI toolkit , showing the 426 Galaxy-native integration of prophage detection, viral quality assessment, host prediction, 427 dereplication, genome quality control, taxonomy, defense-system screening, virulence-factor 428 screening, antimicrobial-resistance screening, functional annotation, and final report 429 generation. 430 431 
+
+Additional File 2: Figure S2 . Example PHI HTML report for the MBARC22 dataset. 432 Structured HTML report generated by the PHI workflow for the MBARC22 mock-433 community dataset. The report summarizes genome accession numbers and integrates host, 434 prophage, and interaction-level outputs, including genome quality, taxonomy, prophage 435 content, host–virus association networks, CRISPR spacer–protospacer matching results, 436 genome-level feature maps, host-range assessment, and genomic-context visualizations. 437 438 
+
+Additional File 3: Table S1. Complete computational-resource table for PHI runs. 439 Complete per-run resource-usage table for the MBARC22 analysis. It contains the individual 440 runtime and memory-peak values underlying the average computational-resource summary 441 reported in Table 1, including tool-specific runtime and memory requirements for CheckM2, 442 GTDB-Tk, dRep, DefenseFinder, geNomad, ABRicate, CheckV, iPHoP, and VIBRANT. 443 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2025.12.02.691814 doi: bioRxiv preprint
+
+19 444 
+
+Additional File 4: Table S2. File-size grouped runtime and scalability analysis. 445 Scalability analysis of PHI tool runtimes grouped by input file-size intervals. For each tool, 446 runtimes were summarized as mean values within file-size bins to evaluate whether runtime 447 increased with input size. 448 
+
+.CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2025.12.02.691814 doi: bioRxiv preprint
