@@ -1,0 +1,712 @@
+Title: 17907637
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.07.06.736792v1.full.pdf
+
+Number of Pages: 55
+
+Markdown Content:
+Optimized Urine Metagenomic Methods Reveal Longitudinal Microbial Community 1
+
+Dynamics and Predictors of Transition from Asymptomatic Colonization to CAUTI 23
+
+Authors: Namrata Deka 1 , Erin M. Nawrocki 2 , Aimee L. Brauer 1 , Saptarshi Chakraborty 3 ,4Vaughn S. Cooper 2 , Chelsie E. Armbruster 1* 5
+
+6*address correspondence to Chelsie E. Armbruster, chelsiea@buffalo.edu 781 Department of Microbiology and Immunology, Jacobs School of Medicine and Biomedical 9Sciences, Buffalo, NY, 14203, NY, USA. 2. Department of Microbiology and Molecular Genetics, 10 University of Pittsburgh. 3 Department of Biostatistics, University at Buffalo 11 12 13 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+ABSTRACT 14 
+
+Background: Urinary tract infections (UTIs) rank among the most common infections globally, 15 with many linked to indwelling urinary catheters. Our prior culture-based longitudinal evaluation 16 of long-term catheterized nursing home residents revealed persistent asymptomatic colonization 17 by pathogens and demonstrated that CAUTI onset was not necessarily due to new pathogen 18 acquisition. In this study, we optimized metagenomics methods to examine the ecological 19 structure underlying persistent colonization and the transition to infection. 20 
+
+Results: We present a comprehensive longitudinal metagenomic analysis of catheterized urine 21 specimens, revealing colonization dynamics of 69 microbial species across 198 samples from 9 22 individuals. Descriptive ecological metrics were combined with Bayesian mixed-effects models 23 that accounted for repeated within-participant sampling to identify clusters of co-occurring 24 species, determine the impact of perturbations such as antibiotic exposure and catheter 25 changes on community structure, and identify taxa predictive of infection sign and symptom 26 onset. Longitudinal specimens clustered into three main ecological phenotypes: 1) moderate 27 diversity, unstable communities (3 participants); 2) high diversity, stable communities that 28 resisted disruption even after multiple catheter changes (3 participants); and 3) low diversity, 29 pathogen-dominated communities (3 participants). Catheter changes alone did not significantly 30 disrupt community composition, while antibiotic exposures induced major shifts often followed 31 by re-colonization with the same genera within subsequent weeks. Six clusters of species were 32 identified for which relative abundances correlated across perturbations to the microbial 33 community, including a mutually exclusive Enterobacterales cluster and fastidious-anaerobe 34 group cluster. 24 species were found to correlate with onset of signs and symptoms of infection, 35 11 of which were missed by standard urine culture. 36 
+
+Conclusions. The catheterized urinary tract represents a novel ecosystem that is resilient to 37 disruption by catheter changes but susceptible to antibiotic perturbation. Antibiotic exposure did 38 deplete all species associated with signs and symptoms but also depleted potentially benign 39 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+microbes. Our findings have direct implications for catheter management protocols and 40 antibiotic stewardship in long-term catheterized patients. Prospective evaluation using this 41 framework in a larger cohort can help translate these ecological insights into clinical decision-42 making tools. 43 44 
+
+KEYWORDS: metagenomics; metaphlan; kraken; alpha diversity; asymptomatic bacteriuria; 45 community dynamics; DNA optimization; CAUTI; urobiome; catheter; Bayesian mixed-effects 46 models 47 48 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+INTRODUCTION 49 Indwelling urinary catheters are ubiquitous in modern healthcare and long-term care 50 settings and are a major driver of urinary tract infections (UTI) [1-3]. Up to 10% of residents in 51 long-term care settings such as nursing homes require permanent catheter use, and these 52 patients typically exhibit continuous bacteriuria with a high risk of infection and severe sequelae 53 [1, 4]. The presence of an indwelling catheter dramatically alters the bladder environment to 54 facilitate bacteriuria, making it the leading cause of healthcare-associated UTIs [1, 4]. However, 55 distinguishing asymptomatic bacteriuria from catheter-associated UTI (CAUTI) can be clinically 56 challenging due to a high prevalence of subjective, nonspecific signs and symptoms of infection 57 [3, 5]. The burden of CAUTI is estimated to be ~449,334 cases annually in the US alone, 58 leading to prolonged hospitalization, increased morbidity, and healthcare costs exceeding $350 59 million per year [6, 7]. Urinalysis also provides little diagnostic utility for differentiating CAUTI 60 from bacteriuria due to the inflammation and proteinuria induced by the catheter presence [5]. 61 Together, these problems lead to both insufficient and inappropriate antibiotic use, which 62 highlights the need for improved diagnostic criteria in the long-term catheterized population. 63 Clinical management of UTIs has historically followed the view that healthy urine is 64 sterile or at least lacking in traditional uropathogens. However, this paradigm has been 65 increasingly challenged with substantial evidence demonstrating the presence of a urinary 66 microbiome [5, 8-10]. Indwelling urinary catheters further create a unique ecological niche that 67 fundamentally alters the urinary tract environment and favors bacteriuria [11]. The catheter 68 surface provides a substrate for biofilm formation, while catheter-associated trauma to the 69 urothelium may disrupt host defense mechanisms. In catheterized individuals, we and others 70 have demonstrated that culturable microorganisms persist as stable, polymicrobial communities 71 resilient to interventions like antibiotics or catheter changes [5, 10]. However, as standard 72 clinical culture methods under-sample fastidious and anaerobic organisms, these data provide 73 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+only a narrow view of the complete microbiota of the catheterized urinary tract. Furthermore, 74 culture based longitudinal assessments of catheterized urine have revealed that microbes 75 identified during symptomatic CAUTI were often present asymptomatically for several weeks 76 prior to diagnosis, demonstrating that symptom onset is not necessarily driven by the acquisition 77 of a new pathogen but may arise from within a resident microbial reservoir [5, 10]. 78 The clinical significance of polymicrobial communities within the catheterized bladder 79 and their relationship to development of symptomatic disease from asymptomatic colonization 80 remains poorly defined. Longitudinal profiling of catheterized individuals may therefore provide 81 key insights into microbial community dynamics that cross-sectional studies cannot fully 82 capture. Potential mechanisms influencing symptom onset may include the acquisition of new 83 virulent species, the loss of protective commensals, or an increase in the pathogenic potential of 84 resident strains through within-host evolution [5, 12-16]. There is growing evidence for the latter, 85 with studies documenting progressive increases in antibiotic resistance in persistent isolates 86 and the accumulation of resistance genes via horizontal gene transfer within clinical settings 87 [13, 15, 17]. However, most large-scale studies remain culture-based and low-resolution, 88 leaving it unclear whether symptomatic transitions are driven by species-level turnover or by 89 strain-level changes in virulence and resistance. 90 No prior study has aligned longitudinal whole-genome sequencing of samples from 91 catheterized individuals with infection signs and symptoms. This approach can potentially 92 determine whether symptomatic infection aligns with new species acquisitions, a loss of 93 beneficial microbes, or genomic changes within persistent strains. We therefore conducted a 94 longitudinal metagenomic study designed to evaluate and overcome technical challenges of 95 sequencing complex catheter urine specimens and to characterize all microbes present in the 96 urine. We first optimized methods for microbial DNA extraction and host DNA depletion to 97 maximize resolution of all microbial members in catheter urine specimens. This was followed by 98 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+metagenomic sequencing of serial urine specimens from chronically catheterized patients to 1) 99 characterize the complete composition of catheterized urine, 2) examine community stability 100 over time, and 3) assess the contribution of specific constituents and community dysbiosis to 101 the development of CAUTI signs and symptoms. 102 Here we present the first genome-wide characterization of longitudinal urine specimens 103 from 9 catheterized individuals, comprising 198 serial samples collected over 30 weeks. We 104 identified 69 unique species and characterized their temporal dynamics in relation to clinical 105 parameters including catheter changes, antibiotic exposures, and clinical signs and symptoms 106 of CAUTI. Known uropathogens ranged widely in frequency within and among patient samples. 107 Nonetheless patients grouped into distinct community phenotypes, with some individuals 108 maintaining stable commensal-dominated communities even through catheter changes, while 109 others exhibited rapid and frequent shifts in dominant species. Abundance shifts in several 110 species undetectable by standard culture methods were correlated with infection signs and 111 symptoms across multiple CAUTI classification schemes, pointing to candidate predictors of 112 infection onset. The results provide new insights into the ecology of the catheter-associated 113 urinary tract and have important implications for developing microbiome-informed diagnosis, 114 treatment, and prevention for CAUTIs. 115 116 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+METHODS 117 
+
+Engineered urine specimen control for DNA extraction and sequencing 118 To examine the quality of nucleic acid extraction kits and day to day reproducibility, a 119 control urine sample was engineered. The engineered urine control was designed to represent 120 the complexity of a typical clinical urine sample obtained from a patient with a long-term 121 indwelling urinary catheter, including the presence of eukaryotic organisms that could be 122 present in urine. Varying concentrations of four Gram-negative bacteria, two Gram-positive 123 bacteria, two fungi, a protozoan parasite, and a human bladder epithelial cell line were 124 suspended in pooled, filter-sterilized human urine as shown in Table 1 . 10% human serum was 125 also added to mimic the level of host protein typically present in urine from patients with long-126 term catheters. 127 128 
+
+Comparison of methods for microbial DNA extraction from catheter urine specimens 129 Three microbial DNA extraction kits were selected to evaluate performance for isolating 130 microbial DNA from urine collected from catheterized nursing home participants: 1) Zymo 131 HostZERO Microbial DNA kit (Zymo Research D4310) for select lysing of host material and 132 degradation of extracellular DNA followed by microbial DNA extraction [18], 2) Qiagen QIAamp 133 BiOstic Bacteremia DNA kit (Qiagen 12240-50) for isolation from samples with low bacterial 134 counts, including inhibitor removal [19], and 3) MagMAX Microbiome Ultra Nucleic Acid Isolation 135 Kit (Applied Biosystems by Thermo Fisher Scientific A42354) for efficient nucleic acid extraction 136 from bacteria, fungi, and viruses [20]. All extractions were performed following the 137 manufacturer's instructions, with specific modifications noted below to improve DNA yield. An 138 initial hypotonic lysis step was explored in combination with the QIAmp and MagMAX extraction 139 methods to remove host material prior to complete lysis of microbes and was adapted from [21]. 140 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+Hypotonic Lysis. 250 μL of urine sample was suspended in 7mL dH 2 O and incubated at 141 room temperature on nutating mixer with gentle agitation for one hour. 800 μL of Benzonase 142 buffer (200 mM Tris-HCl, 10 mM MgCl 2 ) and 250U Benzonase (Sigma E-1014) was added to 143 sample and incubated at 37°C for 2 hours with gentle agitation. The sample was spun at 8000g 144 for 10 minutes, the pellet was washed once in 1X PBS and then resuspended in 400 μL TE 145 buffer. The Benzonase reaction was quenched by adding 88 μL of 0.5M EDTA and 880 μL of 146 1.5M NaCl and sample could then proceed with nucleic acid extraction kit. 147 
+
+Zymo HostZERO Microbial DNA kit. Two replicate urine aliquots were processed and 148 combined where indicated during the microbial DNA isolate step. For host DNA removal, 250 μL 149 of each urine sample was added to 1 mL Host DNA Depletion Solution and incubated at room 150 temperature on a nutating mixer with gentle agitation for 15 minutes. Samples were centrifuged 151 at 10,000g for 5 minutes, supernatants carefully removed, and pellets resuspended in 100 μL 152 Microbial Selection Buffer. 1 μL of Microbial Selection Enzyme was then added to each 153 suspension, briefly vortexed to mix, and incubated at 37°C for 30 minutes. The samples then 154 underwent the manufacturer's recommended Proteinase K treatment by adding 20 μL 155 Proteinase K, vortexing for 10 seconds, and incubating at 55°C for 10 minutes. Following 156 incubation, 100 μL DNA/RNA Shield was added, vortexed for 10 seconds, and incubated at 157 room temperature for 10 minutes. 158 For microbial DNA isolation, the entire sample from the host DNA depletion step was 159 added to a ZR BashingBead Lysis Tube. 750 μL of ZymoBIOMICS Lysis Solution was added to 160 the tube, tubes were secured in a vortex tube holder, vortexed at maximum speed for 10 161 minutes, and centrifuged at 10,000g for one minute. The supernatant was transferred to a 162 collection tube and 1,200 μL of ZymoBIOMICS DNA Binding Buffer was added and mixed well. 163 At this step, the two replicate tubes from the same urine sample were combined and the 164 supernatant/DNA binding buffer mix was added to a Zymo-Spin IC-Z Column in a collection tube 165 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+and centrifuged at 10,000g for 30 seconds and flow-through was discarded. Columns were 166 reloaded and spun again until all supernatant/DNA binding buffer was added. 400 μL of 167 ZymoBIOMICS DNA Wash Buffer 1 was added to column and centrifuged at 10,000g for 30 168 seconds. 700 μL of ZymoBIOMICS DNA Wash Buffer 2 was added to the column and 169 centrifuged at 10,000g for 30 seconds. Lastly, 200 μL of ZymoBIOMICS DNA Wash Buffer 2 was 170 added to the column and centrifuged at 10,000g for one minute for complete removal of wash 171 buffer. The column was then transferred to a clean microcentifuge tube and 20 μL of 172 ZymoBIOMICS DNase/RNase-Free water prewarmed to 55°C was added directly to column and 173 allowed to sit for 10 minutes. The column was centrifuged at maximum speed for one minute to 174 elute DNA. The eluted DNA was returned to column and allowed to sit for an additional 10 175 minutes before centrifuging again to ensure maximum retrieval of DNA. 176 
+
+Qiagen QIAamp BiOstic Bacteremia DNA kit. The starting volume was increased to 500 177 μL of each urine specimen to increase DNA yield. Additionally, only 20 μL of Solution EB was 178 used to elute DNA, and the elution was run over the column twice to increase DNA yield. 179 
+
+MagMAX Microbiome Ultra Nucleic Acid Isolation Kit. The starting volume was increased 180 to 500 μL of each urine specimen to increase DNA yield. Samples subjected to hypotonic lysis 181 were pelleted and resuspended in 800 μL Lysis Buffer prior to start. Elution Solution provided 182 with kit was prewarmed to 55°C and only 20 μL was used to elute DNA off beads to increase 183 yield. 184 185 
+
+Microbial DNA extraction from long-term catheterized urine specimens 186 Serial urine samples were previously collected at sequential weekly clinical visits for 19 187 participants [5]. A prospective observational cohort study of asymptomatic catheter-associated 188 bacteriuria was conducted across two Buffalo-area nursing homes between July 2019 and 189 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+March 2020. Eligible residents had an indwelling urinary catheter (Foley or suprapubic) for at 190 least 12 months, were at least 21 years of age, and could provide informed consent; residents 191 receiving end-of-life care were excluded. Participants were followed weekly for up to 7 months, 192 with each visit comprising chart review, clinical symptom assessment, and urine specimen 193 collection by licensed nurses. Participants were withdrawn upon request, catheter removal 194 without replacement, facility transfer, or death. Baseline chart reviews captured participant 195 demographics, comorbidities, functional status, catheterization history, and prior antimicrobial 196 use. Weekly chart reviews recorded suspected infections, hospitalizations, urine culture and 197 urinalysis results, and antimicrobial prescriptions. Signs and symptoms of CAUTI assessed at 198 each visit included fever, suprapubic or costovertebral pain or tenderness, hypotension, chills or 199 rigors, and acute mental status change. Medical records from any interim hospitalizations were 200 incorporated into the dataset. All study data were managed using REDCap [22-24] hosted 201 through the University at Buffalo Clinical and Translational Science Institute. 202 In this study, we sequenced all the longitudinal urine samples collected for 9 participants 203 who completed at least 19 study visits (range 19-30 weeks). DNA extraction using the Zymo 204 HostZERO Microbial DNA kit (Zymo Research D4310) was found to provide an abundance 205 profile that most closely resembled the expected abundance of the engineered urine specimen. 206 This kit was therefore selected for extraction of DNA from all longitudinal urine specimens. 1ml 207 of urine was supplemented with Zymo urine conditioning buffer and stored at -80 for DNA 208 extraction. For each DNA extraction, an engineered urine specimen aliquot and water control 209 were also subjected to the extraction process and sequenced. 210 211 
+
+DNA sequencing of clinical samples 212 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+Extracted DNA was subjected to shotgun metagenomics. Sequencing libraries were 213 constructed using the purePlex DNA Library Prep Kit (seqWell, Beverly, MA). Libraries were 214 pooled and quantified with Qubit High Sensitivity dsDNA reagents, and fragment sizes were 215 assessed on Agilent TapeStation D5000 ScreenTape. Pooled libraries were denatured with 0.2 216 N NaOH, and the average fragment size was used to dilute each pool to a loading concentration 217 of 1.5-1.6 pM in HT1 buffer. The pools were spiked with 1% PhiX and sequenced on an Illumina 218 NextSeq 500 (2 x 150 bp reads). All raw reads are publicly available in NCBI BioProject: 219 PRJNA1466380. 220 221 
+
+Bioinformatic analysis 222 Reads were demultiplexed with Illumina’s bcl2fastq software v2.17.1. FASTQ files were 223 processed with bioBakery’s “wmgx” workflow for whole-metagenome shotgun sequencing using 224 default settings [25]. Briefly, adapters and repetitive sequences were trimmed and reads that 225 aligned to the human genome (hg37dec_v0.1) were removed with KneadData v0.7.6. During 226 pre-filtering, 204 samples passed the minimum read threshold of >1,000 raw reads. Mean raw 227 reads per sample is ~2.88 million (range: 17,400 – 13.08 million) paired reads. After 228 trimmomatic-based quality filtering, mean reads retained ~2.39 million per sample. After human 229 genome decontamination using hg37dec_v0.1, mean reads available for microbial profiling were 230 ~658,800 per sample which removed an average of 72.6% of total reads that were of human 231 origin. The remaining ~27.4% of sequenced reads were used for taxonomic classification. The 232 remaining nonhuman reads were assigned to microbial taxa in the CHOCOPhlAn database 233 (mpa_v31_CHOCOPhlAn_201901) using MetaPhlAn v3.0.7 [26, 27]. A total of 69 unique 234 bacterial and fungal species were identified across all samples and classified into three 235 ecological categories including 1) uropathogens (n=18): established causative agents of urinary 236 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+tract infections, 2) oral species (n=16): species whose primary ecological niche is the oral cavity, 237 and 3) non-oral commensal species (urogenital, vaginal tract, skin, gut, environmental, n=32): 238 species that colonize body sites and are not typically associated with infections ( Table S1 ) [28, 239 29]. Species classification was performed using established microbiological and clinical 240 literature, the Human Oral Microbiome Database (HOMD;[28]), BacDive [29], and clinical 241 microbiology references [30-32]. We classified the species based on primary habitat only, 242 because some species (e.g., Streptococcus anginosus group) can colonize multiple body sites, 243 and their classification may require individualized consideration based on strain-level 244 characteristics. The ecological classification is summarized in Table S2 .245 Taxonomic profiles were cross-validated for participant 201 by comparing MetaPhlAn4 246 against Kraken2 v2.1.2 (RefSeq/PlusPF database), applying a stringent >0.5% relative 247 abundance threshold to Kraken2 output to focus on biologically meaningful taxa and mitigate k-248 mer artifacts [33, 34]. This threshold was validated against an engineered positive-control 249 community (which yielded 89 false-positive species at lower thresholds) and matched the 250 expected species count, with 492 of 543 total species across the dataset never exceeding 0.1% 251 relative abundance and thus classified as artifacts. 252 253 
+
+Statistical Analyses 254 Descriptive non-parametric tests were used for participant-level cross-sectional 255 comparisons, whereas Bayesian mixed-effects models were used for longitudinal exposure and 256 outcome inference. Kruskal-Wallis tests were used to compare participant-level alpha-diversity 257 summaries across participants, and Spearman rank correlation was used to assess the 258 association between median richness and median diversity metrics. Linear regression with 259 Pearson correlation was retained for visualization only, with the regression line shown to 260 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+illustrate trend direction rather than for inferential testing. Statistical significance for these 261 descriptive analyses was assessed at p = 0.05. 262 To formally evaluate associations between clinical exposures (antibiotic use and 263 catheter change), microbial community features, and clinical outcomes while accounting for 264 repeated longitudinal sampling within participants and the small cohort size (n = 9), four 265 Bayesian mixed-effects analyses were performed. Models were fit using rstanarm/Stan with 266 weakly informative priors for parts 1-3 and a student-t ridge-like shrinkage prior for part 4. 267 Statistical significance in the Bayesian analyses was assessed using the local false sign rate 268 (lfsr; defined for a coefficient as the minimum of the posterior probabilities of the coefficient 269 being positive and negative), with lfsr < 0.05 considered significant. Posterior summaries are 270 reported as median estimates with 90% (in conjunction with lfsr < 0.05) and 95% equal-tailed 271 credible intervals. 272 
+
+Part 1: Richness, Shannon diversity, Simpson diversity, log-transformed Aitchison 273 distance, and logit-transformed Bray-Curtis dissimilarity between consecutive visits were each 274 modeled as outcomes in Bayesian linear mixed-effects models with participant-specific random 275 effects and fixed effects for antibiotic use, catheter change, and their interaction. Participant-276 specific random effects were included in all longitudinal models. As a sensitivity analysis, 277 PERMANOVA was also performed on Aitchison and Bray-Curtis distance matrices with 278 permutations stratified by participant. 279 
+
+Part 2: Centered log-ratio (CLR)-transformed abundances for 69 taxa were modeled 280 jointly in a multilevel linear mixed-effects framework with participant-level and species-level 281 random effects and fixed effects for antibiotic use, catheter change, and their interaction. 282 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+Part 3: Adjusted species-species associations were estimated from posterior residual 283 CLR values after removing participant and clinical exposure effects, and posterior Pearson and 284 Spearman correlation matrices were summarized after setting coefficients with lfsr > 0.05 to 285 zero. 286 
+
+Part 4: Logistic mixed-effects models related four clinical outcome definitions to 287 standardized CLR species abundances and participant-level random intercepts using a Student-288 t ridge-like shrinkage prior to stabilize estimation in the high-dimensional species model. The 289 clinical outcome definitions were: 1) potential CAUTI based on Infectious Disease Society of 290 America (IDSA) criteria [30], 2) potential CAUTI based on IDSA criteria but only considering 291 new-onset signs and symptoms [30], 3) potential CAUTI based on National Healthcare Safety 292 Network (NHSN) criteria [35], and 4) potential CAUTI based on NHSN criteria but allowing for 293 inclusion of polymicrobial urine cultures [35]. 294 Bray-Curtis dissimilarity was used in three distinct ways in this study: descriptively to flag 295 major ecological shifts (BC > 0.5), as a continuous logit-transformed outcome in Bayesian 296 mixed-effects models, and as input to PERMANOVA sensitivity analyses. All descriptive 297 analyses were conducted in Python v3.9.6 using NumPy, Pandas, SciPy, and Matplotlib, and 298 Bayesian models were fit in R using rstanarm for Stan-based Markov chain Monte Carlo 299 sampling (4 chains; 1,000 warmup and 1,000 post-warmup iterations per chain). 300 The Bayesian models in Parts 1-3 used default weakly informative priors as 301 implemented in rstanarm, whereas Analysis 4 used a Student-t-based ridge prior because of the 302 high-dimensionality of predictors (69 correlated species predictors were modeled against four 303 clinical outcomes in a cohort of 9 participants). All scripts used in this study can be found in 304 
+
+Additional File 1-scripts.R. 305 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+306 
+
+.CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint RESULTS 307 
+
+Optimization of DNA extraction methods. 308 To establish a reproducible protocol for metagenomic sequencing of complex catheter 309 urine specimens, we first evaluated DNA extraction and host depletion methods using an 310 engineered mock urine community. This community contained defined quantities of Gram-311 positive and Gram-negative bacteria, fungi ( Candida spp.), a parasite ( Trichomonas vaginalis ), 312 and human cellular material to mimic the composition of clinical catheter urine samples ( Table 313 
+
+1). 314 Five different DNA extraction methods were compared to identify the best extraction kit 315 and the utility of depleting host DNA prior to extraction, as described in detail in the methods. 316 Hypotonic lysis-based methods inconsistently depleted host DNA and introduced taxonomic 317 bias, notably over-representing Staphylococcus (Fig. 1, Table S3 ). The QIAamp kit skewed 318 community representation toward Staphylococcus , while the MagMAX kit over-319 represented Pseudomonas and performed poorly for fungal detection. Neither of these methods 320 performed well to detect the parasite ( Fig. 1, Table S3 ). 321 In contrast, the Zymo HostZERO kit yielded the highest DNA concentrations, achieved 322 optimal depletion of human DNA, and consistently recapitulated the known microbial 323 composition of the mock community across replicates, despite very limited representation of the 324 parasite ( Fig. 1 ). Hence, the Zymo HostZERO method was selected for extracted DNA from the 325 complete longitudinal series of urine specimens from 9 study participants. Water-only and mock 326 community controls were also extracted and processed in parallel, confirming the absence of 327 significant contamination and the continued robustness of the extraction and sequencing 328 pipeline. 329 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+Catheterized urine samples are largely dominated by uropathogens 330 Across 198 urine samples from 9 participants with long-term catheters, 51.6% of taxa 331 could be categorized as uropathogens, followed by 30.7% as commensal species, and 16.2% 332 as species primarily found in the oral cavity (Fig. S1a ). When examining community 333 composition dynamics across all isolates, 7/9 participants (78%) had uropathogen dominated 334 profiles (Participants 101, 106, 201, 203, 204, 206, and 207) while 2/9 had commensal-335 dominated profiles (Participants 102 and 104) (Fig. S1b ). Oral species were detected in 336 samples from 6/9 participants, while participants 101, 106, and 203 had no detectable oral 337 species with follow up. Participant 104 had the highest overall abundance of oral species across 338 longitudinal samples (44.5%) followed by 206 (41.1%), with a moderate range of 0.1-29.1% 339 abundance observed in rest of the participants ( Fig. S1c ). 340 
+
+341 
+
+Microbial community structure in catheterized urine is participant-specific 342 Microbial community structure was specific to each patient in our study ( Fig. S2, Table 343 
+
+S4 ). The observed number of microbial taxa varied across participants where median richness 344 ranged from 2 to 27 taxa ( Fig. S2a ). Participant 104 exhibited the highest richness, with values 345 consistently clustering around 25 species (range 10-34). In contrast, Participant 203 showed the 346 lowest richness, averaging 3 species (range 1-5). The remaining participants fell into an 347 intermediate band of approximately 8 species, with modest within-participant variability ( Table 348 
+
+S4 ). 349 Longitudinal specimens clustered into three main ecological phenotypes: 1) moderate 350 diversity, unstable communities (participants 102, 106, and 204); 2) high diversity, stable 351 communities that resisted disruption even after multiple catheter changes (participants 104, 206, 352 and 207); and 3) low diversity, pathogen-dominated communities (participants 101, 203, 201). A 353 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+detailed narrative overview of colonization trends and key taxa is provided in Supplementary 354 
+
+Note A and discussed in brief below. 355 Three participants (102,106, 204) showcased patterns of transient community disruption. 356 Participant 102, a 61-year-old female with a Foley catheter, exhibited a stable, moderately 357 diverse microbial community was largely maintained over 30 weeks and resilient to repeated 358 catheter changes (Kruskal-Wallis, p = 0.2660), except for a transient episodic bloom of 359 
+
+Enterococcus faecalis followed by Proteus mirabilis between weeks 10–14. The community then 360 reset to its original, Aerococcus urinae -dominated structure, illustrating ecological resilience 361 (Fig. 2a–b ). Participant 106, a 61-year-old male with a suprapubic catheter, exhibited a362 community structure that was initially resilient to catheter changes but ultimately failed to 363 recover, resulting in a bloom of Proteus mirabilis following the week 17 catheter change and a 364 45% collapse in α-diversity (H: 1.47 → 0.81) by week 19. Similarly, when P. mirabilis abundance 365 receded, the community did not return to its original composition but transitioned to a new 366 
+
+Aerococcus urinae -dominated, low-diversity state ( Fig. 2c–d ). Participant 204, a 51-year-old 367 male with a suprapubic catheter, demonstrated two temporally distinct community states 368 separated by a catheter change at week 13. Prior to week 13, the community was dominated by 369 
+
+Streptococcus anginosus group with a polymicrobial background of common catheter-370 associated uropathogens ( Morganella morganii, Streptococcus aureus ) The catheter changes 371 shifted species richness from 10 to 16 within one week. S. anginosus group was displaced by 372 
+
+Klebsiella pneumoniae , a nosocomial uropathogen that persisted as the dominant taxon through 373 end of follow-up ( Fig. 2e–f ). 374 In contrast, participants 104, 206, and 207 maintained broadly stable community 375 structures throughout follow-up, yet each exhibited a distinct ecological signature in taxonomic 376 composition and response to perturbation. Participant 104, a 91-year-old male with a377 suprapubic catheter, showcased a stable and diverse microbial community over 26 weeks, with 378 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint α
+
+-diversity indices remaining consistently elevated despite 11 catheter changes (S = 18–38; H = 379 1.7–2.7). The community was dominated by an oral anaerobe consortium including 380 
+
+Propionimicrobium lymphophilum , Parvimonas micra , Peptococcus niger , and S. anginosus 381 group co-occurring at near-equal relative abundances throughout follow-up. 15 species detected 382 in this participant were absent from the participants with dynamic communities (102, 106, 204). 383 11/15 were oral anaerobes, while 7 canonical uropathogens found in above were entirely absent 384 from participant 104 structuring an oral anaerobe-dominated community architecture ( Fig. 3a–b; 385 
+
+Table 2–3, Table S2 ). Participant 206, a 44-year-old female with a suprapubic catheter 386 maintained a stable, species-rich community throughout 22 weeks of follow-up. Diversity indices 387 remaining consistently elevated across two catheter changes (H' = 1.25–2.17; D = 0.51–0.87). 388 The community was characterized by co-dominance of metabolically synergistic organisms 389 including Veillonella parvula , a lactate-fermenting oral commensal with recognized uropathogen 390 
+
+M. morganii , P. stuartii , Pseudomonas aeruginosa, and low persistence of P. mirabilis (Fig. 3c– 391 
+
+d). Participant 207, a 57-year-old female with a Foley catheter, exhibited similar stable species 392 richness (S = 6–10) over 17 weeks, with notable fluctuations in community evenness, showing a 393 structural reorganization within a persistent core polymicrobial background rather than species 394 turnover. The community was resilient to catheter changes at weeks 3 and 14 but underwent a 395 sustained post-week-14 decline in evenness without species loss (J'= 0.73 →0.45) with 396 dominance by a subset of the resident taxa. The core community included S. aureus , E. 397 
+
+faecalis , and Actinomyces hominis with oral commensal Fusobacterium nucleatum and 398 
+
+Lactobacillus rhamnosus . This was the only female participant in the cohort with a Lactobacillus 399 strain ( Fig. 3e–f ). The list of all the dominant species at each timepoint for the unstable and the 400 stable communities are listed in Table S4 .401 The remaining three participants exhibited uropathogen-dominated communities with 402 drastic, antibiotic-mediated perturbations to community structure. Participant 101, a 77-year-old 403 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+male with a suprapubic catheter, exhibited a community that was unperturbed by six catheter 404 changes (Kruskal-Wallis, p = 0.7342), but prophylactic Bactrim (trimethoprim-sulfamethoxazole) 405 administered between weeks 8–9 drove a near-total community collapse, with H' falling from 406 1.18 to 0 and richness dropping from 8 species to a single taxon within one week. Antibiotic 407 treatment eliminated TMP-SMX–sensitive bacteria but selected for resistant P. aeruginosa 408 (Table 4 ). Diversity recovered to pre-antibiotic levels by week 18 but the community re-409 established into a Propionimicrobium lymphophilum and P. stuartii dominated state which was 410 compositionally different from the original Aerococcus urinae baseline ( Fig. 4a–b ). Similarly, 411 participant 203, a 68-year-old male with a suprapubic catheter, harbored a persistently low-412 diversity community (S ≈ 2; H' ≈ 0.05) for which repeated oral cephalexin administration 413 eliminated P. mirabilis, while intrinsically cephalosporin-resistant P. aeruginosa remained 414 dominant, similar to the trend observed in participant 101. Each post-antibiotic window was 415 followed by opportunistic blooms including three Klebsiella species following final treatment 416 (Fig. 4c–e ). 417 Participant 201, a 59-year-old male with a suprapubic catheter was the only participant 418 to experience clinician-diagnosed CAUTI in our cohort. Across 7 catheter changes and 3 419 antibiotic events, both infection episodes arose not from acquisition of a new microbe but from 420 resident taxa present asymptomatically for weeks. The first ciprofloxacin administration induced 421 a transient collapse (S = 7 → 3; H' = 1.49 → 0.56) from which the core P. stuartii , Peptoniphilus 422 
+
+harei , S. anginosus consortium rebounded by week 7423 
+
+(Fig. S3) . The second, severe episode (pyelonephritis with sepsis one day after the week 17) 424 was preceded by co-dominance of P. stuartii (45.1%) and M. morganii (10.7%) (Fig. S3) .425 Antibiotic treatment drove a 21-fold collapse of this pathogen pair to 2.6% while S. anginosus 426 rose to 54.6% as the dominant successor, with all diversity metrics reaching zero by week 19 427 (Fig. 5a–b ). Because antibiotic exposure in participants 201 and 101 was specifically UTI-428 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+associated compared to other participants, their composition is informative for the ecological 429 consequences of treatment on catheter-associated microbiota. 430 To exclude the possibility that low-abundance or database-absent taxa were missed, we 431 cross-validated MetaPhlAn4 profiles against Kraken2 for participant 201 ( Fig. 5c-d ). Consistent 432 with prior benchmarking of these tools [26, 27, 33, 34, 36], the two pipelines showed strong 433 concordance in diversity metrics and community composition (r = 0.76–0.92), with Kraken2 434 offering finer resolution within select genera (e.g., Peptoniphilus , Streptococcus anginosus 435 group). The expanded taxonomic resolution revealed no additional candidate drivers of infection 436 onset beyond those identified by MetaPhlAn4 ( Table S6–S7 ). 437 
+
+438 
+
+Antibiotic exposure, not catheter change, drives community instability and taxon 439 
+
+abundance shifts 440 A formal longitudinal mixed-effects analysis was conducted across all nine participants, 441 which identified antibiotic exposure — not catheter change — as the primary driver of 442 community instability. Antibiotic exposure was consistently and significantly associated with 443 overall community composition (PERMANOVA, Aitchison and Bray-Curtis, adjusted p = 0.006; 444 
+
+Fig. 6a ), and this signal remained robust when the most clinically extreme participant (201, two 445 CAUTIs) and the most stable participant (104) were each excluded in leave-one-out tests 446 (adjusted p ≤ 0.03 across all configurations; Fig. S4 ). In contrast, catheter change alone was 447 not a consistent predictor of instability (adjusted p = 0.4 to >0.9), though an antibiotic-by-448 catheter interaction was detectable for Bray-Curtis (adjusted p = 0.016; Fig. 6a ), suggesting 449 catheter changes modulate, but do not independently drive, community disruption. 450 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+Species-level Bayesian modelling ( Fig. 6b ) across all 69 taxa revealed that this 451 antibiotic effect was ecologically heterogenous rather than uniform community-wide loss. The 452 model detected 15 significant or near-significant changes due to antibiotic exposure, regardless 453 of catheter change status: four species tended to increase after antibiotic exposure ( Klebsiella 454 
+
+pneumoniae, K. quasipneumoniae, K variicola, and Pseudomonas aeruginosa group), while 11 455 decreased ( Actinotignum schaalii, A. timonense, C. ureolyticus, E. faecalis, E. coli, M. morganii, 456 
+
+P. harei, P. rettgeri, P. stuartii, S. aureus, and S. anginosus group). By contrast, catheter 457 changes only produced a detectable effect on abundance of a single species ( Actinotignum 458 
+
+schaalii ). These species-specific shifts remained robust when sensitivity analyses were 459 repeated after excluding participants 201 and/or 104 (Fig. S5 ). Thus, antibiotic exposure 460 perturbs the urinary community in a way that catheter changes do not. The species most 461 consistently decreased by antibiotics were classical urinary opportunists ( E. faecalis, P. stuartii, 462 
+
+M. morganii, S. aureus, and A. schaalii ), while species like Klebsiella and Pseudomonas 463 increased after exposure either due to resistance to the antibiotic, lack of competition after loss 464 of the opportunists, or some combination of both factors. 465 466 
+
+Community-level co-occurrence analysis reveals linked species and mutually-exclusive 467 
+
+clusters 468 The rich, longitudinal metagenomics datasets across multiple participants allowed us to 469 examine microbial co-occurrences and determine whether there are associations among taxa 470 that are reproducible across different individual participants. We first examined taxa co-471 occurrence, including whether co-occurring species experience similar abundance shifts after 472 perturbations such as antibiotic exposure and catheter change. The co-occurrence matrices 473 revealed 6 broad co-occurrence groups (mean correlation 0.46; 55 species pairs exceeded |r| > 474 0.30; labelled 1-6 in Fig. 7a, Table 5 ): 1) a fastidious-anaerobe cluster that represents the most 475 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+internally-connected group in the matrix; 2) a single pair of M. morganii with P. stuartii (ρ =476 0.43); 3) an Enterobacterales cluster; 4) a cluster of urease-producers; 5) a Gram-477 negative/fastidious satellite cluster; and 6) a skin-associated cluster. Beyond the six co-478 occurrence groups, two others stood out (labelled #, Fig. 7a ): S. anginosus group and 479 
+
+Campylobacter ureolyticus (ρ = 0.29), and a loose enteric/environmental Gram-negative group. 480 Negative correlations were almost as common as positive ones (47% positive among | ρ|481 > 0.10), with the strongest mutually-exclusive relationships involving S. aureus with cluster 2 ,482 urease producing cluster 4 ( Aerococcus urinae, A. sanguinicola , and P. mirabilis ), and P. 483 
+
+lymphophilum. The next strongest negative correlations involved the S. anginosus group with 484 cluster 5 ( P. aeruginosa) and the Gram-negative group ( E. coli and P. rettgeri) . Negative 485 correlations also indicated mutual exclusivity where urine specimens enriched for one cluster, 486 such as the Enterobacterales group (cluster 1), tended to be depleted of species in another 487 fastidious-anaerobe group (cluster 1). A. schaalii also exhibited a strong negative correlation 488 with all species in the fastidious-anaerobe group (cluster 1), while A. timonense opposed the 489 Gram-negative/fastidious satellite group (cluster 5) but a positively correlated with S. anginosus .490 Additionally, approximately one-third of species behaved as ecological singletons with no co-491 variation with the rest of the community ( Table 5 ). These species generally appeared and 492 disappeared from individual urine samples without the co-occurrence or displacement of other 493 species. 494 
+
+Abundance shifts of key species may predict infection sign and symptom onset 495 Having characterized which species are antibiotic-responsive and which co-occur, we 496 next asked whether abundance changes in any taxa or co-occurring groups correspond directly 497 to infection sign and symptom onset by extending the co-occurrence and antibiotic-exposure 498 observations to a possible clinical prediction framework. To do so, we fit logistic mixed-effects 499 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+models linking species-level abundance to four CAUTI classification schemes: 1) potential 500 CAUTI based on National Healthcare Safety Network (NHSN) criteria (the most stringent 501 definition), 2) potential CAUTI based on NHSN criteria allowing for inclusion of highly 502 polymicrobial urine cultures, 3) potential CAUTI based on Infectious Disease Society of America 503 (IDSA) criteria considering only new-onset signs and symptoms, and 4) potential CAUTI based 504 on IDSA criteria regardless of whether symptoms were new-onset ( Fig. 8, Fig. S6 ). 24 species 505 were identified with significant or near-significant associations with at least one definition, with 506 12 enriched in potentially symptomatic urines and 12 depleted ( Table 6 ). 507 Of the 12 species that were enriched during potentially symptomatic episodes, only 4 508 were depleted by antibiotics ( E. coli, P. stuartii, S. aureus, and A. timonense ), suggesting that 509 treatment may fail to deplete clinically significant symptomatic species, especially those that 510 would be missed by standard culture. It is also notable that only three of the enriched species 511 met the threshold to be considered co-occurring: S. aureus has a slight positive association with 512 
+
+L. rhamnosus (ρ = +0.20) and a weaker positive association with S. marcescens (ρ = +0.16). S. 513 
+
+aureus abundance also has a negative correlation with two of the other enriched species: P. 514 
+
+stuartii (ρ = -0.30) and P. mirabilis (ρ = -0.23). Hence, the species for which abundance was 515 positively associated with infection signs and symptoms do not form a cohesive pro-disease 516 community, suggesting that the abundances of these species may be independent predictors of 517 symptomatic infection. 518 For the 12 species that were negatively correlated with infection signs and symptoms, 519 their co-occurrence pattern was more complex. Three of the species have strong positive co-520 occurrences: A. urinae with A. sanguinicola (+0.29), A. urinae with T. bernardiae (+0.25), and 521 
+
+T. bernardiae with A. sanguinicola (+0.22). Another species, A. schaali, also has weak positive 522 associations with two other species from the list: M. morganii (+0.17) and C. striatum (+0.16). 523 Thus, perturbations that decrease abundance of any one of these species may cause a 524 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+corresponding decrease in the others. Furthermore, 8/12 species that were positively correlated 525 with infection signs and symptoms exhibited negative cross-correlations with species that were 526 negatively correlated with signs and symptoms. Thus, species that may have a protective effect 527 for the host are interconnected and likely to decrease in abundance when symptom-associated 528 species increase in abundance. 529 It is also notable that three of the species that were negatively correlated with symptoms 530 were also depleted by antibiotics ( M. morganii, A. schaalii, and E. faecalis ), suggesting that 531 antibiotic exposure can have the unintended consequence of depleting potential uropathogenic 532 competitors. M. morganii abundance is negatively correlated with both S. aureus (ρ = −0.25) 533 and L. rhamnosus (ρ = −0.16, modest), indicating that antibiotic suppression of M. morganii 534 therefore removes a competitor of the S. aureus /L. rhamnosus axis that is positively correlated 535 with symptoms. Similarly, A. schaalii abundance negatively correlates with P. mirabilis 536 abundance ( ρ = −0.21) , suggesting that antibiotic suppression of A. schaalii can remove a 537 competitor of the P. mirabilis /A. timonense axis that is positively correlated with symptoms. 538 These networks are consistent with the idea that species such as M. morganii and A. schaalii 539 may provide competitive resistance against symptom-associated organisms, with antibiotic 540 exposure disrupting the ecological constraints that normally keep species such as S. aureus 541 and P. mirabilis in check. 542 Based on the ecological framework of each participant, infection risk in long-term 543 catheterized patients may also be more closely tied to the relative abundance of uropathogens 544 versus commensals than to the mere culture-based presence of a pathogen. Participants 104 545 and 206 both carried a high uropathogen burden by standard culture (>10  CFU/ml at every 546 visit, [5]), yet remained largely asymptomatic, with pathogens offset by a dominant, resilient 547 backbone of oral commensals and anaerobes ( Table 7 ). There observations point to a testable 548 hypothesis that abundant commensals, coupled with species capable of modulating pathogenic 549 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+potential (e.g., M. morganii ) [37], may keep uropathogens in check and prevent the transition to 550 symptomatic infection. 551 552 
+
+.CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint DISCUSSION 553 The long-term catheterized urinary tract has been characterized through the narrow lens 554 of standard culture. Our longitudinal metagenomic data reveal a far more dynamic and 555 compositionally complex ecosystem than previously described. Our findings demonstrate that 556 the microbial composition of urine from individuals with long-term catheters is predominantly 557 composed of established uropathogens (51.6% ± 33.5% of relative abundance across 198 558 samples in 9 participants). However, the abundance of additional species that would be missed 559 by standard urine culture methods may critically shape transition risk from asymptomatic 560 colonization to active infection. Pathogenic species versud commensals and oral microbes tend 561 to co-occur and the abundance in these oral/commensal clusters are negatively associated with 562 uropathogen cluster. Notably, of the 24 species that significantly correlated with the presence of 563 CAUTI signs and symptoms, 11 cannot be detected by standard urine cultures. Thus, our data 564 suggest that infection risk due to a high burden of uropathogens may be mitigated by the 565 presence of specific commensal species and oral anaerobes, and this protective structure can 566 be disturbed by antibiotic exposure. 567 In contrast to the healthy female urobiome, in which Lactobacillus species comprise 60-568 90% of the microbiota [8, 9, 38, 39], Lactobacillus species were rare in our catheterized 569 population. Only 3/9 participants had Lactobacillus species ( L. gasseri, L. paragasseri, L. 570 
+
+rhamnosus ). Of the 3 female participants in this cohort (102, 206, and 207), only 2 harbored 571 
+
+Lactobacillus sp. and in very low abundance (0.09-6.3%), which may contribute to the high 572 susceptibility to uropathogen overgrowth in female participants. However, a high abundance 573 (0.05-47.38%) of L. gasseri was observed in male participant 106. This near absence of 574 
+
+Lactobacillus in catheterized individuals and its negative association with the uropathogen 575 cluster in our co-occurrence analysis is consistent with loss of pathogen colonization resistance 576 in this population. 577 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+Our study also highlights L. rhamnosus as a potential opportunistic pathogen in this 578 environment rather than a protective commensal. L. rhamnosus is widely known as a beneficial 579 organism and a marker of healthy vaginal flora that exerts protective effects [40-43]. However, 580 in our cohort of long-term catheterized individuals, high abundance of L. rhamnosus was 581 significantly associated with potential symptomatic CAUTI under the NHSN definition (++), 582 placing it among the symptom-enriched organisms in the dataset. Ecologically, L. rhamnosus 583 was one of the few species in the matrix to show a stable, reproducible co-occurrence with S. 584 
+
+aureus (ρ = +0.20). It also co-occurred with A. hominis (ρ = +0.23) and with the broader S. 585 
+
+aureus complex ( S. argenteus, ρ = +0.15), and was negatively correlated with the antibiotic-586 suppressed community moderator M. morganii (ρ = −0.16). Consequently, L. rhamnosus in 587 catheterized urine may behave not as a vaginal-tract probiotic but rather as a skin-derived co-588 colonizer that travels alongside S. aureus . If correct, probiotic strategies built on the assumption 589 that any Lactobacillus species is beneficial in the genitourinary tract may need to be 590 reconsidered in this unique patient population. 591 The detection of oral species in 6/9 participants suggests potential oral-urinary bacterial 592 translocation, including the presence of periodontal pathogens such as Fusobacterium 593 
+
+nucleatum (4/9), Streptococcus anginosus group (4/9), and Parvimonas micra (2/9). These 594 organisms are co-associated with polymicrobial abscesses and periodontal disease, raising 595 questions about route of colonization in the urinary tract [28, 44-47]. In our co-occurrence 596 analysis, these oral-associated taxa formed a distinct co-occurrence cluster that was mutually 597 exclusive with the uropathogen-associated cluster, suggesting that oral species may occupy an 598 ecological niche antagonistic to uropathogen colonization. However, whether this reflects active 599 competitive exclusion in common environmental conditions (e.g., pH, oxygen need) cannot be 600 determined from the current data. 601 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+The presence of commensal species (30.7%), particularly urogenital commensals such 602 as Actinotignum schaalii (7/9 participants) and Aerococcus urinae (4/9), supports the emerging 603 concept of a core urinary microbiome as residents of the urinary tract, particularly in elderly and 604 catheterized individuals [32, 38, 39]. A. schaalii is recognized as a common colonizer of the 605 elderly urinary tract and has been associated with urinary tract infections in 606 immunocompromised patients [48], and it was highly prevalent in our cohort (89% of 607 participants). As A. schaalii was negatively-correlated with CAUTI signs and symptoms as well 608 as with uropathogens such as P. mirabilis, our data suggest that this species may act as a 609 beneficial commensal in the catheterized urinary tract. 610 The negative correlation of M. morganii with CAUTI signs and symptoms is noteworthy 611 since this species is considered an opportunistic pathogen of the urinary tract but can also play 612 a modulatory role [37, 49]. In our cohort, M. morganii was suppressed by antibiotic exposure ( β613 = −3.6, robust across all four sensitivity analyses). It co-occurred most closely with the 614 symptom-associated species P. stuartii (ρ = +0.43) but was negatively correlated with both 615 anchors of the S. aureus -associated symptomatic axis: S. aureus itself ( ρ = −0.25) and L. 616 
+
+rhamnosus (ρ = −0.16). Taken together, these patterns suggest that M. morganii , despite its 617 conventional classification as an opportunistic uropathogen, may occupy a community-618 stabilizing role in the catheterized bladder of asymptomatic carriers. Its presence may constrain 619 the symptom-associated S. aureus and L. rhamnosus , and its depletion following antibiotic 620 exposure may coincide with the release of that constraint. This is consistent with our prior 621 observations in which M. morganii played a potential role in decreased infection severity in part 622 by dampening urease activity and cytotoxicity driven by other species [37, 50]. Klebsiella 623 
+
+aerogenes also secretes urease-dampening compounds and has been hypothesized to similarly 624 play a protective, disease-dampening role as M. morganii [50], which is supported by the 625 negative-correlation of K. aerogenes abundance with infection signs and symptoms in our study. 626 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+The broader implication of these observations is that organisms catalogued as opportunistic 627 uropathogens based on isolated culture-positive episodes may behave very differently in the 628 context of a stable polymicrobial community, and that antibiotic stewardship in catheterized 629 patients should consider not only direct pathogen suppression but the loss of community 630 moderators like M. morganii and K. aerogenes that may actually help maintain asymptomatic 631 bacteriuria. 632 Antibiotic exposures were heterogeneous in indication: only 3 (Participants 101, 201) 633 targeted the urinary tract, while the rest treated non-urinary infections. This distinction is 634 important to interpret antibiotic-driven changes reflect broad spectrum antibiotic exposure rather 635 than only UTI-specific effects. Participant 203 exemplifies this where 5 antibiotic courses for a 636 persistent skin infection repeatedly restructured the urinary microbiota, driving dominance of 637 resistant P. aeruginosa . Each cessation opened an ecological vacuum filled by S. aureus and E. 638 
+
+faecalis , until the next course cleared them and P. aeruginosa reclaimed dominance. Though 639 never diagnosed with CAUTI, this participant had 7/19 visits meeting some symptomatic 640 threshold (1 by NHSN, 4–7 by IDSA depending on new-onset criteria), 4 of which followed 641 antibiotic exposure (weeks 4, 5, 6, 20). Whether symptom onset reflects microbial dysbiosis, 642 antibiotic side effects, or the underlying skin infection cannot be determined, but this case 643 suggests that antibiotic exposure even when not urinary-directed can act as a tipping point 644 toward infection in participants with low richness/diversity or high uropathogen abundance. 645 Overall, our findings suggest a possible ecological framework for CAUTI risk 646 management. A high-diversity, stable profile in an asymptomatic patient may argue against 647 antibiotic intervention, whereas a low-diversity, pathogen-dominated profile lacking protective 648 species could justify targeted treatment. Participants with high commensal burden typically 649 remained asymptomatic despite harboring recognized uropathogens, while low-diversity 650 communities were more ecologically vulnerable. This is supported by studies where higher 651 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+microbial diversity is associated with lower UTI incidence [51-53]. Similarly, recent studies on 652 spinal cord injured catheterized individuals, and non-catheterized recurrent UTI studies 653 indicated decreased diversity to be linked with high uropathogens [31, 54]. Future studies with 654 larger cohorts, standardized clinical endpoints, and longitudinal sampling designs can be tested 655 to improve the prediction of CAUTI onset beyond conventional microbiological criteria. 656 Formal cluster analyses were not performed due to the small sample size; the ecological 657 phenotypes described here represent descriptive patterns requiring confirmation in larger 658 cohorts. The inter-individual variability observed is consistent with personalized within-host 659 signatures [14, 17, 55-57], likely shaped by host immune status, duration and type of 660 catheterization, and antibiotic exposure history. With only 9 participants, larger interventional 661 studies are needed to confirm causal links between ecological dynamics and clinical outcomes. 662 All longitudinal Bayesian analyses should be interpreted as exploratory, with uncertainty 663 summarized by posterior intervals and lfsr rather than proof of causation. Age was described 664 clinically but not modeled, so age-adjusted inference is not possible. Finally, the 665 oral/commensal correlation while statistically significant, reflects published primary habitat and 666 not behavior in urobiome ecology [28]. Future work incorporating strain level analysis, host 667 immune profiling, metabolomics, and detailed clinical annotations will provide a more integrated 668 understanding of the host-microbe interface driving symptom onset. 669 670 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+CONCLUSIONS 671 The catheterized urinary tract is a dynamic ecosystem governed by stability, resilience, 672 and collapse, with the catheterized urinary tract ranging from robust, colonization-resistant 673 communities to fragile, pathogen-dominated states. Unlike the Lactobacillus -dominated 674 urobiome, catheterized individuals harbor Lactobacillus -poor communities enriched in 675 
+
+Providencia , M. morganii , and oral pathogens. Recognizing these phenotypes lays the 676 foundation for precision CAUTI management guided by infection ecology to improve diagnosis, 677 refine antibiotic use, and better prevent one of healthcare's most recalcitrant infections. 678 
+
+679 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+Availability of data and materials 680 All data generated or analysed during this study are included in this published article and its 681 supplementary information files. The sequencing data generated in this study is publicly 682 available under BioProject: PRJNA1466380. All scripts used in this study can be found in 683 Additional File 1. 684 
+
+685 
+
+Competing interests 686 All authors declare no conflicts of interest. 687 
+
+688 
+
+Funding 689 This work was supported by the National Institutes of Health under R01 DK123158 (CEA), R01 690 DK140371 (CEA), NIDDK ISAC Award 5U24DK128851 (CEA, VSC, and SC), and the American 691 Heart Association under pre-doctoral award 24PRE1195538 (ND). 692 693 
+
+Authors’ Contributions 694 CEA and VSC conceptualized the study, acquired funding and provided resources. ALB tested 695 all the DNA extraction kits for optimization and isolated DNA from all 198 samples. EMN 696 performed DNA sequencing. ND and EMN carried out the metagenomic analysis. ND wrote the 697 manuscript and prepared the figures. SC performed the longitudinal statistical analyses and 698 prepared the corresponding figures. All authors critically reviewed and edited the manuscript 699 and approved the final version for submission. 700 
+
+701 
+
+Acknowledgements 702 Not Applicable 703 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+704 
+
+.CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint References 705 1. Armbruster, C.E., H.L.T. Mobley, and M.M. Pearson, Pathogenesis of Proteus 706 
+
+mirabilis Infection. EcoSal Plus, 2018. 8(1). 707 2. Amer, M.A., et al., Silicone Foley catheters impregnated with microbial indole 708 
+
+derivatives inhibit crystalline biofilm formation by Proteus mirabilis. Front Cell 709 Infect Microbiol, 2022. 12 : p. 1010625. 710 3. Armbruster, C.E., et al., How Often Do Clinically Diagnosed Catheter-Associated 711 
+
+Urinary Tract Infections in Nursing Homes Meet Standardized Criteria? J Am 712 Geriatr Soc, 2017. 65 (2): p. 395-401. 713 4. Gaston, J.R., et al., Polymicrobial interactions in the urinary tract: is the enemy of 714 
+
+my enemy my friend? Infect Immun, 2021. 715 5. Armbruster, C.E., et al., Prospective assessment of catheter-associated 716 
+
+bacteriuria clinical presentation, epidemiology, and colonization dynamics in 717 
+
+nursing home residents. JCI Insight, 2021. 6(19). 718 6. Magill, S.S., et al., Changes in Prevalence of Health Care-Associated Infections 719 
+
+in U.S. Hospitals. N Engl J Med, 2018. 379 (18): p. 1732-1744. 720 7. Scott, R.I., The Direct Medical Costs of Healthcare-Associated Infections in U.S. 721 
+
+Hospitals and the Benefits of Prevention. Centers for Disease Control and 722 
+
+Prevention. 723 . 2009. 724 8. Hilt, E.E., et al., Urine is not sterile: use of enhanced urine culture techniques to 725 
+
+detect resident bacterial flora in the adult female bladder. J Clin Microbiol, 2014. 726 
+
+52 (3): p. 871-6. 727 9. Thomas-White, K., et al., Culturing of female bladder bacteria reveals an 728 
+
+interconnected urogenital microbiota. Nat Commun, 2018. 9(1): p. 1557. 729 10. Nye, T.M., et al., Microbial co-occurrences on catheters from long-term 730 
+
+catheterized patients. Nat Commun, 2024. 15 (1): p. 61. 731 11. Jacobsen, S.M., et al., Complicated catheter-associated urinary tract infections 732 
+
+due to Escherichia coli and Proteus mirabilis. Clin Microbiol Rev, 2008. 21 (1): p. 733 26-59. 734 12. Duran Ramirez, J.M., et al., Semi-Quantitative Assay to Measure Urease Activity 735 
+
+by Urinary Catheter-Associated Uropathogens. Front Cell Infect Microbiol, 2022. 736 
+
+12 : p. 859093. 737 13. Didelot, X., et al., Within-host evolution of bacterial pathogens. Nat Rev 738 Microbiol, 2016. 14 (3): p. 150-62. 739 14. Thanert, R., et al., Persisting uropathogenic Escherichia coli lineages show 740 
+
+signatures of niche-specific within-host adaptation mediated by mobile genetic 741 
+
+elements. Cell Host Microbe, 2022. 30 (7): p. 1034-1047 e6. 742 15. Young, B.C., et al., Evolutionary dynamics of Staphylococcus aureus during 743 
+
+progression from carriage to disease. Proc Natl Acad Sci U S A, 2012. 109 (12): 744 p. 4550-5. 745 16. Bentley, S.D. and J. Parkhill, Genomic perspectives on the evolution and spread 746 
+
+of bacterial pathogens. Proc Biol Sci, 2015. 282 (1821): p. 20150488. 747 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+17. Sibale, L.L., et al., Within-host genetic diversity of pneumococcal serotype 3 748 
+
+during one-year prolonged carriage in a healthy adult. Nat Commun, 2025. 16 (1): 749 p. 8920. 750 18. Heravi, F.S., et al., Host DNA depletion efficiency of microbiome DNA enrichment 751 
+
+methods in infected tissue samples. J Microbiol Methods, 2020. 170 : p. 105856. 752 19. Davis, A., et al., Improved yield and accuracy for DNA extraction in microbiome 753 
+
+studies with variation in microbial biomass. Biotechniques, 2019. 66 (6): p. 285-754 289. 755 20. Shaffer, J.P., et al., A comparison of six DNA extraction protocols for 16S, ITS 756 
+
+and shotgun metagenomic sequencing of microbial communities. Biotechniques, 757 2022. 73 (1): p. 34-46. 758 21. Nelson, M.T., et al., Human and Extracellular DNA Depletion for Metagenomic 759 
+
+Analysis of Complex Clinical Infection Samples Yields Optimized Viable 760 
+
+Microbiome Profiles. Cell Rep, 2019. 26 (8): p. 2227-2240 e5. 761 22. Harris, P.A., et al., The REDCap Mobile Application: a data collection platform for 762 
+
+research in regions or situations with internet scarcity. JAMIA Open, 2021. 4(3): 763 p. ooab078. 764 23. Harris, P.A., et al., The REDCap consortium: Building an international community 765 
+
+of software platform partners. J Biomed Inform, 2019. 95 : p. 103208. 766 24. Harris, P.A., et al., Research electronic data capture (REDCap)--a metadata-767 
+
+driven methodology and workflow process for providing translational research 768 
+
+informatics support. J Biomed Inform, 2009. 42 (2): p. 377-81. 769 25. Franzosa, E.A., et al., Species-level functional profiling of metagenomes and 770 
+
+metatranscriptomes. Nat Methods, 2018. 15 (11): p. 962-968. 771 26. Beghini, F., et al., Integrating taxonomic, functional, and strain-level profiling of 772 
+
+diverse microbial communities with bioBakery 3. Elife, 2021. 10 .773 27. Segata, N., et al., Metagenomic microbial community profiling using unique 774 
+
+clade-specific marker genes. Nat Methods, 2012. 9(8): p. 811-4. 775 28. Chen, T., et al., The Human Oral Microbiome Database: a web accessible 776 
+
+resource for investigating oral microbe taxonomic and genomic information. 777 Database (Oxford), 2010. 2010 : p. baq013. 778 29. Sohngen, C., et al., BacDive--the Bacterial Diversity Metadatabase. Nucleic 779 Acids Res, 2014. 42 (Database issue): p. D592-9. 780 30. Hooton, T.M., et al., Diagnosis, Prevention, and Treatment of Catheter-781 
+
+Associated Urinary Tract Infection in Adults: 2009 International Clinical Practice 782 
+
+Guidelines from the Infectious Diseases Society of America. Clinical Infectious 783 Diseases, 2010. 50 (5): p. 625-663. 784 31. Worby, C.J., et al., Longitudinal multi-omics analyses link gut microbiome 785 
+
+dysbiosis with recurrent urinary tract infections in women. Nat Microbiol, 2022. 786 
+
+7(5): p. 630-639. 787 32. Wolfe, A.J., et al., Evidence of uncultivated bacteria in the adult female bladder. J788 Clin Microbiol, 2012. 50 (4): p. 1376-83. 789 33. Lu, J., et al., Metagenome analysis using the Kraken software suite. Nat Protoc, 790 2022. 17 (12): p. 2815-2839. 791 34. Wood, D.E., J. Lu, and B. Langmead, Improved metagenomic analysis with 792 
+
+Kraken 2. Genome Biol, 2019. 20 (1): p. 257. 793 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+35. Dudeck, M.A., et al., National Healthcare Safety Network report, data summary 794 
+
+for 2013, Device-associated Module. Am J Infect Control, 2015. 43 (3): p. 206-21. 795 36. Davis, M.P., et al., Kraken: a set of tools for quality control and analysis of high-796 
+
+throughput sequence data. Methods, 2013. 63 (1): p. 41-9. 797 37. Learman, B.S., et al., A Rare Opportunist, Morganella morganii, Decreases 798 
+
+Severity of Polymicrobial Catheter-Associated Urinary Tract Infection. Infect 799 Immun, 2019. 88 (1). 800 38. Pearce, M.M., et al., The female urinary microbiome: a comparison of women 801 
+
+with and without urgency urinary incontinence. mBio, 2014. 5(4): p. e01283-14. 802 39. Pearce, M.M., et al., The female urinary microbiome in urgency urinary 803 
+
+incontinence. Am J Obstet Gynecol, 2015. 213 (3): p. 347 e1-11. 804 40. Tas, G.G. and L. Sati, Probiotic Lactobacillus rhamnosus species: considerations 805 
+
+for female reproduction and offspring health. J Assist Reprod Genet, 2024. 806 
+
+41 (10): p. 2585-2605. 807 41. Gardiner, G.E., et al., Persistence of Lactobacillus fermentum RC-14 and 808 
+
+Lactobacillus rhamnosus GR-1 but not L. rhamnosus GG in the human vagina as 809 
+
+demonstrated by randomly amplified polymorphic DNA. Clin Diagn Lab Immunol, 810 2002. 9(1): p. 92-6. 811 42. Pascual, L.M., et al., Lactobacillus rhamnosus L60, a potential probiotic isolated 812 
+
+from the human vagina. J Gen Appl Microbiol, 2008. 54 (3): p. 141-8. 813 43. Almurad, B., et al., Protective Effects of Lactobacillus rhamnosus GG Against 814 
+
+Methotrexate-Induced Oxidative Renal Toxicity. Probiotics Antimicrob Proteins, 815 2026. 816 44. Chen, Y., et al., More Than Just a Periodontal Pathogen -the Research Progress 817 
+
+on Fusobacterium nucleatum. Front Cell Infect Microbiol, 2022. 12 : p. 815318. 818 45. Krishnan, K., T. Chen, and B.J. Paster, A practical guide to the oral microbiome 819 
+
+and its relation to health and disease. Oral Dis, 2017. 23 (3): p. 276-286. 820 46. Schmalz, G., et al., Dental and periodontal health, and microbiological and 821 
+
+salivary conditions in patients with or without diabetes undergoing haemodialysis. 822 Int Dent J, 2017. 67 (3): p. 186-193. 823 47. Dugdale, C.M., et al., Cavernosal Abscess due to Streptococcus Anginosus: A 824 
+
+Case Report and Comprehensive Review of the Literature. Curr Urol, 2013. 7(1): 825 p. 51-6. 826 48. Lotte, R., L. Lotte, and R. Ruimy, Actinotignum schaalii (formerly Actinobaculum 827 
+
+schaalii): a newly recognized pathogen-review of the literature. Clin Microbiol 828 Infect, 2016. 22 (1): p. 28-36. 829 49. Liu, H., et al., Morganella morganii, a non-negligent opportunistic pathogen. Int J 830 Infect Dis, 2016. 50 : p. 10-7. 831 50. Guterman, L.B., et al., Harnessing microbial-derived metabolites in the urinary 832 
+
+tract to prevent infection induced catheter encrustation. Nature Communications, 833 2025. 16 (1): p. 9678. 834 51. Moustafa, A., et al., Microbial metagenome of urinary tract infection. Sci Rep, 835 2018. 8(1): p. 4333. 836 52. Horwitz, D., et al., Decreased microbiota diversity associated with urinary tract 837 
+
+infection in a trial of bacterial interference. J Infect, 2015. 71 (3): p. 358-367. 838 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+53. Fouts, D.E., et al., Integrated next-generation sequencing of 16S rDNA and 839 
+
+metaproteomics differentiate the healthy urine microbiome from asymptomatic 840 
+
+bacteriuria in neuropathic bladder associated with spinal cord injury. . Journal of 841 translational medicine, 1012. 10 (174). 842 54. Hoque, M.M., et al., Prediction of symptomatic and asymptomatic bacteriuria in 843 
+
+spinal cord injury patients using machine learning. Microbiome, 2025. 13 (1): p. 844 246. 845 55. Amunugama, K., D.P. Pike, and D.A. Ford, E. coli strain-dependent lipid 846 
+
+alterations in cocultures with endothelial cells and neutrophils modeling sepsis. 847 Front Physiol, 2022. 13 : p. 980460. 848 56. Guerillot, R., et al., Unstable chromosome rearrangements in Staphylococcus 849 
+
+aureus cause phenotype switching associated with persistent infections. Proc 850 Natl Acad Sci U S A, 2019. 116 (40): p. 20135-20140. 851 57. Neugent, M.L., et al., Urinary biochemical ecology reveals microbiome-metabolite 852 
+
+interactions and metabolic markers of recurrent urinary tract infection. NPJ 853 Biofilms Microbiomes, 2025. 11 (1): p. 216. 854 855 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+Tables 856 
+
+Table 1: Components in mock urine sample 857 
+
+Component Amount 
+
+Gram-negative Bacteria 
+
+Escherichia coli 2.24 6 CFU/ml 
+
+Pseudomonas aeruginosa 3.14 5 CFU/ml 
+
+Proteus mirabilis 1.10 5 CFU/ml 
+
+Klebsiella pneumoniae 4.60 4 CFU/ml 
+
+Gram-positive Bacteria 
+
+Aerococcus urinequii 8.00 4 CFU/ml 
+
+Staphylococcus aureus 6.20 2 CFU/ml 
+
+Fungi 
+
+Candida dubliniensis 3.36 3 CFU/ml 
+
+Candida orthopsilosis 2.54 3 CFU/ml 
+
+Parasite 
+
+Trichomonas vaginalis (protozoa) 1.00 4 cells/ml 
+
+Human material 
+
+Human bladder T-24 cells 8.00 3 cells/ml Human serum 10% (v/v) 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+Table 2. Oral anaerobes unique to the stable urinary microbiome (Participant 104) 858 
+
+Species Mean abundance (%) Max Abundance (%) Ecological Role 
+
+Peptococcus niger 9.35 30.26 Obligate anaerobe 
+
+Gemella morbillorum 4.54 11.11 Facultative anaerobe 
+
+Solobacterium moorei 3.77 10.61 Obligate anaerobe 
+
+Veillonella atypica 2.88 17.33 Obligate anaerobe 
+
+Prevotella oris 1.93 14.34 Obligate anaerobe 
+
+Porphyromonas sp. 1.32 1.32 Obligate anaerobe 
+
+Slackia exigua 0.24 0.96 Obligate anaerobe 
+
+Campylobacter curvus 0.1 1.5 Microaerophile 
+
+Dialister pneumosintes 0.02 1.14 Obligate anaerobe 
+
+Dialister invisus 0.02 0.28 Obligate anaerobe 
+
+Peptoniphilus sp. <0.01 0.06 Obligate anaerobe 
+
+TOTAL 24.16 - -859 860 
+
+Table 3. Uropathogen species present in unstable communities (102, 106, 204) but absent 861 
+
+from stable community 104 862 
+
+Species Present in Max Abundance (%) Clinical Significance 
+
+Klebsiella pneumoniae 106,204 70.88 Major CAUTI pathogen 
+
+Klebsiella variicola 204 23.23 Emerging hypervirulent 
+
+Klebsiella quasipneumoniae 
+
+204 7.09 K. pneumoniae complex 
+
+Serratia marcescens 204 84.18 Hospital-associated 
+
+Providencia rettgeri 106 61.85 Urease-positive CAUTI 
+
+Proteus penneri 204 18.73 Struvite stone former 
+
+Proteus vulgaris 204 0.19 Urease-positive UTI 863 864 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+Table 4: Variation in bacterial relative abundances in response to commonly used 865 
+
+antibiotics (trimethoprim and sulfonamide) in UTI. 866 
+
+Study timeline Weeks N Commensal 
+
+/Unknown (%) Uropathogen (%) Dominant Species Pre-Abx mean (%) Week 9 (%) 
+
+Baseline 0 to 4 5 72.8 27.2 Aerococcus urinae 41.5 0Uropathogen 5 to 8 4 12 88 Escherichia coli 20.9 0ABX Impact 9 1 0 100 Pseudomonas aeruginosa 
+
+0.1 100 
+
+P.rettgeri 
+
+Dominance 10 to 17 8 4.8 95.2 Providencia rettgeri 2.4 0Oral Resurgence 18 to 22 5 60.5 39.5 Propionimicrobium lymphophilum - -Late Period 24 to 30 4 36.3 63.7 Propionimicrobium lymphophilum - -867 
+
+.CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint Table 5. Co-occurrence of the catheter-associated urinary microbiome. 868 
+
+Cluster Ecological group Species 
+
+1 Fastidious anaerobes (most interconnected) 
+
+Prevotella oris , Trueperella bernardiae , Solobacterium 
+
+moorei , Actinomyces turicensis , Peptoniphilus coxii ,
+
+Gemella morbillorum , Parvimonas micra , Peptococcus niger , Bacteroides fragilis , Porphyromonas sp., 
+
+Erysipelatoclostridium ramosum , Veillonella atypica 
+
+2 Providencia –Morganella 
+
+pair Morganella morganii , Providencia stuartii (ρ = 0.43) 
+
+3 Enterobacterales 
+
+Klebsiella pneumoniae , K. quasipneumoniae , K. variicola ,
+
+Proteus penneri , P. vulgaris , Serratia marcescens 
+
+4 Urease producers Aerococcus urinae , A. sanguinicola , Proteus mirabilis 
+
+5 Gram-negative / fastidious satellite 
+
+Pseudomonas aeruginosa , Corynebacterium striatum ,
+
+Fusobacterium hwasookii , F. nucleatum , Veillonella parvula , Neisseria elongata 
+
+6 Skin-associated 
+
+Staphylococcus aureus , S. argenteus , S. schweitzeri ,
+
+Actinomyces hominis , Lactobacillus rhamnosus 
+
+# Supplementary pair 
+
+Streptococcus anginosus group – Campylobacter 
+
+ureolyticus (ρ = 0.29) 
+
+#
+
+Loose enteric / environmental Gram-negative 
+
+Alcaligenes faecalis , A. aquatilis , Lactobacillus gasseri ,
+
+Escherichia coli , Providencia rettgeri (chained pairs, ρ =0.14–0.33) 
+
+Ecological singletons 
+
+Peptoniphilus sp., Lactobacillus paragasseri , Facklamia 
+
+hominis , E. coli 6 and 34, Dialister pneumosintes , D. invisus , Corynebacterium urealyticum , C. amycolatum ,
+
+Candida dubliniensis , Campylobacter curvus ,
+
+Anaerococcus vaginalis , Actinobaculum massiliense ,
+
+Aerococcus viridans . Taxa with only one or two weak correlations: Oligella urethralis , Globicatella sp., 
+
+Cutibacterium acnes , Facklamia ignava , Klebsiella aerogenes .
+
+Negative S. aureus 
+
+M. morganii, P. stuartii, Aerococcus urinae, A. 
+
+sanguinicola , P. mirabilis , P. lymphophilum 
+
+Negative S. anginosus P. aeruginosa, E. coli and P. rettgeri 
+
+Six co -occurrence groups (1 –6) identified from the correlation matrix ( Fig. 7a ), plus two supplementary 
+
+(#). ρ values shown where a group comprises a defined pair or chained correlations. 
+
+869 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+Table 6: List of species for which abundance positively correlated (enriched) or 870 
+
+negatively correlated (depleted) with CAUTI signs and symptoms 871 
+
+Sl. 
+
+no Taxon NHSN NHSN wPoly IDSA new onset IDSA Enriched species (positive log-odds with symptoms) 
+
+1 Lactobacillus rhamnosus ++ +2 Proteus mirabilis ++ +3 Corynebacterium urealyticum ++ ++ 4 Providencia stuartii ++ +5 Dialister pneumosintes ++ +6 Globicatella sulfidifaciens + +7 Serratia marcescens ++ 8 Staphylococcus aureus ++ 9 Actinotignum timonense ++ 10 Veillonella parvula +++ 11 Slackia exigua ++ 12 Escherichia coli +
+
+Depleted species (negative log-odds with symptoms) 
+
+13 Aerococcus urinae - -- --14 Enterococcus faecalis - -15 Klebsiella aerogenes - -16 Morganella morganii - --17 Peptoniphilus sp. oral taxon 375 
+
+- --18 Trueperella bernardiae - -19 Proteus vulgaris --20 Corynebacterium striatum -21 Cutibacterium acnes -22 Actinotignum schaalii -23 Aerococcus sanguinicola --24 Escherichia coli 6 --872 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+Table 7. High culture-based uropathogen burden is decoupled from symptomatic 873 
+
+infection in two stable participants. 874 
+
+Participant 104 Participant 206 
+
+Demographics / catheter 91 M, suprapubic 44 F, suprapubic 
+
+Follow-up 26 weeks, 27 visits 22 weeks, 23 visits 
+
+Uropathogen burden (culture) 1.8×10  –6.5×10   CFU/ml 1.6×10  –5.7×10   CFU/ml 
+
+Uropathogen relative abundance 
+
+0–10.3% 13.9–90.1% 
+
+Community backbone Anaerobic core ( P. lymphophilum , P. micra , P. niger , S. anginosus group) Oral commensals + synergistic uropathogens ( V. parvula , M. morganii )
+
+Catheter changes 11 2
+
+Symptomatic visits: NHSN 0 / 27 0 / 23 
+
+Symptomatic: IDSA (new onset) 4 / 27 2 / 23 
+
+Symptomatic: IDSA (no restriction) 
+
+9 / 27 7 / 23 
+
+CAUTI diagnosed None None 875 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+Figures Legends 876 
+
+Fig. 1. Comparing different DNA extraction kits for reproducible results. The Zymo 877 HostZERO kit best represented the expected frequencies of the engineered microbial 878 community in urine. 879 880 
+
+Fig. 2. Taxonomic restructuring of the urinary microbiome following catheter 881 
+
+change . 2a . Alpha diversity metrices in Participant 102. 2b . Stacked bar plot showing 882 the relative abundance of major bacterial taxa across weeks in participant 102. 2c. 883 Alpha diversity metrices in Participant 106. 2d. Relative abundance in Participant 106. 884 
+
+2e. Alpha diversity metrices in Participant 204. 2f. Relative abundance in Participant 885 204. 886 887 
+
+Fig. 3. Stable taxonomic structure of the urinary microbiome following catheter 888 
+
+change. 3a. Alpha diversity metrices in Participant 104. 3b. Stacked bar plot showing 889 the relative abundance of major bacterial taxa across weeks in participant 104. 3c. 890 Alpha diversity metrices in Participant 206. 3d. Relative abundance in Participant 206. 891 
+
+3e. Alpha diversity metrices in Participant 207. 3f. Relative abundance in Participant 892 207. 893 894 
+
+Fig. 4. Taxonomic restructuring of the urinary microbiome following catheter 895 
+
+change and antibiotic administration. 4a. Alpha diversity metrices in Participant 101. 896 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+4b. Stacked bar plot showing the relative abundance of major bacterial taxa across 897 weeks in participant 101. 4c. Alpha diversity metrices in Participant 203 . 4d. Relative 898 abundance in Participant 203 . 4e. Relative abundance (%) of Keflex (cephalosporin) 899 sensitive and resistant organisms. 900 901 
+
+Fig. 5. Taxonomic restructuring of the urinary microbiome following catheter 902 
+
+change and antibiotic administration. 5a. Alpha diversity metrices in Participant 201 .903 
+
+5b. Stacked bar plot showing the relative abundance of major bacterial taxa across 904 weeks in participant 201 . 5c. Kraken 2 alpha diversity metrices in Participant 201 . 5d. 905 Kraken 2 relative abundance in Participant 201. 906 
+
+907 
+
+Fig 6: Antibiotic use and catheter change. 6a. Posterior estimates from five Bayesian 908 linear mixed-effects models evaluating associations of antibiotic use (A), catheter 909 change (C), and their interaction (A×C) with community-level outcomes across 910 longitudinal urine metagenomes from 9 catheterized participants. Outcomes shown in 911 columns are log-Aitchison distance between consecutive visits, logit-transformed Bray-912 Curtis dissimilarity, species richness, Shannon diversity, and Simpson index respectively 913 between consecutive visits. Richness was defined as the number of taxa with relative 914 abundance ≥0.5%. 6b. Species-level responses to antibiotic use and catheter change, 915 and residual species-species association structure. Forest plot of posterior effect 916 contrasts from a Bayesian Gaussian mixed-effects model of centered log-ratio (CLR) 917 abundance for 69 taxa. 918 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+919 
+
+Fig. 7. Correlation matrices from population-level inference. 7a. Spearman residual 920 species-species association heatmaps derived from the Bayesian null mixed-effects 921 model. 7b. Pearson residual correlation matrices as a visualization cross-check. 922 923 
+
+Fig 8. Standardized species CLR abundances associated with CAUTI/UTI outcome 924 definitions with plot of posterior log-odds-ratio coefficients from Bayesian logistic mixed-925 effects models evaluating associations between standardized species CLR abundances 926 and 4 binary clinical outcomes: potential CAUTI by IDSA criteria (IDSA), potential 927 CAUTI by IDSA criteria restricted to new-onset symptoms (IDSA-new-onset), potential 928 UTI by NHSN criteria (NHSN), and potential CAUTI by NHSN criteria allowing 929 polymicrobial cultures (NHSN-wPoly). Each row is one species predictor. 930 
+
+931 
+
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint
+
+.CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.64898/2026.07.06.736792 doi: bioRxiv preprint

@@ -1,0 +1,787 @@
+Title: ECCO: A Python UI for Performing Ensemble Clustering Combined with Cluster Optimization on Omics Data
+
+URL Source: https://www.biorxiv.org/content/10.1101/2022.11.03.515009v2.full.pdf
+
+Number of Pages: 13
+
+Markdown Content:
+# ECCO: A Python UI for Performing 1
+
+# Ensemble Clustering Combined with 2
+
+# Cluster Optimization on Omics Data 3
+
+Brady David Hislop 1,§ , Kenna Brown 1, Hunter Hasskamp 2, Connor Boone 1, Mark 4
+
+Greenwood 3, Chelsea M. Heveran 1, Ronald K. June 1, 4, 5* 5
+
+*For correspondence: 
+
+rjune@montana.edu (RJ) 
+
+Present address: §Department of Genetics, Stanford, USA 
+
+1Montana State University, Department of Mechanical & Industrial Engineering; 6
+
+2Montana State University, Department of Chemical and Biological Engineering; 7
+
+3Montana State University, Department of Mathematical Sciences; 4Montana State 8
+
+University, Department of Cell Biology and Neurosciences; 5University of Washington, 9
+
+Department of Orthopaedics and Sports Medicine 10 11 
+
+Abstract Modern biological research often leverages clustering to elucidate disease endotypes 12 
+
+and underlying mechanisms. Mono-cluster solutions remain the predominant method; however, 13 
+
+this approach has concerning pitfalls, motivating the need for ensemble clustering methods. We 14 
+
+present Ensemble Clustering Combined with Cluster Optimization (ECCO), an open-source 15 
+
+Python UI that provides a fast, scalable framework for ensemble clustering of large-scale data. It 16 
+
+includes zero-code integration of novel ensemble clustering methods and many pre- and 17 
+
+post-processing functionalities. This enables researchers to efficiently integrate advanced 18 
+
+clustering methodologies into their analysis pipelines. 19 20 
+
+## Introduction 21 
+
+The ongoing omics revolution is dramatically changing biological research. Studies that once fea-22 
+
+tured tens or hundreds of analytes now capture thousands, leading to a breadth of multi-omic 23 
+
+analyses of diseases and their underlying mechanisms ( Barapour et al., 2026 ; Zhou et al., 2024 ). 24 
+
+Complex diseases such as osteoarthritis are now thought to arise from interactions among multi-25 
+
+ple biological pathways ( Wilson et al., 2025 ). These shifts require researchers to leverage advanced 26 
+
+bioinformatic techniques to understand these datasets and identify biological mechanisms of dis-27 
+
+ease and disease heterogeneity ( Ronan et al., 2016 ). As large-scale multi-omics studies become 28 
+
+mainstream, there is a critical need for efficient, validated implementations of the latest analytical 29 
+
+methods. 30 
+
+Clustering is an unsupervised machine learning approach that has become a critical part of 31 
+
+biological studies ( Oghabian et al., 2014 ; Chen et al., 2024 ; Barapour et al., 2026 ; Hislop et al., 32 
+
+2022 ; Wallace et al., 2022 ; Welhaven et al., 2024 ). For example, our lab has used clustering to iden-33 
+
+tify novel metabolic endotypes of osteoarthritis ( Wallace et al., 2022 ), rapid shifts in synovial fluid 34 
+
+metabolism, sex-specific differences in metabolic profiles after joint injuries ( Welhaven et al., 2024 ;35 
+
+Hislop et al., 2022 ), and changes in cortical bone metabolism in chronic kidney disease ( Stauffer 36 
+
+et al., 2026 ). However, each clustering approach comes with its own set of assumptions and limita-37 
+
+tions that directly impact the resulting biological insight, meaning an analytical choice could impact 38 
+
+a field’s direction (or misdirection). This challenge has been exacerbated by modern-day omics ex-39 
+
+periments where thousands of analytes are measured, leading to the curse of high-dimensionality, 40 
+
+1 of 13 
+
+.CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.1101/2022.11.03.515009 doi: bioRxiv preprint where data sparsity and noise mask true biological signals ( Ronan et al., 2016 ). To mitigate these 41 
+
+challenges, recent studies have suggested using ensemble clustering approaches ( Ronan et al., 42 
+
+2016 ). Ensemble clustering aggregates results from multiple clustering algorithms to determine 43 
+
+the observations that consistently cluster together ( Golalipour et al., 2021 ). Before combining the 44 
+
+cluster solutions into an ensemble, the number of clusters must be specified or determined using 45 
+
+an internal clustering metric (e.g., Average Silhouette Metric). One approach to combining cluster 46 
+
+solutions is voting consensus, in which each pair of observations is assigned a weight based on 47 
+
+how consistently they cluster together across all cluster solutions. For example, a pair that clus-48 
+
+ters together in every solution receives a weight of 1 ( Golalipour et al., 2021 ). Ensemble clustering 49 
+
+has strong potential to broadly improve bioinformatic analysis; however, it has yet to be widely 50 
+
+adopted despite the availability of two coding libraries ( Chiu and Talhouk, 2018 ; Ronan et al., 2018 ). 51 
+
+A potential explanation for this is the lack of an easy-to-use user interface (UI) and the need for pro-52 
+
+gramming expertise to implement. Therefore, we created an easy-to-use open-source Python UI 53 
+
+that can be readily used by researchers of all backgrounds, with several key improvements: 54 
+
+• Unix and Windows executables allow users to download and run the ECCO UI immediately. 55 
+
+• Codeless generation of custom ensemble cluster solutions. 56 
+
+• User-facing reports on cluster similarity and performance. 57 
+
+• Multi-core processing that scales with available computational resources. 58 
+
+• Various dissimilarity metrics for many types of biological data (Appendix - Figure 1, Appendix 59 
+
+- Table 1). 60 
+
+• Built on scipy and scikit-learn, allowing for rapid expansion to other clustering approaches. 61 
+
+ECCO is an open-source Python UI providing key functionalities for clustering biological data that 62 
+
+is scalable, user-friendly, and readily adaptable to the diverse needs of researchers. Users can run 63 
+
+ECCO on their local computers or compute clusters, scaling the tool with their available computa-64 
+
+tional power. The current version (v1.0.3) is intended to serve as a framework for expanding with 65 
+
+additional mono-clustering algorithms, ensemble clustering methodologies, and rapid extraction 66 
+
+and analysis of identified clusters. In addition, we offer a suite of 24 functionalities, including both 67 
+
+pre- and post-processing tools within clustering pipelines and as standalone features (Appendix 1). 68 
+
+Taken together, ECCO provides efficient ensemble clustering analyses and the framework for ex-69 
+
+pansion into a generalizable tool for clustering biological data. 70 
+
+## Methods: ECCO workflow. 71 
+
+ECCO is a four-step workflow from data pre-processing to ensemble cluster generation (Figure 1). 72 
+
+Users can perform ECCO by submitting an ensemble specification and corresponding data file (Fig-73 
+
+ure 1, left), and selecting the data pre-processing they would like to perform. After submission, 74 
+
+ECCO pre-processes the data, generates cluster solutions, and determines the number of clusters 75 
+
+for each cluster solution based on the optimal value of an internal cluster metric, such as the clus-76 
+
+ter solution with the Average Silhouette Width closest to 1 (Figure 1, middle). Finally, the consensus 77 
+
+cluster solution (i.e., ensemble cluster solution) is calculated (Figure 1, middle), and users are pro-78 
+
+vided with Rand and adjusted Rand index evaluations of each cluster solution, and clustergrams 79 
+
+of the ensemble cluster solution (Figure 1, right). 80 
+
+## Algorithm: Ensemble Clustering Combined with Cluster Optimization 81 
+
+After the input data is pre-processed, the ECCO workflow first generates cluster solutions for each 82 
+
+clustering approach (M) specified in the ensemble specification file. Next, internal cluster metrics 83 
+
+(Appendix 1) are used to determine the number of clusters for each cluster solution (M). After which 84 
+
+ECCO calculates how often analytes (N) co-occur in clusters across the cluster solutions (M), using 85 
+
+a voting consensus ensemble approach ( Golalipour et al., 2021 ), see equation 1. 86 
+
+> 2 of 13
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.1101/2022.11.03.515009 doi: bioRxiv preprint
+
+Figure 1. Workflow for Ensemble Clustering Combined with Cluster Optimization Users input an ensemble specification file and their data, and select pre-processing parameters (left). Cluster solutions are generated and optimized, and the consensus calculated (middle). Cluster evaluation and the resulting ensemble clusters are provided to the user (right). 
+
+𝑎 𝑖𝑗 = 1
+
+𝑀 
+
+> 𝑁
+
+∑
+
+> 𝑖,𝑗 𝑖 ≠𝑗
+
+𝛿 𝑖𝑗 (1) where M is the number of cluster solutions in the ensemble, N is the number of analytes being 87 
+
+clustered, and 𝛿 𝑖𝑗 is defined as: 88 
+
+𝛿 𝑖𝑗 =
+
+⎧⎪⎨⎪⎩
+
+1, when objects share clusters 
+
+0 otherwise (2) We have programmed this ensemble approach such that no adaptation is needed for novel cluster-89 
+
+ing ensembles, while also incorporating multi-core processing, to improve the efficiency of calcu-90 
+
+lating each cluster solution (the bottleneck of these analyses). Users’ only limitation for ensemble 91 
+
+cluster solutions is their available computational resources. The ideal number of cluster solutions 92 
+
+to consider in the ensemble depends on the input data, and thus, users must select this parameter 93 
+
+by considering reasonable expectations of their datasets. 94 
+
+## User Input: Ensemble Specification 95 
+
+The ensemble specification file must contain the input parameters for the dissimilarity metric, link-96 
+
+age function, internal cluster metric, and correlation coefficient or pairwise dissimilarity metric 97 
+
+(Table 1). Users can customize the ensemble by adapting the input parameters in the specifi-98 
+
+cation file. The current version of ECCO (v1.0.3) accepts all dissimilarity metrics available within 99 
+
+scipy.spatial.distance, and linkage functions of agglomerative hierarchical clustering provided by 100 
+
+sci-kit learn ( Pedregosa et al., 2011 ). Users need to specify an internal cluster metric for each clus-101 
+
+tering methodology (Table 1) with three currently available: Calinski-Harabasz (CH) ( Caliński and 102 
+
+Harabasz, 1974 ), Average Silhouette Width (SIL) ( Rousseeuw, 1987 ), and Davies-Bouldin Index (DBI) 103 
+
+(Davies and Bouldin, 1979 ). To compare observations, users need to specify either a Pearson or 104 
+
+Spearman correlation coefficient or add pw if they want to leverage a pairwise distance metric 105 
+
+(e.g., Euclidean) among the observations (Table 1). See Appendix 1 for definitions of the available 106 
+
+dissimilarity (Appendix Table 1 and internal cluster metrics. 107 
+
+## User Input: Data 108 
+
+Users can input continuous, binary, or count data (Appendix - Table 1), with the only limitation 109 
+
+being that the data sheet needs to match our specified structure (Table 2). Specifically, data need 110 
+
+3 of 13 
+
+.CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.1101/2022.11.03.515009 doi: bioRxiv preprint Table 1. Example Specification File for ECCO 
+
+# Dissimilarity Linkage Internal Cluster Metric Correlation CNS a Ward CH c Spearman CS b Ward CH c Spearman CNS Complete SIL d Spearman CS Complete SIL d Spearman CNS Average DBI e Spearman CS Average DBI e Spearman  
+
+> a
+
+CNS: Correlation no square root 1 − |r(Y , Y′)| 
+
+> b
+
+CS: Correlation square root √2(1 − |r(Y , Y′)|) 
+
+> c
+
+CH: Calinski-Harabasz index  
+
+> d
+
+SIL: Average Silhouette score  
+
+> e
+
+DBI: Davies-Bouldin index 
+
+to be input in as analytes (N) by samples (n) format, with the first column being m.z. (mass-to-111 
+
+charge ratio) and the last column being r.t. (retention time). Both the m.z and r.t. columns should 112 
+
+contain identifiers, and thus, can be populated with appropriate labels for the input data. Any 113 
+
+missing data is handled by immediately displaying an error and prompting the user to resubmit 114 
+
+the corrected input data. 
+
+Table 2. General Format for Input Data Table. 
+
+## m.z. a S1 c S2 S3 S4 r.t. G1 d G1 G2 G2 ID1 b 1233244.5678 23435.6789 3436.7890 456723.8901 rt1 e
+
+## ID2 986.5432 876345.4321 765344.3210 6543095.2109 rt2  
+
+> a
+
+m.z. - Mass-to-charge ratio or identifier.  
+
+> b
+
+ID#- Analyte identifier.  
+
+> c
+
+S# - Sample identifier.  
+
+> d
+
+G# - Group identifier.  
+
+> e
+
+rt# - Retention time column for mass spectrometry data or a placeholder for non mass spectrometry data. 
+
+> 115
+
+## Example Analysis and Interpretation of ECCO Outputs 116 
+
+In this section, we apply ECCO to a previously analyzed metabolomics dataset ( Carlson et al., 2019 )117 
+
+and provide detailed descriptions of how to interpret the results. 118 
+
+Case Study: Synovial Fluid Metabolomics Analysis using ECCO 119 
+
+Synovial fluid was collected post-mortem from n=75 patients, with concurrent radiographic eval-120 
+
+uation of osteoarthritis (OA, graded by Outerbridge system) ( Carlson et al., 2019 ; Outerbridge, 121 
+
+1964 , 1961 ). Metabolites were extracted using an established protocol ( Carlson et al., 2019 ; Kim 122 
+
+et al., 2017 ), analyzed using liquid chromatography-mass spectrometry, and the raw data were 123 
+
+processed using XCMS ( Domingo-Almenara et al., 2018 ). 9962 metabolite features were detected, 124 
+
+and 1361 passed median intensity filtering ( i.e. non-zero median intensities in each group) ( Carlson 125 
+
+et al., 2019 ). Samples were then grouped into no OA, early OA, or late OA groups, but for brevity, 126 
+
+4 of 13 
+
+.CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.1101/2022.11.03.515009 doi: bioRxiv preprint here we focus on the 17 samples classified into the late OA group. We set the data pre-processing 127 
+
+parameters to log-transformation (base-10), auto-scaling (standardized to z-scale), and specified 128 
+
+a viridis colormap. For this example, we input the default ensemble specification file (Table 1), 129 
+
+and input the data with 19 columns (m.z, 17 samples, and r.t. columns), and 1361 data rows; no 130 
+
+group identifier was specified. On a MacBook Pro with M1 Pro using 6 threads, the ECCO workflow 131 
+
+completed in 50 seconds, automatically plotting and saving the following outputs: 132 
+
+• Rand, and adjusted Rand index bubble plots comparing each cluster solution (Figure 2A-B) 133 
+
+(Rand, 1971 ; Hubert, 1985 ). 134 
+
+• Rand, and adjusted Rand index bubble plots comparing each cluster solution to the ensemble 135 
+
+cluster solution (Figure 2C). 136 
+
+• Clustergram of ensemble cluster solution applied to the co-occurrence matrix (Figure 2D). 137 
+
+• Clustergram of the original data with outlines of the clusters identified by ECCO (Figure 2E) 138 
+
+• Spreadsheet containing the co-occurrence matrix. 139 
+
+• Individual spreadsheets for each cluster identified by ECCO, containing the observations present 140 
+
+in the cluster. 141 
+
+Interpretation of Rand and Adjusted Rand Index 142 
+
+Comparison of mono-cluster solutions (e.g., Complete linkage hierarchical cluster solution) is criti-143 
+
+cal to understanding if similar observations are consistently clustering. ECCO automatically gener-144 
+
+ates visuals for two well-accepted external cluster evaluation metrics, the Rand index ( Rand, 1971 )145 
+
+and the adjusted Rand index ( Hubert, 1985 ). We also provide a separate functionality with other ex-146 
+
+ternal cluster evaluation metrics, including the Normalized Mutual Information ( Danon et al., 2005 ), 147 
+
+and adjusted Normalized Mutual Information ( Vinh et al., 2009 ). The Rand index determines clus-148 
+
+ter similarity by determining if the cluster solutions agree on the observations that cluster together 149 
+
+and those that do not cluster together, with 0 meaning no agreement between cluster solutions, 150 
+
+and 1 meaning perfect agreement ( Rand, 1971 ). The adjusted Rand index corrects the Rand index 151 
+
+for the agreement expected by chance ( Hubert, 1985 ), with values ranging from -1 to 1, and any-152 
+
+thing less than 0 representing less agreement on clusters than expected. ECCO represents both 153 
+
+the Rand and adjusted Rand index values with increasing bubble size and deepening red color as 154 
+
+they go to 1. In our case study, we found that Rand index values varied from 0.31 to 1 (Figure 2A), 155 
+
+suggesting cluster solutions ranged from minimal to perfect agreement. For the adjusted Rand 156 
+
+index, we found that all mono-cluster solutions achieved greater than expected agreement, 0.04 157 
+
+to 1 (Figure 2B). These results indicate a high diversity of cluster solutions, which is important to 158 
+
+improve ensemble performance ( Golalipour et al., 2021 ). We next investigated whether an ensem-159 
+
+ble cluster solution is necessary by comparing each mono-cluster solution to the ensemble cluster 160 
+
+solution (Figure 2C). We found that a complete linkage cluster solution achieved strong agreement 161 
+
+with the ensemble cluster solution, 0.92 Rand index, and 0.66 adjusted Rand index (Figure 2C). 162 
+
+However, given 1362 metabolites were analyzed, a Rand index of 0.92 results in >100 metabolites 163 
+
+not clustering as they do in the ensemble cluster solution, more than enough to impact pathway 164 
+
+enrichment results. Therefore, in this case, users should use the ensemble cluster solution as it 165 
+
+leverages evidence from all six cluster solutions to determine the cluster solution. 166 
+
+Interpretation of Clustergrams 167 
+
+ECCO outputs two clustergrams for visualization of the ensemble cluster solution, one of the co-168 
+
+occurrence matrix and the other of the pre-processed data, with black dashed-line boxes repre-169 
+
+senting the identified clusters (Figure 2D-E). The clustergram (Figure 2D) of the co-occurrence ma-170 
+
+trix is colored from 0 to 1, with 1 representing metabolites sharing a cluster in each cluster solution. 171 
+
+In our case study, we see several distinct yellow (yellow representing 1) squares (Figure 2D), sug-172 
+
+gesting that, independent of the cluster solution, many metabolites always clustered together. This 173 
+
+is consistent with our analysis of the Rand and adjusted Rand index, which suggested that the clus-174 
+
+ter solutions were identifying similar clusters of observations. Finally, ECCO provides a visualization 175 
+
+> 5 of 13
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.1101/2022.11.03.515009 doi: bioRxiv preprint
+
+of differences in metabolic expression between each sample within each of the identified clusters 176 
+
+(Figure 2E). For example, in this analysis, we see a cluster at the top of the clustergram where two 177 
+
+samples have higher expression of a set of metabolites, whereas nearly all the other samples have 178 
+
+minimal expression (Figure 2E, top cluster). ECCO also automatically saves each cluster and the 179 
+
+co-occurrence matrix from the ensemble solution. For metabolomics analysis, these files can be 180 
+
+submitted to the Peaks to pathways functionality (Table 2), which transforms the cluster files for 181 
+
+submission to Mummichog ( Li et al., 2013 ) for pathway enrichment analysis. 
+
+Figure 2. Case Study of Synovial Fluid Metabolism using ECCO A-B) Comparison of each mono-cluster solution, by Rand-index (A) and adjusted Rand-index (B). C) Comparison of each mono-cluster solution to the ensemble cluster solution. D-E) Clustergrams of the co-occurrence matrix, and the original data showing the clusters identified by ensemble clustering. 
+
+> 182
+
+## Implementation Summary and Additional Functionalities 183 
+
+We provide a full list of ECCO functionalities and their inputs and outputs in Table 3. We also pro-184 
+
+vide detailed descriptions of each functionality on our Wiki pages. The ECCO UI can also handle 185 
+
+6 of 13 
+
+.CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.1101/2022.11.03.515009 doi: bioRxiv preprint all data pre- and post-processing. We expect that users will be able to interact with this tool with-186 
+
+out needing to write any code. However, the open-source nature of this tool allows users to add 187 
+
+additional features, such as novel workflows, that can be readily made into clickable buttons for re-188 
+
+usability. For example, we will soon add locally-weighted ensemble clustering ( Huang et al., 2018 )189 
+
+by adding the workflow to the codebase and a button to the UI that calls the workflow. 190 
+
+## Discussion 191 
+
+ECCO is a flexible, multifunctional UI that enables efficient calculation of ensemble cluster solutions 192 
+
+along with pre- and post-processing capabilities for bioinformatic analyses. The defining function-193 
+
+alities of ECCO are 1) the off-the-shelf usability of the UI, and 2) the ability to generate novel ensem-194 
+
+bles with zero coding. Users can immediately use ECCO by simply downloading either Unix/Mac or 195 
+
+Windows executables from Github (v1.0.3). Novel ensembles can be generated by updating a sin-196 
+
+gle CSV file, and future versions will incorporate additional non-hierarchical clustering algorithms. 197 
+
+Furthermore, our open-source codebase allows users to expand the UI’s functionality to meet their 198 
+
+needs. Thus, the ECCO UI represents a critical open-source framework for implementing ensemble 199 
+
+clustering for biological and non-biological analyses. 200 
+
+ECCO UI contains a comprehensive suite of tools for data pre-processing, post-processing, clus-201 
+
+tering, and internal and external cluster performance evaluation, with built-in logging and error 202 
+
+handling. The UI handles missing data by automatically displaying an error and prompting the 203 
+
+user to resubmit the corrected input file. For customization, each functionality provides users with 204 
+
+a series of options. For example, when performing ECCO, users need to select a colormap, data 205 
+
+scaling, and data transformation, if they want to run a default ensemble (Table 1), and if they want 206 
+
+metabolic pathway enrichment files for each cluster that is identified. Detailed explanations of 207 
+
+each functionality can be found on our Wiki, and example input and output files are provided for 208 
+
+each functionality. All functionalities except ECCO can run locally with reasonable run times; we 209 
+
+recommend running ECCO on multiple cores to ensure reasonable compute times. 210 
+
+ECCO has several limitations that will be addressed in future releases. First, our initial release 211 
+
+focuses on agglomerative hierarchical clustering and consensus-based ensemble clustering. Fu-212 
+
+ture releases will incorporate additional clustering algorithms (e.g., K-means), and other ensemble 213 
+
+approaches such as a selective clustering ensemble based on covariance ( Golalipour et al., 2021 ). 214 
+
+Second, the current workflows are all run through the UI, limiting users to compute clusters with 215 
+
+enabled UIs for larger datasets. Given the O( 𝑛 3) ( Bataineh, 2022 ) complexity of agglomerative hier-216 
+
+archical clustering, to efficiently determine cluster solutions, a high-performance cluster is recom-217 
+
+mended; thus, incorporating a non-UI workflow would improve usability. Finally, ECCO uses the 218 
+
+optimal values of internal cluster metrics (e.g., minimum Davies-Bouldin index) to determine i) the 219 
+
+number of clusters for a cluster solution, and 2) the ensemble cluster solution for a predefined 220 
+
+number of clusters (100 or fewer). Future versions will allow users to input the number of clusters 221 
+
+for each cluster solution, customize the number of clusters to consider, provide visuals of the inter-222 
+
+nal cluster metric results, and incorporate statistical approaches to determining the significance 223 
+
+of clusters (e.g., using the Gap Statistic, Tibshirani et al. (2001 )). We also plan to expand the UI by 224 
+
+incorporating statistical modeling approaches and improving usability. We aim to achieve this by 225 
+
+building a community-based coalition to add the latest functionalities to this UI. 226 
+
+## Acknowledgments 227 
+
+This study was funded in part by grants from the NSF (CMMI 2140127) and NIH (NIAMS R01AR073964 228 
+
+and R01AR081489). We would like to thank Hope Welhaven, Erik P. Myers, and Avery Welfley for 229 
+
+helping identify bugs in ECCO during development. 230 
+
+## References 231 
+
+> Barapour N , Cao JZ, Wu Y, Gupta S, Hoopmann MR, Qin R, Midha MK, Mireault M, Juanes-Velasco P, Hanson C, 232
+> Ahadi S, Higgs E, Baxter DH, Diener C, Dagan-Rosenfeld O, Hornburg D, Che S, Edfors F, Church SJ, Babu M, 233
+> 7 of 13
+
+.CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.1101/2022.11.03.515009 doi: bioRxiv preprint Table 3. ECCO Functionality Overview 
+
+Feature Description 
+
+Remove Duplicate Features Removes duplicate values from the first column. Data Integrity Removes values with two decimals (e.g., 101.455.1), some-times created by the volcano plot output of MetaboAnalyst. Check Normality Creates visualizations for different combinations of data scal-ing and transformations. Compare Linkage Func-tions Clusters the input data in up to four different ways using the same distance metric, displaying the dendrograms of each cluster solution. Create Clustergram Performs agglomerative hierarchical clustering, and saves a PNG of the resultant clustergram. Validation Clusters Computes internal cluster metrics (e.g., Dunn index) on a clus-ter solution. Mono-cluster Validation Agglomerative hierarchical clustering with cluster optimiza-tion. Group Medians Leverages group identifiers in the first row of data to calculate group medians. ECCO Performs ECCO as described in the manuscript. Peaks to Pathways Transforms cluster output files into a Mummichog ( Li et al., 2013 ) compatible format for metabolic pathway enrichment analysis Compound ID Automated lookup of compounds identified from Mummi-chog pathway enrichment analysis using the KEGG database. Cluster Selection Allows users to select agglomerative hierarchical clusters of interest. Selected Clusters Figure Generates a figure of the selected clusters from the cluster selection functionality. Heatmap Analyses Generates a heatmap of cluster solutions. Build ANOVA Heatmap Creates a heatmap of the top 𝑁 features from an ANOVA out-put in MetaboAnalyst. CIs for 𝑡 -tests Calculates confidence intervals for each analyte from the 𝑡 -test performed in MetaboAnalyst. MST Optimization Performs minimum spanning tree-based cluster optimiza-tion. Enzyme Look-up Creates a table for each cluster containing the enzymes for each identified compound. MetaboAnalyst File Genera-tion Automatically generates input files for MetaboAnalyst. RNA-seq Deglist Differential gene expression analysis on RNA-seq data. Gene → Pathways Automated pathway lookup for a set of KEGG gene IDs. External Metrics External cluster metrics comparing clusters from different al-gorithms VIP (MS/MS Comp.) Compares top features from variable importance projections on MS data with compounds identified from MS/MS data via Progenesis. 
+
+> 8 of 13
+> .CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.1101/2022.11.03.515009 doi: bioRxiv preprint
+
+et al. A comparison of deep multiomics profiles across ethnicity, geography, and age. Journal of the Royal 234 
+
+Statistical Society: Series B (Statistical Methodology). 2026; 189:3004–3024. 235 
+
+Bataineh B . Fast component density clustering in spatial databases: A novel algorithm. Information. 2022; 236 
+
+13(10):477. 237 
+
+Caliński T , Harabasz J. A dendrite method for cluster analysis. Communications in Statistics - Theory and 238 
+
+Methods. 1974; 3:27. 239 
+
+Carlson AK , Rawle RA, Wallace CW, Brooks EG, Adams E, Greenwood MC, Olmer M, Lotz MK, Bothner B, June RK. 240 
+
+Characterization of synovial fluid metabolomic phenotypes of cartilage morphological changes associated 241 
+
+with osteoarthritis. Osteoarthritis Cartilage. 2019; 27(8):1174–1184. 242 
+
+Chen F , Zou G, Wu Y, Le OY. Clustering single-cell multi-omics data via graph regularized multi-view ensemble 243 
+
+learning. Bioinformatics. 2024; 40. doi: 10.1093/bioinformatics/btae169. 244 
+
+Chiu DS , Talhouk A. diceR: an R package for class discovery using an ensemble driven approach. BMC bioin-245 
+
+formatics. 2018; 19(1). 246 
+
+Danon L , Díaz-Guilera A, Duch J, Arenas A. Comparing community structure identification. Journal of Statistical 247 
+
+Mechanics: Theory and Experiment. 2005; 2005:P09008 – P09008. doi: 10.1088/1742-5468/2005/09/p09008. 248 
+
+Davies DL , Bouldin DW. A cluster separation measure. IEEE Trans Pattern Analysis Machine Intelligence. 1979; 249 
+
+2:4. 250 
+
+Domingo-Almenara X , Montenegro-Burke JR, Ivanisevic J, Thomas A, Sidibe J, Teav T, Guijas C, Aisporna AE, 251 
+
+Rinehart D, Hoang L, Nordstrom A, Gomez-Romero M, Whiley L, Lewis MR, Nicholson JK, Benton HP, Siuzdak 252 
+
+G. XCMS-MRM and METLIN-MRM: a cloud library and public resource for targeted analysis of small molecules. 253 
+
+Nat Methods. 2018; 15(9):681–684. 254 
+
+Golalipour K , Akbari E, Hamidi SS, Lee M, Enayatifar R. From clustering to clustering ensemble selection: A 255 
+
+review. Engineering Applications of Artificial Intelligence. 2021; 104. 256 
+
+Hislop BD , Devine C, June RK, Heveran CM. Subchondral bone structure and synovial fluid metabolism are 257 
+
+altered in injured and contralateral limbs 7 days after non-invasive joint injury in skeletally-mature C57BL/6 258 
+
+mice. Osteoarthritis and cartilage. 2022; 30(12):1593–1605. 259 
+
+Huang D , Wang CD, Lai JH. Locally Weighted Ensemble Clustering. IEEE Trans on Cybernetics. 2018; 48:14. 260 
+
+Hubert L . Comparing Partitions. Journal of Classification. 1985; 2:15. 261 
+
+Kim S , Hwang J, Kim J, Ahn JK, Cha HS, Kim KH. Metabolite profiles of synovial fluid change with the radiographic 262 
+
+severity of knee osteoarthritis. Joint Bone Spine. 2017; 84(5). 263 
+
+Li S , Park Y, Duraisingham S, Strobel FH, Khan N, Soltow QA, Jones DP, Pulendran B. Predicting network activity 264 
+
+from high throughput metabolomics. PLoS computational biology. 2013; 9(7):e1003123. 265 
+
+Oghabian A , Kilpinen S, Hautaniemi S, Czeizler E. Biclustering Methods: Biological Relevance and Application 266 
+
+in Gene Expression Analysis. PLoS ONE. 2014; 9. doi: 10.1371/journal.pone.0090801. 267 
+
+Outerbridge RE . The etiology of chondromalacia patellae. J Bone Joint Surg Br. 1961; 43-B:752–7. 268 
+
+Outerbridge RE . Further Studies on the Etiology of Chondromalacia Patellae. J Bone Joint Surg Br. 1964; 269 
+
+46:179–90. 270 
+
+Pedregosa F , Varoquaux G, Gramfort A, Michel V, Thirion B, Grisel O, Blondel M, Prettenhofer P, Weiss R, 271 
+
+Dubourg V, Vanderplas J, Passos A, Cournapeau D, Brucher M, Perrot M, Duchesnay E. Scikit-learn: Machine 272 
+
+Learning in Python. Journal of Machine Learning Research. 2011; 12:2825–2830. 273 
+
+Rand WM . Objective Criteria for the Evaluation of Clustering Methods. Journal of the American Statistical 274 
+
+Association. 1971; 66:4. 275 
+
+Ronan T , Anastasio S, Qi Z, Sloutsky R, Naegle KM. OpenEnsembles: A Python Resource library for Ensemble 276 
+
+Clustering. Journal of Machine Learning Research. 2018; 18:6. 277 
+
+Ronan T , Qi ZJ, Naegle KM. Avoiding common pitfalls when clustering biological data. Science Signaling. 2016; 278 
+
+9(432). 279 
+
+9 of 13 
+
+.CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.1101/2022.11.03.515009 doi: bioRxiv preprint Rousseeuw PJ . Silhouettes - a Graphical Aid to the Interpretation and Validation of Cluster-Analysis. Journal of 280 
+
+Computational and Applied Mathematics. 1987; 20:53–65. 281 
+
+Stauffer S , Welhaven HD, Hislop BD, Jones BA, Levi M, June RK, Heveran CM. Investigation of the cortical bone 282 
+
+metabolome of C57BL/6J mice with adenine-induced kidney disease. JBMR plus. 2026; 10(5):ziag043. 283 
+
+Tibshirani R , Walther G, Hastie T. Estimating the number of clusters in a data set via the gap statistic. Journal 284 
+
+of the Royal Statistical Society: Series B (Statistical Methodology). 2001; 63. doi: 10.1111/1467-9868.00293. 285 
+
+Vinh NX , Epps J, Bailey J. Information theoretic measures for clusterings comparison: is a correction for chance 286 
+
+necessary? In: Proceedings of the 26th annual international conference on machine learning ; 2009. p. 1073– 287 
+
+1080. 288 
+
+Wallace CW , Hislop AK Bradyand Hahn, Erdogan AE, Brahmachary PP, June RK. Correlations between metabo-289 
+
+lites in the synovial fluid and serum: A mouse injury study. Journal of orthopaedic research : official publica-290 
+
+tion of the Orthopaedic Research Society. 2022; 40(12):2792–2802. 291 
+
+Welhaven HD , Welfley AH, Pershad P, Satalich J, O’Connell R, Bothner B, Vap AR, June RK. Metabolic phenotypes 292 
+
+reflect patient sex and injury status: A cross-sectional analysis of human synovial fluid. Osteoarthritis and 293 
+
+cartilage. 2024 Sep; 32(9):1074–1083. 294 
+
+Wilson TG , Baghel M, Ali SA. Osteoarthritis year in review 2025: Genetics, genomics, and epigenetics. Os-295 
+
+teoarthritis and cartilage. 2025; 33(11):1293–1299. 296 
+
+Zhou X , Shen X, Johnson JS, Spakowicz DJ, Agnello M, Zhou W, Avina M, Honkala A, Chleilat F, Chen SJ, Cha K, 297 
+
+Leopold S, Zhu C, Chen L, Lyu L, Hornburg D, Wu S, Zhang X, Jiang C, Jiang L, et al. Longitudinal profiling of the 298 
+
+microbiome at four body sites reveals core stability and individualized dynamics during health and disease. 299 
+
+Cell Host Microbiome. 2024; 32:506–526. 300 
+
+10 of 13 
+
+.CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.1101/2022.11.03.515009 doi: bioRxiv preprint Appendix 1 301 
+
+Internal Cluster Metrics 302 
+
+The ECCO UI currently supports three internal cluster metrics ( Golalipour et al., 2021 ) that quantify the optimal cluster solution. Most internal cluster metrics follow a similar approach, finding the ratios between inter-cluster separation (e.g., separation between cluster centers) and intra-cluster compactness (e.g., the spread of data objects in a cluster). The optimal clus-ter solution is determined by generating cluster solutions for 2–C clusters (where C ranges from 2 to N-1) and calculating the internal cluster metric for each solution. Depending on the metric, the optimal solution is either a maximum or a minimum. The current metrics include the Average Silhouette Width ( Rousseeuw, 1987 ), the Calinski-Harabasz index ( Cal-iński and Harabasz, 1974 ), and the Davies-Bouldin index ( Davies and Bouldin, 1979 ). 
+
+> 303 304 305 306 307 308 309 310 311
+
+The Average Silhouette Width ( Rousseeuw, 1987 ), determines the optimal number of clusters by: Average Silhouette Width =
+
+> 𝑁
+
+∑
+
+> 𝑖 =1
+
+𝑠 (𝑖 )
+
+𝑁 (A.1) N represents the total number of observations, and s(i) represents the silhouette widths for each observation (Eq (A.2)). 
+
+𝑠 (𝑖 ) = 𝑏 (𝑖 ) − 𝑎 (𝑖 )
+
+𝑚𝑎𝑥 (𝑎 (𝑖 ), 𝑏 (𝑖 )) (A.2) a(i) represents the average dissimilarity between observation i and all other observations in its cluster, and b(i) is the minimum of average dissimilarity between observation i and the observations in cluster C; s(i) can range from -1 to 1. An Average Silhouette Width of 1 represents an ideal cluster solution, zero represents a cluster solution where observations may belong to multiple clusters, and -1 represents that the observations were incorrectly grouped. 
+
+> 312 313 314 315 316 317 318 319 320 321 322 323 324 325 326 327
+
+The Calinski-Harabasz index ( Caliński and Harabasz, 1974 ), uses a sum-of-squares-based formulation to determine the optimal cluster solution: 
+
+𝐶𝐻 =
+
+> 𝑊 𝐺𝑆𝑆 𝐾 −1
+> 𝐵𝐺𝑆𝑆 𝑛 −𝐾
+
+(A.3) where WGSS is the within-group sum of squares, K is the number of clusters, BGSS is the between-group sum of squares, and n is the number of observations. The maximum Calinski-Harabasz score represents the optimal cluster solution. The Davies-Bouldin index ( Davies and Bouldin, 1979 ) calculates the optimal cluster solution by summing the maximum ratios of intra-cluster spread to cluster separation: 
+
+𝐷𝐵𝐼 =
+
+∑𝐾  
+
+> 1
+
+𝐹 𝐶 𝐻 
+
+𝐾 (A.4) Where K is the number of clusters in the cluster solution and 𝐹 𝐶 𝐻 is: 
+
+𝐹 𝐶 𝐻 = 𝑚𝑎𝑥 𝐶 𝐻 ≠𝐶 𝑗 𝐹 𝐶 𝐻 𝐶 𝑗 (A.5) 
+
+> 328 329 330 331 332 333 334 335 336 337 338 339 340 341 342 343 344
+
+𝐹 𝐶 𝐻 𝐶 𝑗 = 𝑓 1(𝐶 𝐻 ) + 𝑓 1(𝐶 𝑗 )
+
+𝑓 2(𝐶 𝐻 , 𝐶 𝑗 ) (A.6) f1 is the average dissimilarity between observations and their cluster centroids, and f2 is the dissimilarity between centroids. The optimal solution for the Davies-Bouldin index occurs at the minimum value. 
+
+> 345 346 347 348 349 350 351
+
+11 of 13 
+
+.CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.1101/2022.11.03.515009 doi: bioRxiv preprint Dissimilarity Measures 352 
+
+The ECCO UI supports all dissimilarity measures available in scipy, and incorporates two correlation-based measures. Typically, correlation-based metrics are transformed to a dis-similarity measure for clustering by either subtracting 1 or using a weighted square-root of one minus the correlation (Appendix - Figure 1A-B). However, these transformations create greater dissimilarity to negative correlations, observations that don’t correlate at all, mean-ing observations with minimal correlation will cluster while those with negative correlations won’t. Thus, we implemented an absolute correlation-based dissimilarity measure (Eq. A.7, 8), which makes positive and negative correlations have similar dissimilarities, while ensur-ing that zero correlations do not cluster (Appendix - Figure 1. 
+
+1 − |𝑟 (𝑌 , 𝑌 ′)| (A.7) 
+
+√2(1 − |𝑟 (𝑌 , 𝑌 ′)|) (A.8) 
+
+> 353 354 355 356 357 358 359 360 361 362 363 364 365 366 367
+> 368
+
+Appendix 1—figure 1. Comparison of correlation dissimilarity metrics A) Correlation dissimilarity B) Weighted square-root correlation dissimilarity. C) Absolute Correlation dissimilarity. D) Weighted square-root absolute correlation dissimilarity. 
+
+> 369 370 371 372
+
+Appendix 1—table 1. Dissimilarity Metrics and Data Types. 373 374 
+
+12 of 13 
+
+.CC-BY-NC-ND 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 7, 2026. ;https://doi.org/10.1101/2022.11.03.515009 doi: bioRxiv preprint Dissimilarity Data Type Example Data Manhattan Continuous Mass Spectrometry Intensity data Euclidean Continuous Mass Spectrometry Intensity data Chebyshev Continuous Mass Spectrometry Intensity data Cosine Continuous Mass Spectrometry Intensity data Bray-Curtis Counts Shotgun Metagenomics, RNA-seq Jaccard Binary Shotgun Metagenomics, RNA-seq Hamming Sequences Genetic sequences Jensen-Shannon Probability Distributions Microbiome data Canberra Continuous Mass Spectrometry Intensity data Yule Binary Shotgun Metagenomics, RNA-seq

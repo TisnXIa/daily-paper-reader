@@ -6,37 +6,43 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-07
-- 运行时间：2026-07-07 21:55:10 UTC
+- 最新运行日期：2026-07-08
+- 运行时间：2026-07-08 20:51:22 UTC
 - 运行状态：成功
-- 本次总论文数：5
-- 精读区：3
-- 速读区：2
+- 本次总论文数：7
+- 精读区：2
+- 速读区：5
 
 ### 今日简报（AI）
-今日推荐5篇文章，精读重点为蛋白质注释的少样本学习框架FAMUS（9.0分）及噬菌体宿主互作分析流程PHI（8.0分）。  
-值得关注的方向：利用少样本学习提升大规模蛋白质功能预测效率，以及可复现的噬菌体-宿主互作标准分析流程。  
-建议优先阅读FAMUS了解前沿AI方法在蛋白组学中的应用，若关注病毒组学可参考PHI搭建可重复分析管线。
-- 详情：[/202607/07/README](/202607/07/README)
+今日日报收录7篇宏基因组与DNA模型相关论文，其中2篇精读、5篇速读。  
+最值得关注的是跨架构DNA基础模型集成提升嵌合体检测精度，以及优化尿液宏基因组方法揭示CAUTI转变预测因子。  
+建议后续重点精读这两篇9.0/8.0分论文，并快速浏览ECCO聚类工具与AllTheBacteria资源库以拓展工具链。
+- 详情：[/202607/08/README](/202607/08/README)
 
 ### 精读区论文标签
-1. [FAMUS: A Few-Shot Learning Framework for Large-Scale Protein Annotation](/202607/07/biorxiv-10-64898-2026-03-08-710366-v2-famus-a-few-shot-learning-framework-for-large-scale-protein-annotation)  
+1. [Cross-architecture ensembling of DNA foundation models improves the precision and stability of chimera detection in long-read metagenomic bins](/202607/08/biorxiv-10-64898-2026-07-02-735979-v1-cross-architecture-ensembling-of-dna-foundation-models-improves-the-precision-and-stability-of-chimera-detection-in-long-read-metagenomic-bins)  
    标签：评分：9.0/10、query:microbiome
-   evidence：基于对比学习的宏基因组序列功能注释方法
-2. [PHI: A Galaxy-based workflow for reproducible prophage-host interaction analysis and standardized viral-genomics reporting](/202607/07/biorxiv-10-64898-2025-12-02-691814-v2-phi-a-galaxy-based-workflow-for-reproducible-prophage-host-interaction-analysis-and-standardized-viral-genomics-reporting)  
+   evidence：利用DNA基础模型集成检测长读长宏基因组bin中的嵌合体
+2. [Optimized Urine Metagenomic Methods Reveal Longitudinal Microbial Community Dynamics and Predictors of Transition from Asymptomatic Colonization to CAUTI](/202607/08/biorxiv-10-64898-2026-07-06-736792-v1-optimized-urine-metagenomic-methods-reveal-longitudinal-microbial-community-dynamics-and-predictors-of-transition-from-asymptomatic-colonization-to-cauti)  
    标签：评分：8.0/10、query:microbiome
-   evidence：基于Galaxy的原噬菌体-宿主互作分析工作流
-3. [First community challenge for automated virus taxonomy](/202607/07/biorxiv-10-64898-2026-07-04-736517-v1-first-community-challenge-for-automated-virus-taxonomy)  
-   标签：评分：8.0/10、query:microbiome
-   evidence：基于宏基因组序列的自动化病毒分类
+   evidence：针对尿液样本优化的宏基因组方法
 
 ### 速读区论文标签
-1. [Robust taxonomic classification in gut and vaginal microbiomes demonstrated through benchmarking with age-specific synthetic communities](/202607/07/biorxiv-10-64898-2026-07-06-736764-v1-robust-taxonomic-classification-in-gut-and-vaginal-microbiomes-demonstrated-through-benchmarking-with-age-specific-synthetic-communities)  
+1. [ECCO: A Python UI for Performing Ensemble Clustering Combined with Cluster Optimization on Omics Data](/202607/08/biorxiv-10-1101-2022-11-03-515009-v2-ecco-a-python-ui-for-performing-ensemble-clustering-combined-with-cluster-optimization-on-omics-data)  
    标签：评分：7.0/10、query:microbiome
-   evidence：使用合成群落对宏基因组分类方法进行基准测试
-2. [Historical contingency shapes zebrafish host-microbiome responses to a subsequent biotic challenge](/202607/07/biorxiv-10-64898-2026-07-05-734762-v1-historical-contingency-shapes-zebrafish-host-microbiome-responses-to-a-subsequent-biotic-challenge)  
+   evidence：提供了组学数据的集成聚类Python用户界面
+2. [AllTheBacteria: a community resource empowers biology and discovers novel peptide antibiotics](/202607/08/biorxiv-10-1101-2024-03-08-584059-v8-allthebacteria-a-community-resource-empowers-biology-and-discovers-novel-peptide-antibiotics)  
+   标签：评分：7.0/10、query:microbiome
+   evidence：提供细菌和古菌基因组的功能注释
+3. [Standalone nanopore sequencing for foodborne pathogen surveillance: a large-scale evaluation and quality control framework](/202607/08/biorxiv-10-64898-2026-03-20-713089-v2-standalone-nanopore-sequencing-for-foodborne-pathogen-surveillance-a-large-scale-evaluation-and-quality-control-framework)  
    标签：评分：6.0/10、query:microbiome
-   evidence：斑马鱼宿主-微生物组研究，考察胁迫史的影响
+   evidence：评估ONT独立测序在病原体监测中的应用，与鸟枪法测序数据处理相关
+4. [ECLIPSE: Exploring the dark proteome of ESKAPE pathogens through the sequence similarity network of the Protein Universe Atlas](/202607/08/biorxiv-10-64898-2026-03-30-715302-v2-eclipse-exploring-the-dark-proteome-of-eskape-pathogens-through-the-sequence-similarity-network-of-the-protein-universe-atlas)  
+   标签：评分：6.0/10、query:microbiome
+   evidence：病原体中假设蛋白的功能注释
+5. [A foundation model enables prediction of natural product molecular properties, bioactivity, and structural similarity from biosynthetic gene cluster sequence](/202607/08/biorxiv-10-64898-2026-07-05-736569-v1-a-foundation-model-enables-prediction-of-natural-product-molecular-properties-bioactivity-and-structural-similarity-from-biosynthetic-gene-cluster-sequence)  
+   标签：评分：6.0/10、query:microbiome
+   evidence：生物合成基因簇的功能注释
 
 
 <div class="dpr-home-promo-card">

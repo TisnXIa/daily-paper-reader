@@ -1,0 +1,1232 @@
+Title: Standalone nanopore sequencing for foodborne pathogen surveillance: a large-scale evaluation and quality control framework
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.03.20.713089v2.full.pdf
+
+Number of Pages: 22
+
+Markdown Content:
+1
+
+## Standalone nanopore sequencing for foodborne pathogen surveillance: a large-scale 1
+
+## evaluation and quality control framework 2
+
+3
+
+Michael Biggel 1, Nicole Cernela 1, Jule Horlbog 2, Michael S. DeMott 3, Peter C. Dedon 3, Michael B. Hall 4,4
+
+Jessica Chen 5, Peyton Smith 5, Heather A. Carleton 5, Roger Stephan 1, Lara Urban 1
+
+5
+
+6
+
+1. Institute for Food Safety and Hygiene, University of Zurich, Zurich, Switzerland 7
+
+2. National Reference Centre for Enteropathogenic Bacteria and Listeria (NENT), Zurich, Switzerland 8
+
+3. Department of Biological Engineering, Massachusetts Institute of Technology, Cambridge, MA, USA 9
+
+4. The University of Queensland, UQ Centre for Clinical Research, Herston, QLD 4029, Australia 10 
+
+5. Enteric Diseases Laboratory Branch, Centers for Disease Control and Prevention, Atlanta, GA, USA 11 
+
+12 
+
+Correspondence : Michael Biggel, michael.biggel@uzh.ch, Winterthurerstr. 272, 8057 Zurich 13 
+
+14 
+
+Keywords : Oxford Nanopore Technologies; Whole-genome sequencing; Foodborne pathogen 15 
+
+surveillance; Outbreak detection 16 
+
+17 
+
+Abstract 18 
+
+Whole-genome sequencing (WGS) is central to foodborne pathogen surveillance and cross-border 19 
+
+outbreak detection. Long-read sequencing using Oxford Nanopore Technologies (ONT) promises 20 
+
+rapid, complete, and cost-effective genome assemblies in a single workflow. However, the adoption 21 
+
+of standalone ONT sequencing of native DNA has been slowed by concerns that DNA modifications 22 
+
+can compromise per-base sequencing accuracy and downstream genotyping. 23 
+
+24 
+
+In this study, we evaluated ONT-only sequencing performance across 294 genetically diverse isolates 25 
+
+representing ten major foodborne pathogens. Using the SUP@v5.2 basecalling model at 50x 26 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.03.20.713089 doi: bioRxiv preprint
+
+2
+
+coverage, 97.3% (286/294) of the ONT assemblies produced identical or near-identical cgMLST 27 
+
+profiles (≤3 allelic differences) as Illumina-polished hybrid assemblies. Elevated error rates were 28 
+
+observed in four Salmonella enterica serovar Kentucky and four Listeria monocytogenes isolates and 29 
+
+were associated with the presence of specific DNA phosphorothioation or methylation systems. 30 
+
+31 
+
+Re-basecalling the same dataset with the newly released HAC@v6.0 model revealed a different error 32 
+
+profile: although 93.5% (275/294) of assemblies remained highly accurate, all 13 isolates carrying 33 
+
+dnd (DNA phosphorothioation) or dpd (7-deazaguanine modification) systems, including isolates of S. 34 
+
+enterica , Cronobacter sakazakii , and Vibrio parahaemolyticus , exhibited high error rates, suggesting 35 
+
+that such atypical modifications were not adequately represented in the model’s training dataset. 36 
+
+To enable rapid identification of unreliable assemblies, we developed alpaqa, a lightweight 37 
+
+computational tool that detects systematic nanopore assembly errors without requiring 38 
+
+supplemental short-read data or reference genomes. By identifying affected assemblies, alpaqa 39 
+
+provides a quality safeguard for ONT-only workflows. Masking low-quality bases in assemblies 40 
+
+flagged by alpaqa improved cgMLST accuracy, although this reduced the number of callable loci and 41 
+
+therefore genotyping resolution. 42 
+
+43 
+
+Our findings demonstrate that standalone ONT sequencing of native DNA is sufficiently accurate for 44 
+
+routine foodborne pathogen surveillance when combined with appropriate quality control, 45 
+
+supporting its use in harmonised genomic surveillance frameworks. 46 
+
+47 
+
+Data summary 48 
+
+All sequencing data generated in this study have been submitted to the NCBI Sequence Read Archive. 49 
+
+Accession numbers for Illumina and ONT (SUP@v5.2) reads are listed in Supplementary Table S1 . Raw 50 
+
+pod5 files from error-prone isolates have been deposited in SquiDBase (SQB000021). Alpaqa is 51 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.03.20.713089 doi: bioRxiv preprint
+
+3
+
+available at github.com/MBiggel/alpaqa/. An automated ONT assembly and quality control pipeline 52 
+
+integrating alpaqa is available at github.com/MBiggel/boap/. 53 
+
+54 
+
+Impact statement 55 
+
+This study demonstrates that standalone Oxford Nanopore sequencing of native DNA can achieve 56 
+
+highly accurate genotyping for routine foodborne pathogen surveillance across diverse species. We 57 
+
+show that the remaining inaccuracies are linked to specific DNA modification systems, including 58 
+
+phosphorothioation and 7-deazaguanine modifications, which are identified here as previously 59 
+
+unrecognised sources of systematic sequencing errors. To address this limitation, we introduce 60 
+
+alpaqa, a reference-free method for detecting such error-prone assemblies, providing a practical 61 
+
+quality-control framework for ONT-only workflows. Together, these results support the reliable use of 62 
+
+nanopore sequencing in routine genomic surveillance. 63 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.03.20.713089 doi: bioRxiv preprint
+
+4
+
+## Introduction 64 
+
+Whole-genome sequencing (WGS) has revolutionized our ability to understand, track, and combat 65 
+
+bacterial pathogens. By enabling the discrimination between closely related strains, reconstruction of 66 
+
+transmission routes, and detection of antimicrobial resistance and virulence determinants, WGS has 67 
+
+become central to modern pathogen surveillance and cross-border outbreak detection [1, 2]. The 68 
+
+integration of WGS into routine surveillance is a strategic priority for public health agencies worldwide 69 
+
+to strengthen genomic surveillance and outbreak response [3–5]. For over a decade, Illumina short-70 
+
+read sequencing has been the gold standard for WGS for pathogen surveillance due to its high per-71 
+
+base accuracy and has enabled harmonised genomic typing approaches across public health 72 
+
+laboratories, facilitating international data sharing and coordinated outbreak investigations. However, 73 
+
+short reads frequently fail to resolve repetitive regions and structural variants, resulting in fragmented 74 
+
+assemblies [6]. 75 
+
+76 
+
+Long-read nanopore sequencing by Oxford Nanopore Technologies (ONT) overcomes this limitation 77 
+
+by enabling the complete assembly of bacterial chromosomes and plasmids. In addition to improved 78 
+
+genome reconstruction, ONT offers an accessible and cost-effective infrastructure, rapid turnaround 79 
+
+times, and scalable throughput, making it an attractive platform for pathogen surveillance [7]. Early 80 
+
+ONT versions suffered from high error rates that required polishing with short-read data to achieve 81 
+
+reliable assembly accuracy [8]. However, recent advances in flow cell technology (R10.4), chemistry, 82 
+
+basecalling, and polishing algorithms have substantially enhanced raw read and consensus accuracy. 83 
+
+High-quality bacterial genomes can now be generated from ONT data alone, with accuracy levels for 84 
+
+core genome multi-locus sequence typing (cgMLST) and variant calling approaching – and in repetitive 85 
+
+regions sometimes exceeding – Illumina-based approaches [9–14]. As a result, nanopore sequencing 86 
+
+is transitioning from a complementary technology to a standalone platform for genomic surveillance, 87 
+
+offering advantages for both clinical and food safety surveillance where rapid and reproducible 88 
+
+genomic typing is essential for outbreak detection and source attribution [15, 16]. 89 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.03.20.713089 doi: bioRxiv preprint
+
+5
+
+90 
+
+Despite technological improvements, concerns remain regarding the potential impact of epigenetic 91 
+
+DNA modifications, such as methylations, on ONT basecalling accuracy. Although improved basecalling 92 
+
+and polishing algorithms account for common modifications, rare or lineage-specific modification 93 
+
+systems may still introduce systematic assembly errors that could lead to the incorrect exclusion of 94 
+
+epidemiologically related isolates from outbreak clusters [17–19]. The prevalence and impact of such 95 
+
+systems among diverse foodborne pathogens remain insufficiently characterised. Comprehensive 96 
+
+evaluations across large and genetically diverse isolate collections are needed to determine the 97 
+
+reliability and limitations of ONT-only WGS for routine genomic surveillance workflows. 98 
+
+99 
+
+In this study, we systematically evaluate the accuracy of standalone ONT-based WGS across 294 100 
+
+isolates representing diverse lineages of ten major foodborne bacterial pathogens commonly targeted 101 
+
+in public health surveillance. Using read downsampling, we assess the impact of sequencing depth on 102 
+
+assembly accuracy and compare the current high-accuracy (HAC) and super-accuracy (SUP) dorado 103 
+
+basecalling models, which differ in their trade-off between computational efficiency and basecalling 104 
+
+accuracy. We identify atypical DNA modification systems associated with systematic sequencing 105 
+
+errors, highlighting gaps in current basecaller training datasets. To address this challenge, we 106 
+
+introduce alpaqa, a computational approach that detects unreliable assemblies directly from 107 
+
+consensus quality scores without requiring reference genomes or short-read validation, supporting 108 
+
+the use of ONT sequencing in routine foodborne pathogen surveillance. 109 
+
+## Results 110 
+
+High cgMLST accuracy of ONT-only assemblies 111 
+
+We generated Illumina and ONT (RBK114, SUP@v5.2 basecalling) WGS data for 294 isolates 112 
+
+representing major foodborne pathogens, with minimum sequencing depths of 40x (Illumina) and 50x 113 
+
+(ONT) coverage. Isolates belonged to the Bacillus cereus group (n = 19), Campylobacter (n = 62), 114 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.03.20.713089 doi: bioRxiv preprint
+
+6
+
+Cronobacter sakazakii (n = 15), Listeria monocytogenes (n = 78), Salmonella enterica (n = 57), Shigella 115 
+
+(n = 16), Vibrio parahaemolyticus (n = 8), and Yersinia enterocolitica (n = 39). 116 
+
+117 
+
+At a downsampled depth of 50x, ONT-only assemblies were highly accurate. Overall, 97.3% (286/294) 118 
+
+of the isolates yielded identical or near-identical (≤3 allelic differences) cgMLST profiles compared to 119 
+
+their corresponding Illumina-polished reference assemblies ( Figure 1 ), including 86.7% (255/294) with 120 
+
+fully identical profiles. However, we observed elevated error rates in four L. monocytogenes and four 121 
+
+S. enterica assemblies, which correlated with the presence of specific DNA modification systems. 122 
+
+123 
+
+124 
+
+Figure 1 . Accuracy of 294 ONT-only assemblies from SUP@v5.2 data at varying sequencing depths. 125 
+
+The number of mismatching cgMLST alleles was determined by comparing ONT-only assemblies 126 
+
+generated at 30x, 40x, 50x, and full depth (up to 100x) to their corresponding hybrid assembly. Each 127 
+
+dot represents the assembly of a single isolate, with colors indicating the presence of different 128 
+
+modification systems. The y-axis is plotted on a logarithmic scale. 129 
+
+130 
+
+DNA modification systems associated with elevated assembly error rates 131 
+
+The four error-prone L. monocytogenes isolates exhibited four to five mismatching alleles at 50x depth 132 
+
+(Figure 1 ). These errors were previously attributed to methylation by specific Type II restriction-133 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.03.20.713089 doi: bioRxiv preprint
+
+7
+
+modification systems targeting GAAGAC (5′-GAAG6mAC-3′/5′-GT4mCTTC-3′) or GCNGC (G5mCNGC) 134 
+
+[18]. Increased sequencing depth of 100x reduced the number of mismatching cgMLST alleles to ≤3 135 
+
+mismatches. 136 
+
+137 
+
+The four error-prone S. enterica isolates all belonged to serovar Kentucky (ST152, ST314, or ST696) 138 
+
+and showed substantially higher error rates, with 20 to 68 mismatching alleles ( Figure 1 ). Increasing 139 
+
+sequencing depth or an alternative assembly approach using autocycler followed by dorado polishing 140 
+
+reduced the number of mismatching cgMLST alleles (to 4-30 and 6-36, respectively), but neither 141 
+
+approach resolved the inaccuracies. Errors consistently occurred at GGCC sites. While no shared 142 
+
+exclusive methyltransferases were identified among these isolates ( Supplementary Table S2 ), all 143 
+
+carried a specific dndACDE phosphorothioation system (Supplement S1 ). LC-MS/MS analysis 144 
+
+confirmed phosphorothioate-linked G PS G dinucleotides in these isolates, supporting GGCC as the 145 
+
+target recognition site of this dnd system. Although the operon lacked the repressor dndB , G PS G was 146 
+
+observed at average frequencies of 6 to 7 modifications per 10 4 nucleotides, which is comparable to 147 
+
+levels detected in isolates with complete dnd systems [20]. Screening of public genomes showed that 148 
+
+the Kentucky-associated dnd system is present in all assemblies belonging to the ST152/ST314-149 
+
+associated S. enterica serovar Kentucky clade ( Supplement S2 ). In public repositories, it was also 150 
+
+detected in two assemblies belonging to S. enterica serovar 50:z:e,n,x NCTC9936 (GCA_900478195.1) 151 
+
+and K. variicola KLE2 (GCA_050990805.1) ( Supplement S1 ). In contrast, accurate assemblies were 152 
+
+obtained for eight C. sakazakii , S. enterica , and V. parahaemolyticus isolates harbouring the reference 153 
+
+dnd system ( dndBCDE ) originally described in S. enterica serovar Cerro 87 with the target motif 5′-154 
+
+GPS AAC-3′/5′-G PS TTC-3′ ( Figure 1 ) [21, 22]. 155 
+
+156 
+
+One additional S. enterica isolate (serovar Montevideo, N21-3953) exhibited slightly elevated error 157 
+
+rates (two mismatching alleles at 50x coverage) and carried a dpd DNA modification system 158 
+
+responsible for 7-deazaguanine modifications [23]. 159 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.03.20.713089 doi: bioRxiv preprint
+
+8
+
+160 
+
+Assembly accuracy remains high at reduced sequencing depth and with HAC@v5.2 basecalling 161 
+
+To estimate the impact of lower sequencing depths on assembly accuracies, we downsampled ONT 162 
+
+reads to 40x and 30x coverage. Most assemblies (280/294, 95.2%) remained highly accurate (≤3 163 
+
+mismatching alleles) even at 30x coverage ( Figure 1 ). Basecalling with the high-accuracy HAC@v5.2 164 
+
+model also produced largely reliable assemblies, with 92.2 % (271/294) maintaining ≤3 mismatching 165 
+
+alleles at 50x depth, although overall accuracy was lower than with the SUP model. 166 
+
+167 
+
+High error rates in dnd + and dpd + assemblies from HAC@v6.0 basecalled data 168 
+
+Basecalling with the HAC@v6.0 model resulted in 93.5 % (275/294) assemblies with ≤3 mismatching 169 
+
+alleles at 50x depth. Whereas assemblies from isolates with methylation systems or no detected 170 
+
+modification systems had accuracies comparable to those generated with SUP@v5.2, all 13 assemblies 171 
+
+with dnd or dpd modification systems consistently exhibited high error rates (24 to 314 mismatching 172 
+
+alleles, median 78) ( Supplementary Table S1 ). To assess the broader relevance of these findings, we 173 
+
+screened publicly available genome assemblies from 67 clinically important bacterial pathogens. We 174 
+
+detected dnd systems in 44 of 67 bacterial species, with prevalence rates of more than 10% in several 175 
+
+species such as Mycobacterium abscessus , Citrobacter koseri , and Clostridioides difficile (Supplement 176 
+
+S3 ). dpd systems were largely restricted to Enterobacterales, with prevalence rates of up to 8% in 177 
+
+several Klebsiella , Escherichia , and Enterobacter species. 178 
+
+179 
+
+Detection of unreliable assemblies using the alpaqa quality assessment tool 180 
+
+Our analysis confirms that ONT sequencing with SUP basecalling achieves a high accuracy for >95% of 181 
+
+the investigated isolates at commonly used sequencing depths. However, the remaining inaccurate 182 
+
+assemblies represent a challenge for routine surveillance. Currently, detecting such unreliable 183 
+
+assemblies requires Illumina data for cross-validation, limiting ONT’s use as a standalone method. To 184 
+
+address this, we developed alpaqa, a lightweight bioinformatic tool designed to flag error-prone 185 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.03.20.713089 doi: bioRxiv preprint
+
+9
+
+assemblies using ONT data alone. Alpaqa is based on the observation that DNA modifications not 186 
+
+recognized by the basecalling model typically produce very low-quality scores in the consensus 187 
+
+assembly, often dropping below Q5 ( Figure 2 ). Alpaqa analyses per-base quality scores generated 188 
+
+during assembly polishing and evaluates the distribution of low-quality bases (LQBs) across the longest 189 
+
+contig. By first masking LQB-dense regions linked to artefacts and then calculating a normalized LQB 190 
+
+density per Megabase (Mbp), alpaqa provides a quantitative metric for assembly reliability. In 191 
+
+addition, alpaqa identifies k-mers that are significantly enriched for LQBs, enabling detection of error-192 
+
+associated motifs such as GGCC and GAAGAC. 193 
+
+194 
+
+Figure 2 . Per-base consensus quality scores across representative genomic assembly windows. Bar 195 
+
+plots show the Phred-scaled quality scores for each base in the final assembly. (A) Salmonella enterica 196 
+
+Kentucky N18-0332, carrying a putative GGCC-targeting phosphorothioation system. (B) Listeria 197 
+
+monocytogenes N19-1094, containing a GAAGAC-targeting methyltransferase. Red squares indicate 198 
+
+the incorrectly called recognition motifs of the DNA modification systems, each containing a low-199 
+
+quality base (LQB). The genome-wide density of LQBs can be used as a predictor of systematic errors 200 
+
+and overall assembly accuracy. 201 
+
+202 
+
+In our dataset, LQB density correlated with cgMLST accuracy ( Figure 3A ; Supplementary Table S3 ). At 203 
+
+50x depth, 285 of 286 (99.7%) assemblies with fewer than 5 LQBs/Mbp were confirmed as highly 204 
+
+accurate (≤3 allelic mismatches). The single outlier was an error-prone L. monocytogenes assembly 205 
+
+with five mismatching alleles and 4.5 LQBs/Mbp. Assemblies exceeding this threshold were 206 
+
+consistently inaccurate. The three remaining error-prone L. monocytogenes showed 6 to 8 LQBs/Mbp, 207 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.03.20.713089 doi: bioRxiv preprint
+
+10 
+
+whereas the error-prone S. enterica Kentucky assemblies exhibited substantially higher LQB densities 208 
+
+(14 to 37 LQBs/Mbp). The correlation between LQB density and assembly accuracy remained robust 209 
+
+for the HAC@v5.2 and HAC@v6.0 datasets, although the predictive separation was less distinct ( Figure 210 
+
+3B ). Here, several accurate assemblies showed LQB densities between 5 and 10 LQBs/Mbp. Of the 13 211 
+
+error-prone dnd +/ dpd + assemblies generated with HAC@v6.0, 12 exhibited >10 LQBs/Mbp, while the 212 
+
+remaining assembly had 9.25 LQBs/Mbp ( Figure 3C ). Across both SUP and HAC datasets, assemblies 213 
+
+with fewer than 2.5 LQBs/Mbp were consistently highly accurate. 214 
+
+215 
+
+To further validate the generalisability of the alpaqa metric, we applied the tool to publicly available 216 
+
+data from 147 previously benchmarked isolates from multiple clinically relevant bacterial species, 217 
+
+confirming that low LQB density is a strong predictor of high cgMLST accuracy ( Supplement S4, 218 
+
+Supplementary Table S4 ). 219 
+
+220 
+
+221 
+
+Figure 3 . Correlation between LQB density and cgMLST allelic mismatches. The scatterplots illustrate 222 
+
+the relationship between the frequency of low-quality bases (LQB) per Mbp determined with alpaqa 223 
+
+and the number of mismatching cgMLST alleles across 294 ONT-only assemblies (50x target coverage) 224 
+
+from data basecalled with (A) SUP@v5.2, (B) HAC@v5.2, and (C) HAC@v6.0. Each dot represents an 225 
+
+assembly, with colors indicating the presence of specific modification systems. A small vertical jitter 226 
+
+was applied to dots with 0 and 1 mismatching alleles to reduce overlap. Both axes are plotted on a 227 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.03.20.713089 doi: bioRxiv preprint
+
+11 
+
+logarithmic scale. Tables summarize the frequency of assemblies across different LQB densities and 228 
+
+allelic mismatch counts. 229 
+
+230 
+
+Masking of low-quality bases improves cgMLST accuracy of error-prone assemblies 231 
+
+To evaluate whether masking low-quality bases improves genotyping accuracy, assemblies were 232 
+
+processed using fastq2a prior to cgMLST analyses. Because masked bases ("N") are excluded from 233 
+
+allele calling in pyMLST or Ridom SeqSphere, this approach converts potential sequencing errors into 234 
+
+missing data. 235 
+
+236 
+
+For the four inaccurate L. monocytogenes assemblies, masking bases with Q≤10 excluded 18 to 27 237 
+
+error-associated loci (~1.5 % of 1701 cgMLST targets) and reduced mismatches to ≤1 allele. For the 238 
+
+four inaccurate S. enterica assemblies, masking bases with Q≤10 excluded 82 to 205 error-associated 239 
+
+loci (~3 to 7 % of 3002 targets) and reduced mismatches to 4 to 12 alleles. Here, achieving near-240 
+
+accurate profiles (0 to 4 mismatches) required a stricter threshold (Q≤15), but this excluded 241 
+
+substantially more loci (178 [5.9%] to 372 [12.4%]), reducing cgMLST resolution ( Supplement S5 ). 242 
+
+243 
+
+Our fully automated ONT assembly pipeline, BOAP, integrates alpaqa-based quality assessments and 244 
+
+the masking of low-quality bases in unreliable assemblies to enable standardised ONT-based genomic 245 
+
+surveillance. 246 
+
+## Discussion 247 
+
+Current ONT sequencing workflows enable highly accurate WGS for pathogen surveillance. Across 294 248 
+
+genetically diverse bacterial isolates representing ten major foodborne pathogens, 97.3% of the ONT-249 
+
+only assemblies from SUP@v5.2 data produced identical or near-identical cgMLST profiles compared 250 
+
+to Illumina-polished references. While these results were achieved at a moderate sequencing depth 251 
+
+of 50x coverage, most assemblies (95.2%) remained highly accurate even at 30x coverage. Increasing 252 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.03.20.713089 doi: bioRxiv preprint
+
+12 
+
+sequencing depth beyond 50x provided only marginal improvements. These findings demonstrate that 253 
+
+ONT sequencing is sufficiently robust for routine cgMLST-based surveillance without requiring 254 
+
+excessive sequencing depth. 255 
+
+256 
+
+Despite the overall high accuracy, systematic errors persisted in a small subset of SUP@v5.2 257 
+
+assemblies and were associated with atypical epigenetic modifications. At 50x coverage, affected 258 
+
+assemblies showed up to 68 discrepant cgMLST alleles, compromising outbreak and transmission 259 
+
+inference. Importantly, such error-prone assemblies are not readily identifiable using standard 260 
+
+assembly metrics and may therefore remain undetected in routine ONT-only workflows. To address 261 
+
+this limitation, we developed alpaqa, a computational tool that identifies unreliable assemblies 262 
+
+directly from ONT data based on consensus quality score distributions. This approach enables 263 
+
+reference-free detection of problematic assemblies without requiring orthogonal Illumina validation, 264 
+
+removing a major barrier to the adoption of ONT sequencing as a standalone platform for genomic 265 
+
+surveillance, including for previously understudied pathogens. 266 
+
+267 
+
+Several strategies can be applied once unreliable assemblies are identified. Masking low-quality bases 268 
+
+in assemblies results in their exclusion during cgMLST analysis, substantially improving cgMLST 269 
+
+accuracy. However, this approach reduces the number of callable loci and thereby decreases 270 
+
+genotyping resolution, which may limit discriminatory power for outbreak investigations, particularly 271 
+
+in highly error-prone assemblies. Alternatively, affected isolates may be re-sequenced using Illumina 272 
+
+or PCR-based ONT library preparation, which removes native DNA modifications and restores high 273 
+
+assembly accuracy [24]. Given the low frequency of problematic isolates (<3%) observed across a 274 
+
+diverse pathogen collection, routine amplification-based sequencing is generally not desirable, as it 275 
+
+reduces read length, assembly contiguity, and overall workflow efficiency [24]. Instead, selective 276 
+
+application of targeted mitigation strategies guided by quality assessment tools may represent a more 277 
+
+practical solution. We implemented the fully automated Nextflow pipeline BOAP integrating assembly, 278 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.03.20.713089 doi: bioRxiv preprint
+
+13 
+
+polishing, alpaqa-based quality assessment, and automated masking of low-quality bases in error-279 
+
+prone assemblies from ONT reads. This standardised workflow enables reliable and scalable ONT-280 
+
+based genomic surveillance. 281 
+
+282 
+
+Excessive error rates in our assemblies were associated with atypical DNA modifications. Whereas 283 
+
+elevated error rates with the SUP@v5.2 model were limited to four S. enterica serovar Kentucky 284 
+
+isolates carrying a dnd phosphorothioation system targeting GGCC motifs, the HAC@v6.0 model 285 
+
+generated highly inaccurate assemblies for all 13 isolates carrying either dnd or dpd systems, 286 
+
+irrespective of the targeted sequence motif or modification type. This finding suggests that these DNA 287 
+
+modifications were absent or underrepresented in the dataset used to train the HAC@v6.0 basecalling 288 
+
+model. Dnd-mediated phosphorothioation and Dpd-mediated 7-deazaguanine modifications are 289 
+
+sufficiently widespread in important bacterial pathogens that associated sequencing errors are likely 290 
+
+to be encountered in routine genomic surveillance. 291 
+
+292 
+
+In addition, elevated error rates were observed in four L. monocytogenes isolates carrying 293 
+
+methyltransferases targeting GAAGAC and GCNGC motifs. These methylation-associated errors were 294 
+
+previously reported [18] but were substantially reduced by improved polishing with medaka v2. 295 
+
+Nevertheless, residual motif-specific errors persisted, highlighting the continued influence of DNA 296 
+
+modifications on nanopore sequencing accuracy. Beyond methylation, phosphorothioation, and 7-297 
+
+deazaguanine modifications, additional DNA modification systems likely exist and remain to be 298 
+
+discovered. [23, 25]. Tools such as alpaqa may therefore not only support assembly quality control 299 
+
+but also facilitate the identification of previously unrecognized modification-associated error 300 
+
+signatures. 301 
+
+302 
+
+ONT sequencing offers several practical advantages over traditional short-read platforms, including 303 
+
+rapid turnaround times, flexible throughput, and reduced infrastructure requirements [7]. These 304 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.03.20.713089 doi: bioRxiv preprint
+
+14 
+
+characteristics make ONT particularly attractive for decentralized surveillance and for resource-limited 305 
+
+settings. However, variability in sequencing throughput between multiplexed samples remains a 306 
+
+practical challenge. In our study, barcode imbalance was consistently observed when using the rapid 307 
+
+barcoding kit, resulting in uneven sequencing depth across isolates (data not shown). In addition, 308 
+
+sequencing performance varied between bacterial species; for example, B. cereus isolates consistently 309 
+
+yielded lower throughput and read quality, occasionally requiring repeat sequencing. Addressing such 310 
+
+variability will be important to ensure reliable and cost-effective implementation of ONT sequencing 311 
+
+in routine surveillance workflows. 312 
+
+313 
+
+This study has several limitations. Although the dataset includes a large number of isolates across 314 
+
+major foodborne pathogens, the sample size was limited for some species. Rare DNA modification 315 
+
+systems present at low prevalence within certain species may not have been captured. In addition, 316 
+
+Illumina and ONT sequencing were performed on independent DNA extracts. While this does not 317 
+
+influence the systematic error patterns investigated here, it could in rare cases contribute to isolated 318 
+
+allelic differences. Finally, our analyses were based on current nanopore chemistries and basecalling 319 
+
+models. Future basecalling models that include more diverse DNA modification contexts may further 320 
+
+reduce motif-associated errors identified in this study. 321 
+
+322 
+
+In conclusion, our results show that standalone ONT sequencing can provide highly accurate whole-323 
+
+genome assemblies suitable for routine pathogen surveillance. While rare epigenetic modifications 324 
+
+may still introduce systematic assembly errors, these can be detected using the alpaqa computational 325 
+
+framework, enabling correction strategies such as masking error-prone positions. Together, these 326 
+
+findings support the transition of nanopore sequencing from a complementary technology to a 327 
+
+standalone platform for high-resolution genomic surveillance of bacterial pathogens. 328 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.03.20.713089 doi: bioRxiv preprint
+
+15 
+
+## Methods 329 
+
+Isolate selection and whole genome sequencing 330 
+
+A total of 294 isolates representing ten major foodborne pathogens were selected for this study. The 331 
+
+collection comprised Bacillus cereus group members, Campylobacter coli , Campylobacter jejuni ,332 
+
+Cronobacter sakazakii , Listeria monocytogenes , Salmonella enterica , Shigella flexneri , Shigella sonnei ,333 
+
+Vibrio parahaemolyticus , and Yersinia enterocolitica (Supplementary Table S1 ). Most isolates were 334 
+
+collected in Switzerland and had previously been Illumina-sequenced for research or surveillance 335 
+
+purposes at the Institute for Food Safety and Hygiene, Zurich, Switzerland. Isolates were selected 336 
+
+based on existing Illumina data to represent a broad diversity of serovars and multi-locus sequence 337 
+
+types (MLSTs) relevant to food safety. Within the B. cereus group, both cereulide-producing strains 338 
+
+and biopesticidal Bacillus thuringiensis strains were included. All 78 L. monocytogenes isolates had 339 
+
+been evaluated previously [18] and were included in the present study to benchmark recent 340 
+
+bioinformatic advancements. 341 
+
+342 
+
+Genomic DNA was extracted from single purified colonies using the MagPurix Bacterial DNA Extraction 343 
+
+Kit (Zinexts), QIAamp DNA Mini Kit (Qiagen), or DNeasy Blood and Tissue Kit (Qiagen). For short-read 344 
+
+sequencing, libraries were prepared with the DNA Prep Library Preparation Kit (Illumina) and 345 
+
+sequenced on the Illumina MiniSeq platform. For long-read sequencing, libraries were prepared using 346 
+
+the SQK-RBK114 Rapid Barcoding Kit (Oxford Nanopore Technologies, ONT) according to the 347 
+
+“Nanopore-only Microbial Isolate Sequencing Solution” protocol. Barcoded libraries were multiplexed 348 
+
+(up to 96 isolates per run) and sequenced on MinION or PromethION devices using R10.4.1 flow cells 349 
+
+to a minimum depth of 50x per isolate. 350 
+
+351 
+
+Genomic analyses 352 
+
+Raw ONT data (pod5) were basecalled, demultiplexed, and trimmed of adapters and barcodes using 353 
+
+dorado v1.2.0 (github.com/nanoporetech/dorado) with the SUP@v5.2, HAC@v5.2, and HAC@v6.0 354 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.03.20.713089 doi: bioRxiv preprint
+
+16 
+
+models. ONT-only assemblies were generated using our Nextflow pipeline BOAP, which executes the 355 
+
+following steps: (1) Quality filtering for a minimum read length of 1,000 bp and a minimum Q-score of 356 
+
+10 using nanoq v0.10.0 [26]; (2) Genome size estimation based on rapid assemblies generated with 357 
+
+raven v1.8.3 [27]; (3) Downsampling of high-quality reads to target depths (default 100x) using filtlong 358 
+
+0.2.1 (parameters --length_weight 0 --window_q_weight 0) (github.com/rrwick/Filtlong); (4) De novo 359 
+
+assembly using Flye v2.9.5 (parameter --nano-hq) [28]; (5) Contig rotation for circular sequences using 360 
+
+DNApler v1.2.0 [29]; (6) Consensus polishing with dorado v1.2.0 using the bacterial model to produce 361 
+
+a fastq assembly file containing per-base quality scores (-q flag) (github.com/nanoporetech/dorado); 362 
+
+(7) Assembly contig analysis using seqkit v2.10.0 [30]; and (8) assembly accuracy assessment using 363 
+
+alpaqa v0.1.0 (described below). For ease of installation, the BOAP version published on GitHub uses 364 
+
+medaka v2 (github.com/nanoporetech/medaka) for consensus polishing instead of dorado polish, 365 
+
+providing equivalent functionality. 366 
+
+367 
+
+To determine the effect of sequencing depth on assembly performance, raw reads were downsampled 368 
+
+to predefined target depths using Rasusa v2.1.0 [31] prior to running the assembly pipeline. Illumina 369 
+
+read adapters and low-quality bases were trimmed using fastp v0.22.0 [32]. These trimmed reads were 370 
+
+then used to polish the ONT-only consensus assemblies with Polypolish v0.6.0 (parameter --careful) 371 
+
+[33], and the resulting hybrid assemblies were regarded as the reference assemblies for all subsequent 372 
+
+accuracy comparisons. To evaluate the impact of the assembly approach, selected assemblies were 373 
+
+generated using Autocycler v0.6.1 with the automated bash script autocycler_full.sh (commit 374 
+
+0b72faa) [34] 375 
+
+376 
+
+Assembly completeness and the absence of contamination were confirmed using CheckM v2 1.1.0 377 
+
+[35]. Sequence types (STs) were identified with mlst 2.22.0 (github.com/tseemann/mlst), utilizing the 378 
+
+PubMLST database [36]. Salmonella serotypes were identified in silico using SeqSero 1.3.1 [37]. 379 
+
+Bacillus cereus group members were taxonomically assigned using Btyper3 3.4.0 [38]. Genes encoding 380 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.03.20.713089 doi: bioRxiv preprint
+
+17 
+
+DNA modification systems were identified in hybrid assemblies using padloc v2.0.0 [39] and abricate 381 
+
+v1.0.0 (github.com/tseemann/abricate) (minimum coverage/identity 70%/70%) in combination with 382 
+
+the REBASE database (downloaded on 15 April 2024) [40]. Assemblies were annotated with Bakta 383 
+
+v1.11.1 [41]. cgMLST distances were calculated using pyMLST 2.3.0 (parameters -c 0.9 -i 0.9) [42] in 384 
+
+combination with standardised schemes of C. sakazakii , E. coli (Shigella ), L. monocytogenes , S. 385 
+
+enterica , and Y. enterocolitica retrieved from cgmlst.org (accessed in November 2025). For V. 386 
+
+parahaemolyticus and B. cereus sensu lato, schemes were obtained from PubMLST and modified to 387 
+
+include only the first locus per allele for compatibility with pyMLST. During the pyMLST validation step, 388 
+
+four problematic loci were removed from the B. cereus scheme. For the B. cereus group member 389 
+
+Bacillus cytotoxicus , we developed an ad hoc scheme based on the coding sequences of the reference 390 
+
+assembly GCF_000017425.1. To assess whether masking low-confidence bases in consensus 391 
+
+assemblies improved the accuracy of bacterial cgMLST profiling, a subset of fastq assembly files were 392 
+
+processed with fastq2a 0.1 (available at github.com/MBiggel/alpaqa/) to substitute bases with Phred 393 
+
+quality scores below target thresholds with 'N' before cgMLST analyses with pyMLST 2.3.0. 394 
+
+395 
+
+Standalone assembly quality assessment 396 
+
+To identify assemblies potentially impacted by systematic basecalling errors, we developed alpaqa 397 
+
+(“Assembly-Level Profiling And Quality Assessment”). The tool processes fastq assembly files 398 
+
+generated with dorado polish or medaka v2 and identifies low-quality bases (LQB), defined here as 399 
+
+bases with a Phred quality score between 1 and 5. A score of 0 was excluded to prevent bias from 400 
+
+regions lacking quality information, such as assembly artefacts. The algorithm first masks LQB-dense 401 
+
+regions: to avoid overcounting errors in repetitive or poorly resolved genomic regions, a sliding 402 
+
+window (5,000 bp) scans the longest contig. Regions are masked if their LQB density exceeds five times 403 
+
+the baseline density of the contig (minimum 0.1% density). After masking, alpaqa calculates a 404 
+
+normalized LQB count per Megabase (Mbp) for the remaining high-quality regions. In addition, alpaqa 405 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.03.20.713089 doi: bioRxiv preprint
+
+18 
+
+performs a kmer enrichment analysis (k=4, 5, 6) using a binomial test to identify sequence motifs 406 
+
+significantly associated with LQBs ( p<0.05 after Bonferroni correction). 407 
+
+408 
+
+LC-MS analysis of phosphorothioate (PT)-linked dinucleotides 409 
+
+For Liquid Chromatography Tandem Mass Spectrometry (LC-MS/MS), genomic DNA of four S. enterica 410 
+
+isolates was extracted using the MasterPure Complete DNA and RNA Purification Kit (Lucigen) 411 
+
+followed by RNAse treatment. DNA samples (1.3 to 3.0 μg) were hydrolysed with Nuclease P1 (55 °C, 412 
+
+2 h) and subsequently dephosphorylated using Calf Intestinal Alkaline Phosphatase (37 °C, 2 h) prior 413 
+
+to cleanup via 10 kDa filtration. LC-MS/MS analysis was performed on an Agilent 1290 HPLC system 414 
+
+equipped with an inline Diode Array Detector (DAD) and coupled to an Agilent 6495c triple quadrupole 415 
+
+mass spectrometer. In each run, 10μl of hydrolysed DNA was injected onto a Phenomenex Synergi 416 
+
+Fusion-RP column (100 × 2 mm i.d., 2.5 μm) operated at 35 °C with a flow rate of 0.350 mL/min using 417 
+
+mobile phase solvents Buffer A (5mM ammonium acetate, pH 5.3) and Buffer B (100% acetonitrile). 418 
+
+The gradient of buffer B was as follows: 0-15 min, 3–9%; 15-16 min, 9-95%; 16-17 min, 95-3%; 17-20 419 
+
+min, 3%. The DAD was operated at 260 nm to monitor signals of canonical deoxyribonucleosides. The 420 
+
+JetStream ESI source was operated in positive-ion mode and with optimized parameters as follows: 421 
+
+drying gas temperature, 200 °C; gas flow, 14 L/min; nebulizer, 20 psi; sheath gas temperature, 400 °C; 422 
+
+sheath gas flow, 11 L/min; capillary voltage, 3000 V; and nozzle voltage, 1500 V. The MS was operated 423 
+
+in dynamic multiple reaction monitoring (dMRM) mode with CE optimized for maximal sensitivity for 424 
+
+each PT dinucleotide. Retention times of PT dinucleotides were confirmed with those from synthetic 425 
+
+standards. Raw peak areas were extracted with Agilent Mass Hunter Workstation Qualitative Analysis 426 
+
+software 10.0. Peak areas for each PT dinucleotide and the four canonicals acquired by DAD were 427 
+
+converted to absolute abundances using calibration curves. The absolute abundances for PTs were 428 
+
+then normalized by dividing by the sum of the absolute abundances of the four canonical 429 
+
+ribonucleosides. LC-MS/MS parameters, including precursor and product ions, collision energies, and 430 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.03.20.713089 doi: bioRxiv preprint
+
+19 
+
+retention times for the monitored bacterial PT dinucleotides, are provided in Supplementary Table 431 
+
+S5 .432 
+
+433 
+
+Conflicts of interest 434 
+
+L.U. has received travel support from Oxford Nanopore Technologies (ONT). The company had no 435 
+
+role in the design, execution, or publication of this study. 436 
+
+437 
+
+Ethical statement 438 
+
+Ethical approval was not required because all data were collected by public health authorities as part 439 
+
+of routine surveillance or outbreak investigations conducted under the mandate of the Swiss 440 
+
+Epidemics Act. All patient data were anonymized. 441 
+
+442 
+
+Funding information 443 
+
+This work received no specific grant from any funding agency. 444 
+
+445 
+
+Acknowledgements 446 
+
+We are grateful to Prof. Sophia Johler for contributing Bacillus cereus isolates. 447 
+
+448 
+
+Other notes/disclaimers 449 
+
+The findings and conclusions of this report are those of the authors and do not necessarily represent 450 
+
+the official position of the Centers for Disease Control (CDC). 451 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.03.20.713089 doi: bioRxiv preprint
+
+20 
+
+## References 452 
+
+1. Baker KS, Jauneikaite E, Hopkins KL, Lo SW, Sánchez-Busó L, et al. Genomics for public 453 
+
+health and international surveillance of antimicrobial resistance. Lancet Microbe 454 
+
+2023;4:e1047–e1055. 455 
+
+2. Quainoo S, Coolen JPM, van Hijum SAFT, Huynen MA, Melchers WJG, et al. Whole-Genome 456 
+
+Sequencing of Bacterial Pathogens: the Future of Nosocomial Outbreak Analysis. Clin 457 
+
+Microbiol Rev 2017;30:1015–1063. 458 
+
+3. European Centre for Disease Prevention and Control . ECDC strategic framework for the 459 
+
+integration of molecular and genomic typing into European surveillance and multi-country 460 
+
+outbreak investigations: 2019–2021 . Epub ahead of print 2019. DOI: doi.org/10.2900/805317. 461 
+
+4. Neves A, Walther D, Martin-Campos T, Barbie V, Bertelli C, et al. The Swiss Pathogen 462 
+
+Surveillance Platform – towards a nation-wide One Health data exchange platform for 463 
+
+bacterial, viral and fungal genomics and associated metadata. Microb Genom 2023;9:1–9. 464 
+
+5. Wise ME, Lee CC, Gieraltowski L, Nguyen T-A, Nichols M, et al. Importance of Global 465 
+
+Genomic Data Sharing to Prevent Illnesses Linked to Commercially Distributed Foods. Food 466 
+
+Safety 2025;13:D-25-00003. 467 
+
+6. Koren S, Phillippy AM . One chromosome, one contig: complete microbial genomes from 468 
+
+long-read sequencing and assembly. Curr Opin Microbiol 2015;23:110–120. 469 
+
+7. Urban L, Perlas A, Francino O, Martí-Carreras J, Muga BA, et al. Real-time genomics for One 470 
+
+Health. Mol Syst Biol 2023;19:1–12. 471 
+
+8. Wick RR, Judd LM, Gorrie CL, Holt KE . Unicycler: Resolving bacterial genome assemblies from 472 
+
+short and long sequencing reads. PLoS Comput Biol 2017;13:e1005595. 473 
+
+9. Zidane N, Rodrigues C, Bouchez V, Rethoret-Pasty M, Passet V, et al. Accurate genotyping of 474 
+
+three major respiratory bacterial pathogens with ONT R10.4.1 long-read sequencing. Genome 475 
+
+Res 2025;35:1758–1766. 476 
+
+10. Sereika M, Kirkegaard RH, Karst SM, Michaelsen TY, Sørensen EA, et al. Oxford Nanopore 477 
+
+R10.4 long-read sequencing enables the generation of near-finished bacterial genomes from 478 
+
+pure cultures and metagenomes without short-read or reference polishing. Nat Methods 479 
+
+2022;19:823–826. 480 
+
+11. Hall MB, Wick RR, Judd LM, Nguyen AN, Steinig EJ, et al. Benchmarking reveals superiority of 481 
+
+deep learning variant callers on bacterial nanopore sequence data. Elife 2024;13:1–23. 482 
+
+12. Bogaerts B, Van den Bossche A, Verhaegen B, Delbrassinne L, Mattheus W, et al. Closing the 483 
+
+gap: Oxford Nanopore Technologies R10 sequencing allows comparable results to Illumina 484 
+
+sequencing for SNP-based outbreak investigation of bacterial pathogens. J Clin Microbiol ;62. 485 
+
+Epub ahead of print 8 May 2024. DOI: 10.1128/jcm.01576-23. 486 
+
+13. Sanderson ND, Hopkins KMV, Colpus M, Parker M, Lipworth S, et al. Evaluation of the 487 
+
+accuracy of bacterial genome reconstruction with Oxford Nanopore R10.4.1 long-read-only 488 
+
+sequencing. Microb Genom 2024;10:1–11. 489 
+
+14. Nagy D, Pennetta V, Rodger G, Hopkins K, Jones CR, et al. Nanopore long-read-only genome 490 
+
+assembly of clinical Enterobacterales isolates is complete and accurate. Microb Genom 491 
+
+2026;12:2025.09.15.676237. 492 
+
+15. Mather AE, Gilmour MW, Reid SWJ, French NP . Foodborne bacterial pathogens: genome-493 
+
+based approaches for enduring and emerging threats in a complex and changing world. Nat 494 
+
+Rev Microbiol 2024;22:543–555. 495 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.03.20.713089 doi: bioRxiv preprint
+
+21 
+
+16. Sauerborn E, White RT, Kalteis A-L, Gygax D, Foster-Nyarko E, et al. Resolving plasmid-496 
+
+encoded carbapenem resistance dynamics and reservoirs in a hospital setting through 497 
+
+nanopore sequencing. Microb Genom 2026;12:1–13. 498 
+
+17. Lohde M, Wagner GE, Dabernig-Heinz J, Viehweger A, Braun SD, et al. Accurate bacterial 499 
+
+outbreak tracing with Oxford Nanopore sequencing and reduction of methylation-induced 500 
+
+errors. Genome Res 2024;34:2039–2047. 501 
+
+18. Biggel M, Cernela N, Horlbog JA, Stephan R . Oxford Nanopore’s 2024 sequencing technology 502 
+
+for Listeria monocytogenes outbreak detection and source attribution: progress and clone-503 
+
+specific challenges. J Clin Microbiol ;62. Epub ahead of print 13 November 2024. DOI: 504 
+
+10.1128/jcm.01083-24. 505 
+
+19. Bogaerts B, Maex M, Commans F, Goeders N, Van den Bossche A, et al. Oxford Nanopore 506 
+
+Technologies R10 sequencing enables accurate cgMLST-based bacterial outbreak 507 
+
+investigation of Neisseria meningitidis and Salmonella enterica when accounting for 508 
+
+methylation-related errors. J Clin Microbiol ;63. Epub ahead of print 8 October 2025. DOI: 509 
+
+10.1128/jcm.00410-25. 510 
+
+20. Wang L, Chen S, Vergin KL, Giovannoni SJ, Chan SW, et al. DNA phosphorothioation is 511 
+
+widespread and quantized in bacterial genomes. Proceedings of the National Academy of 512 
+
+Sciences 2011;108:2963–2968. 513 
+
+21. Xu T, Yao F, Zhou X, Deng Z, You D . A novel host-specific restriction system associated with 514 
+
+DNA backbone S-modification in Salmonella . Nucleic Acids Res 2010;38:7133–7141. 515 
+
+22. Cao B, Chen C, DeMott MS, Cheng Q, Clark TA, et al. Genomic mapping of 516 
+
+phosphorothioates reveals partial modification of short consensus sequences. Nat Commun 517 
+
+2014;5:3951. 518 
+
+23. Thiaville JJ, Kellner SM, Yuan Y, Hutinet G, Thiaville PC, et al. Novel genomic island modifies 519 
+
+DNA with 7-deazaguanine derivatives. Proceedings of the National Academy of Sciences 520 
+
+2016;113:E1452–E1459. 521 
+
+24. Neuenschwander S, Borcard L, Gempeler S, Terrazos Miani MA, Casanova C, et al. 522 
+
+Evaluation of Oxford Nanopore Technologies workflows for genomic epidemiology of 523 
+
+outbreak-associated bacterial isolates in the clinical setting. Microb Genom 524 
+
+2026;12:2025.04.25.25326448. 525 
+
+25. Weigele P, Raleigh EA . Biosynthesis and Function of Modified Bases in Bacteria and Their 526 
+
+Viruses. Chem Rev 2016;116:12655–12687. 527 
+
+26. Steinig E, Coin L . Nanoq: ultra-fast quality control for nanopore reads. J Open Source Softw 528 
+
+2022;7:2991. 529 
+
+27. Vaser R, Šikić M . Time- and memory-efficient genome assembly with Raven. Nat Comput Sci 530 
+
+2021;1:332–336. 531 
+
+28. Kolmogorov M, Yuan J, Lin Y, Pevzner PA . Assembly of long, error-prone reads using repeat 532 
+
+graphs. Nat Biotechnol 2019;37:540–546. 533 
+
+29. Bouras G, Grigson SR, Papudeshi B, Mallawaarachchi V, Roach MJ . Dnaapler: A tool to 534 
+
+reorient circular microbial genomes. J Open Source Softw 2024;9:5968. 535 
+
+30. Shen W, Sipos B, Zhao L . SeqKit2: A Swiss army knife for sequence and alignment processing. 536 
+
+iMeta 2024;3:1–5. 537 
+
+31. Hall M . Rasusa: Randomly subsample sequencing reads to a specified coverage. J Open 538 
+
+Source Softw 2022;7:3941. 539 
+
+> .CC-BY 4.0 International license available under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted July 6, 2026. ;https://doi.org/10.64898/2026.03.20.713089 doi: bioRxiv preprint
+
+22 
+
+32. Chen S, Zhou Y, Chen Y, Gu J . fastp: an ultra-fast all-in-one FASTQ preprocessor. 540 
+
+Bioinformatics 2018;34:i884–i890. 541 
+
+33. Wick RR, Holt KE . Polypolish: Short-read polishing of long-read bacterial genome assemblies. 542 
+
+PLoS Comput Biol 2022;18:e1009802. 543 
+
+34. Wick RR, Howden BP, Stinear TP . Autocycler: long-read consensus assembly for bacterial 544 
+
+genomes. Bioinformatics ;41. Epub ahead of print 1 September 2025. DOI: 545 
+
+10.1093/bioinformatics/btaf474. 546 
+
+35. Chklovski A, Parks DH, Woodcroft BJ, Tyson GW . CheckM2: a rapid, scalable and accurate 547 
+
+tool for assessing microbial genome quality using machine learning. Nat Methods 548 
+
+2023;20:1203–1212. 549 
+
+36. Jolley KA, Maiden MCJ . BIGSdb: Scalable analysis of bacterial genome variation at the 550 
+
+population level. BMC Bioinformatics 2010;11:595. 551 
+
+37. Zhang S, den Bakker HC, Li S, Chen J, Dinsmore BA, et al. SeqSero2: Rapid and Improved 552 
+
+Salmonella Serotype Determination Using Whole-Genome Sequencing Data. Appl Environ 553 
+
+Microbiol 2019;85:1–13. 554 
+
+38. Carroll LM, Cheng RA, Kovac J . No Assembly Required: Using BTyper3 to Assess the 555 
+
+Congruency of a Proposed Taxonomic Framework for the Bacillus cereus Group With 556 
+
+Historical Typing Methods. Front Microbiol 2020;11:1–21. 557 
+
+39. Payne LJ, Todeschini TC, Wu Y, Perry BJ, Ronson CW, et al. Identification and classification of 558 
+
+antiviral defence systems in bacteria and archaea with PADLOC reveals new system types. 559 
+
+2021;49:10868–10878. 560 
+
+40. Roberts RJ, Vincze T, Posfai J, Macelis D . REBASE: a database for DNA restriction and 561 
+
+modification: enzymes, genes and genomes. Nucleic Acids Res 2023;51:D629–D630. 562 
+
+41. Schwengers O, Jelonek L, Dieckmann MA, Beyvers S, Blom J, et al. Bakta: Rapid and 563 
+
+standardized annotation of bacterial genomes via alignment-free sequence identification. 564 
+
+Microb Genom ;7. Epub ahead of print 2021. DOI: 10.1099/MGEN.0.000685. 565 
+
+42. Biguenet A, Bordy A, Atchon A, Hocquet D, Valot B . Introduction and benchmarking of 566 
+
+pyMLST: open-source software for assessing bacterial clonality using core genome MLST. 567 
+
+Microb Genom 2023;9:1–9. 568 
+
+569
