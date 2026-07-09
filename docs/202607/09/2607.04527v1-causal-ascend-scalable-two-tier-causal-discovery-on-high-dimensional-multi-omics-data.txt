@@ -1,0 +1,1171 @@
+Title: Causal ASCEND: Scalable Two-tier Causal Discovery on High Dimensional Multi-omics Data
+
+URL Source: https://arxiv.org/pdf/2607.04527v1
+
+Published Time: Tue, 07 Jul 2026 02:33:49 GMT
+
+Number of Pages: 16
+
+Markdown Content:
+Bioinformatics, 2026, pp. 1–17 
+
+doi: DOI HERE 
+
+Advance Access Publication Date: Day Month Year Paper 
+
+## PAPER 
+
+# Causal ASCEND: Scalable Two-tier Causal Discovery on High Dimensional Multi-omics Data 
+
+# Stephen Asiedu 1, ∗ and David Watson 1 
+
+> 1
+
+Department of Informatics, King’s College London, Bush House, 30 Aldwych, WC2B 4BG, London, United Kingdom  
+
+> ∗
+
+Corresponding authors. stephen.asiedu@kcl.ac.uk, david.watson@kcl.ac.uk 
+
+# Abstract 
+
+Motivation: 
+
+Biological systems exhibit a hierarchical structure, characterised by directed flow from upstream regulators to downstream effects. Although this ordering provides a natural scaffold for causal inference, most causal discovery and GRN methods either ignore the tiered organisation or condition on all upstream variables, which becomes infeasible for high-dimensional omics data. 
+
+Results: 
+
+We present ASCEND (Ancestral Scalable Causal discovEry via iNherited Descent), a constraint-based framework that leverages known two-tiered structure to enable genome-scale causal discovery. ASCEND introduces a divide-and-conquer strategy that maintains dynamically updated ancestral conditioning sets for each downstream variable, dramatically reducing the number of conditional independence tests required, and achieves polynomial-time complexity where traditional approaches face exponential blow-up. Through extensive simulations and real biological data, we demonstrate that ASCEND accurately recovers ancestral relationships, scales properly and much faster, and outperforms existing gene regulatory network inference methods in both causal precision and computational efficiency. The algorithm’s ability to resolve directionality makes it particularly suited for integrating multi-omic data where upstream regulators (e.g., SNPs, methylation sites) and downstream responses (e.g., gene expression) are measured jointly. 
+
+Key words: Multi-omic integration, Causal discovery, High dimensionality 
+
+# Introduction 
+
+The central goal of systems biology is to transition from a descriptive catalogue of molecular components to afunctional map of the causal mechanisms governing life [Rebai, 2017, Lynch, 2021, Chevalley et al., 2022, Glymour et al., 2019, Ayyanathan, 2014, Hu et al., 2018]. With the maturation of high-throughput sequencing, we now possess unprecedented multi-omic profiles ranging from genomic variation to transcriptomic and proteomic responses [Manel et al., 2016, He et al., 2017, Neale and Wheeler, 2019, Abu-Elmagd et al., 2022]. However, the sheer dimensionality of these datasets has created a paradox of data richness with little knowledge of the true governing structure [Bates et al., 2020]. While we can observe thousands of simultaneous molecular shifts, distinguishing the primary drivers of disease from their downstream effects remains a formidable challenge. Biological systems are fundamentally hierarchical. This organisation is not a mere byproduct of complexity but is rooted in the central dogma and the directional flow of information from inherited background variables to foreground variables [Danchin et al., 2007, Veenstra, 2012, Neale and Wheeler, 2019]. For example, genetic variations biologically precede transcriptomic states. In this “two-tiered” landscape, background variables act as an upstream scaffold that causally precedes foreground variables [Watson and Silva, 2022]. This inherent causal ordering provides a natural constraint that should drastically simplify the search for Gene Regulatory Networks (GRNs). Exploiting this structure, however, requires paired multi-omic measurements on the same samples: a stronger data requirement than the “transcriptomics-only” setting in which most GRN methods operate. Where such matched background and foreground layers are available, the tiered ordering supplies causal information that association-based methods cannot access; yet most modern frameworks still do not exploit it. Traditional GRN inference methods frequently treat molecular variables as homogeneous [Pratapa et al., 2020, Badia-i Mompel et al., 2023]. Popular GRN approaches such as information-theoretic methods (e.g., ARACNE [Margolin et al., 2006]), tree-based models (e.g., GENIE3 [Huynh-Thu et al., 2010]), recover statistical associations but cannot resolve directionality. eQTL-anchored methods such as TRIGGER [Chen et al., 2007] do orient causality from genetic instruments, but require a detectable instrument for every gene and derive their guarantees from genotype randomisation, conditions rarely 
+
+© The Author 2026. Published by Oxford University Press. All rights reserved. For permissions, please e-mail: journals.permissions@oup.com 
+
+1
+
+> arXiv:2607.04527v1 [stat.ML] 5 Jul 2026
+
+2 Asiedu et al. I. DATA ARCHITECTURE     
+
+> Foreground (X)
+> eg. Gene Expression
+> Background (Z)
+> eg. SNPs
+
+II. ASCEND DISCOVERY ENGINE                  
+
+> Step 1:
+> Estimating Nearest
+> Ancestors Anc *Xi
+> Known Non -descendants
+> XiXj
+> Conditioning
+> Set
+> Step 2: Conditioning with union of Anc *
+> ABC
+> Step 4: Transitive Closure
+> AC
+> Step 3: Inference Rules
+> R1: Minimal
+> Deactivation (X i≺Xj)
+> R2: Minimal
+> Activation (X i
+
+⪯ Xj)   
+
+> R3: Conditional
+> Independence (X i~Xj)
+> Update Non -
+> Descendants
+> Recompute
+> Anc * with new
+> information
+
+III. OUTPUT                
+
+> X1
+> X2
+> X4
+> X3
+> …
+> X5
+> Ancestral DAG on
+> Foreground Variables
+> Fig. 1. ASCEND workflow. (I) The two-tiered data structure where some background Zcausally precede foreground X. (II) Structure learning: Test pairwise conditional independencies among Xvariables while conditioning only on Anc ∗(X, TXi)∪Anc ∗(X, TXj). (III) Final Output after iterations and closure depicting ancestral relationship. Edges may represent direct or indirect causes.
+
+met in observational human multi-omic data. Constraint-based causal discovery algorithms [Spirtes et al., 2001, Kalisch and B¨ uhlman, 2007] offer theoretical guarantees but rely on conditional independence (CI) tests whose complexity scales poorly in high-dimensional settings [Shah et al., 2023]. This problem is exacerbated in genomics, where thousands of upstream variables (e.g., SNPs, chromatin features) and thousands of downstream traits coexist, making conditioning on the full background layer computationally prohibitive. While formal causal discovery algorithms [Glymour et al., 2019] offer the theoretical rigour to identify directionality, they encounter a “computational wall” in the omics setting. As the number of variables grows, the complexity of conditional independence (CI) testing grows exponentially [S´ andor and Antal, 2025, Asiedu and Watson, 2025, Dai et al., 2024]. Naively conditioning on the entire high-dimensional upstream layer results into scalability issues [Shah et al., 2023]. While some recent methods begin to incorporate biological hierarchy [Mao et al., 2025, Watson and Silva, 2022, Shah et al., 2023], ascalable, general framework that leverages this knowledge to make genome-wide causal discovery tractable is still lacking. To bridge this gap, we introduce ASCEND (Ancestral Scalable Causal discovEry via iNherited Descent), a constraint-based causal discovery framework designed for high-dimensional, two-tiered biological systems. ASCEND assumes a known causal ordering between background and foreground variables, reflecting common biological hierarchies. Our method adopts a divide-and-conquer strategy that decomposes global structure learning into tractable local problems, allowing it to scale efficiently to omics-scale datasets. Where the earlier TRIGGER [Chen et al., 2007] orients causality from genetic instruments and the more recent confounder blanket learner (CBL) [Watson and Silva, 2022] conditions on the full background set, ASCEND instead maintains and updates a set of nearest ancestors (inherited descent), which we show as a minimally valid conditioning set for conditional independence testing (see Supplementary material for proof), for each foreground variable. This dramatically reduces the number of conditional independence tests, improving efficiency and preserving soundness under standard causal assumptions. By exploiting the known hierarchical structure, ASCEND achieves substantial computational gains over existing two-tiered and GRN inference approaches. Our workflow is summarised in Fig. 1. We evaluate ASCEND on simulated datasets and real biological data, demonstrating improved computational efficiency and recovery of hierarchical causal relationships. Comparisons against standard GRN inference tools and two-tiered causal methods highlight the advantages of using these biologically plausible conditioning sets for scalable causal discovery. Our results illustrate how leveraging natural biological hierarchies can make genome-scale causal inference feasible, interpretable, and biologically informative. The remainder of the paper reports benchmarks against GRN inference tools (Section 2.1), applications to real 
+
+Drosophila and human multi-omic data (Section F), and comparisons against CBL and other causal-discovery baselines (Sections 3–4). 
+
+# Results 
+
+## Benchmarking on synthetic data 
+
+We begin with simulated data to allow for explicit control of causal structure. We simulated two-tiered biological systems using the linear-Gaussian data-generating process detailed in Supplementary Section SD. Each replicate generated 20 background variables (Z) and 15 foreground variables (X); upstream-to-downstream cross-tier edges were drawn with probability 0 .20 and within-tier edges from an Erd˝ os–R´ enyi DAG controlled by a sparsity parameter sp . We swept twelve conditions formed by the Cartesian product of n ∈ { 1000 , 2000 }
+
+samples, sp ∈ {0.5, 0.7, 0.9}, and signal strength R2 ∈{0.5, 0.7}, running 50 independent replicates per cell. All methods received the same input matrix ( Z ∪ X) and were evaluated against the same ancestral skeleton ground truth derived from the simulator’s DAG. We compared ASCEND against three widely used GRN inference methods spanning distinct methodological families: random forest regression (GENIE3 [Huynh-Thu et al., 2010]), information-theoretic (ARACNe [Margolin et al., 2006]), and weighted correlation networks (WGCNA [Langfelder and Horvath, 2008]). For each method we report the area under the precision-recall curve (AUPR), which is the appropriate ranking metric under the severe class imbalance typical of biological networks and is the standard adopted by the Causal ASCEND 3
+
+BEELINE benchmarking suite [Pratapa et al., 2020]; AUROC; and the F1 score at matched edge count , in which competitors are thresholded to claim the same number of edges that ASCEND claims on the same replicate. The matched-K design controls for differences in operating-point selection and removes any threshold-fairness confound. Significance was assessed using one-sided paired Wilcoxon signed-rank tests (paired by replicate), with Benjamini–Hochberg correction across all ASCEND-versus-competitor comparisons within each metric family. Table 1 summarises the primary cell ( n = 2000, sp = 0 .9, 
+
+R2 = 0 .7) and Figure 2 visualises the matched-K F1 across all twelve cells. At the primary cell, ASCEND achieves F1 = 0 .589 ± 0.023 versus the next-best 0 .358 ± 0.020 (GENIE3), a 64% relative improvement, with precision 0 .808 versus 0 .471 at the same edge count. AUPR is correspondingly higher (0 .530 ± 0.023 versus 0 .428 ± 0.019, and q-value q = 0 .002). The F1 advantage is statistically significant in every one of the twelve conditions tested (all q < 0.01; Table 3), with median per-replicate F1 differences ranging from +0 .000 in the dense, weak-signal regime to +0 .481 in the sparse, high-signal regime. Across the sparsity sweep, ASCEND’s F1 advantage widens as the true graph becomes sparser: when the underlying ancestral structure is sparse, constraint-based testing extracts more signal than continuous edge-weight rankings. This is the regime most relevant to real GRNS, which are known to be sparse [Barabasi and Oltvai, 2004]. Among the methods evaluated, only ASCEND outputs orientations. We report the fraction of claimed ancestral edges whose direction agrees with the ground-truth DAG (Table 1, last but one column). At the sparsest cells (sp = 0.9), ASCEND’s direction accuracy reaches 77%–82% (77 .4% ± 2.7% at the primary cell), well above the 50% chance baseline in correlational methods. In denser regimes (sp ∈ {0.5, 0.7})direction accuracy degrades to 58%–65%, still above chance but by smaller margins. This pattern reflects a known property of constraint-based causal discovery: orientation rules rely on conditional-independence patterns that become harder to detect when the underlying graph has many parallel paths. Despite performing repeated conditional-independence testing, ASCEND is substantially faster than GENIE3. Mean wall-clock runtime per replicate at n = 2000 ranges from 0 .30 s (sp = 0 .9, R2 = 0 .5) to 0 .62 s ( sp = 0 .5, R2 = 0 .7), versus 144–527 s for GENIE3 in the same cells—a speedup of more than two orders of magnitude ( ∼230–870 ×). WGCNA runs in comparable sub-second time but recovers substantially fewer edges, and ARACNe’s runtime scales unfavourably at n = 2000 (≳110 s). The runtime gap widens further with sample size; the dynamic ancestor sets used by ASCEND keep its conditioning sets small, so per-replicate cost scales with the sparsity of the discovered structure rather than the full dimensionality of the background layer. We highlight two regimes where ASCEND does not dominate. First, in the moderate-signal regime ( R2 = 0.5), ASCEND’s AUPR advantage over GENIE3 narrows and is not significant in every cell (e.g. q > 0.05 at n = 1000, sp = 0 .5and at n = 2000, sp = 0.9), although ASCEND remains significantly higher on F1 throughout. The two methods rank candidate edges comparably well in this regime, but ASCEND’s discrete output (a sparse set of high-precision claims) gives it a substantial F1 advantage at matched thresholds. Second, ASCEND has lower AUROC than GENIE3 at the sparsest, low-signal cells (0 .72 versus 0 .77 at sp = 0 .9, R2 = 0 .5), though the two are essentially tied at the primary cell (0 .731 versus =(sp , 0.5 ) =(sp , 0.7 ) =(sp , 0.9 )                                  
+
+> R2 = 0.5  R2 = 0.7
+> ASCEND GENIE3 ARACNE WGCNA ASCEND GENIE3 ARACNE WGCNA ASCEND GENIE3 ARACNE WGCNA 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 F1 at matched edge count
+> F1 across the simulation sweep (n = 2000, 50 reps/cell)
+> Fig. 2. F1 at matched edge count across the full sweep. Mean F1@K over 50 replicates per cell, with rows grouped by signal strength (R2∈ { 0.5,0.7}) and columns by graph sparsity ( sp ∈ { 0.5,0.7,0.9})at n=2000. ASCEND attains the highest F1 in every cell, with the advantage widening as the underlying graph becomes sparser. Error bars are standard errors across replicates; all ASCEND-versus-best-competitor differences are significant at q < 0.01 by paired one-sided Wilcoxon test (Table 3).
+
+0.732). AUROC weights performance against the full ranking rather than the imbalanced positive class, and is known to be optimistic in this setting [Saito and Rehmsmeier, 2015]. We retain AUROC in our reporting for completeness but adopt AUPR and matched-K F1 as the primary metrics, consistent with BEELINE. 
+
+## The Drosophila Genetic Reference Panel (DGRP) Benchmark 
+
+To evaluate ASCEND’s performance in ancestral discovery, we benchmarked the framework using the Drosophila Genetic Reference Panel (DGRP), a population-based resource of 200 inbred lines of Drosophila melanogaster . These lines originated from a single natural population from Raleigh, North Carolina. Through 20 generations of full-sib mating, these lines have achieved near-total homozygosity, providing a stabilised genetic architecture where molecular phenotypic variation is driven by natural polymorphisms rather than stochastic laboratory mutations. We integrated genomic variants as background Z
+
+variables from the DGRP Freeze 2.0 [Mackay et al., 2012] with transcriptomic profiles as X from adult males [Everett et al., 2020], totalling 12806 annotated genes, which represent about 75% of the known Drosophila genome. 
+
+Experimental Design and Standardisation 
+
+We implemented a high-performance preprocessing pipeline to harmonise raw omics matrices for ASCEND’s conditional independence testing framework. The DGRP genotype matrix was subjected to a complete-case filter, retaining only SNPs with 100% call rates across all 200 lines. We restricted the feature space to common variants (Minor Allele Frequency, 0.2 < M AF < 0.5), to maintain statistical power and ensure stable covariance estimates. This eliminates the ”sparse data” problem often encountered in high-dimensional discovery, where low-frequency alleles lead to unstable covariance estimates and inflated Type I errors. For the transcriptomic data, we applied a two-step filter to the 18,140 transcribed regions: i) Expression Thresholding: We retained genes with a mean log 2(F P KM ) between 4 and 10 to ensure biological 4 Asiedu et al. 
+
+Table 1. Primary benchmark cell: n = 2000 , sp = 0 .9, R2 = 0 .7. Mean ± standard error across 50 replicates. Best performance per metric in bold. Runtime is mean wall-clock seconds per replicate 
+
+Method AUPR AUROC F1 Precision Dir. acc. Runtime (s) 
+
+ASCEND 0.530 ± 0.023 0.731 ± 0.014 0.589 ± 0.023 0.808 0.774 ± 0.027 0.4GENIE3 0.428 ± 0.019 0.732 ± 0.011 0.358 ± 0.020 0.471 N/A 149 .2ARACNe 0.154 ± 0.009 0.500 ± 0.000 0.173 ± 0.016 0.146 N/A 110 .4WGCNA 0.224 ± 0.016 0.577 ± 0.009 0.219 ± 0.017 0.250 N/A 0.8
+
+Table 2. Full sweep: F1 across all twelve conditions. Mean F1 ± standard error across 50 replicates. Bold indicates top performance. ASCEND statistically outperforms all competitors (q < 0.01). 
+
+sp / n ASCEND GENIE3 ARACNe WGCNA 
+
+Signal Strength ( R2 = 0 .5)
+
+0.5 / 1000 0.20 ± 0.02 0.18 ± 0.02 0.15 ± 0.01 0.15 ± 0.01 0.5 / 2000 0.31 ± 0.02 0.28 ± 0.02 0.25 ± 0.02 0.26 ± 0.02 0.7 / 1000 0.29 ± 0.02 0.25 ± 0.02 0.20 ± 0.02 0.20 ± 0.02 0.7 / 2000 0.33 ± 0.02 0.28 ± 0.02 0.22 ± 0.02 0.23 ± 0.01 0.9 / 1000 0.54 ± 0.03 0.39 ± 0.02 0.13 ± 0.01 0.21 ± 0.02 0.9 / 2000 0.56 ± 0.02 0.41 ± 0.02 0.15 ± 0.02 0.23 ± 0.02 
+
+Signal Strength ( R2 = 0 .7)
+
+0.5 / 1000 0.29 ± 0.02 0.26 ± 0.02 0.23 ± 0.02 0.24 ± 0.02 0.5 / 2000 0.33 ± 0.02 0.30 ± 0.03 0.28 ± 0.02 0.28 ± 0.02 0.7 / 1000 0.33 ± 0.02 0.28 ± 0.02 0.24 ± 0.02 0.24 ± 0.02 0.7 / 2000 0.40 ± 0.02 0.33 ± 0.02 0.29 ± 0.02 0.30 ± 0.02 0.9 / 1000 0.57 ± 0.03 0.30 ± 0.02 0.19 ± 0.01 0.21 ± 0.02 0.9 / 2000 0.59 ± 0.02 0.36 ± 0.02 0.17 ± 0.02 0.22 ± 0.02 
+
+Table 3. Paired Wilcoxon signed-rank tests, ASCEND versus each competitor on F1 at matched edge count. One-sided alternative (ASCEND > competitor), paired by replicate, Benjamini–Hochberg corrected across all 36 comparisons per metric. Median difference is per-replicate median(ASCEND F1 −
+
+competitor F1). ASCEND’s F1 is significantly higher than every competitor in every condition tested. A median difference of 0 .000 with significant test ( n = 1000, sp = 0 .5, R2 = 0 .5 vs GENIE3) indicates that ASCEND wins on the majority of paired replicates by small margins; the median pair has zero difference but the rank-sum is significantly shifted toward ASCEND. ∗∗∗ q < 0.001; ∗∗ q < 0.01. 
+
+R2 sp / n vs. GENIE3 vs. ARACNe vs. WGCNA 
+
+0.50.5 / 1000 +0 .000 ∗∗∗ +0 .058 ∗∗∗ +0 .033 ∗∗∗ 
+
+0.5 / 2000 +0 .022 ∗∗∗ +0 .066 ∗∗∗ +0 .068 ∗∗∗ 
+
+0.7 / 1000 +0 .036 ∗∗∗ +0 .101 ∗∗∗ +0 .090 ∗∗∗ 
+
+0.7 / 2000 +0 .043 ∗∗∗ +0 .120 ∗∗∗ +0 .100 ∗∗∗ 
+
+0.9 / 1000 +0 .160 ∗∗∗ +0 .427 ∗∗∗ +0 .314 ∗∗∗ 
+
+0.9 / 2000 +0 .174 ∗∗∗ +0 .471 ∗∗∗ +0 .308 ∗∗∗ 
+
+0.70.5 / 1000 +0 .028 ∗∗∗ +0 .046 ∗∗∗ +0 .029 ∗∗∗ 
+
+0.5 / 2000 +0 .027 ∗∗∗ +0 .047 ∗∗∗ +0 .041 ∗∗∗ 
+
+0.7 / 1000 +0 .056 ∗∗∗ +0 .078 ∗∗∗ +0 .090 ∗∗∗ 
+
+0.7 / 2000 +0 .056 ∗∗∗ +0 .092 ∗∗∗ +0 .096 ∗∗∗ 
+
+0.9 / 1000 +0 .273 ∗∗∗ +0 .481 ∗∗∗ +0 .407 ∗∗∗ 
+
+0.9 / 2000 +0 .229 ∗∗∗ +0 .447 ∗∗∗ +0 .339 ∗∗∗ 
+
+relevance and minimize heteroscedasticity associated with low-abundance transcripts. ii) Variance Selection: We selected the top 250 genes by variance. This selection prioritizes the most dynamic regulatory components, those most likely to be under active genetic control (eQTLs). Finally, we aligned the 200 male samples common to both the genomic and transcriptomic datasets to ensure cross-modal consistency. 02468
+
+Genomic Map of Transcriptome Master Regulators 
+
+Chromosome Causal Out−degree (Number of Targets)               
+
+> X2L 2R 3L 3R
+> CG13323 CG6839 Gba1a CG17928 CG15034
+> Fig. 3. The genomic distribution of causal influence scores. The y-axis represents the causal out-degree (the number of downstream genes controlled by a specific locus). Peaks on Chromosomes 2R and 3R identify localised regulatory hotspots.
+
+Identification of Genomic Causal Hubs 
+
+To transition from statistical associations to a structural understanding of the DGRP transcriptome, we employed ASCEND, which oriented 72 causal edges among the selected 250 transcripts. By mapping the causal out-degree of each gene back to its respective genomic coordinates, we identified a highly stratified regulatory landscape. The most significant causal hub was identified as CG13323 
+
+(FBgn0033788) on Chromosome 2R, which exerts direct causal control over 8 transcripts. Notably, CG13323 is the sole 
+
+Drosophila member of the Response to Pathogen (REPAT) gene family, a group of proteins known to be dramatically upregulated during viral, bacterial, and fungal infections [Shrestha et al., 2019]. Functional enrichment analysis (Gene Ontology) confirmed that this subnetwork is significantly enriched for sesquiterpenoid and juvenile hormone (JH) metabolic processes. JH is the primary endocrine driver of reproductive maturation and life-history trade-offs in Drosophila . The discovery of CG13323 
+
+as an upstream regulator suggests that it acts as a metabolic gatekeeper, where its activity dictates the catabolic rate of JH, thereby influencing the systemic physiological state of the adult male. On Chromosome 3R, a secondary cluster of hubs including 
+
+CG6839 and Gba1a was found to regulate a shared set of targets, specifically Acp53C14c and Obp56d . These targets Causal ASCEND 5
+
+Table 4. Top Upstream Regulator Genes and their Downstream Targets 
+
+Upstream Regulators FlyBase ID Regulated genes 
+
+CG13323 FBgn0033788 CG7203, CG42710, CG9582, CG33301, Mal-A8, Jheh1, Cyp6d5, CG5402 CG6839 FBgn0036831 CG31730, CG17571, Acp53C14c, Obp56d, Cyp4d20, Gba1a CG10911 FBgn0034295 Cyp309a1, CG17571, Acp53C14c, Obp56d, Cyp4d20 Gba1a FBgn0051148 CG31730, CG17571, Acp53C14c, Obp56d, Cyp4d20 CG17928 FBgn0032603 CG12057, CG43774, CG17752, CG42828 
+
+are essential components of the male reproductive system; 
+
+Acp53C14c encodes an Accessory Gland Protein vital for fertility, while Obp56d is involved in pheromone sensing. Given that REPAT genes are primarily midgut-expressed, this hub represents a causal bridge between gut-localised pathogen sensing and systemic hormonal signalling. This causal orientation suggests that CG13323 acts as a high-level switch that coordinates the physiological transition during stress. By driving Jheh1 , an increase in CG13323 expression likely leads to a systemic reduction in JH titers. This represents a “trade-off mechanism” in which the fly reallocates metabolic resources away from reproduction and toward innate defence in response to pathogen-induced stress [Flatt and Kawecki, 2007]. Identifying these hubs moves the analysis beyond a static “parts list” of the genome toward a functional, directed model, with several practical consequences. Because genetic variation at the CG13323 locus propagates to an entire downstream metabolic suite, the locus carries predictive value for the expression state of that suite. The causal orientation also distinguishes our result from standard co-expression analysis: 
+
+CG13323 emerges as a driver of the metabolic state rather than a passive correlate of it. Together these properties make the locus a high-leverage target for experimental follow-up, for instance CRISPR-based perturbation in Drosophila ageing and fertility studies aimed at dissecting hormonal regulation. Our analysis found that Gba1a causally drives genes related to immunity and fertility. This aligns with the observation that 
+
+Gba1a mutations lead to the upregulation of inflammation-associated genes and a reduction in cell-death-associated pathways in the Drosophila midgut, suggesting Gba1a serves as a metabolic anchor for gut-associated stress responses [Cabasso et al., 2021]. 
+
+## Comparison with existing directional gene regulatory network inference methods 
+
+To evaluate the performance of ASCEND against established approaches for causal gene regulatory network inference, we compared it with two representative methods: TRIGGER [Chen et al., 2007], one of the earliest methods to exploit naturally occurring genetic variation for causal network reconstruction, and BFCS (Bayes Factors of Covariance Structures) [Bucur et al., 2018], a Bayesian causal inference framework that infers F1=0.28 P=0.22 R=0.38 F1=0.13 P=0.14 R=0.12 F1=0.17 P=0.14 R=0.24                         
+
+> F1=0.05 P=0.35 R=0.03 F1=0.02 P=0.17 R=0.01 F1=0.02 P=0.13 R=0.01
+> ancestral direct
+> ASCEND TRIGGER BFCS ASCEND TRIGGER BFCS
+> 0.0 0.1 0.2 0.3
+> F1
+> Edge−level F1 by estimand
+> ancestral direct
+> ASCEND TRIGGER BFCS ASCEND TRIGGER BFCS
+> 0.0 0.1 0.2 0.3
+> Jaccard
+> Per−regulator Jaccard by estimand
+> Fig. 4. Comparison of ASCEND, TRIGGER and BFCS. Left: edge-level precision, recall and F 1scores for direct and ancestral regulatory relationships. Right: per-regulator Jaccard similarity between predicted and curated regulons.
+
+directed regulatory interactions using instrumental-variable models. All three methods were applied to the same yeast eQTL dataset distributed with both the TRIGGER and BFCS package, comprising expression measurements for 6,216 genes across 112 segregants together with 3,244 genetic markers. Unlike ASCEND, which infers causal relationships directly from conditional independence structure, both TRIGGER and BFCS require genetic instruments linked to putative regulators. Consequently, the methods estimate related but not identical causal quantities: ASCEND reconstructs the ancestral causal ordering of the network, whereas TRIGGER and BFCS assign confidence scores to pairwise regulator– target relationships. To ensure a fair comparison, we therefore evaluated both direct regulatory interactions and ancestral (reachability) relationships separately. 
+
+Construction of the benchmark network 
+
+Evaluation was performed against experimentally curated transcriptional interactions obtained from the YEASTRACT+ database Teixeira et al. [2023]. Gene identifiers from the expression dataset, TRIGGER matrices and curated regulatory interactions were first mapped to systematic ORF identifiers to ensure a common gene space. Regulators represented in both the expression data and curated network with at least three measurable downstream targets were retained. To construct a biologically meaningful benchmark while maintaining sufficient statistical power, we selected the highest-degree curated transcription factors together with their experimentally validated targets, yielding a network of 150 genes containing 14 regulators and 298 curated direct regulatory interactions. Because ASCEND predicts transitive ancestral relationships rather than only direct edges, we additionally computed the transitive closure of the curated network restricted to this induced subgraph, producing asecond benchmark consisting of 368 ancestral regulatory relationships. 
+
+Recovery of curated regulatory relationships 
+
+We used Precision, recall and F1 score against both the direct and ancestral benchmarks, together with per-regulator Jaccard similarity between predicted and curated target sets as shown in Fig 4. ASCEND consistently achieved the highest performance across all evaluation metrics. On the direct-edge benchmark, ASCEND attained a precision of 34.8%, substantially exceeding both TRIGGER (17.4%) and BFCS (13.0%), while also achieving the highest recall and F 1 score. 6 Asiedu et al. 
+
+The advantage was more pronounced on the ancestral benchmark, which more naturally reflects the causal relationships estimated by ASCEND. ASCEND achieved aprecision of 22.1%, a recall of 38.0%, and an F 1 score of 0.279, compared with 0.174 for BFCS and 0.131 for TRIGGER. Thus, ASCEND improved F 1 performance by approximately 60% over BFCS and more than twofold over TRIGGER. Similar trends were observed when comparing regulator-specific target sets: ASCEND produced the highest mean Jaccard similarity on both the direct and ancestral benchmarks. The three methods showed moderate agreement in the regulatory relationships they recovered. ASCEND shared 192 predicted ancestral interactions with BFCS, compared with 117 shared between BFCS and TRIGGER and 53 shared between ASCEND and TRIGGER, indicating that although ASCEND and BFCS are based on fundamentally different inference principles, they recover a substantial overlapping subset of biologically plausible regulatory relationships. 
+
+# Comparison against the confounder blanket learner 
+
+The closest methodological relative of ASCEND is the confounder blanket learner (CBL) of Watson and Silva [2022], which also exploits a known two-tiered ordering between background and foreground variables but conditions on the 
+
+entire background layer when testing pairwise ancestral relations. Because both methods address the same problem under the same assumptions, the comparison isolates the contribution of ASCEND’s central design choice: replacing the fixed full-background conditioning set of CBL with dynamically updated nearest-ancestor sets. We simulated two-tiered systems using the linear Gaussian process of Supplementary Section SD and ran both methods on identical replicates. To stress the methods along the axes most relevant to omics applications, we performed one-dimensional sweeps over sample size, foreground dimension, and background dimension around a default configuration (twelve configurations in total), evaluating five independent random seeds per setting; exact values appear in Supplementary Section SD. To keep the comparison computationally tractable, we capped each run at a one-hour wall-clock budget; cells where CBL exceeded this budget are reported as conservative lower bounds. We report wall-clock runtime, the number of conditional independence (CI) tests performed, coverage (the fraction of variable pairs the method commits a label to rather than leaving unresolved), and the F1 score against the true ancestral skeleton. 
+
+Results 
+
+Figure 5 summarises the comparison. ASCEND was significantly faster than CBL in every configuration tested, with speedup factors ranging from 27 × at the smallest problem (n=256 , d x=5 , d z =10) to over 5 ,000 × at ( n=1024 , d x=5 , d z =50). The runtime gap widens with the background dimension: empirical scaling exponents fitted along the dz axis are t ∝
+
+d+0 .81  
+
+> z
+
+for CBL and t ∝ d−0.45  
+
+> z
+
+for ASCEND. ASCEND becomes faster as the background grows because additional background variables refine the nearest-ancestor sets and accelerate convergence; CBL becomes slower because the conditioning set widens by construction. At dz = 50, asingle CBL replicate did not finish within the one-hour budget; ASCEND completed the same configuration in 0 .27 ± 0.01 s. The computational-work accounting tells the same story at a finer resolution. Across all twelve configurations, ASCEND extracted its output from between 10 and 4,560 conditional independence tests, whereas CBL performed between 42,000 and 883,400. The factor of 10 2–10 3 in raw conditional independence work, together with the lower per-test cost of ASCEND’s F-test relative to CBL’s L1-regularised regression with B = 50 subsamples, accounts for the observed wall-clock gap. ASCEND was also more decisive and more accurate. ASCEND resolved 99% ± 1% of variable pairs on average, leaving almost none as NA , while CBL’s stability-selection rule left between 7% and 32% of pairs unresolved (mean 26%). On F1 against the true ancestral skeleton, at the smallest problem (dx = 5 , d z = 10 , n = 1024), CBL identified zero true positives across all five seeds and F1 is therefore undefined. 
+
+# Comparison against causal discovery baselines 
+
+Having established ASCEND’s advantage over standard GRN inference tools (Section 2.1), we now compare it against four causal discovery algorithms that explicitly target ancestral or directional structure: the confounder blanket learner (CBL) [Watson and Silva, 2022], the closest methodological relative; Greedy Equivalence Search (GES) [Chickering, 2002]; the linear non-Gaussian acyclic model (LiNGAM) [Shimizu et al., 2006]; and the PC algorithm [Spirtes et al., 2001]. All these methods, just like ASCEND, produces causal information instead of mere association. 
+
+Experimental design 
+
+Using the two-tiered data simulation of Supplementary Section SD, we tested a grid of 81 cells spanning a range of signal strengths ( R2), foreground dimensions, background-to-foreground dimension ratios, and graph sparsities. For each cell we ran sample sizes ranging from 512 to 131,072 and up to 20 independent replicates per ( n, cell). All methods received the same input matrix ( Z∪X) and were evaluated against the same true ancestral skeleton derived from the simulator’s DAG. Each method received a one-hour wall-clock budget per replicate. 
+
+Accuracy and the precision–recall trade-off 
+
+Figure 6a shows F1 against sample size for all five methods on the filtered subset. ASCEND attains the highest mean F1 at every sample size from n = 512 to n = 131 ,072. GES trails behind ASCEND closely; Figure 6b plots precision against n.ASCEND’s precision is stable at 0 .57 ± 0.01 across the well-sampled range of n, whereas GES rises monotonically from 0.43 at n = 512 to 0 .48 at n = 65 ,536. This pattern reflects a known difference in calibration: ASCEND’s constraint-based test is calibrated at all sample sizes, with its operating point set by the conditional independence test threshold ( α = 0 .05) and largely insensitive to n. GES uses a Bayesian Information Criterion penalty whose ratio to the data likelihood depends on log( n)/n , so as n grows GES becomes increasingly conservative and asymptotically consistent. The crossing of the two methods’ precision curves is therefore expected in the limit of very large 
+
+n; within the sample-size range tested here, ASCEND remains higher than GES throughout. (The right-most data point at 
+
+n = 131 ,072, drawn with open markers in panel b, is based on fewer than 50 replicates per method and is more indicative than conclusive.) CBL, LiNGAM and PC all remain below 0 .40 precision throughout. Causal ASCEND 75 10 15 20                                        
+
+> dx(foreground variables)
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> Wall-clock time (s)
+> n=1024, dz=10
+> (a) Runtime vs dx
+> 10 20 30 40 50
+> dz(background variables)
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> 10 4
+> Wall-clock time (s)
+> n=1024, dx=5
+> CBL: td+0.81
+> z
+> ASCEND: td0.45
+> z
+> (b) Runtime vs dz
+> dx=5
+> dx=10
+> dx=15
+> dx=20
+> dz=10
+> dz=20
+> dz=30
+> dz=40
+> dz=50
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> 10 4
+> Speedup  (CBL time / ASCEND time)
+> 27× 39× 28×
+> 119×
+> 27× 41× 48×
+> 135×
+> 5,297×
+> (c) ASCEND speedup factor
+> varying dx
+> varying dz
+> 1 CBL timeout (lower bound)
+> 10 20 30 40 50
+> dz
+> 10 1
+> 10 2
+> 10 3
+> 10 4
+> 10 5
+> Conditional independence
+> tests performed
+> n=1024, dx=5
+> (d) Computational work
+> 10 20 30 40 50
+> dz
+> 0.5
+> 0.6
+> 0.7
+> 0.8
+> 0.9
+> 1.0
+> Coverage  (1  NA fraction)
+> n=1024, dx=5
+> (e) Decisiveness
+> 510 15 20
+> dx
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> F1 score
+> n=1024, dz=10
+> (f) Accuracy vs dx
+> ASCEND vs CBL scaling, computational cost, and discovery quality (5 seeds, ribbons = ±1 SE)
+> ASCEND (ours) CBL (baseline) CBL exceeded 1 h timeout
+
+Fig. 5. ASCEND vs. CBL runtime, computational cost, and discovery quality. Ribbons show ±1 SEM. (a–b) Log wall-clock time with empirical scaling exponents. Red × marks CBL timeouts ( > 1 hour). (c) Speedup factor (CBL / ASCEND); red borders/labels indicate conservative lower bounds due to CBL timeouts. (d) Number of conditional independence tests performed. (e) Coverage (fraction of resolved variable pairs). (f ) F1 score against the true ancestral skeleton (CBL is undefined at dx = 5 due to zero true positives). 
+
+On paired replicates against GES, ASCEND achieves higher precision on 67% of 2 ,738 paired runs, with a mean precision gain of +0 .091 (p < 10 −30 , Wilcoxon). This corresponds to ASCEND producing roughly half as many false positive ancestral edges as GES per replicate (16 .1 vs 30 .4 on average). ASCEND trades a small amount of recall for this precision: in paired replicates the mean recall gap is −0.058 in GES’s favor. We argue that this trade-off favours ASCEND for the intended application of ancestral discovery in molecular networks. Each false-positive ancestral edge is a candidate hypothesis for experimental follow-up, and the cost of investigating a spurious edge dominates the cost of a missed one in most realistic biological pipelines. Recall is a threshold-tunable property of the conditional-independence test; precision reflects the structural specificity of the method and is harder to recover after the fact. To control for the differing failure profiles of the five methods, we compared paired F1 differences on the subset of replicates in which both methods succeeded (Figure 6c). Against CBL, LiNGAM and PC, the paired-difference distributions sit clearly to the right of zero: mean gains of +0 .12, +0 .07 and +0 .51 respectively, all significant at p <
+
+10 −20 (Wilcoxon, two-sided). Against GES, the distribution straddles zero with a mean difference of −0.03; ASCEND and GES are statistically distinguishable at this sample size (Wilcoxon p < 10 −30 ) but the effect is small and the distributions overlap substantially. Practically, ASCEND and GES deliver comparable F1, and the choice between them rests on the other properties measured in panels (b), (d) and (e). ASCEND completed every replicate it was asked to run, failing in 0% of attempted runs across the entire parameter grid (Figure 6e). LiNGAM’s failure rate declined steadily as 
+
+n grew; CBL’s failure rate dipped at intermediate n before rising sharply again at the largest sample size tested. PC failed in 80–90% of attempted runs across every n, and was included in our paired analysis only at cells where it produced sufficient replicates; this fragility is consistent with the known sensitivity of pcalg ’s implementation to near-singular sample covariances at higher dimensions, and we therefore treat the ASCEND-versus-PC comparison as illustrative rather than definitive. Among methods that produce ancestral output, only ASCEND and CBL emit explicit unresolved verdicts ( NA ) where the conditioning strategy fails to deliver an answer. GES, LiNGAM and PC always commit to a directed or absent edge; in the case of GES this is achieved by taking the transitive closure of the inferred CPDAG, which can inflate apparent recall by extending the implications of partially oriented structure. Across the parameter grid, ASCEND committed to a label on ≥ 95% of variable pairs at every sample size (Figure 6d); CBL’s coverage was lower (75–83% across most of the range, rising sharply to ≈ 97% only at the largest sample size), reflecting its more conservative stability-selection rule. 
+
+The biologically relevant regime 
+
+Real gene-regulatory networks are believed to be sparse [Barabasi and Oltvai, 2004]; the dense-graph regime that challenges all causal-discovery methods is less representative of the intended application. Restricting attention to the sparse, signal-rich regime ( Figure 6f), ASCEND attains the highest F1 in every cell of the sparsity sweep, with a consistently large lead over GES across the sparsity levels tested (F1 advantage of roughly +0 .12 to +0 .13, with no clear narrowing at higher sparsity). This pattern mirrors the GRN-baseline comparison of Section 2.1, where ASCEND’s advantage was likewise substantial in the sparse regime: when true ancestral structure is sparse, constraint-based testing extracts more signal than score-based density estimation. 
+
+# Discussion 
+
+We have introduced ASCEND, a constraint-based causal discovery framework that exploits a known two-tiered ordering between background and foreground variables to make ancestral discovery tractable at omics scale in polynomial time. By replacing the full-background conditioning sets of CBL [Watson and Silva, 2022] with dynamically updated nearest-ancestor sets, ASCEND localises each pairwise test to a small, 8 Asiedu et al. 512 2048 8192 32768 131072                                       
+
+> Sample size n
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> 0.7
+> F1 score
+> 239 cells × 5 methods × up to 20 reps
+> ribbons = ±1 SEM
+> (a) F1 vs sample size
+> 512 2048 8192 32768 131072
+> Sample size n
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> 0.7
+> Precision
+> ASCEND stable at 0.55;
+> GES improves with n (consistency)
+> open marker = <50 reps
+> (b) Precision vs sample size
+> 0.50 0.25 0.00 0.25 0.50 0.75
+> Paired F1 difference (ASCEND competitor)
+> vs CBL
+> vs GES
+> vs LiNGAM
+> vs PC
+> mean +0.12
+> n = 2,487
+> mean -0.03
+> n = 2,565
+> mean +0.07
+> n = 2,665
+> mean +0.51
+> n = 209
+> ASCEND better competitor better
+> (c) Paired F1 differences
+> 512 2048 8192 32768 131072
+> Sample size n
+> 0.70
+> 0.75
+> 0.80
+> 0.85
+> 0.90
+> 0.95
+> 1.00
+> Coverage  (1  NA fraction)
+> ASCEND and CBL can output NA;
+> GES/LiNGAM/PC always commit
+> (d) Decisiveness
+> 512 2048 8192 32768 131072
+> Sample size n
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> Failures (% of attempted runs)  PC fails 60 90% of cells;
+> ASCEND essentially never fails
+> (e) Method reliability
+> 0.50 0.67 0.75
+> Graph sparsity
+> 0.00
+> 0.05
+> 0.10
+> 0.15
+> 0.20
+> 0.25
+> 0.30
+> 0.35
+> 0.40
+> F1 score
+> n4096 only
+> signal-rich regime
+> (f) F1 vs sparsity, all methods
+> 0.025 0.000 0.025 0.050 0.075 0.100
+> Mean paired F1
+> advantage of ASCEND over GES
+> sp=0.50
+> sp=0.67
+> sp=0.75
+> sp=0.50
+> sp=0.67
+> sp=0.75
+> sp=0.50
+> sp=0.67
+> sp=0.75
+> R2= 0.50
+> R2= 0.67
+> R2= 0.75
+> ASCEND better GES better
+> n4,096 , d z=dx
+> 9 cells; bars: 95% CI
+> (g) ASCEND vs GES advantage
+> in realistic regime
+> ASCEND on synthetic two-tier benchmarks: accuracy, reliability and the regime where it dominates score-based baselines
+> ASCEND (ours) GES CBL LiNGAM PC
+
+Fig. 6. ASCEND vs. four causal discovery baselines on synthetic benchmarks. Open markers/dashed lines indicate < 50 replicates. (a–b) 
+
+F1 score and Precision vs. sample size n. (c) Distribution of paired F1 differences (ASCEND − competitor) on mutual replicates; white dots show medians, black bars span the IQR. (d) Coverage (fraction of foreground pairs labeled). (e) Method reliability across the 81-cell grid. (f ) F1 vs. graph sparsity ( n ≥ 4,096). (g) Mean paired F1 difference (ASCEND − GES) with 95% CIs ( n ≥ 4,096, dz = dx ) grouped by R2 (darker colors indicate higher sparsity). 
+
+biologically meaningful conditioning set, achieving substantial speedups, high decisiveness and precision; in the parameter regime representative of real gene-regulatory networks. In application, ASCEND identified biologically coherent upstream regulators in the DGRP transcriptome. Beyond its standalone use, ASCEND’s ancestral adjacency matrix can prune the candidate DAG space for any constraint-based causal discovery algorithm: The resulting ancestral matrix output can be used to define some relationships are constraints for algorithms like PC. ie ASCEND can also serve as a preprocessor. See supplementary material for example. 
+
+Limitations. ASCEND’s central assumption is a known causal ordering between two tiers of variables. Where this ordering is genuine (genotype → transcriptome, methylation →
+
+transcript) the assumption is a feature; where it is uncertain or absent, ASCEND is not the right tool. The Markov-blanket oracle used in our implementation (IAMB with Fisher’s Zand a fixed false-discovery rate of 0.05) is well-calibrated at moderate dimensionality but can become conservative at very high foreground dimensionality with limited sample size. Finally, our synthetic benchmarks use linear-Gaussian structural equations; non-linear or non-Gaussian regulatory relationships will require alternative independence tests, and the score-based GES remains a competitive alternative in dense or weak-signal regimes where local constraint-based testing has less to exploit. 
+
+Conclusion 
+
+ASCEND closes the gap between the theoretical appeal of causal discovery and the practical realities of high-dimensional biological data. By exploiting structural priors that biology readily provides, it delivers ancestral inference at a scale and precision that make it usable as either a standalone discoverer or as a scalable preprocessor for any downstream causal pipeline. 
+
+# Data Access 
+
+Transcriptomic and genomic data utilized in this study are available through the NCBI Gene Expression Omnibus (GEO) https://www.ncbi.nlm.nih.gov/geo/) under accession number 
+
+GSE 117850 and Zenodo (Record 14871341), respectively. All preprocessed multi-omic matrices and the core analysis code for the ASCEND framework are available on GitHub at https://github.com/SparkAILab/Ascend. 
+
+# Competing Interests Declared 
+
+The authors declare no competing interests. 
+
+# References 
+
+M. Abu-Elmagd, M. Assidi, A. Alrefaei, and A. Rebai. Editorial: Advances in genomic and genetic tools, and their applications for understanding embryonic development and human diseases. Frontiers in Cell and Developmental Biology , 10, 2022. doi: 10.3389/fcell.2022.1016400. S. Asiedu and D. Watson. Multi-omic causal discovery using genotypes and gene expression. arXiv preprint arXiv:2505.15866 , 2025. K. Ayyanathan. Assessing causal relationships in genomics: From bradford-hill criteria to complex gene-environment interactions and directed acyclic graphs. 2014. URL https: //api.semanticscholar.org/CorpusID:201870697 .P. Badia-i Mompel, L. Wessels, S. M¨ uller-Dott, R. Trimbour, R. O. Ramirez Flores, R. Argelaguet, and J. Saez-Rodriguez. Gene regulatory network inference in the era of single-cell multi-omics. Nature Reviews Genetics , 24(11):739–754, 2023. A.-L. Barabasi and Z. N. Oltvai. Network biology: understanding the cell’s functional organization. Nature Causal ASCEND 9
+
+reviews genetics , 5(2):101–113, 2004. S. Bates, M. Sesia, C. Sabatti, and E. Cand` es. Causal inference in genetic trio studies. Proceedings of the National Academy of Sciences of the United States of America , 117:24117 – 24126, 2020. doi: 10.1073/pnas.2007743117. I. G. Bucur, T. Bussel, T. Claassen, and T. Heskes. Abayesian approach for inferring local causal structure in gene regulatory networks. In International Conference on Probabilistic Graphical Models , pages 37–48. PMLR, 2018. O. Cabasso, S. Paul, G. Maor, M. Pasmanik-Chor, W. Kallemeijn, J. Aerts, and M. Horowitz. The uncovered function of the drosophila gba1a-encoded protein. Cells , 10 (3):630, 2021. L. S. Chen, F. Emmert-Streib, and J. D. Storey. Harnessing naturally randomized transcription to infer regulatory relationships among genes. Genome biology , 8:1–13, 2007. M. Chevalley, Y. Roohani, A. Mehrjou, J. Leskovec, and P. Schwab. Causalbench: A large-scale benchmark for network inference from single-cell perturbation data. arXiv preprint arXiv:2210.17283 , 2022. D. M. Chickering. Optimal structure identification with greedy search. Journal of machine learning research , 3(Nov):507– 554, 2002. T. Claassen and T. Heskes. A logical characterization of constraint-based causal discovery. arXiv preprint arXiv:1202.3711 , 2012. H. Dai, I. Ng, G. Luo, P. Spirtes, P. Stojanov, and K. Zhang. Gene regulatory network inference in the presence of dropouts: a causal view. arXiv preprint arXiv:2403.15500 ,2024. A. Danchin, G. Fang, and S. Noria. The extant core bacterial proteome is an archive of the origin of life. PROTEOMICS ,7, 2007. doi: 10.1002/PMIC.200600442. D. Entner, P. Hoyer, and P. Spirtes. Data-driven covariate selection for nonparametric estimation of causal effects. In 
+
+Artificial intelligence and statistics , pages 256–264. PMLR, 2013. L. J. Everett, W. Huang, S. Zhou, M. A. Carbone, R. F. Lyman, G. H. Arya, M. S. Geisz, J. Ma, F. Morgante, G. S. Armour, et al. Gene expression networks in the drosophila genetic reference panel. Genome research , 30(3):485–496, 2020. T. Flatt and T. J. Kawecki. Juvenile hormone as a regulator of the trade-off between reproduction and life span in drosophila melanogaster. Evolution , 61(8):1980–1991, 2007. C. Glymour, K. Zhang, and P. Spirtes. Review of causal discovery methods based on graphical models. Frontiers in genetics , 10:524, 2019. H. Han, H. Shim, D. Shin, J. E. Shim, Y. Ko, J. Shin, H. Kim, A. Cho, E. Kim, T. Lee, et al. Trrust: a reference database of human transcriptional regulatory interactions. Scientific reports , 5(1):11432, 2015. K. He, D. Ge, and M. M. He. Big data analytics for genomic medicine. International Journal of Molecular Sciences , 18, 2017. doi: 10.3390/ijms18020412. P. Hu, R. Jiao, L. Jin, and M. Xiong. Application of causal inference to genomic analysis: Advances in methodology. 
+
+Frontiers in Genetics , 9, 2018. URL https://api. semanticscholar.org/CorpusID:49652600 .V. A. Huynh-Thu, A. Irrthum, L. Wehenkel, and P. Geurts. Inferring regulatory networks from expression data using tree-based methods. PloS one , 5(9):e12776, 2010. M. Kalisch and P. B¨ uhlman. Estimating high-dimensional directed acyclic graphs with the pc-algorithm. Journal of Machine Learning Research , 8(3), 2007. P. Langfelder and S. Horvath. Wgcna: an r package for weighted correlation network analysis. BMC bioinformatics , 9(1):559, 2008. E. L. Lehmann and J. P. Romano. Testing Statistical Hypotheses . Springer, New York, 3rd edition, 2005. K. E. Lynch. The meaning of ”cause” in genetics. Cold Spring Harbor perspectives in medicine , 2021. doi: 10.1101/ cshperspect.a040519. T. F. Mackay, S. Richards, E. A. Stone, A. Barbadilla, J. F. Ayroles, D. Zhu, S. Casillas, Y. Han, M. M. Magwire, J. M. Cridland, et al. The drosophila melanogaster genetic reference panel. Nature , 482(7384):173–178, 2012. S. Magliacane, T. Claassen, and J. M. Mooij. Ancestral causal inference. Advances in Neural Information Processing Systems , 29, 2016. S. Manel, C. Perrier, M. Pratlong, L. Abi-Rached, J. Paganini, P. Pontarotti, and D. Aurelle. Genomic resources and their influence on the detection of the signal of positive selection in genome scans. Molecular Ecology , 25, 2016. doi: 10.1111/ mec.13468. H. Mao, M. Jia, M. Di, E. Valenzi, X. T. Cai, R. Lafyatis, K. Zhang, and P. V. Benos. Halo: hierarchical causal modeling for single cell multi-omics data. Nature Communications , 16(1):8892, 2025. A. A. Margolin, I. Nemenman, K. Basso, C. Wiggins, G. Stolovitzky, R. D. Favera, and A. Califano. Aracne: an algorithm for the reconstruction of gene regulatory networks in a mammalian cellular context. In BMC bioinformatics ,volume 7, pages 1–15. Springer, 2006. D. Neale and N. Wheeler. Gene expression and the transcriptome. The Conifers: Genomes, Variation and Evolution , 2019. doi: 10.1007/978-3-319-46807-5 6. A. Pratapa, A. P. Jalihal, J. N. Law, A. Bharadwaj, and T. Murali. Benchmarking algorithms for gene regulatory network inference from single-cell transcriptomic data. 
+
+Nature methods , 17(2):147–154, 2020. A. Rebai. Causality in genomics studies: Time is ripe for a new paradigm. open j bioinform biostat 1 (1): 010-014. Life Sciences Group , 2017. T. Saito and M. Rehmsmeier. The precision-recall plot is more informative than the roc plot when evaluating binary classifiers on imbalanced datasets. PloS one , 10(3):e0118432, 2015. D. S´ andor and P. Antal. Efficient structure learning of gene regulatory networks with bayesian active learning. BMC bioinformatics , 26(1):150, 2025. A. Shah, A. Ramanathan, V. Hayot-Sasson, and R. Stevens. Causal discovery and optimal experimental design for genome-scale biological network recovery. In Proceedings of the Platform for Advanced Scientific Computing Conference , pages 1–11, 2023. S. Shimizu, P. O. Hoyer, A. Hyv¨ arinen, A. Kerminen, and M. Jordan. A linear non-gaussian acyclic model for causal discovery. Journal of Machine Learning Research , 7(10), 2006. A. Shrestha, K. Bao, W. Chen, P. Wang, Z. Fei, and G. W. Blissard. Transcriptional responses of the trichoplusia ni midgut to oral infection by the baculovirus autographa californica multiple nucleopolyhedrovirus. Journal of Virology , 93(14):10–1128, 2019. P. Spirtes, C. Glymour, and R. Scheines. Causation, prediction, and search . MIT press, 2001. M. C. Teixeira, R. Viana, M. Palma, J. Oliveira, M. Galocha, M. N. Mota, D. Couceiro, M. G. Pereira, M. Antunes, I. V. 10 Asiedu et al. 
+
+Costa, P. Pais, C. Parada, C. Chaouiya, I. S´ a-Correia, and P. T. Monteiro. Yeastract+: a portal for the exploitation of global transcription regulation and metabolic model data in yeast biotechnology and pathogenesis. Nucleic Acids Research , 51(D1):D785–D791, 2023. doi: 10.1093/nar/ gkac1041. I. Tsamardinos, C. F. Aliferis, A. R. Statnikov, and E. Statnikov. Algorithms for large scale markov blanket discovery. In FLAIRS , volume 2, pages 376–81, 2003. T. Veenstra. Metabolomics: the final frontier? Genome Medicine , 4:40 – 40, 2012. doi: 10.1186/gm339. D. S. Watson and R. Silva. Causal discovery under a confounder blanket. In Uncertainty in Artificial Intelligence , pages 2096–2106. PMLR, 2022. Causal ASCEND 11 
+
+# Supplementary Material ASCEND: Method Details 
+
+ASCEND is a constraint-based causal-discovery framework for high-dimensional, two-tier biological systems in which a set of background variables Z is known to causally precede a set of foreground variables X. ASCEND exploits this ordering to replace the global structure-learning problem with a sequence of local conditional-independence (CI) tests, each conditioned on a small, dynamically maintained set of nearest ancestors .This reduces both the number and the order of CI tests relative to methods that condition on the full background layer, while preserving soundness under standard assumptions. 
+
+## Notation and definitions 
+
+We encode causal structure as a directed acyclic graph (DAG) 
+
+G = (V, E) on observed variables V = Z ∪ X, with |Z| =
+
+dZ , |X| = dX . We use Pa( ·), Ch( ·), An( ·), De( ·) for parents, children, ancestors and descendants respectively, and NonDe( ·) = V \ De( ·) for non-descendants of a variable. Anode M is a mediator of an X–Y path if it is an internal non-collider on a directed path X → · · · → Y ; a node C is a collider on a path if both adjacent edges point into it. We write A ⊥d B | C for d-separation of A and B given C in G,and A ⊥⊥ B | C for the corresponding conditional independence in the data distribution P .The ancestral relations among foreground variables, recorded in a matrix A ∈ { 0, 0.5, 1, NA }dX ×dX , are 
+
+Aij = 1 ⇔ Xi ≺ Xj (Xi ∈ An( Xj )) ,Aij = 0 .5 ⇔ Xi ⪯ Xj (Xi /∈ De( Xj )) ,Aij = 0 ⇔ Xi ∼ Xj ,
+
+where Xi ∼ Xj means neither is an ancestor of the other, and NA marks an undetermined pair. Ancestry is a strict partial order, i.e irreflexive (X ≺ X ⊢ FALSE), meaning a node cannot be its own ancestor; Asymmetric (X ≺ Y ⊢ Y̸ ≺ X), meaning if X is an ancestor of Y , then Y cannot be an ancestor of X
+
+and Transitive (X ≺ Y ∧ Y ≺ Z ⊢ X ≺ Z), meaning if X is an ancestor of Y and Y is an ancestor of Z, then X is an ancestor of Z. X ⪯ Y is read “ X is a non-descendant of Y ”. 
+
+Definition 1 (Markov blanket and relativised parents) For 
+
+T ⊆ NonDe( X), let Pa( X; T ) denote the parent set of X in the latent projection of G onto T ∪ { X}. Because X has no child in T (children are descendants), this set equals the Markov blanket of X computed by CI tests restricted to T , and consists exactly of the nearest ancestors of X within T .
+
+Definition 2 ((De)activators) For a single node W and conditioning set C: W is a deactivator of ( A, B | C), written 
+
+A ⊥⊥ B | C ∪ [W ], if A̸ ⊥⊥ B | C and A ⊥⊥ B | C ∪ { W }; W
+
+is an activator , written A̸ ⊥⊥ B | C ∪ [W ], if A ⊥⊥ B | C and 
+
+A̸ ⊥⊥ B | C ∪ { W }. [Claassen and Heskes, 2012, Watson and Silva, 2022]. 
+
+## Assumptions 
+
+Assumption 1 (Two-tier ordering) . No foreground variable is an ancestor of any background variable: ∀Xi ∈ X, Z k ∈
+
+Z, Xi /∈ An( Zk ). Biologically, genotype or DNA methylation (Z) precedes transcription ( X) and not the reverse. 
+
+Assumption 2 (Markov and faithfulness) . P is Markov and faithful to G [Spirtes et al., 2001], this implies that every CI statement in P coincides with a d-separation statement in G
+
+so A ⊥⊥ B | C ⇔ A ⊥d B | C.
+
+The theoretical results in Appendix B are stated for an exact CI oracle I; the finite-sample implementation replaces I with partial correlation tests. 
+
+## The ASCEND algorithm 
+
+ASCEND maintains, for each X, a set T (t) 
+
+> X
+
+of known non-descendants at iteration t, initialised at T (1)  
+
+> X
+
+= Z (valid by Assumption 1) and updated by 
+
+T (t+1)  
+
+> X
+
+= { Y ∈ Z ∪ X : Y ⪯t X }, (1) where ⪯t is the partial order recorded after iteration t. Each iteration performs four steps. Step 1 (Nearest ancestors). For each X compute Pa( X; T (t) 
+
+> X
+
+) by Markov-blanket discovery restricted to T (t) 
+
+> X
+
+(Definition 1); in practice we use IAMB [Tsamardinos et al., 2003] with Fisher’s z-test. Step 2 (Conditioning set and CI test). For a pair (Xi, X j ) we condition on the guarded union of nearest ancestors, 
+
+Sij =  Pa( Xi; Ti) ∪ Pa( Xj ; Tj ) \ { De( Xi) ∪ De( Xj )} (2) keeping a foreground variable only if it is a known non-descendant of both endpoints; all background Z qualify automatically by Assumption 1. We then test Xi ⊥⊥ Xj | Sij 
+
+by a likelihood-ratio comparison of linear models, equivalent to the partial-correlation test and uniformly most powerful under our assumptions [Lehmann and Romano, 2005]. Remark 1 (Why the both-sides condition is required) The naive union Pa( Xi; Ti) ∪ Pa( Xj ; Tj ) is unsafe: a mediator 
+
+M on Xi → M → Xj is a non-descendant of Xj yet adescendant of Xi. Conditioning on M blocks the only directed 
+
+Xi–Xj path, so R3 (below) would falsely declare Xi ∼ Xj .The constraint Sij ⪯ Xi ∧ Sij ⪯ Xj in (2) excludes exactly such mediators while retaining every common ancestor; 
+
+Step 3 (Orientation rules). Building on definition 2, for W ∈ Sij write S\W = Sij \ { W }.Building on Entner et al. [2013], Magliacane et al. [2016] and Watson and Silva [2022]: (R1) Deactivation. If ∃W : W ⊥⊥ Xj | S\W ∪[Xi], then Xi ≺ Xj .(R2) Activation. If ∃W : W̸ ⊥⊥ Xi | S\W ∪ [Xj ], then Xi ⪯ Xj .(R3) Independence. If Xi ⊥⊥ Xj | Sij , then Xi ∼ Xj .Minimal examples of structures identifiable by these rules are shown in Fig. 7. (a) depicts an instance of R1, (b) instance of R2 and (d) depicts an instance of R3. Fig 8 demonstrates examples of closure. Step 4 (Closure and refinement). Applying transitivity ( A ≺ B ≺ C ⇒ A ≺ C) and symmetry (A ⪯ B ∧ B ⪯ A ⇒ A ∼ B), update each TX via equation (1), and recompute nearest ancestors. We repeat the iterations until no new relation is found. See algorithm 2 for pseudocode. 12 Asiedu et al. 
+
+Algorithm 1: ASCEND - oracle version 
+
+Input: Background Z, foreground X, CI oracle I
+
+Output: Ancestrality matrix M 
+
+> 1
+
+Initialise converged ← FALSE , M ← [NA ], T (1)  
+
+> X
+
+← Z ∀X,
+
+t ← 0 
+
+> 2
+
+while not converged do  
+
+> 3
+
+t ← t + 1; converged ← TRUE  
+
+> 4
+
+for each X ∈ X do  
+
+> 5
+
+Pa( X; T (t) 
+
+> X
+
+) ← MB( X; T (t) 
+
+> X
+
+) 
+
+> 6
+
+end  
+
+> 7
+
+for each Xi, X j ∈ X s.t. i > j and Mij = NA do  
+
+> 8
+
+Sij ← Pa( Xi; Ti) ∪ Pa( Xj ; Tj ) \ { De( Xi) ∪ De( Xj )
+
+if I(Xi ⊥⊥ Xj | Sij ) then  
+
+> 9
+
+Mij ← i ∼ j; converged ← FALSE  
+
+> 10
+
+else  
+
+> 11
+
+for each W ∈ Sij , S\W ← Sij \ { W } do  
+
+> 12
+
+if I(W ⊥⊥ Xj | S\W ∪ [Xi]) then  
+
+> 13
+
+Mij ← i ≺ j; converged ← FALSE  
+
+> 14
+
+else if I(W ⊥⊥ Xi | S\W ∪ [Xj ]) then  
+
+> 15
+
+Mij ← j ≺ i; converged ← FALSE  
+
+> 16
+
+else if I(W̸ ⊥⊥ Xj | S\W ∪ [Xi]) then  
+
+> 17
+
+Mij ← Mij ∧ (j ⪯ i); 
+
+converged ← FALSE  
+
+> 18
+
+else if I(W̸ ⊥⊥ Xi | S\W ∪ [Xj ]) then  
+
+> 19
+
+Mij ← Mij ∧ (i ⪯ j); 
+
+converged ← FALSE  
+
+> 20
+
+end  
+
+> 21
+
+end  
+
+> 22
+
+end  
+
+> 23
+
+M ← Closure (M) for each X ∈ X do  
+
+> 24
+
+T (t+1)  
+
+> X
+
+← { Y ∈ Z ∪ X : Y ⪯t X} 
+
+> 25
+
+end  
+
+> 26
+
+if M (t) = M(t−1) then converged ← TRUE  
+
+> 27
+
+end  
+
+> 28
+
+return M 
+
+## ASCEND Pseudocode (Oracle Version) 
+
+The bracket notation in Algorithm 1 carries both conditions of Definition 2; convergence is declared only when a full iteration changes neither M nor any nearest-ancestor set. 
+
+Algorithm 2: Closure 
+
+Input: Ancestrality matrix MOutput: Updated ancestrality matrix M 
+
+> 1
+
+for each i, j ∈ { 1, . . . , d X } s.t. i > j do  
+
+> 2
+
+if (i ⪯M j ∧ i ⪰M j) ∨ i ∼M j then  
+
+> 3
+
+Mij ← i ∼ j 
+
+> 4
+
+else if i ≺M j then  
+
+> 5
+
+Mij ← i ≺ j 
+
+> 6
+
+else if j ≺M i then  
+
+> 7
+
+Mij ← j ≺ i 
+
+> 8
+
+end  
+
+> 9
+
+converged ← FALSE  
+
+> 10
+
+while not converged do  
+
+> 11
+
+converged ← TRUE  
+
+> 12
+
+for each i, j, k ∈ { 1, . . . , d X } s.t. i̸ = j̸ = k, i > k do  
+
+> 13
+
+if i ≺M j ≺M k ∧ Mik ̸ = i ≺ k then  
+
+> 14
+
+Mik ← i ≺ k, converged ← FALSE  
+
+> 15
+
+else if k ≺M j ≺M i ∧ Mik ̸ = k ≺ i then  
+
+> 16
+
+Mik ← k ≺ i, converged ← FALSE  
+
+> 17
+
+end  
+
+> 18
+
+end  
+
+> W
+> XY
+
+(a) Minimal R1  
+
+> W
+> XY
+
+(b) Minimal R2  
+
+> W
+> XY
+
+(d) Case for R3             
+
+> Fig. 7. Minimal DAGs detected by the orientation rules, with witness W.
+> Fig. 8. Example graphs illustrating how we exploits transitivity and antisymmetry to infer causal structure.
+
+# Theoretical Guarantees 
+
+Throughout this section I is the exact oracle of Assumption 2, so all independence statements are d-separation statements. In this section we prove soundness, completeness and complexity. 
+
+## Soundness 
+
+Lemma 1 (Non-descendant invariant) . If every entry committed to M before sweep t is correct, then T (t) 
+
+> X
+
+⊆
+
+NonDe( X) for all X.Proof At t = 1, T (1)  
+
+> X
+
+= Z ⊆ NonDe( X) by Assumption 1, since X is never an ancestor of a background variable. For the step, Y ∈ T (t+1)  
+
+> X
+
+iff Y ⪯t X (1); by hypothesis this relation is correct, so Y /∈ De( X). □
+
+Lemma 2 (Relativised parents are minimal and sufficient) .
+
+Let T ⊆ NonDe( X), then Pa( X; T ) equals the Markov blanket of X computed by CI tests over T ∪ { X}; it contains no descendant of X; and conditioning on it blocks every back-door path from X whose intermediate nodes lie in T .Proof X has no child in T , so its Markov blanket within 
+
+T ∪ { X} is the parent set of X in the latent projection (Definition 1). Marginalising a node outside T ∪ { X} adds an adjacency to X only along an inducing path that is into X,whose T -endpoint is therefore an ancestor of X; marginalising a collider child opens nothing. Hence every blanket member is an ancestor of X in T , and projection parents block all represented back-door paths. □
+
+Definition 3 (Valid conditioning, VC) A set S satisfies VC for (Xi, X j ) if S ⊆ NonDe( Xi) ∩ NonDe( Xj ). 
+
+Lemma 3 (The guarded set satisfies VC) . If every committed entry of M is correct, then Sij of (2) satisfies VC. Causal ASCEND 13 
+
+Consequently no W ∈ Sij is a mediator of a directed Xi–Xj
+
+path. Proof Each foreground W ∈ Sij satisfies W ⪯ Xi and W ⪯
+
+Xj by construction, hence W ∈ NonDe( Xi) ∩ NonDe( Xj ); each background W ∈ Z lies in NonDe( Xi) ∩ NonDe( Xj )by Assumption 1. A mediator of Xi → · · · → Xj lies in De( Xi) ∩ An( Xj ) and so violates W ⪯ Xi; it is therefore excluded. □
+
+Theorem 1 (Soundness) Under Assumptions 1 and 2 with the oracle I, every relation ASCEND commits is correct, and closure preserves correctness. Proof We argue by induction over committed entries; Lemma 3 guarantees VC at each commitment. 
+
+Base. At t = 1, Sij ⊆ Z; by Assumption 1 no Z is a foreground mediator, so VC holds and any relation committed in the first sweep is correct. 
+
+R1. The deactivation W ⊥⊥ Xj | S\W ∪ [Xi] means adding Xi turns W, X j from d-connected to d-separated. Anode only blocks paths on which it is a non-collider, so Xi
+
+blocks every S\W -active W –Xj path as a non-collider; under 
+
+Sij ⪯ {Xi, X j } this is the minimal-deactivation pattern of Entner et al. [2013] and Magliacane et al. [2016], entailing 
+
+Xi ∈ An( Xj ), i.e. Xi ≺ Xj .
+
+R2. The activation W̸ ⊥⊥ Xi | S\W ∪ [Xj ] means adding Xj
+
+opens a W –Xi path; a node opens a path only as (a descendant of) a collider, so Xj is such a collider, giving Xi /∈ De( Xj ), i.e. 
+
+Xi ⪯ Xj .
+
+R3. Suppose Xi ⊥d Xj | Sij . By Lemma 3, Sij contains no mediators of any directed Xi–Xj path, so no directed path in either direction is blocked, whence none exists and Xi ∼ Xj .
+
+Closure. Ancestry ≺ is transitive and the symmetry rule is valid ( Xi ⪯ Xj means Xi̸ ∈ De (Xj ) and similarly Xj ⪯ Xi
+
+means Xj̸ ∈ De (Xi) so neither is an ancestor of the other, which is the definition of Xi ∼ Xj ); the acyclicity guard only ever rejects an update, so closure introduces no incorrect relation. □
+
+Remark 2 (Comparison with the unguarded union) Dropping the both-sides condition in (2) breaks Lemma 3: a foreground mediator may enter Sij once oriented and admitted to T ,after which R3 can fire spuriously (Remark 1). The guard is what makes Theorem 1 unconditional rather than holding only on the first sweep. 
+
+## Completeness 
+
+Global completeness fails for any rule set of this form: when 
+
+Xi and Xj are joined by parallel directed paths, no single (de)activation witness isolates a mediator and the orientation is not identifiable, so NA is the correct output. We adopt the 
+
+lazy oracle standard of Watson and Silva [2022]: we prove the two constructive statements that justify the localisation, then use them to show ascend-oracle is non-dominated within the lazy-oracle class, and is as informative as cbl-oracle , but on a strictly smaller conditioning sets which makes ASCEND faster, cheaper and scalable. The chain of how informative an inference is follows the following: {NA } ≺ {i ⪯ j} ≺ {i ≺ j} ∼ {i ∼
+
+j}. Based on this, we formulate the following. 
+
+Definition 4 (Iteration-t known non-descendant, Watson and Silva, 2022) W is an iteration-t known non-descendant of X
+
+if W ∈ Z, or if W ⪯M X after t updates to M. Write Xt 
+
+> ⪯i
+
+for this set for Xi (so Xt 
+
+> ⪯i
+
+= T (t) 
+
+> Xi
+
+). 
+
+Definition 5 (Lazy oracle algorithm, Watson and Silva, 2022) A lazy oracle algorithm starts from an uninformative M and updates each round using only oracle answers to queries of two types: (i) W ⊥⊥ Xi | Sij \ { W } ∪ ϕ(Xj ), with W ∈ Sij 
+
+and ϕ(Xj ) ∈ {∅ , {Xj }} ; and (ii) Xi ⊥⊥ Xj | Sij . These are exactly the (de)activation and separation queries of R1–R3, conditioned on the common known non-descendants. 
+
+Definition 6 (Dominance, Watson and Silva, 2022) A
+
+dominates B iff (i) on no pair of any DAG is A’s output less informative than B’s, and (ii) on some pair of some DAG it is strictly more informative. A is lazy-oracle complete if no lazy oracle algorithm dominates it. 
+
+ascend-oracle conditions on the guarded nearest-ancestor set Sij ⊆ Sf ull ij of (2) in place of the full Sf ull ij . In CBL’s case, 
+
+Sij includes all background variables and iteration-t known non-descendants. 
+
+Lemma 4 (Localisation preserves separation) . Once Ti, Tj
+
+contain all ancestors of Xi, X j , the minimal guarded set Sij 
+
+and the full valid set Sfull  
+
+> ij
+
+= Z ∪ X ∈ X\{ Xi, X j } : X ⪯M
+
+{Xi, X j } , as used in the confounder blanket learner Watson and Silva [2022], give the same verdict: Xi ⊥d Xj | Sij ⇔
+
+Xi ⊥d Xj | Sfull  
+
+> ij
+
+.Proof By Lemma 2, Pa( Xi; Ti) is a Markov blanket of Xi within 
+
+Sf ull ij (and likewise for Xj ), so every member of Sf ull ij \ Sij 
+
+is screened from both endpoints by elements of Sij . For the separation query, Sij already blocks all back-door paths; the extra members are redundant non-colliders, or colliders re-blocked by a parent in Sij , so Xi ⊥d Xj | Sij ⇔ Xi ⊥d
+
+Xj | Sf ull ij . For a (de)activation query, a member of Stij \ Sij 
+
+is screened from the target and cannot toggle the dependence, so the before/after verdict is unchanged; and a witness outside 
+
+Sij is a non-nearest ancestor, already independent of the target given the remaining blanket, so it fails the “before” dependence and is never a minimal (de)activator for both oracles. □
+
+Theorem 2 Under Assumptions 1 and 2 with the oracle, if Xi ∼ Xj and the pair is separable, then ascend-oracle 
+
+commits Aij = 0 at convergence; a confounded ∼ pair is instead recovered when Xi ⪯ Xj and Xj ⪯ Xi are both inferred, which closure collapses to Xi ∼ Xj .Proof If Xi ∼ Xj no directed path joins them, and the ancestors that separate them lie in NonDe( Xi) ∩ NonDe( Xj ). Background such ancestors are in T (1) ; each foreground common ancestor Xm satisfies Xm ≺ Xi and Xm ≺ Xj and, by the depth induction of Theorem 3, is oriented and enters both Ti, Tj . Once all are represented, Sij blocks every back-door path while blocking no directed path, so Xi ⊥d Xj | Sij 
+
+and R3 fires. When no separating set exists but both Xi ⪯ Xj
+
+and Xj ⪯ Xi are inferred, neither is an ancestor of the other, so closure records Xi ∼ Xj . □14 Asiedu et al. 
+
+Theorem 3 (Orientation-completeness relative to the rule basis) Under Assumptions 1 and 2 with the oracle, at convergence ASCEND commits the correct relation for every rule-identifiable pair whose (de)activating witness lies among the nearest ancestors; in particular every foreground parent– child relation is oriented. Proof Define the ancestral depth d(X) as the longest directed foreground path into X. We show by induction on a depth of 
+
+k that after finitely many sweeps Pa( X; TX ) equals the true nearest-ancestor set of every X with d(X) ≤ k.
+
+Base (k = 0): a source has only background ancestors, captured at t = 1. 
+
+Step : the foreground parents of a depth-k node have depth 
+
+< k , so by hypothesis they are correct and, being parents, are oriented by R1; once oriented they satisfy as non-descendants of X and enter TX via (1), so the next blanket recomputation returns them. At the resulting fixed point, Sij matches Sfull 
+
+> ij
+
+in separation content (Lemma 4) and contains every nearest-ancestor witness, so every rule application available to the full-conditioning oracle is available to ASCEND and fires the same relation. Convergence is reached only when no further rule can fire. □
+
+Theorem 4 (Lazy-oracle completeness) ascend-oracle is lazy-oracle complete: no lazy oracle algorithm dominates it. Equivalently, it is exactly as informative as cbl-oracle ,attained with a minimal conditioning set making it cheaper, faster and scalable. Proof By Theorems 2 and 3, ascend-oracle resolves every pair that R1–R3 and closure can identify from the non-descendants of both endpoints. By Lemma 4 its guarded queries return the same answers as the full-set queries of Definition 5, so it makes exactly the inferences cbl-oracle makes; the two are information-equivalent. Since no lazy oracle algorithm dominates cbl-oracle [Watson and Silva, 2022, Thm. 3], none dominates ascend-oracle . The size bound follows from 
+
+Sij ⊆ Sf ull ij with Sij the nearest-ancestor blanket. Since Sij is smaller, the ASCEND oracle is called fewer times, making it scalable for omics unlike CBL . □
+
+Remark 3 (Scope and advantage) Theorem 4 is completeness against the lazy oracle, not absolute identifiability. What separates ascend-oracle from cbl-oracle is not the inferences but their cost: it reaches the same lazy-oracle-optimal output conditioning only on nearest ancestors, so 
+
+|Sij | stays small (and shrinks as dZ grows), whereas |Sf ull ij |
+
+grows with the resolved ancestry and with dZ .
+
+## Complexity 
+
+Theorem 5 (Complexity) Let ¯s be the maximum size of any conditioning set encountered. ASCEND oracle terminates in 
+
+O d2 
+
+> X
+
+(dX + dZ ) ¯ s in the worst case. Proof Per pair per sweep: one R3 test plus O(|Sij |) =
+
+O(¯ s) (de)activation tests; maintaining the two blankets costs 
+
+O(( dX +dZ )¯ s) oracle queries, absorbed over the pairs that share a node. There are  dX
+
+> 2
+
+ = O(d2 
+
+> X
+
+) pairs. The committed relations form a partial order of height ≤ dX , and each sweep resolves at least one further depth layer (Theorem 3), so O(dX ) sweeps suffice. Multiplying gives O(d2 
+
+> X
+
+(dX + dZ )¯ s); in sparse graphs the nearest-ancestor sets do not grow with dZ , ¯ s = O(1), and the bound is O(d2 
+
+> X
+
+¯s). □
+
+Remark 4 The realised cost scales with ¯s, which shrinks as additional background variables refine the nearest-ancestor sets, whereas full-background conditioning has per-test cost growing in dZ . This is the source of the empirical runtime advantage reported in Section 3. 
+
+# Implementation Details 
+
+Markov blankets are learned by IAMB with a Fisher-z partial-correlation test at level αmb = 0.05; Pairwise tests use the same statistic, reporting q-values via the Benjamini–Hochberg correction across each sweep. All CI queries read from asingle correlation matrix computed once, so each test is an 
+
+O(|Sij |3) precision-matrix solve rather than a model refit. In finite samples we aggregate (de)activation evidence across all witnesses W ∈ Sij and commit the direction with the larger summed − log p, which improves robustness without altering the oracle guarantees (the oracle commits on the first valid witness). 
+
+# Simulation Framework 
+
+We generate synthetic two-tier systems from a linear-Gaussian structural equation model (SEM) respecting the hierarchy of Assumption 1. With Z = {Z1, . . . , Z dZ } and X =
+
+{X1, . . . , X dX }, the joint DAG admits edges Zi → Zj , Zi →
+
+Xj , Xi → Xj , and forbids Xi → Zj . Sampling in topological order, 
+
+Zj = X   
+
+> Zi∈Pa Z(Zj)
+
+βij Zi + ϵj ,ϵj ∼ N (0 , σ 2 
+
+> j
+
+),Xk = X   
+
+> Zi∈Pa Z(Xk)
+
+γik Zi + X   
+
+> Xi∈Pa X(Xk)
+
+ωik Xi + δk ,δk ∼ N (0 , ψ 2 
+
+> k
+
+),
+
+(3) where β, γ, ω are edge coefficients and the noise variances are scaled to a target signal-to-noise ratio R2 (the fraction of each variable’s variance explained by its parents). Table 5 lists the swept parameters. 
+
+Table 5. Simulation parameters. 
+
+Parameter Interpretation 
+
+Sample size n Statistical power for CI testing; low n
+
+stresses data-scarce omics regimes. Background dim. 
+
+dZ
+
+Number of background variables. Foreground dim. 
+
+dX
+
+Number of foreground variables. Sparsity sp Ratio of present to possible edges (larger 
+
+⇒ sparser). Signal strength R2 Variance explained by causal parents; lower R2 tests weak-effect robustness. Causal ASCEND 15 
+
+Ground truth and evaluation. From G we extract the foreground ancestral matrix AX with 
+
+AX 
+
+> ij
+
+= 1 iff Xi ∈ An( Xj ). Because the estimand is a directed 
+
+ancestral relation, we score all ordered pairs ( i, j ), i̸ = j: a cell is a positive prediction when Aij ∈ {0.5, 1} and a true positive when additionally AX 
+
+> ij
+
+= 1. We report precision, recall and F1 over these directed claims, the fraction of pairs ASCEND resolves (coverage), and direction accuracy among truly adjacent, oriented pairs. Pairs left NA are reported separately and are not counted as errors, reflecting ASCEND’s design preference for an honest abstention over a forced orientation. 
+
+# Implementation details for the causal-discovery baseline comparison 
+
+This section documents settings specific to the comparison against CBL, GES, LiNGAM and PC (Section 4); general data-generation mechanics are described in Section D. Fixed generative settings. The parameters swept for this comparison are n, dX , dZ /d X ,
+
+sp and R2 (Table 5). Two further SEM parameters were held fixed across the entire grid rather than swept: the background →foreground edge probability P (Zi → Xj ) = 0 .20, and the foreground →foreground effect size ( X → X coefficient magnitude) = 0 .90. All parent contributions were fully linear (lin pr = 1). Method configurations. All competitor implementations are from pcalg unless noted.  
+
+> •
+
+ASCEND : maxiter = 10, α = 0 .05 for pairwise CI tests, 
+
+αmb = 0 .05 for Markov-blanket discovery.  
+
+> •
+
+CBL : stability-selection with γ = 0 .5, maxiter = 10, and 
+
+B = 20 bootstrap resamples per call.  
+
+> •
+
+GES : pcalg::ges with a GaussL0penObsScore and iterate=TRUE ,run on the full Z ∪ X matrix.  
+
+> •
+
+LiNGAM : pcalg::lingam on the full matrix, using the pruned coefficient matrix ( Bpruned ) when available.  
+
+> •
+
+PC : pcalg::pc with gaussCItest , α = 0 .05, maj.rule=TRUE ,
+
+solve.confl=TRUE , on a sufficient statistic built from the complete-case, non-constant columns of the full matrix. Compute environment and job layout. Runs were performed on a SLURM cluster (KCL CREATE) on R 4.3.1. Each SLURM array task corresponds to one (parameter combination, n) pair and runs all 20 replicates for that pair, executing all five methods serially within the task (one CPU per task); the 81 combinations × 9 sample sizes give 729 tasks in total. Wall-time and memory were allocated per n-band (4– 36 hours, 4–32 GB) rather than uniformly, since small-n tasks are inexpensive and n = 131 ,072 tasks are not. Timeouts and failure propagation. Each method was allotted a hard 3,600-second (1-hour) budget per replicate, enforced with R.utils::withTimeout . If a method timed out at a given (combination , n ), it was marked 
+
+skipped timeout and skipped for the remaining replicates at that cell and at every larger n for the same combination 
+
+(persisted via a marker file, so later, larger-n tasks inherit the skip). This is why a method’s reported failure rate at large n
+
+reflects both genuine timeouts at that n and propagated skips from smaller n within the same combination, and should not be read as 729 independent failure draws. Run status is recorded per replicate as one of ok , timeout , error , skipped timeout or 
+
+failed subset .Evaluation bookkeeping. Metrics are computed once per replicate over the upper triangle of ordered foreground pairs. Precision is tp/ (tp + f p ) and left NA when the method makes no positive call; recall is 
+
+tp/ (tp + f n + unres tp ), i.e. an unresolved ( NA ) verdict on a truly-ancestral pair counts against recall even though it is not scored as a false negative outright, while an unresolved verdict on a truly-unrelated pair ( unres tn ) is excluded from both the precision and recall denominators. NA precision/recall/F1 values are preserved as NA in the merged output (not imputed to 0), so mean statistics reported in Section 4 are means over the replicates on which a method actually committed to a value. 
+
+# A Scalable Preprocessor for Causal Discovery: ASCEND-PC on Breast Cancer Multi-Omics 
+
+ASCEND outputs an ancestral adjacency matrix A over foreground variables, where Aij = 0 means Xi is provably independent of Xj . These zero-entries serve as forbidden direction constraints that can be passed to any constraint-based causal discovery algorithm. By eliminating impossible edges before the search begins, ASCEND dramatically prunes the super-exponential DAG space. We demonstrate this preprocessing capability by pairing ASCEND with the PC algorithm [Spirtes et al., 2001] (ASCEND-PC) in a multi-omic breast cancer cohort, testing whether ancestral constraints derived from methylation improve recovery of the transcription factor (TF) target relationships curated in the literature. 
+
+Study Design and Data 
+
+We used paired gene expression and promoter methylation profiles from 1,417 breast cancer samples in the Memorial Sloan Kettering Cancer Centre (MSKCC) cohort. Promoter methylation served as the background tier (Z; epigenetic state causally precedes transcription) and gene expression as the foreground tier (X). We curated a 40-gene set centred on the oestrogen receptor alpha (ESR1) signalling pathway, comprising 16 core pathway members with known biology and 24 negative control genes from independent pathways (KRAS, BRAF, IDH1/2), tissue-specific, and housekeeping categories. Negative controls provide empirical specificity bounds: a well-calibrated method should preferentially place edges within the core pathway. We used TRRUST [Han et al., 2015], a literature-curated database of directed human TF target relationships as ground truth. 
+
+ASCEND Prunes the Search Space 
+
+ASCEND processed the full methylation-expression matrix and returned A. Pairs with Aij = Aji = 0 (confirmed independent) were removed from PC’s skeleton search via fixedGaps . Non-descendant constraints ( Aij ∈ { 1, 0.5}) were applied post hoc via PC’s addBgKnowledge . ASCEND pruned 237 of 780 possible gene pairs (30 .4%) before PC began, substantially reducing the search space. A plain unaided PC baseline was run alongside for comparison. ASCEND-PC substantially outperformed plain PC on every metric (Table 6). The AUPRC ratio rose from 1 .00 (random) to 1 .59, indicating meaningful ranking enrichment. Early Precision Ratio improved 3 .5×. Direction accuracy on true-positive edges reached 75% versus 50% chance, ASCEND’S constraints carry a genuine causal signal. Predicted edges were 16 Asiedu et al.                                   
+
+> Table 6. ASCEND-PC versus plain PC on the ESR1 pathway. TRRUST v2 ground truth. AUPRC ratio and EPR baselines: 1 .0 (random). Direction baseline: 50%.
+> Metric Plain PC ASCEND-PC
+> AUPRC ratio 1.00 1.59
+> Early Precision Ratio (EPR) 1.00 3.54
+> Direction accuracy 50% 75%
+> Specificity enrichment 1.0 ×3.16 ×
+> Fisher odds ratio 1.00 3.96
+> Fisher p(one-sided) 0.50 0.054 Skeleton pairs pruned 0237 / 780 (30.4%)
+
+3.16 × more frequent among core pathway genes than among negative controls, confirming biological specificity. The key mechanism is pruning: by eliminating 30% of candidate edges before PC begins, ASCEND suppresses spurious associations that would otherwise survive conditional-independence testing. The marginal Fisher p-value (0 .054) reflects the extreme label sparsity (22 positives in 1 ,560 ordered pairs) rather than weak effect size; the odds ratio of 3.96 indicates strong enrichment. ASCEND’s pruning power depends on having informative methylation anchors. In a parallel experiment with a larger, biologically heterogeneous 77-gene set designed to maximise TRRUST coverage, ASCEND pruned only 4 .5% of pairs and EPR remained near 1.0, confirming that ASCEND requires matched Z-variables for every foreground gene to contribute useful constraints. The focused ESR1 pathway design, where every gene possesses a methylation probe, represents the intended use case. 
+
+## Recovered Network 
+
+The inferred PDAG over the 16 core ESR1 pathway genes recovers ESR1 as the dominant hub, with directed edges consistent with its role as master transcriptional regulator of oestrogen-responsive genes. Several high-confidence edges are independently supported by TRRUST v2, including the clinically relevant ESR1 →CCND1 →MKI67 proliferation axis. Additional directed edges absent from TRRUST represent testable predictions of tissue-context-specific regulation. Asubset of edges remain undirected, reflecting the fundamental limits of observational identifiability.

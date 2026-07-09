@@ -1,0 +1,778 @@
+Title: Nanopore metagenomic sequencing links clinically relevant resistance determinants to pathogens
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.02.16.706128v2.full.pdf
+
+Number of Pages: 27
+
+Markdown Content:
+1
+
+# Nanopore metagenomic sequencing links clinically relevant resistance 1
+
+# determinants to pathogens 2
+
+3Harika Ürel 1-3† , Ela Sauerborn 2-4† , Michael Biggel 1, Friedemann Gebhardt 4, Ebenezer Foster-4Nyarko 5, Silvio D Brugger 6, Rhys T White 7, Søren Heidelbach 8, Mads Albertsen 8, Francis 5Muchaamba 1, Tim Reska 2,3 , Marc J A Stevens 1, Roger Stephan 1, Richard Fetherston 9, Lara 6Urban 1-3 *78
+
+> 1
+
+Institute for Food Safety and Hygiene, Vetsuisse Faculty, University of Zurich, Zurich, 9Switzerland 10 
+
+> 2
+
+Helmholtz AI, Helmholtz Zentrum Muenchen, Neuherberg, Germany 11 
+
+> 3
+
+Technical University of Munich School of Life Sciences, Freising, Germany 12 
+
+> 4
+
+Institute of Medical Microbiology, Immunology and Hygiene, Technical University of Munich 13 School of Medicine and Health, Munich, Germany 14 
+
+> 5
+
+Department of Infection Biology, London School of Hygiene and Tropical Medicine, London, 15 United Kingdom 16 
+
+> 6
+
+Department of Infectious Diseases and Hospital Epidemiology, University Hospital Zurich, 17 University of Zurich, Zurich, Switzerland 18 
+
+> 7
+
+New Zealand Institute for Public Health and Forensic Science, Health Security, Porirua, 19 New Zealand 20 
+
+> 8
+
+Center for Microbial Communities, Aalborg University, Denmark 21 
+
+> 9
+
+Oxford Nanopore Technologies, Oxford, UK 22 23 
+
+> †
+
+co-first authors 24 *corresponding author: lara.h.urban@gmail.com 25 26 27 
+
+# Keywords 28 
+
+Metagenomics, plasmid-pathogen associations, antimicrobial resistance, nanopore 29 sequencing, methylation 30 31 
+
+32 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+2
+
+# Abstract 33 
+
+Culture-independent metagenomics enables the detection of plasmid-encoded antimicrobial 34 resistance (AMR) genes directly from clinical samples; however, the clinical significance of 35 these genes depends on their bacterial host and genomic context, which metagenomics 36 cannot fully infer. Nanopore sequencing technology intrinsically encodes epigenetic 37 modifications such as methylation, which can be leveraged for plasmid-host associations from 38 metagenomic data. Existing methods rely on the recovery of metagenome-assembled 39 genomes (MAGs), which can introduce bias toward abundant taxa and leave clinically 40 relevant, low-abundance pathogens unassociated. To address this limitation, we extended 41 methylation-based plasmid-host association from the MAG level to individual assembly 42 contigs and sequencing reads. The CUPID pipeline implements the calculation of contig and 43 read similarity scores, which compare weighted mean methylation rates across motifs 44 genetically shared between any contig or read pair. We validated this approach on a mock 45 metagenomic community composed of ten carbapenem-resistant Enterobacterales isolates, 46 where we achieved 93.8% accuracy at the contig level and 100% at the read level for 47 carbapenemase plasmid-host associations. When applied to metagenomic and 48 quasimetagenomic data of sixteen patient rectal swabs collected during routine hospital 49 surveillance, our approach assigned every detected plasmid-encoded carbapenemase to its 50 correct bacterial host at the contig level, using matched culture-based diagnostics and whole-51 genome sequencing as a ground truth. Read-level analysis identified additional associations 52 that were missed at the contig level, including a multi-host plasmid confirmed by established 53 diagnostics. These findings demonstrate a pathway from rapid AMR gene detection using 54 metagenomics to actionable surveillance for infection prevention, transmission tracing, and 55 outbreak investigation. 56 57 
+
+# Impact statement 58 
+
+Culture-independent metagenomics can detect antimicrobial resistance genes, but their 59 clinical significance depends on the bacterial host and genomic context. Here, we show that 60 nanopore-derived bacterial DNA methylation patterns can link carbapenemase genes to 61 pathogenic hosts and plasmid context directly from patient samples. This provides a route 62 from rapid antimicrobial resistance gene detection to actionable public health surveillance. 63 64 
+
+# Data summary 65 
+
+All sequencing data after human content filtering have been deposited at the European 66 Nucleotide Archive (ENA, BioProject accession PRJEB108076, with all isolate sequencing 67 data for mock community generation available under the sample accession numbers 68 SAMEA121375149-58, all isolate sequencing data from the rectal swabs available at 69 SAMEA121334008-24, all metagenomic data from the rectal swabs available at 70 SAMEA121325220-27, and all quasimetagenomic data available at SAMEA122914816-23, 71 SAMEA122920068-74). All code is available at GitHub: https://github.com/harikaurel/cupid. 72 All other supporting data are provided in the article and supplementary tables. 73 
+
+74 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+3
+
+# Introduction 75 
+
+Genomics is now central to infectious disease surveillance, supporting high-resolution 76 outbreak detection, transmission inference, source attribution, and antimicrobial resistance 77 (AMR) monitoring across public health and food safety systems (1,2). Whole-genome 78 sequencing (WGS) of cultured pathogens is now, for example, a recommended standard by 79 the European Centre for Disease Prevention and Control and the European Food Safety 80 Authority (3,4). Portable, real-time nanopore sequencing is extending these capabilities 81 beyond centralized sequencing centers, making pathogen genomic surveillance increasingly 82 feasible in clinical microbiology laboratories, distributed public health surveillance networks, 83 and lower-resource settings (5–9). 84 In comparison to culture-based genomic characterization, rapid, culture-independent 85 metagenomic pathogen surveillance offers several advantages. Metagenomic sequencing can 86 be applied to a wide range of clinical sample types without culture-based enrichment, which 87 can be time-consuming, requires specialized biosafety infrastructure, and depends on 88 pathogen-specific growth requirements (3). Metagenomics can detect pathogens and their 89 subtypes, including the identification of unculturable or previously uncharacterized pathogens 90 through de novo genome assembly approaches. Metagenomic data can further detect 91 virulence- and AMR-associated genes and, where sequence linkage permits, place them in 92 pathogen or mobile-element contexts (such as plasmids), including those harbored within 93 commensal microbial communities (10,11). Recent advances in accurate long-read 94 metagenomics using nanopore sequencing technology can provide ( i) higher resolution for 95 read-based taxonomic classification and AMR annotations, ( ii ) more contiguous de novo 96 assemblies (contigs) from complex microbial environments, including the recovery of 97 circularized AMR-carrying plasmid contigs, and ( iii ) binning of these contigs into high-quality 98 metagenome-assembled genomes (MAGs), enabling the reconstruction of near-complete or 99 closed genomes by binning of the recovered contigs (5,12). 100 While nanopore metagenomic sequencing has recently demonstrated improved pathogen and 101 AMR profiling compared with culture-based approaches (10), three analytical barriers continue 102 to limit the clinical interpretation of metagenomic data: ( i) insufficient sensitivity for detecting 103 low-abundance pathogens and AMR genes; ( ii ) difficulty distinguishing clinically relevant 104 organisms from background or non-viable DNA; and ( iii ) limited ability to link detected AMR 105 genes to their bacterial hosts, particularly when genes are plasmid-borne. The properties of 106 nanopore sequencing data may provide opportunities to overcome these barriers: Nanopore 107 sequencing measures disruptions in an ionic current as native DNA molecules pass through 108 a nanopore, generating raw signal data that can be basecalled into nucleotide sequence while 109 retaining information about molecule-level features such as epigenetic modifications (13). ( i)110 To increase sensitivity, the real-time signal acquisition of nanopore sequencing enables 111 adaptive sampling, in which the initial sequence from each molecule is rapidly basecalled and 112 aligned during sequencing so that only molecules matching predefined pathogen or AMR 113 targets are retained (14–16). ( ii ) The raw nanopore signals from native DNA sequencing can 114 support additional computational inference beyond consensus sequence alone. Ürel et al. 115 (2025) showed that signal-level features can be used to infer microbial viability in controlled 116 experimental and mock-community settings, suggesting a possible route to distinguishing 117 DNA from viable and non-viable organisms in metagenomic samples (17). ( iii ) Finally, native 118 nanopore sequencing can detect bacterial DNA methylation patterns, which can be used as 119 endogenous genomic signatures for metagenomic binning and plasmid-host associations 120 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+4(18). This approach leverages bacterial restriction-modification systems, in which 121 methyltransferases methylate specific host DNA motifs while cognate restriction enzymes 122 cleave unmethylated foreign DNA (19, 20). The Nanomotif tool exploits the methylation motifs 123 using nanopore sequencing data to identify methylated sequence patterns within contigs, 124 improve metagenomic binning, and associate unbinned contigs, including plasmids, with host 125 MAGs (18, 21, 22). 126 Linking plasmids to their pathogenic hosts is critical when detecting plasmid-encoded AMR 127 genes in metagenomic data. Carbapenemase-producing Enterobacterales exemplify plasmid-128 mediated AMR spread, with conjugative and mobilizable plasmids moving KPC, NDM, VIM, 129 and OXA-48-like genes across bacterial strains and species (23). Given that delays in 130 diagnosis and therapy of carbapenemase-producing Enterobacterales infections are 131 associated with high morbidity and mortality, rapid metagenomic identification of pathogens, 132 AMR determinants, and their genomic context could substantially improve infection 133 management and public health response (24, 25). However, existing methylation-based 134 plasmid-host association approaches depend on the recovery of the prospective microbial 135 host on the MAG level (18), which is poorly matched to clinical surveillance samples where 136 the microbial hosts of AMR determinant may be present at low abundance within a complex 137 mixture of host DNA, dominant commensal microbiota, and other microbial DNA. Applying 138 Nanomotif directly to carbapenemase-carrying plasmids in low-abundance clinical 139 metagenomes is therefore constrained, with its plasmid-host association workflow depending 140 on sufficient recovery of the prospective host MAG, while pathogens are mostly only 141 detectable at the contig or sequencing read level. Consequently, the use of nanopore-based 142 methylation information in metagenomics has so far provided limited evidence of clinical utility 143 and has not yet been validated against established culture-based diagnostics (18,21,22). 144 Here, we developed and validated a computational framework that extends methylation-based 145 plasmid-microbial host associations to the assembly and individual sequencing read level. We 146 used mock metagenomic data from clinically relevant carbapenem-resistant Enterobacterales 147 
+
+isolates to validate associations between plasmid and chromosomal contigs and reads 148 predicted by our computational framework. We then evaluated this framework on 149 metagenomic data derived from rectal swabs routinely collected from patients during clinical 150 surveillance for carbapenem-resistant Enterobacterales carriage. By comparing our 151 predictions against pathogen and carbapenemase predictions from established culture-based 152 diagnostics and matched whole-genome sequences, we show that nanopore-based 153 metagenomics can reliably distinguish plasmid-encoded AMR genes and associate them with 154 their respective bacterial hosts, increasing the sensitivity and precision of metagenomics-155 based pathogen surveillance. 156 157 
+
+158 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+5
+
+# Methods 159 
+
+Mock metagenomic community 160 
+
+We generated mock metagenomic communities by pooling the WGS data from ten 161 carbapenem-resistant Enterobacterales isolates. These mock communities were used to 162 benchmark metagenomic associations between AMR genes and plasmids, with the matched 163 whole genomes as ground truth. 164 
+
+DNA extraction 165 
+
+Ten carbapenem-resistant Enterobacterales isolates (Table S1A) were recovered from 166 glycerol stocks stored at -80 °C and cultured overnight at 37 °C on BD® Columbia Blood Agar 167 plates. Genomic DNA was extracted from the isolates using a spin-column-based purification 168 method. Briefly, 10–20 colony-forming units (CFUs) from overnight cultures were resuspended 169 in 1 mL phosphate-buffered saline (PBS). A 100 μL aliquot was adjusted to 1 mL with PBS 170 and centrifuged at 12,000 × g for 2 min. Genomic DNA was extracted from the resulting pellet 171 using the DNeasy Blood & Tissue Kit (QIAGEN, Hilden, Germany), according to the 172 manufacturer’s protocol for Gram-negative bacteria (26). To improve DNA yield and purity, 40 173 μL of proteinase K was added, and the lysis incubation was extended to 2 h. An RNase 174 treatment step was incorporated after proteinase K incubation, following the manufacturer’s 175 instructions (Qiagen, Hilden, Germany) (8). DNA concentrations were measured using a Qubit 176 4 Fluorometer (dsDNA BR kit). 177 
+
+Whole-genome generation by nanopore sequencing 178 
+
+Nanopore sequencing libraries were prepared using the Oxford Nanopore Rapid Barcoding 179 Kit (SQK-RBK114.96). Two barcodes were used per isolate to adjust for imbalanced 180 sequencing across barcodes. Per barcode, 200 ng of DNA was used. The final libraries were 181 sequenced on R10.4.1 PromethION flow cells for 72 h. The nanopore sequencing raw data 182 were basecalled using the Dorado v0.9.1 super-accuracy basecalling model v5.0.0 183 (dna_r10.4.1_e8.2_400bps_sup@v5.0.0) and with epigenetic modification calling enabled for 184 6mA, 4mC, and 5mC. Reads were demultiplexed using Dorado demux and filtered to retain 185 reads with a minimum Phred quality score of 9 and a minimum length of 200 bases using 186 Chopper v01.11.0 (28). Sequencing summary metrics were generated using SeqKit v2.10.1 187 (29). De novo genome assemblies were generated using Flye nano-hq v2.9.6 (30, 31). 188 Assemblies were subsequently polished using Dorado polish in bacterial mode. Assembly 189 depth was assessed using SAMtools depth v1.21 (32). Genome quality metrics, including 190 assembly completeness and contamination, were evaluated using CheckM2 v1.1.0 with the 191 
+
+uniref100.KO.1.dmnd reference database (33). Polished de novo assemblies were analyzed 192 using the Pathogenwatch v2.3.1 platform (accessed 28 January 2026) for species 193 identification and, if available, multi-locus sequence typing (MLST) (34). Assemblies were 194 further taxonomically classified using Kraken2 v2.1.3 (35) and the NCBI nucleotide database 195 (accessed 30 January 2026). AMR genes were identified at the contig level using 196 AMRFinderPlus v4.0.23 (36–38) (database version 2024-10-22.1). Contigs were annotated 197 as plasmids or chromosomes using MOB-suite (v3.1.9) (39), which also provides plasmid 198 typing and mobility predictions based on replicon markers, relaxase (MOB) typing, and mating-199 pair formation (MPF) systems. The MOB-recon module was applied specifically to AMR-200 carrying contigs classified as plasmids to determine plasmid incompatibility types. 201 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+6
+
+Clinical metagenomics from rectal swabs 202 
+
+Sixteen rectal swabs were routinely collected as part of the Technical University of Munich 203 hospital admission screening for carbapenem-resistant Enterobacterales . Swabs (Copan 204 Diagnostics, Brescia, Italy) were inserted rectally to a depth of 2–3 cm and rotated three times. 205 Following collection, swabs were plated onto BD® MacConkey agar (Becton Dickinson GmbH, 206 Heidelberg, Germany) and Thermo Scientific™ Brilliance™ extended-spectrum β-lactamase 207 agar plates and incubated at 37 °C for 20–24 h. 208 
+
+Established diagnostics 209 
+
+Species identification was performed from a single CFU of Enterobacterales isolates per rectal 210 swab (Tables S1B&D) using matrix-assisted laser desorption ionization time-of-flight mass 211 spectrometry (MALDI-TOF MS; Bruker Daltonics GmbH, Bremen, Germany; MBT Compass 212 4.1 with MBT Compass Reference Library 2023), according to the manufacturer’s instructions. 213 Phenotypic antimicrobial susceptibility testing (AST) was conducted on pure subcultures using 214 the VITEK® 2 system (bioMérieux, Marcy l’Etoile, France) with the AST-GN69 cards, and 215 carbapenem susceptibility was interpreted according to European Committee on Antimicrobial 216 Susceptibility Testing (EUCAST) guidelines (27). Vitek® 2 reports categorical susceptibility 217 interpretations [susceptible/intermediate/resistant (S/I/R)] derived from discrete antimicrobial 218 concentration steps; where we refer to elevated non-susceptibility, we mean a shift from S to 219 I/R in the Vitek ® 2 categorical call. Carbapenemase production was assessed using a multiplex 220 immunochromatographic lateral flow assay (O.K.N.V.I Resist-5) that detects the presence of 221 the most common KPC, OXA-48-like, NDM, VIM, and IMP carbapenemases. After completion 222 of routine diagnostics, five to ten CFUs of each carbapenem-resistant Enterobacterales isolate 223 were stored at -80 °C in glycerol stocks. The same isolates were thawed and processed for 224 WGS as described above. 225 
+
+Metagenomic data generation 226 
+
+Genomic DNA was extracted directly from the first eight (of overall 16) collected rectal swabs 227 (“metagenomic” samples), and from a negative extraction control (PBS). These swabs, stored 228 in Amies transport medium without charcoal (Copan Diagnostics, Brescia, Italy), were thawed 229 at 4 °C overnight. For lysis, the swab tip was transferred into a QIAamp PowerFecal Pro DNA 230 Kit PowerBead tube. The swab shaft was aseptically removed using sterile scissors and 231 tweezers, ensuring that no residual transport medium or gel was transferred. The PowerBead 232 tube with the swab tip was vortexed at high speed for 1 min. Subsequently, the QIAamp 233 PowerFecal Pro DNA Kit solution CD1 was added according to the manufacturer’s 234 instructions, followed by incubation at 65 °C for 10 min and bead beating. DNA extraction was 235 then completed according to the QIAamp PowerFecal Pro DNA Kit protocol. DNA 236 concentrations were measured using the Qubit 4 Fluorometer (dsDNA BR kit). Nanopore 237 sequencing libraries were prepared with the SQK-RBK114.24 Rapid Barcoding Kit and 238 sequenced for 72 h on a MinION Mk1D device using two R10.4.1 MinION flow cells each. Two 239 barcodes were used per sample per DNA extract. A total of 40-200 ng of DNA in 10 μL per 240 barcode was used for each library preparation, depending on the respective DNA 241 concentration. 242 The remaining eight rectal swabs were incubated in 4 mL of brain heart infusion (BHI) broth 243 for 4 h at 36 °C (“quasimetagenomic” samples). Following incubation, a 1 mL aliquot of the 244 suspension was collected and centrifuged at 12,000 × g for 5 minutes. The resulting pellet 245 was resuspended in 100 μL of the remaining BHI. DNA extraction and nanopore sequencing 246 were performed as previously described for the metagenomic samples. 247 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+7
+
+Metagenomic data analysis 248 
+
+The entire computational pipeline is available at GitHub: https://github.com/harikaurel/cupid, 249 including the Nanomotif-based CUPID pipeline for the implementation of contig similarity score 250 (css) and read similarity score (rss) calculations and visualizations. 251 
+
+Read-level metagenomic data processing 252 
+
+All nanopore sequencing data were basecalled using Dorado v0.9.1 with the SUP v5.0.0 253 basecalling model (dna_r10.4.1_e8.2_400bps_sup@v5.0.0) and with epigenetic modification 254 calling enabled for 6mA, 4mC, and 5mC. Reads were demultiplexed using Dorado demux and 255 filtered to retain reads with a minimum quality score of 9 and a minimum length of 200 bases 256 using Chopper v01.11.0 (28). Sequencing summary metrics were generated using SeqKit 257 v2.10.1 (29). To remove human genomic information, human sequencing reads were identified 258 by mapping to the human reference genome (GRCh38) using minimap2 v2.30 (40) with the 259 map-ont preset. Reads with human alignments were excluded, and unmapped reads were 260 retained as the host-depleted metagenomic dataset. Read-level AMR gene detection was 261 done using AMRFinderPlus v4.0.23 (36). Plasmid reads were detected by MOB-suite (v3.1.9) 262 (39), and read-level taxonomic classification was performed using Kraken2 v2.1.3 (35) and 263 the NCBI nucleotide database (accessed 30 January 2026). 264 
+
+Metagenomic assemblies and binning 265 
+
+For metagenomic assemblies (Figure 1A), we used nanoMDBG (v.1.0) (42,43) followed by 266 polishing using Dorado aligner and polish (in bacterial mode). Contig-based taxonomic 267 classification was performed with Kraken2 as described above. AMR genes were identified 268 using AMRFinderPlus v4.0.23 (36) as described above. In the mock metagenomic community, 269 the ground truth for each metagenomic contig was determined by aligning the sequencing 270 reads from each isolate to the mock community assemblies with minimap2 v2.30 (map-ont 271 preset) (40), retaining only primary alignments. 272 Plasmid replicon types and mobility features were inferred from contigs using MOB-suite 273 (v3.1.9) (Figure 1A). These plasmid contigs were additionally manually investigated to rule out 274 false-positive plasmid annotations: ( i) for the presence of genes involved in plasmid and/or 275 transposon function using Prokka (43), and ( ii ) for the occurrence of the sequence in at least 276 two strains after BLAST alignment against the full NCBI database at ≥95% nucleotide identity 277 (44). Finally, the plasmids were annotated for their insertion sequence (IS) elements by 278 BLAST-based homology search against the ISfinder nucleotide database (downloaded on 279 May 26th, 2026), requiring ≥80% nucleotide identity (45). IS detections were deduplicated by 280 the IS family to reduce redundancy arising from the high sequence similarity between IS family 281 members, where detections from the same IS family within 50 bases of each other were 282 considered to represent a single insertion event. Each carbapenemase detection was then 283 evaluated for the presence of IS elements within a conservative 500 bases-window upstream 284 (5’) and downstream (3’) of the gene boundaries, and putative composite transposons were 285 identified where IS elements of the same family were detected in inverted orientation on both 286 sides of the respective gene. 287 
+
+Contig binning was performed using MaxBin2 (v2.2.7; 46), MetaBAT2 (v2.18; 288 https://bitbucket.org/berkeleylab/metabat), and VAMB (v5.0.4; vamb bin command with –m 289 2000 and –minfasta 200000; https://github.com/RasmussenLab/vamb). The resulting bins 290 were integrated using DASTool (v1.1.7; https://github.com/cmks/DAS_Tool). 291 
+
+292 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+8
+
+Plasmid-microbial host associations 293 
+
+Per-base epigenetic modification counts per sample were generated in BED format using the 294 modkit pileup function (v0.5.0; https://github.com/nanoporetech/modkit). We then used this 295 BED file and the FASTA file of the metagenomic assembly per sample to apply the Nanomotif 296 v0.8.0 (18) motif_discovery module and identify methylation motifs at the contig level. As 297 Nanomotif is normally applied to the bin level, we implemented the Nanomotif-based CUPID 298 pipeline for contig- and sequencing read-level association calculations 299 (https://github.com/harikaurel/cupid). 300 For contig-level associations (Figure 1B), we first modified the contig-to-bin assignment file 301 such that each contig was treated as its own bin (i.e., one contig per bin). Chromosomal 302 contigs that remained “Unclassified” by Kraken2 were discarded. We adjusted several default 303 Nanomotif parameters to make the motif detection more lenient and recover more putative 304 motifs from the metagenomic data (setting min_motifs_bin to 1, threshold_valid_coverage to 305 1, and --min_motif_score to 0.5). Motifs of a length of at least four bases in the resulting bin-306 motifs.tsv are used as input for the epimetheus tool (epimetheus methylation-pattern contig 307 function), which generates the motifs-scored-read-methylation.tsv output containing weighted 308 mean methylation scores per motif and contig. We used these methylation scores to calculate 309 pairwise contig distances using root mean square distance ( RMSD ), which is calculated based 310 on all genetically shared motifs between any AMR-carrying plasmid and chromosomal contig. 311 We then calculated the contig similarity score (css) as RMSS x n , where RMSS is calculated 312 as (1 − RMSD ) and n denotes the number of shared motifs between any contig pair. While the 313 taxonomic annotation of the chromosomal contig with the highest css is chosen as putative 314 host of the respective plasmid contig, CUPID additionally visualizes the overall contig similarity 315 structure to understand the robustness of these plasmid-host associations. To do so, CUPID 316 also calculates the css between all chromosomal contigs and then visualizes the contig 317 similarity structure with reference to the AMR-carrying plasmid contig using Principal 318 Coordinate Analysis (PCoA; using python scikit-bio v0.5.9). It additionally generates heatmaps 319 of per-motif weighted mean methylation values, comparing the plasmid against the top-scoring 320 chromosomal contig of each of the top five species-level taxa according to the css. The 321 number in parentheses in the heatmap cells indicates the number of motif observations per 322 contig. 323 Read-level associations follow the same principle as contig-level associations to calculate the 324 
+
+read similarity score (rss), with the following exceptions: The motifs identified at the contig 325 level are used and supplied to the epimetheus methylation-pattern read-bam module, which 326 reports the per-read methylation quality of each motif at each position in the read as extracted 327 from the ML tag of the BAM file. These quality values are converted to probabilities by dividing 328 by 256, giving a range of [0, 1]. For each read, the mean methylation probability across the 329 positions of a given motif is reported as the read's mean methylation value. 330 331 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+9332 
+
+Figure 1. Computational pipeline for nanopore metagenomic data analysis and plasmid-microbial host 333 
+
+associations. A. Nanopore metagenomic data analysis: Raw sequencing data are basecalled using Dorado super-334 
+
+accuracy basecalling (SUP), incorporating the detection of epigenetic modifications (6mA, 4mC, 5mC). Reads are 335 
+
+demultiplexed, filtered for human origin, quality (Q), and length, and assembled using nanoMDBG. Assemblies are 336 
+
+polished into final metagenomic contigs. B. Association analysis of individual sequencing reads or contigs (“units”): 337 
+
+Taxonomic classification is performed using Kraken2 and origin (chromosomal or plasmid) of all AMR-carrying 338 
+
+units is assigned using MOB-suite. For chromosomally annotated AMR genes, host associations are inferred 339 
+
+through taxonomic classification of the respective contig or read. For AMR-carrying plasmid units, their methylation 340 
+
+information (modkit) is input into Nanomotif and epimetheus tools; while standard Nanomotif allows for bin-level 341 
+
+associations, the here-implemented CUPID pipeline allows for contig- and read-level associations using contig and 342 
+
+read similarity scores (css and rss). 343 
+
+344 
+
+# Results 345 
+
+Standard clinical metagenomic analyses 346 
+
+Metagenomic data was generated from 16 rectal swabs, which were routinely collected as part 347 of the Technical University of Munich hospital admission screening for carbapenem-resistant 348 
+
+Enterobacterales (Methods). The presence of carbapenem-resistant Enterobacterales in the 349 samples was confirmed using established culture-based diagnostics and WGS (Table S1A; 350 Methods); half of the swabs (n=8) were processed directly (“metagenomic” samples) and the 351 other half of the swabs (n=8) were processed after short unselective enrichment 352 (“quasimetagenomic” samples) to increase metagenomic sensitivity (Table S1B; Methods). 353 We restricted our metagenomic AMR gene-host association analysis to carbapenemases and 354 their respective Enterobacterales hosts since these associations could be verified using 355 established diagnostics and WGS data of the respective isolates (Methods). 356 When applying traditional metagenomic assembly and binning to all (quasi)metagenomic data, 357 we found that binning recovered a pure MAG of the relevant carbapenem-resistant 358 
+
+Enterobacterales species in only three of the 16 samples, with one of those three relevant 359 MAGs only consisting of a single contig (Methods; Table S2). We therefore moved the 360 inference of plasmid-host associations from the MAG to the contig and individual sequencing 361 read level by developing a contig similarity score (css) and read similarity score (rss) that 362 compare weighted mean methylation rates and shared motif profiles between individual 363 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+10 contigs or sequencing reads instead of on the MAG level (Methods). The calculation of these 364 scores is implemented in the CUPID pipeline (Methods). 365 366 
+
+Contig- and read-level plasmid-microbial host associations 367 
+
+Application to mock metagenomic community 368 
+
+We generated mock metagenomic data to first validate predicted plasmid-microbial host 369 associations. This data comprised pooled WGS data from ten clinically relevant carbapenem-370 resistant Enterobacterale s isolates, each with accompanying near-complete chromosomal 371 and plasmid assemblies (Table S1C; Methods). We assembled the mock community (Table 372 S1C), calculated the css and rss of all plasmid units carrying NDM, KPC, OXA-48, or VIM 373 carbapenemases (Figure 1), and compared the predicted microbial host associations with the 374 WGS-based ground truth (Table 1; Methods). This approach achieved high accuracy of 93.8% 375 (15/16) in plasmid-host association predictions on the contig level; the only AMR-carrying 376 plasmid contig that could not be associated with its correct microbial host was a hybrid 377 assembly (Table S3A). At the read-level, all carbapenemase gene variants and families were 378 linked to their expected microbial host (100%; 8/8). For NDM, rss resolved both expected hosts 379 in the mock community, assigning 78 NDM-carrying reads to Proteus mirabilis and 54 reads 380 to E. coli (Table S4A). 381 
+
+Application to clinical metagenomics—Contig-level associations 382 
+
+We then assessed the contig- and read-based plasmid associations in the rectal swab 383 (quasi)metagenomic data (Table S1B; Methods). We detected the relevant carbapenemases 384 on the contig and read level in four (M3,5,6,7) of the eight (50%) metagenomic samples, and 385 in all (Q1-8) of the eight (100%) quasimetagenomic samples (Table 1; see Table S3B for all 386 other AMR genes). 387 Of the overall 13 carbapenemases (Q8 encoded two carbapenemases), two were predicted 388 to be chromosomally encoded (M6,7); these chromosomally encoded bla OXA-244 genes were 389 associated with E.coli according to the taxonomic classification of the gene-carrying contig 390 itself, which could be confirmed by WGS of the respective Enterobacterales isolate (Table 1). 391 The remaining 11 carbapenemases were predicted to be encoded by plasmid contigs; all of 392 them could be associated with their correct microbial host according to isolate-based 393 established diagnostics and WGS using our css (Table 1). In the quasimetagenomic data, 394 every sample recovered a carbapenemase-carrying plasmid contig that could be correctly 395 associated with its host using the css. The resolution of the metagenomic contigs was on par 396 with the WGS assemblies and surpassed the resolution of established diagnostics such as 397 MALDI-TOF MS and lateral flow tests: The metagenomic assemblies correctly classified 398 pathogens to the species level and the carbapenemases to the gene variant level, identified 399 the correct carbapenemase location (plasmid or chromosome), and annotated the correct 400 replicon type of the identified plasmids (Table 1; Methods). 401 402  
+
+> Table 1. Contig- and read-level associations between carbapenemase-carrying plasmid contigs and their putative
+
+403     
+
+> microbial host according to contig and read similarity scores (css and rss) across eight metagenomic (M1-8) and
+
+404 
+
+> eight quasimetagenomic (Q1-8) datasets (C=Carbapenemase; P=Pathogen host). For contig-level associations,
+
+405 
+
+> the contig-encoded carbapenemase gene variant or family and gene location and the taxonomic annotation of the
+
+406 
+
+> chromosomal contig with the highest css are indicated. For read-level associations, each carbapenemase-carrying
+
+407 
+
+> read is assigned to the host read with the highest rss; taxonomic annotations are shown per gene variant or gene
+
+408 
+
+> family (number of supporting associations in parentheses; Table S4B). The established diagnostics (“Diagnostics”)
+
+409 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+11 
+
+and whole-genome sequencing (“WGS”) results of all carbapenem-resistant Enterobacterales grown from the 410 
+
+respective samples are included as ground truth. The carbapenemases were determined by lateral flow test and 411 
+
+the pathogenic host by MALDI-TOF MS (“c.”= complex); where several carbapenemases and/or several pathogenic 412 
+
+species are indicated in one cell, all carbapenemases were detected in all of the respective isolates. The WGS 413 
+
+results include the multi-locus sequence type (ST) per pathogenic species in parentheses. (*OXA gene copies 414 
+
+were detected on the contig and read level and associated with Citrobacter freundii , but they were assigned to the 415 
+
+OXA-1-family in follow-up analyses. **Ambiguous association at read level. ***Taxonomic annotation of the 416 
+
+contig/read that carries the chromosomally encoded OXA-244 gene, i.e., no methylation-based association. 417 
+
+****Only metagenomics-based association not recovered by the isolate ground truth (Sample Q4, KPC-2, read-418 
+
+level). *****No gene variant assignment possible due to detection at the contig edge (90.9% reference coverage). 419 
+
+# Metagenomics Isolate ground truth 
+
+Contig -level Read -level Diagnostics WGS 
+
+C P C: P (# reads) C P C P
+
+M1 N.A. * OXA -
+
+48 -like C.freundii c. OXA -48 
+
+(IncL/M) 
+
+C.freundii 
+
+(ST22) 
+
+M2 N.A. KPC C.freundii c. KPC -2
+
+(IncN) 
+
+C.freundii 
+
+(ST256) 
+
+M3 OXA -48 
+
+(IncL/M) 
+
+C.freundii OXA -48 C.freundii 
+
+(1)** 
+
+OXA -
+
+48 -like C.freundii c. OXA -48 
+
+(IncL/M) 
+
+C.freundii 
+
+(ST22) 
+
+M4 N.A. KPC K.variicola KPC -2
+
+(IncN) 
+
+K.variicola 
+
+(ST347) 
+
+M5 KPC 
+
+(plasmid) 
+
+K.pneum oniae 
+
+KPC E.coli (1) KPC K.pneumoni ae,E.coli 
+
+KPC -2
+
+(IncN) 
+
+K.pneumoni ae (ST147), E.coli 
+
+(ST*5a6) 
+
+M6 OXA -244 
+
+(chrom) 
+
+E.coli *** OXA -244 E.coli *** OXA -
+
+48 -like 
+
+E.coli OXA -244 
+
+(chrom) 
+
+E.coli (ST 
+
+58/87) 
+
+M7 OXA -244 
+
+(chrom) 
+
+E.coli *** OXA -244 E.coli *** OXA -
+
+48-like 
+
+E.coli OXA -244 
+
+(chrom) 
+
+E.coli 
+
+(ST69/3) 
+
+M8 N.A. NDM K.pneumoni 
+
+ae 
+
+NDM -5
+
+(IncFIB) 
+
+K.pneumoni 
+
+ae (ST395) 
+
+Q1 VIM -1
+
+(IncL/M) 
+
+E.coli VIM : K.pneumoniae (4) 
+
+Oxa-48: E.coli (3) 
+
+Oxa-48-like: 
+
+K.pneumoniae (2) 
+
+VIM 
+
+Oxa-48-like 
+
+E.cloacae 
+
+c. ,K.pneumo niae,E. coli 
+
+N.A. 
+
+Q2 KPC -2
+
+(IncFII, IncN) 
+
+K.pneum oniae 
+
+KPC -2: K.pneumoniae 
+
+(27) 
+
+KPC : K.pneumoniae 
+
+(98) 
+
+KPC K.pneumoni ae 
+
+KPC -2
+
+(IncN) 
+
+K.pneumoni ae (ST147) 
+
+Q3 NDM -1
+
+(IncN) 
+
+E. coli NDM -1: E. coli (15) 
+
+NDM : E. coli (74) 
+
+NDM E.cloacae 
+
+c. ,E. coli 
+
+NDM -1
+
+(IncN) 
+
+E.coli 
+
+(ST*1c08) 
+
+Q4 KPC -2
+
+(IncN) 
+
+K. pneumon 
+
+iae 
+
+KPC -2: E.coli (1)**** 
+
+KPC : K.pneumoniae 
+
+(2) 
+
+KPC K.pneumoni ae 
+
+KPC -2
+
+(IncN) 
+
+K.pneumoni ae (ST147) 
+
+Q5 OXA -48 
+
+(IncL/M) 
+
+C. freundii 
+
+OXA -48 : C.freundii (3) 
+
+OXA-48-like :
+
+C.freundii (10) 
+
+OXA -
+
+48-like C.freundii c. OXA -48 
+
+(IncL/M) 
+
+C.freundii (not 
+
+typable) 
+
+Q6 KPC -2
+
+(IncN) 
+
+E. hormaec hei 
+
+KPC -2: E.hormaechei 
+
+(25) 
+
+KPC : E.hormaechei 
+
+(79) 
+
+KPC E.cloacae c. KPC -2
+
+(IncN) 
+
+E.hormaech ei (ST 102) 
+
+Q7 KPC -2
+
+(IncN) 
+
+E. coli KPC : E.colii (4) KPC E.coli KPC -2
+
+(IncN) 
+
+E.coli 
+
+(ST2541) 
+
+Q8 NDM -5
+
+(IncFIB, IcHI1B), 
+
+OXA-48-like ***** 
+
+(IncL/M) 
+
+K.pneum oniae 
+
+NDM -5: K.pneumoniae 
+
+(3) 
+
+NDM : K.pneumoniae 
+
+(14) 
+
+OXA-48 :
+
+K.pneumoniae (16) 
+
+OXA -
+
+48-like NDM 
+
+K.pneumoni ae, E. coli 
+
+NDM -5
+
+(IncFIB, IncHI1B) 
+
+OXA-48 
+
+(IncL/M) 
+
+K.pneumoni ae (ST383) 
+
+420 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+12 While Table 1 reports the association between a given carbapenemase-carrying plasmid 421 contig and the chromosomal contig with the highest css, the methylation-based css can be 422 calculated between any two contigs to provide the overall contig similarity structure of a 423 metagenomic dataset as the background (Methods). As this can help assess the robustness 424 of associations between plasmid and chromosomal contigs, we visualized the contig similarity 425 structure of each carbapenemase-carrying plasmid contig (M3, M5, and Q1-8; Table 1) in 426 relation to all candidate chromosomal contigs using PCoA (Figure 2; left ). We also visualised 427 the weighted mean methylation values across the methylation motifs of the five top 428 chromosomal contigs of the top species-classified taxa using heatmaps (Figure 2; right ). 429 These visualizations strengthen the association predictions with the respective top 430 chromosomal contig shown in Table 1 by showing that other chromosomal contigs of the same 431 taxonomic annotation as the top hit cluster around the plasmid of interest (PCoAs) and by 432 showing the difference in motif methylation ratios between the plasmid and the the top five 433 microbial species (heatmaps). 434 Some PCoAs reveal that chromosomal contigs of several species cluster around the plasmid 435 contig: For example, in Q1, an E. coli chromosomal contig was identified as the top hit (Table 436 1), but the VIM-1-carrying plasmid contig is also surrounded by Enterobacter roggenkampii 437 (part of Enterobacter cloacae complex) and Klebsiella pneumoniae contigs (Figure 2C), which 438 were both identified as VIM-carriers in the same sample by established diagnostics (Table 1). 439 Similarly, in Q3, an E. coli chromosomal contig was identified as the top hit, but the NDM-1-440 carrying plasmid contig is also surrounded by Enterobacter hormaechei (also part of E. 441 
+
+cloacae complex) contigs (Figure 2E), which was also identified as NDM-carrier in the same 442 sample by established diagnostics (Table 1). Some PCoAs, on the contrary, show that only a 443 single chromosomal contig is the basis of the correct plasmid-microbial host association: In 444 Q6 and Q8, the assemblies recovered only a single chromosomal contig of the correct host 445 (length of 4.71 Mb for Q6, and 5.43 Mb for Q8); the css assigned all three carbapenemase-446 carrying plasmid contigs of these datasets to their correct chromosomal contigs (Table 1; 447 Figures 2H, J, K). In the case of Q6 (Figure 2H), the assembly led to an overall small number 448 of contigs due to low sequencing depth (Table S1B). In the case of Q8, from which two 449 carbapenemase-carrying plasmids were recovered (Figures 2J, K; left ), the assembly led to 450 only one contig of the actual host, K. pneumoniae ., which was correctly identified as the top 451 contig of both plasmid contigs. In such a case of a single correct chromosomal contig, the 452 motif methylation patterns across taxa can further strengthen the association despite the 453 presence of only a single contig as evidence (Figures 2J, K; right ). In addition, the analysis of 454 sequencing reads in addition to contigs can provide more evidence (see Application to clinical 455 
+
+metagenomics—Read-level associations ). 456 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+13 457 
+
+.CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint 14 
+
+458 
+
+.CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint 15 459 Figure 2 . Visualization of methylation-based contig similarity ( left ) and motif methylation ( right ) across the 460 
+
+carbapenemase-carrying plasmid contigs ( A-K ) and all chromosomal contigs of their respective dataset. ( left )461 
+
+PCoAs of the contig similarity structure of each carbapenemase-carrying plasmid contig (star shape; across M3, 462 
+
+M5, and Q1-8; Table 1) in relation to all chromosomal contigs. The top 100 chromosomal contigs according to 463 
+
+contig similarity score (css) are visualized, respectively; all chromosomal contigs are visualized in the inset. The 464 
+
+five top taxa according to css are color-coded, and the top chromosomal contig by css is circled. The relative and 465 
+
+absolute top taxon abundance is indicated below the inset. ( right ) Heatmaps of the weighted mean methylation 466 
+
+value across up to 20 most-methylated motifs of the respective plasmid contig (leftmost column) and the five top 467 
+
+chromosomal contigs of the top species-level taxa. The top species is highlighted in bold. 468 
+
+469 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+16 We additionally annotated all carbapenemase-carrying (quasi)metagenomic plasmid contigs 470 for mobilization potential (Methods). All our plasmid contigs were predicted to be transferable. 471 On these contigs, we identified several additional WGS-confirmed AMR genes (Table S3B), 472 including those conferring resistance to clinically relevant beta-lactams (Table 2). For 473 example, the quasimetagenomic carbapenemase-carrying plasmid contig from Q8 carried all 474 AMR genes that were also detected by the circularized plasmid assembly from the matched 475 isolate’s WGS data (Table S3B). Most plasmid contigs further carried IS elements that flanked 476 the relevant carbapenemases (Table 2). 477 
+
+Table 2. Annotation of plasmid-annotated metagenomic contigs: Replicon type according to MOB-suite annotation; 478 
+
+contig length (in kb; see Table S1 for WGS-based plasmid lengths from the same samples), circularity, and mean 479 
+
+plasmid contig coverage calculated by nanoMDBG; C as identified carbapenemase gene variant or family; AMR 480 
+
+as additionally identified AMR genes using AMRFinderPlus: only genes conferring resistance to beta-lactam 481 
+
+antibiotics are reported here (see Table S3B for all AMR genes); IS family identification in a 500b-window upstream 482 
+
+and downstream of each C gene; and mobilization context of the C gene. All C-carrying plasmids were further 483 
+
+annotated as transferable elements (Methods). *Incomplete sequence recovery precluded allele assignment due 484 
+
+to detection at the contig edge (90.9% reference coverage; 100% identical to OXA-48 over the recovered region). 485 
+
+# Type Length (kb) 
+
+Circ Cov C AMR IS families C mobilisation 
+
+M3 IncL/M 71.3 No 18 OXA-48 — IS1(1R),4(10A) Tn1999-like; IS4/IS1 3' of OXA-48 
+
+M5 IncN 7.3 No 4 KPC TEM-1 IS1182 Partial Tn4401; KPC truncated 
+
+Q1 IncL/M 83.2 No 23 VIM-1 — IS1(1R),4(10A),6 (26,6100),Kra4 (Kpn19) 
+
+First cassette of class 1 integron; not IS-bracketed 
+
+Q2 IncFII, IncN 
+
+179.6 Yes 232 KPC-2 TEM-1, OXA-1 
+
+IS1,5,6(26),110, 1182,1634 
+
+Tn4401-like; ISKpn6 3' of KPC-2 
+
+Q3 IncN 46.1 Yes 137 NDM-1 TEM-1 IS3,30,630 Tn125-like; IS30/IS630 3' of NDM-1 
+
+Q4 IncN 46.9 Yes 5 KPC-2 TEM-1 IS1,5,6(26),1182 Tn4401-like; ISKpn6 5' of KPC-2 
+
+Q5 IncL/M 65.5 Yes 25 OXA-48 — IS1(1R),4(10A) Tn1999-like; IS4/IS1 5' of OXA-48 
+
+Q6 IncN 59.5 No 236 KPC-2 TEM-1 IS1,5,6(26),1182 Tn4401-like; ISKpn6 3' of KPC-2 
+
+Q7 IncN 58.0 Yes 12 KPC-2 TEM-1 IS1,5,6(26),1182 Tn4401-like; ISKpn6 3' of KPC-2 
+
+Q8 IncFIBI ncHI1B 
+
+350.4 Yes 50 NDM-5 CTX-M-15 IS1,3,5, 6(26),30,91,110, 200/IS605,630,1 380(Ecp1),1634, Kra4,L3, NCY 
+
+Tn125-like (IS30/IS630 3' of NDM-5) 
+
+IncL/M 54.8 Yes 142 OXA-48-like *
+
+CTX-M-14 IS1(1R),4(10A),6 (26),1380(Ecp1) 
+
+Tn1999-like; IS4/IS1 flanking OXA-48 
+
+486 
+
+487 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+17 
+
+Application to clinical metagenomics—Read-level associations 488 
+
+Read-level plasmid-microbial host associations were inferred similarly to contig-level 489 associations (Methods), but as several sequencing reads carried the carbapenemase, we 490 applied a taxonomic majority vote across all sequencing reads (Table S4B). Based on these 491 majority votes, all read-level associations but one were correct (Table 1). In Q4, a single KPC-492 2-carrying read was associated with E. coli while the only Enterobacterales grown from this 493 sample was K. pneumoniae . Additional two KPC-carrying reads from the same dataset were, 494 however, associated with K. pneumoniae , supporting the metagenomic contig- and WGS-495 based results (Table 1). For all remaining carbapenemase hits, the read-level association 496 results further strengthened the contig-level associations both on the gene variant and the 497 gene family level (Table 1). 498 In M5, the one KPC-carrying read potentially even recovered the association of KPC with E. 499 
+
+coli , the second Enterobacterales isolate besides K. pneumoniae that had been grown from 500 this sample according to established diagnostics and WGS (Table 1); however, the evidence 501 is weak since the KPC gene family could only be found on a single read. Similarly, in Q1, VIM-502 carrying reads recovered the additional known association between VIM and K. pneumoniae 503 besides the contig-based association of VIM with E. coli (Table 1; Table S4B). As K. 504 
+
+pneumoniae also seemed to be a strong candidate on the contig level based on the visualized 505 contig similarity structure (Figure 2C), this provides further evidence for a multi-host 506 association of this particular plasmid—which, in this case, is correct according to our 507 established diagnostics results (Table 1). In addition, read-level analyses enabled the 508 detection of OXA-48 and OXA-48-like genes, which were missed on the contig level, and 509 predicted associations of these genes with two confirmed Enterobacterales hosts, E. coli 510 
+
+(exemplary read: Figure 3A) and K. pneumoniae (Figure 3B). In Q6 and Q8, where the 511 assemblies recovered only a single chromosomal contig of the correct host (Table 1; Figures 512 2H, J, K), the individual sequencing reads provided additional evidence by supporting the 513 association between KPC-2 (n=25)/KPC (n=79) and E. hormaechei (Q6; Figure 3C) and 514 between NDM-5 (n=3)/NDM (n=14) as well as OXA-48 (n=16) and K. pneumoniae (Q8; Figure 515 3D). 516 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+18 517 Figure 3. Visualization of methylation-based read similarity of exemplary carbapenemase-carrying plasmid reads: 518 
+
+PCoAs of the read similarity structure of a carbapenemase-carrying plasmid read (star shape; Table 1) in relation 519 
+
+to the top 100 chromosomal reads according to read similarity score (rss) are visualized, respectively. The five top 520 
+
+taxa according to rss are color-coded, and the top chromosomal read according to rss is circled. A & B. PCoAs of 521 
+
+two exemplary OXA-48-carrying plasmid reads in Q1, pointing to associations with E. coli (A) and K. pneumoniae 522 
+
+(B), respectively. C & D. PCoAs of two exemplary carbapenemase-carrying reads from Q6 and Q8 that provide 523 
+
+robust evidence of plasmid-host associations as a confirmation of contig-level association inferences: ( C)524 
+
+Association between a KPC-2 carrying read and E. hormaechei in Q6; ( D) Association between an NDM-5 carrying 525 
+
+read and K. pneumoniae in Q8. 526 
+
+527 
+
+# Discussion 528 
+
+We show that the genomic and epigenetic information inherent to nanopore sequencing data 529 enables the association of clinically relevant carbapenemase genes with their bacterial hosts 530 in metagenomic and quasimetagenomic samples. While the long nanopore sequencing reads 531 facilitate the generation of contiguous assemblies for chromosomal and plasmid identification 532 from complex metagenomic data, methylation signatures encoded in the raw nanopore signal 533 enable the inference of associations between metagenomic assembly-based contigs and 534 individual sequencing reads through similar motif methylation. We leverage this information to 535 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+19 attribute carbapenemases as an example of clinically relevant AMR to their pathogenic hosts, 536 first validating our approach using mock communities from clinically relevant bacterial isolates, 537 then applying the optimized analysis pipeline to rectal swab metagenomics and 538 quasimetagenomic data. Comparison with established culture-based diagnostics and isolate 539 assemblies confirms that nanopore metagenomic data can associate both plasmid- and 540 chromosomally encoded resistance genes with their clinically relevant pathogenic hosts in the 541 tested samples. 542 We provide the first proof that plasmid-host associations derived from clinical metagenomics 543 and quasimetagenomics are feasible and concordant with established diagnostics. This is 544 especially relevant since the only available approach for nanopore-derived methylation-based 545 association is Nanomotif, which works on the metagenomic MAG level to refine metagenomic 546 binning (18,21,22,47). MAG recovery is assembly- and binning-dependent, so low-abundance 547 or divergent taxa can remain unbinned, biasing host–AMR gene links toward abundant 548 organisms (22). Especially in host-dominated clinical metagenomes, pathogen coverage may 549 often be too low for MAG recovery, causing clinically relevant AMR hosts to be missed. This 550 limitation was evident in the rectal swab datasets analysed in this study: Conventional 551 metagenomic assembly and binning recovered a pure MAG of the relevant carbapenem-552 resistant Enterobacterales species in only three of 16 metagenomic or quasimetagenomic 553 samples, and one of these three consisted of a single contig. On the contig and individual 554 sequencing read level, on the other hand, we were able to associate all carbapenemases 555 detected in the metagenomic and quasimetagenomic datasets with their correct bacterial host. 556 We also confirmed these associations by established diagnostics and whole-genome 557 assemblies of the relevant carbapenem-resistant Enterobacterales isolates. 558 The contig-based pathogen detection and AMR association may offer a compromise between 559 bin- and read-level analyses. Contig-level analysis sits between reads and MAGs, retaining 560 AMR gene-carrying sequences that fail binning while providing longer context for taxonomic 561 assignment and resistance gene characterization. It has been shown that metagenomic 562 contigs can be robustly annotated on the bacterial strain level (48), which would enable 563 delineated strain-plasmid associations. We, however, also found that read-level associations 564 of AMR-encoding plasmids and pathogens can provide additional important evidence while 565 only resulting in a single potentially false plasmid-host association in our dataset. Read-level 566 associations can, for example, strengthen weak or unclear contig-level associations (e.g., Q6 567 and Q6), detect additional genes and associations missed by contig-level associations (e.g., 568 Q1 and M5), and sometimes result in higher gene resolution (e.g., Q8)—depending on where 569 the gene is located on the individual read and how good the assembly quality of the genomic 570 region is. Reads further have the advantage of being biological entities instead of 571 computational constructs such as contigs; contigs might fuse reads of different microbial 572 origins, precluding, for example, the association of one plasmid to several hosts (49). On the 573 read level, evidence can instead be accumulated across reads carrying the same AMR gene; 574 we here show that we can thus predict a potential multi-host scenario of a carbapenemase-575 carrying plasmid that would have been missed by contig-level analyses but was confirmed by 576 established diagnostics (e.g., Q1). 577 We further show that metagenomics can provide more granular pathogenic information than 578 established diagnostics. Matched WGS of rectal swab isolates confirmed that metagenomics 579 yields more detailed AMR gene subtype and pathogen strain information than established 580 diagnostics, a finding consistent with previous nanopore WGS studies (8). Crucially, 581 metagenomics can add context unavailable from routine diagnostics: whether an AMR gene 582 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+20 is linked to a pathogen, carried on a mobile plasmid, or embedded in a transmissible resistance 583 module. Although this does not yet replace phenotypic AST for therapy, it can guide infection 584 prevention and control escalation, transmission tracing, contact screening, and source 585 investigation (25). 586 Our study remains limited by several methodological constraints. Validation relied on cultured 587 isolates as the available reference standard, which may miss additional colonizing hosts and 588 underestimate true multi-host plasmid associations. While quasimetagenomic enrichment 589 improved sensitivity in comparison to metagenomics, it may alter community composition and 590 favor organisms that grow rapidly under the enrichment conditions. The contig and read 591 similarity scores are further newly developed metrics, requiring larger benchmarks to define 592 confidence thresholds, failure modes, and reporting standards. Finally, this evaluation focused 593 on carbapenemase-producing Enterobacterales from rectal swabs, so performance should be 594 tested across additional sample types, taxa, AMR and other resistance and virulence genes, 595 plasmid backbones, and community structures. Mixed-strain colonization and closely related 596 species complexes might, for example, not allow for bacterial host delineation since strains of 597 the same species may share methylation motifs, assemble into fragmented or composite 598 contigs, or generate ambiguous plasmid-host links. Thus, our approach can support pathogen-599 host attribution, but strain-level plasmid assignment should be interpreted cautiously unless 600 supported by sufficient strain-specific sequence variation and coverage. This is particularly 601 relevant for clinically important species complexes, such as the K. pneumoniae species 602 complex, where routine diagnostics may not reliably distinguish closely related taxa (50). 603 Future benchmarking should include defined same-species and same-complex mixtures, 604 alongside clinical samples with independently confirmed mixed colonization. 605 In summary, through mock metagenomic communities and application to patient rectal swab 606 data, with cross-validation against established diagnostics and bacterial WGS, we 607 demonstrate that nanopore metagenomics can accurately associate plasmid- and 608 chromosomally encoded AMR genes with their clinically relevant pathogenic hosts. By 609 developing a contig- and read-based approach that overcomes limitations of standard binning, 610 we address an outstanding barrier to metagenomic diagnostics for pathogen and resistance 611 surveillance. Further sensitivity optimizations and diverse benchmarking and prospective 612 clinical validation studies remain warranted to test our approach’s generalizability and 613 establish it for routine surveillance and clinical practice. 614 615 
+
+616 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+21 
+
+# Author contributions 617 
+
+HÜ conducted all computational analyses under LU’s supervision, including data curation and 618 visualization. ES conducted all laboratory work and functional plasmid annotation under LU’s 619 supervision. LU conceptualized the study. HÜ, ES, and LU integrated the computational and 620 clinical interpretation of the data. MB supported the computational interpretation of the data. 621 FG provided samples and laboratory equipment for established diagnostics. EFN, SDB, and 622 RTW consulted on the clinical interpretation. SH and MA consulted on the usage and 623 interpretation of Nanomotif. TR and MJAS contributed to the data analysis. RF contributed 624 invaluable discussions on data interpretation and visualization. HÜ and LU wrote the 625 manuscript with input from all co-authors, especially from ES, RTW, EFN, FM, RS, and RF. 626 
+
+627 
+
+# Conflicts of interest 628 
+
+LU and RTW have previously been invited by Oxford Nanopore Technologies to present their 629 research; only direct travel costs have been financed. RF works for and owns shares in Oxford 630 Nanopore Technologies plc. 631 
+
+632 
+
+# Funding information 633 
+
+This project was funded by the Assistant Professorship “One Health with focus on microbial 634 genomics and AI” (Institute for Food Safety and Hygiene, University of Zurich, Switzerland) 635 and a Helmholtz Principal Investigator Grant (Helmholtz AI, Helmholtz Munich, Germany) 636 awarded to LU. HÜ is supported by the Helmholtz Association under the joint research school 637 “Munich School for Data Science - MUDS". Routine diagnostics and sample collections were 638 arranged by the TUM University Hospital and the Institute for Medical Microbiology, 639 Immunology, and Hygiene in Munich, Germany. 640 641 
+
+# Ethical approval 642 
+
+Ethical approval for the processing of bacterial isolates and patient rectal swabs was given by 643 the Technical University of Munich ethics committee (2024-522-S-CB). Informed patient 644 consent was waived as samples were taken under routine diagnostics. All human reads from 645 nanopore sequencing were discarded and not analysed beyond quantifying the amount of 646 host DNA generated. 647 648 
+
+# Acknowledgements 649 
+
+We thank Srinithi Purushothaman for her valuable input on DNA extraction approaches from 650 clinical samples. We thank the laboratory technicians at the Institute of Medical Microbiology 651 at the Technical University of Munich, and especially Hannah Zierer, for their support with 652 sample storage and retrieval and established diagnostics, and the team responsible for the 653 high-performance compute platform at Helmholtz Munich for their support. 654 655 
+
+# Abbreviations 656 
+
+AMR: antimicrobial resistance 657 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+22 AST: antimicrobial susceptibility testing 658 BHI: brain heart infusion 659 BLAST: Basic Local Alignment Search Tool 660 B: base 661 CFU: colony-forming unit 662 Contig: contiguous sequences 663 Css: contig similarity score 664 CUPID: Contig- and Unassembled-read-based Pathogen Identification & Delineation 665 ENA: European Nucleotide Archive 666 EUCAST: European Committee on Antimicrobial Susceptibility Testing 667 GPU: graphics processing unit 668 IS: insertion sequence 669 Kb: kilobase 670 MAG: metagenome-assembled genome 671 MALDI-TOF MS: matrix-assisted laser desorption/ionization time-of-flight mass spectrometry 672 MLST: multi-locus sequence typing 673 MPF: mating-pair formation 674 NCBI: National Center for Biotechnology Information 675 PBS: phosphate-buffered saline 676 PCoA: Principal Coordinate Analysis 677 RMSD: root mean square distance 678 Rss: read similarity score 679 ST: sequence type 680 SUP: super-accuracy basecalling 681 WGS: whole-genome sequencing 682 683 
+
+# Supplementary Tables 684 
+
+All supplementary tables are available at 685 https://drive.google.com/drive/folders/1jsUg_eKKBOIJRd8YO7Bb1hX1DYCIslbb?usp=sharin 686 g. 687 688 
+
+Table S1 . Nanopore sequencing and assembly metrics. A. Sequencing, assembly, and 689 plasmid characteristics of the carbapenemase-carrying rectal swab isolates. For each isolate, 690 input DNA concentration, total sequencing yield, mean read Q-score, read count, and read 691 N50 are given. Assembly metrics report the length and median coverage of the chromosomal 692 contig (circularity indicated in parentheses), the detected carbapenemase, and the length, 693 median coverage, and replicon type of the carbapenemase-encoding plasmid contig. Any 694 further plasmid contigs recovered from the isolate are listed under "Additional plasmids" with 695 their replicon type and contig length; "no AMR" denotes plasmids on which no resistance gene 696 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+23 was detected. For M5, two isolates were available and are reported as M5a and M5b. For Q8, 697 two carbapenemases (OXA-48 and NDM-5) were carried on separate plasmid contigs, and 698 both are listed. NA: not available. For Q1, no isolate was recovered; therefore, all metrics are 699 reported as NA. B. Sequencing and assembly metrics for the metagenomic and quasi-700 metagenomic rectal swab samples. For each sample, the DNA concentration, input DNA per 701 sample, non-human sequencing yield, mean read Q-score, and Q20 are given, together with 702 read metrics comprising read count, the percentage of reads mapping to the human genome, 703 and the non-human read N50. Assembly metrics report the assembly N50, the number of 704 contigs with the number of circular contigs in parentheses, and the total assembly size. All 705 yield, read, and assembly metrics were calculated after removal of human-mapped reads. M 706 blank and Q blank are the corresponding negative extraction controls. "Too low" indicates a 707 DNA concentration below the reliable quantification limit. NA, not available; metrics not 708 determined for the negative controls. C. Isolate sequencing and assembly characteristics and 709 composition of the mock community. The mock community comprised 10 carbapenemase-710 carrying isolates from defined species and sequence types (STs). For each isolate, the DNA 711 concentration, total sequencing yield, mean read Q-score, read count, and read N50 are given 712 (read metrics), followed by the length and median coverage of the chromosomal contig 713 (circularity indicated in parentheses), the detected carbapenemase, and the type, contig 714 length, and median coverage of the carbapenemase-encoding plasmid contig. Any further 715 plasmid contigs recovered from the isolate are listed under "Additional plasmids" with their 716 contig length and the AMR genes carried; "no AMR" denotes plasmids on which no resistance 717 gene was detected. The final column shows each isolate's relative abundance in the mock 718 community, calculated as the number of reads for that isolate divided by the total number of 719 reads across all 10 isolates. NA, sequence type not assigned. 720 721 
+
+Table S2 . Binning results. Per-bin taxonomic composition of the metagenomic and quasi-722 metagenomic assemblies. For each dataset, metagenome-assembled bins are listed by bin 723 ID, with the binning tool indicated by the ID prefix (VAMB, MaxBin2, MetaBAT2). For each bin, 724 the total number of binned contigs is given, followed by the absolute taxonomic distribution of 725 those contigs, where each species is shown with its contig count in parentheses and low-count 726 taxa are collapsed into an "other" category. Taxonomic annotation was performed with 727 Kraken2. "Species of interest" denotes the isolate species expected for that sample, and 728 "species of interest %" gives the percentage of contigs within the bin annotated as that 729 species. NA indicates that no contig in the bin was assigned to the isolate species. 730 731 
+
+Table S3 . Contig-level plasmid-host associations. A. Contig similarity score (css) based on 732 host association of AMR-carrying plasmid contigs in the mock community. For each plasmid 733 contig (ctg ID), the AMR genes carried, the plasmid replicon (Inc) type, and whether the contig 734 was circular are listed; a dash in the Inc-type column denotes no replicon type detected. Host 735 association was performed using the css. The associated host is reported by its taxonomic 736 annotation at two Kraken2 confidence thresholds (0.0 and 0.2); Kraken2 is used only to 737 annotate the css-selected host contig, not to perform the association itself. The number of 738 host contigs sharing the top css is given in parentheses. "Species of origin" gives the true host 739 of the plasmid from the mock community ground truth, and "correct association" indicates 740 whether the css-based assignment matched it. B. Css based on host association of AMR-741 carrying plasmid contigs in the metagenomic and quasi-metagenomic rectal swab datasets. 742 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+24 For each plasmid contig (dataset, ctg ID), the AMR genes carried, the plasmid replicon (Inc) 743 type, and whether the contig was circular are listed; a dash in the Inc-type column denotes 744 that no replicon type was detected. Host association was performed using the contig similarity 745 score (css). The associated host is reported by its taxonomic annotation at two Kraken2 746 confidence thresholds (0.0 and 0.2); Kraken2 is used only to annotate the css-selected host 747 contig, not to perform the association itself. The number of host contigs sharing the top css is 748 given in parentheses. "WGS_confirmed_AMR_genes" lists the resistance genes 749 independently detected by whole-genome sequencing of the corresponding cultured isolate; 750 here, a dash denotes that the isolate did not carry the listed gene(s), and NA denotes a dataset 751 (Q1) for which no isolate was recovered, and confirmation was therefore not possible. 752 753 
+
+Table S4 . Read-level plasmid-host associations. A. Read similarity scores (rss) in the mock 754 metagenomic community. For each carbapenemase gene family or variant detected on AMR-755 carrying plasmid reads, the number of carbapenemase-carrying reads (n_reads) and the 756 taxonomic annotation of the chromosomal host read with the highest rss are shown; the 757 number of reads supporting each species-level association is given in parentheses. Species 758 of origin denotes the expected host(s) according to the whole-genome-based ground truth of 759 the mock community isolates, and the final column indicates whether the rss-based majority 760 association recovered the expected host. NDM was carried by two mock-community isolates 761 and was correctly resolved to both Proteus mirabilis and Escherichia coli . B. Rss based on 762 host association of carbapenemase-carrying reads in the metagenomic and quasi-763 metagenomic rectal swab datasets. For each dataset, only carbapenemase-carrying reads 764 are listed, grouped by the detected carbapenemase gene variant or family. "n_reads" gives 765 the number of carbapenemase-carrying reads, and "top rss" reports the taxonomic annotation 766 of the host read associated by the top read similarity score (rss), with the number of supporting 767 reads for each annotation in parentheses. "WGS-confirmed pathogen" and "WGS-confirmed 768 carbapenemase" denote the pathogen species and carbapenemase, respectively, 769 independently identified by whole-genome sequencing of the corresponding cultured isolate. 770 For Q1, no isolate was recovered; the pathogens and carbapenemase shown for this dataset 771 are instead based on established diagnostics (VITEK2 and MALDI-TOF MS) and are marked 772 with an asterisk. 773 774 
+
+# References 775 
+
+1. Baker S, Thomson N, Weill FX, Holt KE. Genomic insights into the emergence and spread 776 of antimicrobial-resistant bacterial pathogens. Science. 2018 May 18;360(6390):733–8. 777 2. Werner G, Couto N, Feil EJ, Novais A, Hegstad K, Howden BP, et al. Taking hospital 778 pathogen surveillance to the next level. Microb Genom. 2023 Apr 26;9(4). 779 3. Koutsoumanis K, Allende A, Alvarez -Ordóñez A, Bolton D, Bover -Cid S, Chemaly M, et al. 780 Whole genome sequencing and metagenomics for outbreak investigation, source 781 attribution and risk assessment of food -borne microorganisms. EFSA Journal. 2019 782 Dec;17(12). 783 4. Van Walle I, Guerra B, Borges V, André Carriço J, Cochrane G, Dallman T, et al. EFSA 784 and ECDC technical report on the collection and analysis of whole genome sequencing 785 data from food -borne pathogens and other relevant microorganisms isolated from human, 786 animal, food, feed and food/feed environmental samples in the joint ECDC -EFSA 787 molecular typing database. EFSA Supporting Publications. 2019 May;16(5). 788 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+25 5. Sereika M, Kirkegaard RH, Karst SM, Michaelsen TY, Sørensen EA, Wollenberg RD, et 789 al. Oxford Nanopore R10.4 long-read sequencing enables the generation of near-finished 790 bacterial genomes from pure cultures and metagenomes without short-read or reference 791 polishing. Nat Methods. 2022 Jul 4;19(7):823–6. 792 6. Urban L, Perlas A, Francino O, Martí -Carreras J, Muga BA, Mwangi JW, et al. Real -time 793 genomics for One Health. Mol Syst Biol. 2023 Aug 8;19(8). 794 7. Foster-Nyarko E, Able-Thomas S, Adade NE, Adade R, Anne JCB, Antwi L, et al. Genomic 795 diversity and antimicrobial resistance of Vibrio cholerae isolates from Africa: a PulseNet 796 Africa initiative using nanopore sequencing to enhance genomic surveillance. Microb 797 Genom. 2025 Dec 5;11(12). 798 8. Sauerborn E, White RT, Kalteis AL, Gygax D, Foster-Nyarko E, Wantia N, et al. Resolving 799 plasmid-encoded carbapenem resistance dynamics and reservoirs in a hospital setting 800 through nanopore sequencing. Microb Genom. 2026 Feb 12;12(2). 801 9. Struelens MJ, Ludden C, Werner G, Sintchenko V, Jokelainen P, Ip M. Real-time genomic 802 surveillance for enhanced control of infectious diseases and antimicrobial resistance. 803 Frontiers in Science. 2024 Apr 25;2. 804 10. Bellankimath AB, Branders S, Kegel I, Ali J, Asadi F, Johansen TEB, et al. Metagenomic 805 sequencing enables accurate pathogen and antimicrobial susceptibility profiling in 806 complicated UTIs in approximately four hours. Nat Commun. 2025 Dec 3;17(1):187. 807 11. Kim CY, Podlesny D, Schiller J, Khedkar S, Fullam A, Orakov A, et al. Planetary 808 microbiome structure and generalist-driven gene flow across disparate habitats. Cell. 2026 809 Feb 9 810 12. Liu L, Yang Y, Deng Y, Zhang T. Nanopore long-read-only metagenomics enables 811 complete and high-quality genome reconstruction from mock and complex metagenomes. 812 Microbiome. 2022 Dec 2;10(1):209. 813 13. Jain M, Olsen HE, Paten B, Akeson M. The Oxford Nanopore MinION: delivery of 814 nanopore sequencing to the genomics community. Genome Biol. 2016 Dec 25;17(1):239. 815 14. Payne A, Holmes N, Clarke T, Munro R, Debebe BJ, Loose M. Readfish enables targeted 816 nanopore sequencing of gigabase-sized genomes. Nat Biotechnol. 2021 Apr 817 30;39(4):442–50. 818 15. Weilguny L, De Maio N, Munro R, Manser C, Birney E, Loose M, et al. Dynamic, adaptive 819 sampling during nanopore sequencing using Bayesian experimental design. Nat 820 Biotechnol. 2023 Jul 2;41(7):1018–25. 821 16. Viehweger A, Marquet M, Hölzer M, Dietze N, Pletz MW, Brandt C. Nanopore-based 822 enrichment of antimicrobial resistance genes – a case-based study. GigaByte. 2023 Jan 823 25;2023:1–15. 824 17. Ürel H, Benassou S, Marti H, Reska T, Sauerborn E, Pinheiro Alves De Souza Y, et al. 825 Nanopore- and AI-empowered microbial viability inference. Gigascience. 2025 Jan 6;14. 826 18. Heidelbach S, Dall SM, Bøjer JS, Nissen J, van der Maas LNL, Sereika M, et al. Nanomotif: 827 Leveraging DNA Methylation Motifs for Genome Recovery and Host Association of 828 Plasmids in Metagenomes from Complex Microbial Communities. 2024. 829 19. Seong HJ, Han SW, Sul WJ. Prokaryotic DNA methylation and its functional roles. Journal 830 of Microbiology. 2021 Mar 23;59(3):242–8. 831 20. Beaulaurier J, Zhu S, Deikus G, Mogno I, Zhang XS, Davis-Richardson A, et al. 832 Metagenomic binning and association of plasmids with bacterial host genomes using DNA 833 methylation. Nat Biotechnol. 2018 Jan 11;36(1):61–9. 834 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+26 21. Bloemen B, Gand M, Ringenier M, Bogaerts B, Vanneste K, Marchal K, et al. Overcoming 835 challenges in metagenomic AMR surveillance with nanopore sequencing: a case study on 836 fluoroquinolone resistance. Front Microbiol. 2025 Jul 23;16. 837 22. Bloemen B, Delvoye M, Hoffman S, Marchal K, Vanneste K, Fraiture MA, et al. Recovery 838 and microbial host assignment of mobile genetic elements in complex microbiomes: 839 insights from a spiked gut sample. mSystems. 2026 Jan 26 840 23. Yao Y, Imirzalioglu C, Falgenhauer L, Falgenhauer J, Heinmüller P, Domann E, et al. 841 Plasmid-Mediated Spread of Carbapenem Resistance in Enterobacterales: A Three-Year 842 Genome-Based Survey. Antibiotics. 2024 Jul 23;13(8):682. 843 24. Naghavi M, Vollset SE, Ikuta KS, Swetschinski LR, Gray AP, Wool EE, et al. Global burden 844 of bacterial antimicrobial resistance 1990–2021: a systematic analysis with forecasts to 845 2050. The Lancet. 2024 Sep;404(10459):1199–226. 846 25. Brown, J. R., Chiu, C. Y., López-Labrador, F. X., & de Vries, J. J. C. (2026). The impact of 847 clinical metagenomic testing on patient management: Facts versus fantasy. The Lancet 848 Infectious Diseases. 2026 Apr 21:S1473-3099(26)00106-4. 849 26. Eagle SHC, Robertson J, Bastedo DP, Liu K, Nash JHE. Evaluation of five commercial 850 DNA extraction kits using Salmonella as a model for implementation of rapid Nanopore 851 sequencing in routine diagnostic laboratories. Access Microbiol. 2023 Feb 1;5(2). 852 27. The European Committee on Antimicrobial Susceptibility Testing. Breakpoint tables for 853 interpretation of MICs and zone diameters. Version 16.0, 2026. https://www.eucast.org 854 28. De Coster W, Rademakers R. NanoPack2: population-scale evaluation of long-read 855 sequencing data. Bioinformatics. 2023 May 4;39(5). 856 29. Shen W, Sipos B, Zhao L. SeqKit2: A Swiss army knife for sequence and alignment 857 processing. iMeta. 2024 Jun 5;3(3). 858 30. Kolmogorov M, Yuan J, Lin Y, Pevzner PA. Assembly of long, error-prone reads using 859 repeat graphs. Nat Biotechnol. 2019 May 1;37(5):540–6. 860 31. Kolmogorov M, Bickhart DM, Behsaz B, Gurevich A, Rayko M, Shin SB, et al. metaFlye: 861 scalable long-read metagenome assembly using repeat graphs. Nat Methods. 2020 Nov 862 5;17(11):1103–10. 863 32. Danecek P, Bonfield JK, Liddle J, Marshall J, Ohan V, Pollard MO, et al. Twelve years of 864 SAMtools and BCFtools. Gigascience. 2021 Jan 29;10(2). 865 33. Chklovski A, Parks DH, Woodcroft BJ, Tyson GW. CheckM2: a rapid, scalable and 866 accurate tool for assessing microbial genome quality using machine learning. Nat 867 Methods. 2023 Aug 27;20(8):1203–12. 868 34. Argimón S, David S, Underwood A, Abrudan M, Wheeler NE, Kekre M, et al. Rapid 869 Genomic Characterization and Global Surveillance of Klebsiella Using Pathogenwatch. 870 Clinical Infectious Diseases. 2021 Dec 1;73(Supplement_4):S325–35. 871 35. Wood DE, Lu J, Langmead B. Improved metagenomic analysis with Kraken 2. Genome 872 Biol. 2019 Nov 28;20(1):257. 873 36. Feldgarden M, Brover V, Gonzalez-Escalona N, Frye JG, Haendiges J, Haft DH, et al. 874 AMRFinderPlus and the Reference Gene Catalog facilitate examination of the genomic 875 links among antimicrobial resistance, stress response, and virulence. Sci Rep. 2021 Dec 876 1;11(1). 877 37. Feldgarden M, Brover V, Haft DH, Prasad AB, Slotta DJ, Tolstoy I, et al. Validating the 878 AMRFINder tool and resistance gene database by using antimicrobial resistance 879 genotype-phenotype correlations in a collection of isolates. Antimicrob Agents Chemother. 880 2019;63(11). 881 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 8, 2026. ;https://doi.org/10.64898/2026.02.16.706128 doi: bioRxiv preprint
+
+27 38. Feldgarden M, Brover V, Fedorov B, Haft DH, Prasad AB, Klimke W. Curation of the 882 AMRFinderPlus databases: Applications, functionality and impact. Microb Genom. 883 2022;8(6). 884 39. Robertson J, Nash JHE. MOB-suite: software tools for clustering, reconstruction and 885 typing of plasmids from draft assemblies. Microb Genom. 2018 Aug 1;4(8). 886 40. Li H. Minimap2: pairwise alignment for nucleotide sequences. Bioinformatics. 2018 Sep 887 15;34(18):3094–100. 888 41. Benoit G, Raguideau S, James R, Phillippy AM, Chikhi R, Quince C. High-quality 889 metagenome assembly from long accurate reads with metaMDBG. Nat Biotechnol. 2024 890 Sep 2;42(9):1378–83. 891 42. Benoit G, James R, Raguideau S, Alabone G, Goodall T, Chikhi R, et al. High-quality 892 metagenome assembly from nanopore reads with nanoMDBG. 2025. 893 43. Seemann, T. (2014). Prokka: Rapid prokaryotic genome annotation. Bioinformatics, 894 30(14), 2068–2069. 895 44. Altschul, S. F., Gish, W., Miller, W., Myers, E. W., & Lipman, D. J. (1990). Basic local 896 alignment search tool. Journal of Molecular Biology, 215(3), 403–410. 897 45. Siguier, P., Perochon, J., Lestrade, L., Mahillon, J., & Chandler, M. (2006). ISfinder: The 898 reference centre for bacterial insertion sequences. Nucleic Acids Research, 34(Suppl. 1), 899 D32–D36. 900 46. Wu, Y.-W., Simmons, B. A., & Singer, S. W. (2016). MaxBin 2.0: An automated binning 901 algorithm to recover genomes from multiple metagenomic datasets. Bioinformatics, 32(4), 902 605–607. 903 47. Dall, S. M., Møllekær, A. H., Kousgaard, S. J., Jakobsen, S. S., Larsen, L., Sørensen, B., 904 Thorlacius-Ussing, O., & Albertsen, M. (2024). Distinct microbial and resistome signatures 905 differentiate healthy and inflamed ileal pouches in patients with ulcerative colitis [Preprint]. 906 Available at SSRN: https://ssrn.com/abstract=6148080 907 48. Tonkin-Hill, G., Shao, Y., Zarebski, A. E., et al. (2026). Strain-level transmission inference 908 across multi-kingdom metagenomic data using TRACS. Nature Microbiology, 11, 1626– 909 1638. 910 49. Treichel, N. S., Pauvert, C., Séneca, J., et al. (2026). Benchmarking of shotgun 911 sequencing depth reveals the potential and limitations of shallow metagenomics and 912 strain-level analysis. Nature Microbiology, 11, 1233–1244. 913 50. White, R. T., Balm, M., Burton, M., et al. (2025). The rapid detection of a neonatal unit 914 outbreak of a wild-type Klebsiella variicola using decentralized Oxford Nanopore 915 sequencing. Antimicrobial Resistance and Infection Control, 14, Article 6. 916
