@@ -1,0 +1,2618 @@
+Title: 2026.07.10.737215v1.full.pdf
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.07.10.737215v1.full.pdf
+
+Number of Pages: 57
+
+Markdown Content:
+1
+
+# Targeted mining of plastic-associated metagenomes uncovers a novel 1
+
+# thermostable PETase expanding scaffold space for engineering 2
+
+3
+
+Konstantinos Rigkos 1,2 , Dimitra Bezantakou 1 , Kyriakos Antoniadis 3 , Io Antonopoulou 3 , Dimitra 4
+
+Zarafeta 1* , Georgios Skretas 1 ,4* 5
+
+6 
+
+> 1
+
+Institute for Bio-innovation, Biomedical Sciences Research Center “Alexander, Fleming”, Vari 7
+
+16672, Greece 8 
+
+> 2
+
+Department of Biological Applications and Technologies, University of Ioannina, Ioannina 9
+
+45500, Greece 10  
+
+> 3
+
+Biochemical Process Engineering, Division of Chemical Engineering, Department of Civil, 11 
+
+Environmental and Natural Resources Engineering, Luleå University of Technology, Luleå 97187, 12 
+
+Sweden 13  
+
+> 4
+
+Institute of Chemical Biology, National Hellenic Research Foundation, Athens 11635, Greece 14 
+
+15 
+
+16 
+
+17 
+
+*Correspondence:  zarafeta@fleming.gr ; skretas@fleming.gr  (lead contact) 18 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+2
+
+Abstract 1
+
+Enzymatic depolymerization of polyethylene terephthalate (PET) has advanced rapidly, alongside 2
+
+a growing volume of publicly available metagenomic data from microbial communities under 3
+
+sustained selective pressure from plastic exposure. Reasoning that such environments may 4
+
+harbor underexplored polyester-active enzymes, we developed a targeted mining workflow that 5
+
+screens exclusively plastic-associated datasets through multi-step bioinformatic filtering— 6
+
+integrating catalytic-motif screening, disulfide-topology validation, structural-similarity scoring, 7
+
+and phylogenetic profiling—to recover high-confidence PETase candidates. Applied to 277 8
+
+plastic-associated metagenomes, the pipeline yielded 21 non-redundant candidates, several of 9
+
+which combine the Type I catalytic motif (GHSMGGGG) with Type II-like extended loops and 10 
+
+secondary disulfide bonds. Two candidates were experimentally confirmed as PET hydrolases; 11 
+
+the more active, PET -KR1, is a thermostable enzyme ( Tm = 66.5 °C) that depolymerizes PET across 12 
+
+a broad temperature range, with markedly higher productivity on powdered than on film 13 
+
+substrate. PET -KR1 achieved optimal depolymerization at 50 °C, yet at 60–65 °C, where total 14 
+
+yields declined, the product pool was more strongly enriched in the terminal monomer TPA, 15 
+
+suggesting that thermostability and substrate accessibility are the primary targets for further 16 
+
+engineering. Molecular dynamics simulations revealed a conserved hydrophobic binding network 17 
+
+around the catalytic serine, consistent with established PETase substrate-recognition modes, and 18 
+
+rational disulfide engineering raised the melting temperature by 3.5 °C, confirming amenability 19 
+
+to further optimization. Overall, PET -KR1 expands the scaffold space available for PETase 20 
+
+engineering, while the discovery workflow, built entirely on publicly available tools and open-21 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+3
+
+access data, provides a reproducible strategy for metagenomic mining of novel PET-degrading 1
+
+enzymes toward biocatalytic PET recycling. 2
+
+3
+
+Keywords 4
+
+PET hydrolase, Polyethylene terephthalate, Plastic biodegradation, Metagenomics, Enzyme 5
+
+engineering, Biocatalysis, Plastic recycling 6
+
+7
+
+Introduction 8
+
+Global plastic production has risen from 2 million tons in 1950 to over 430 million tons in 2024 1 .9
+
+It is estimated that 60% of the total produced plastics have been discarded in landfills and the 10 
+
+environment with 4.8 to 12.7 million tons entering the oceans each year 2,3 . Postconsumer plastic 11 
+
+waste is mainly managed by landfill disposal (~25%), incineration (~40%), and recycling (<30%) 12  
+
+> 2,4
+
+. Incineration decreases waste volume but releases harmful emissions, making it less favorable 13 
+
+despite energy recovery 5 . Growing environmental awareness has driven the demand for 14 
+
+improved recycling technologies and policies to reduce plastic use and enhance recyclability 6–8 .15 
+
+Plastics are currently recycled mainly through mechanical or chemical routes 9 . While mechanical 16 
+
+recycling can reduce environmental impacts, it is significantly limited by the complexity of plastic 17 
+
+compositions, inefficient sorting processes, and the reduced quality of the recycled products 9,10 .18 
+
+Chemical recycling, on the other hand, holds promise for advancing a sustainable circular 19 
+
+economy 11 . However, its implementation is currently constrained by high energy demands and 20 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+4
+
+the toxicity of chemical catalysts, which translate into elevated operational costs and 1
+
+environmental footprint 11,12 . Addressing these challenges requires innovative approaches to 2
+
+increase recycling rates and simultaneously establish techno-economic feasibility and 3
+
+sustainability. 4
+
+Biocatalytic recycling, which leverages microorganisms or enzymes to depolymerize plastics, 5
+
+presents an eco-friendly alternative to conventional recycling methods 13 . In particular, enzyme-6
+
+catalyzed depolymerization has shown significant promise, with 495 documented plastic-active 7
+
+enzyme activities cataloged in PAZy: The Plastics-Active Enzymes Database 14 . Among these, 320 8
+
+enzymes are identified as polyethylene terephthalate (PET) hydrolases (PETases), with others 9
+
+displaying specific activity against polyurethane (PUR) and polyamide (PA) 14 . Notably, other 10 
+
+types of plastics containing a carbon-carbon backbone remain recalcitrant to biocatalytic 11 
+
+cleavage 15 . The focus on PET-degrading enzymes is driven by the global prevalence of PET, one 12 
+
+of the most widely used types of plastic 16 . The structure of PET comprising repeating units of 13 
+
+terephthalic acid (TPA) and ethylene glycol (EG) linked by ester bonds—gives it excellent 14 
+
+properties for textile and packaging industries, such as high mechanical, thermal and chemical 15 
+
+stability 17–19 . However, these same properties render PET a persistent pollutant that is 16 
+
+challenging to degrade and recycle 20 . PET waste and pollution has been detected in various 17 
+
+environmental compartments, including soils, sediments, groundwater, and marine ecosystems, 18 
+
+in both macroplastic and microplastic forms 21 . Moreover, it has been shown to bioaccumulate 19 
+
+within living organisms through the food chain, leading to harmful metabolic effects 21,22 .20 
+
+Therefore, the discovery and engineering of PET-degrading enzymes are crucial for the 21 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+5
+
+development of biocatalytic recycling technologies aimed at mitigating the challenges posed by 1
+
+plastic waste. 2
+
+Benchmark engineered PETases, such as LCC-ICCG and Kubu-PM12, demonstrate industrial 3
+
+viability, achieving >90% amorphous PET conversion at 70 °C 23,24 . The company Carbios has 4
+
+advanced enzymatic recycling to near-commercial scale, with its delayed Longlaville plant (50 5
+
+kt/year capacity) targeting production start by H1 2028 and a first licensing agreement for a plant 6
+
+in China announced in 2026, underscoring the commercial momentum behind enzymatic PET 7
+
+depolymerization 25,26 . These key advancements highlight the continuous maturation of enzyme 8
+
+technology towards the more sustainable handling of plastic waste. Yet, further expansion of the 9
+
+repertoire of the available PET-degrading enzymes diversity remains essential for understanding 10 
+
+and optimizing performance across diverse waste streams, crystallinity levels, and process 11 
+
+conditions. A key determinant of process performance is thermostability. Efficient enzymatic PET 12 
+
+depolymerization typically requires sustained activity near the glass-transition temperature of 13 
+
+amorphous PET (Tg ≈ 70 °C), where increased polymer chain mobility enhances enzyme access 14 
+
+to ester bonds — making thermostability a critical criterion in both the discovery and engineering 15 
+
+of new PETase candidates 27 .16 
+
+Over the past decade, PETase discovery has evolved from targeted culture isolation to more 17 
+
+sophisticated and high-throughput computational and metagenomic strategies. The archetypal 18 
+
+PET-degrading enzyme IsPETase, isolated from Ideonella sakaiensis grown on PET bottles 28 , and 19 
+
+the thermostable PETase LCC derived from leaf-branch compost metagenomes 29 established the 20 
+
+field, yet their performance limitations spurred diverse discovery paradigms. Recent advances 21 
+
+include sequence clustering of 1,894 candidates yielding industrial enzymes like Kubu-PM12 24 ,22 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+6
+
+machine learning-guided screening of 212 homologs identifying 91 PETases including novel low-1
+
+pH actives 30 , structure-based deep learning discovering 14 PETases including thermostable 2
+
+enzymes like KbPETase 31 , marine metagenome mining revealing novel clades 32,33 , and ancestral 3
+
+reconstruction mapping evolutionary pathways 34 .4
+
+While these approaches have greatly expanded the PETase sequence space, they have primarily 5
+
+drawn on general protein databases, environmental metagenomes, or reconstructed ancestors, 6
+
+without yet fully leveraging (meta)genomic datasets from environments exposed to plastics. 7
+
+Anthropogenic plastic debris represents a persistent and chemically homogeneous carbon source 8
+
+in natural environments. Microbial communities colonizing plastic surfaces therefore experience 9
+
+sustained exposure to polyester polymers and associated additives. Given the relatively recent 10 
+
+and widespread introduction of plastic materials into the environment, we reasoned that 11 
+
+prolonged exposure to synthetic polyesters could impose a selective pressure favoring 12 
+
+microorganisms that harbor enzymes capable of acting on these substrates 35,36 . We therefore 13 
+
+hypothesized that plastic-associated metagenomes represent a promising but underexplored 14 
+
+reservoir for polyester-active hydrolases, and that targeted mining of these datasets might 15 
+
+recover PETase candidates with features distinct from those identified in general sequence 16 
+
+databases or non-plastic environments. 17 
+
+To address this gap, in the present work, we have exclusively targeted plastic-associated 18 
+
+metagenomic datasets and have analyzed them bioinformatically using ProteoSeeker 37 , our open 19 
+
+source metagenomic protein discovery platform. Through a multi-step screening strategy— 20 
+
+incorporating PETase-specific sequence motifs, structural similarity to benchmark PETases, 21 
+
+molecular docking, and phylogenetic profiling—we identified 21 high-confidence candidates. 22 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+7
+
+Experimental validation revealed two novel PET-hydrolyzing enzymes, including PET -KR1, a 1
+
+thermostable PETase ( Tm = 66.5 °C). PET -KR1 additionally combines a Type I catalytic motif with 2
+
+Type II-like structural features, illustrating the architectural diversity recoverable through this 3
+
+approach. Biochemical characterization, molecular simulations, and rational engineering were 4
+
+subsequently employed to investigate its catalytic properties and potential as an engineering 5
+
+scaffold. Beyond the discovery of PET -KR1, our findings establish plastic-associated 6
+
+metagenomes as a tractable and still largely untapped reservoir for PET-degrading enzymes and 7
+
+provide a reproducible workflow for mining them. 8
+
+9
+
+Materials and Methods 10 
+
+All chemical reagents used in this study were purchased from AppliChem and all molecular 11 
+
+biology related products were obtained from New England Biolabs unless stated otherwise. 12 
+
+Amorphous PET film (aPET; Goodfellow Ltd., GF25214475) was purchased from Merck. 13 
+
+14 
+
+Bioinformatic Screening 15 
+
+Metagenomic datasets associated with plastic environments were retrieved from the European 16 
+
+Nucleotide Archive (ENA) 38 using the following query in advanced search for Raw reads as Data 17 
+
+type: (sample_description="plastic" OR sample_title="plastic") AND library_strategy="WGS" 18 
+
+AND library_source="METAGENOMIC". The ENA search returned 334 RUN accession codes 19 
+
+(search performed in November 2024), which were subsequently curated to exclude entries with 20 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+8
+
+non ‑plastic-associated sample descriptions or otherwise irrelevant metadata, resulting in a final 1
+
+set of 277 metagenomes for downstream analysis. 2
+
+Raw next-generation sequencing reads were analyzed using ProteoSeeker (v1.0) 37 in both seek 3
+
+and taxonomy modes. Seek mode performed targeted protein domain screening to identify 4
+
+sequences matching user-specified Pfam 39 families from assembled contigs, while taxonomy 5
+
+mode generated comprehensive taxonomic classification across all predicted proteins. 6
+
+ProteoSeeker performs automated quality control, contig assembly via MEGAHIT 40 , gene 7
+
+prediction using FragGeneScanRs 41 , and protein family screening via HMMER 42 against user-8
+
+specified protein domains. In November 2024, screening targeted four Pfam accessions 9
+
+corresponding to protein families enriched in characterized PETases: Cutinase (PF01083.26), 10 
+
+Chlorophyllase (PF07224.15), Chlorophyllase2 (PF12740.11), and Dienelactone hydrolase family 11 
+
+(PF01738.22), reflecting the absence of dedicated PETase domains at that time. These proxy 12 
+
+families were selected based on their representation in biochemically characterized PET 13 
+
+hydrolases (IsPETase, LCC, PHL7) 43 .14 
+
+This analysis identified >77 million putative proteins across all 277 metagenomes. Pooled seek 15 
+
+(Pfam-targeted) and taxonomy (domain-agnostic) outputs were filtered to identify putative PET-16 
+
+degrading enzymes using the following criteria: (i) presence of conserved sequence motifs (Gly-17 
+
+His-Ser-Met-Gly-Gly-Gly-Gly and Gly-Trp-Ser-Met-Gly-Gly-Gly-Gly), historically associated with 18 
+
+Type I-like and Type II-like PETases 13 , respectively, and (ii) length between 250–350 amino acids, 19 
+
+consistent with the size range of characterized PETases. These filters yielded 54 candidates, from 20 
+
+which N-terminal signal peptides were predicted and trimmed using Phobius 44 .21 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+9
+
+Candidate sequences were further evaluated for the presence of a C-terminal disulfide bond, a 1
+
+common structural feature of characterized PETases, known to contribute to enzyme stability 2
+
+and catalytic efficiency. Specifically, sequences were first screened for the presence of at least 3
+
+two cysteine residues in the C-terminal tail region. Selected candidates were then aligned against 4
+
+a reference set of known PET hydrolases (IsPETase, LCC, and TfCut2) using MAFFT Multiple 5
+
+sequence alignment (MSA) 45 to verify cysteine positioning and validate putative disulfide bond 6
+
+topology. Additionally, the presence of Ser-His-Asp catalytic triad and other features historically 7
+
+associated with Type II-like PETases, such as extended loops and a putative secondary disulfide, 8
+
+were evaluated. This stringent filtering resulted in 30 putative PETases, which were then 9
+
+clustered using CD-HIT (v4.8.1) 46 with a sequence identity threshold of 100%. This approach 10 
+
+removed exact sequence duplicates, yielding a final set of 21 unique putative PETase sequences. 11 
+
+As a final structural validation, predicted structural models of all 21 unique sequences were 12 
+
+generated using ColabFold (AlphaFold 2 with MMseqs2) 47,48 and superimposed with the crystal 13 
+
+structure of LCC (PDB: 4EB0) 49 via TM-Align 50 . All candidates exhibited TM-scores ≥ 0.9 (mean 14 
+
+0.95 ± 0.01), demonstrating highly conserved α/β -hydrolase folds consistent with PETase 15 
+
+architecture. 16 
+
+17 
+
+Sequence Similarity, Phylogenetic Analysis and sequence features 18 
+
+All 21 putative PETases were analyzed by BLASTP 51 against the Swiss-Prot and nr databases 19 
+
+(2025_12 release). Additionally, 2,575 reference sequences compiled from three landmark 20 
+
+PETase discovery studies published in 2025 by Seo et al ., Norton-Baker et al . and Wu et al . were 21 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+10 
+
+included in the analysis 24,30,31 . Key metrics extracted included percentage identity (%ID), query 1
+
+coverage, and E-values to identify novel PETase candidates. For each query, the top hit was 2
+
+selected based on highest sequence identity where coverage remained high (≥82%), prioritizing 3
+
+functionally relevant homologs with maximal similarity across near-complete protein lengths. 4
+
+Phylogenetic analysis was conducted by utilizing MAFFT MSA for the 21 putative PETases and 13 5
+
+characterized reference PETases (IsPETase, LCC, TfCut2, PHL7, and homologs). α/β -hydrolase 6
+
+superfamily references—including cutinase (CUTI1_FUSVN), lipase (MDLA_PENCA), and acetyl 7
+
+xylan esterase (AXE2_GEOSE)—contextualized PETase placement, with classical dienelactone 8
+
+hydrolases (DLH variants) serving as stable outgroups. Maximum-likelihood phylogenetic analysis 9
+
+was performed in IQ-TREE 3.0.1 52 (-m TEST -bb 1000 -nt AUTO), with ModelFinder 53 running the 10 
+
+optimal LG+G4 substitution model and 1000 ultrafast bootstrap replicates for branch support. 11 
+
+Trees were visualized in iTOL v6 54 , revealing PETase-linked clades rooted against stable 12 
+
+outgroups, with candidates distributed across established Type I/II radiations and putative 13 
+
+intermediate lineages. 14 
+
+To identify key functional PETase motifs at the sequence level, MSA was performed on the 21 15 
+
+putative PETases plus 15 reference PETases (IsPETase, LCC, Mipa-P, Kubu-P, PHL7, etc.) using 16 
+
+MAFFT. The resulting alignment was visualized using the ESPript 3.0 server 55 to annotate critical 17 
+
+structural and functional characteristics, including the conserved catalytic triad (Ser-His-Asp) 18 
+
+essential for ester hydrolysis, distinctive Type I/II motifs (GHSMGGGG/GWSMGGGG) that define 19 
+
+PETase structural subclasses, C-terminal disulfide cysteines important for stability, and 20 
+
+characteristic extended loops. 21 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+11 
+
+Recombinant Expression and Purification of PETase Candidates 1
+
+Genes encoding PETcand1 (PET -KR1), PETcand9, PETcand15, and PETcand16 were codon-2
+
+optimized for Escherichia coli expression and synthesized commercially in the pET-29b(+) vector 3
+
+(Twist Bioscience), generating pET-PETcand(1-16) constructs. The inserts comprised the signal-4
+
+peptide-free (mature) enzyme sequences cloned between the Nde I and Xho I restriction sites, 5
+
+resulting in proteins bearing a C-terminal 6XHis tag for affinity purification. 6
+
+E. coli SHuffle® T7 Express chemically competent cells (New England Biolabs) were transformed 7
+
+with the recombinant pET-PET candX plasmids to enable cytosolic disulfide bond formation and 8
+
+recombinant protein production. Cultures were grown in LB medium supplemented with 9
+
+kanamycin (50 μg mL⁻¹) at 37 °C and 220 rpm to an OD₆₀₀ of 0.6 –0.8. At this stage protein 10 
+
+production was induced by addition of 0.5 mM isopropyl-β-D-thiogalactopyranoside (IPTG), 11 
+
+followed by incubation at 18 °C for 16–20 h with shaking at 220 rpm. 12 
+
+Cells were harvested by centrifugation (4,000 × g, 15 min, 4 °C) and resuspended in lysis buffer 13 
+
+(25 mM Tris-HCl, 100 mM NaCl, 10 mM imidazole, pH 8.3). Cells were lysed by sonication on ice 14 
+
+using a SONICS Vibra-Cell ultrasonic processor at 100% amplitude for 20 cycles (20 s on/20 s off). 15 
+
+The resulting lysates were clarified by centrifugation (17,000 × g, 45 min, 4 °C) and applied to an 16 
+
+immobilized metal affinity chromatography (IMAC) column packed with Protino Ni-NTA Agarose 17 
+
+(MACHEREY-NAGEL). The column was equilibrated with lysis buffer, washed with buffer 18 
+
+containing 25 mM Tris-HCl, 100 mM NaCl, 30 mM imidazole (pH 8.3), and bound proteins were 19 
+
+eluted with 25 mM Tris-HCl, 100 mM NaCl, 300 mM imidazole (pH 8.3). The PETase content (% 20 
+
+w/w) in the purified protein fraction after IMAC purification was determined by SDS-PAGE using 21 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+12 
+
+Bovine Serum Albumin as protein standard (ThermoFisher Scientific, Waltham, USA), followed by 1
+
+quantification using the JustTLC software (Sweday, Lund, Sweden). 2
+
+Proteins were further purified by size-exclusion chromatography (SEC) using an ÄKTA pure 25 3
+
+system (GE Healthcare Lifesciences) on a HiLoad 16/600 Superdex 75 pg column equilibrated in 4
+
+25 mM Tris-HCl, 100 mM NaCl, pH 8.3. Protein concentrations were determined by measuring 5
+
+absorbance at 280 nm using theoretical molar extinction coefficients calculated with the ExPASy 6
+
+ProtParam tool. 7
+
+8
+
+PETase candidate initial evaluation 9
+
+Initial PET hydrolysis screening was performed using amorphous polyethylene terephthalate 10 
+
+(aPET) film (Goodfellow Cambridge Ltd.; product GF25214475). Films were punched into coupons 11 
+
+of approximately 8.5 mg and incubated in 1.5 mL tubes containing 1 mL of 100 mM sodium 12 
+
+phosphate buffer (pH 8.0) supplemented with 500 nM (14.9  μg mL -1 ) PETcand1 (PET -KR1) or 13 
+
+PETcand15 protein. Reactions were incubated at 30 °C under constant stirring at 300 rpm for 3 14 
+
+d. Following incubation, tubes were allowed to settle, and the supernatant was analyzed directly. 15 
+
+Total aromatic soluble products (TPA, MHET, BHET, and higher soluble oligomers) were 16 
+
+quantified by measuring absorbance at 242 nm using a Nanodrop 1000 spectrophotometer 17 
+
+(Thermo Scientific). Background signal from time-zero controls was subtracted, and product 18 
+
+concentrations were reported as TPA equivalents (TPAeq) calculated from a TPA standard curve. 19 
+
+Thermal stability was assessed by differential scanning fluorimetry (DSF) through determination 20 
+
+of the melting temperature ( 𝑇𝑇 𝑚𝑚 ) of each candidate PETase. A 5000× SYPRO Orange stock was 21 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+13 
+
+diluted in dH 2O to 50×, and 2.5 μL of this working dye was mixed with 22.5 μL of Tris –HCl (pH 8.3) 1
+
+containing 10 μg PET candX enzyme (or buffer blank) in a white, clear PCR plate (final reaction 2
+
+volume 25 μL ; final dye 5×). Fluorescence was monitored on a CFX96 Touch Real-Time PCR 3
+
+System (Bio-Rad) in the FRET channel during a temperature ramp from 25 °C to 100 °C at 1 °C 4
+
+min −1 . The T m was defined as the temperature at the minimum of the negative first derivative of 5
+
+the melting curve, as calculated in Bio-Rad CFX Maestro. 6
+
+7
+
+Biochemical characterization of PET -KR1 8
+
+Among the four enzyme candidates, PETcand1 was selected for further study and hereafter 9
+
+referred to as PET -KR1, whereas PETcand15 was renamed PET-KR2. Initial biochemical 10 
+
+characterization of PET -KR1 was performed by quantifying esterase activity using the proxy 11 
+
+substrate p-nitrophenyl butyrate (pNPB) via spectrophotometric detection of released p-12 
+
+nitrophenol (pNP) at 410 nm. 13 
+
+To determine the temperature optimum of PET -KR1 esterolytic activity, reactions (200 μL total 14 
+
+volume) were prepared in 100 mM sodium phosphate buffer (pH 8.0) preincubated at 30–90 °C. 15 
+
+SEC-purified PET -KR1 (5 μL) was added to 190 μL of pre-equilibrated buffer, and reactions were 16 
+
+initiated by adding 5 μL pNPB (40 mM stock in DMSO), yielding a final enzyme concentration of 17 
+
+1.93 nM (57.5 ng mL -1 ) and 2.5% (v/v) DMSO. After 1 min incubation at the test temperature, 18 
+
+absorbance at 410 nm was recorded using a Spectrostar Nano microplate reader (BMG Labtech) 19 
+
+with the reader chamber set to 30 °C. The 1-min time point was chosen based on preliminary 20 
+
+time-course measurements to fall within the linear range of pNP formation. Non-enzymatic 21 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+14 
+
+hydrolysis (blank) was subtracted, and activity was reported as relative activity (%), normalized 1
+
+to the maximum value observed. 2
+
+For determination of the pH optimum of PET ‑KR1, esterolytic activity was assayed over pH 5–9 3
+
+using the pNPB esterase assay. Buffer systems (all 100 mM) were citrate–phosphate (pH 5–6), 4
+
+sodium phosphate (pH 6–8), and Tris–HCl (pH 8–9). Reactions (200 μL total volume) were 5
+
+prepared by adding 5 μL SEC -purified PET -KR1 to 190 μL of the respective buffer and initiating 6
+
+the reaction with 5 μL of pNPB (40 mM in DMSO) stock (final enzyme concentration 1.93 nM/57.5 7
+
+ng mL -1 ; final DMSO 2.5% v/v). Absorbance at 410 nm was monitored at 30 °C for 10 min, and 8
+
+activities were calculated from the initial linear portion of the reaction curves after subtraction 9
+
+of the no-enzyme blanks. Activity was expressed as relative activity (%), normalized to the highest 10 
+
+observed value. 11 
+
+For alkaline conditions, PET hydrolysis was assayed instead of the esterase assay to avoid 12 
+
+autohydrolysis of the chromogenic substrate at high pH. Reactions were performed in sodium 13 
+
+phosphate (pH 8.0), Tris–HCl (pH 8.0–9.0), or sodium carbonate (Na 2 CO 3 , pH 9.5) buffers. aPET 14 
+
+film coupons (~8.5 mg) were incubated in 1 mL of the respective buffer containing 456 nM (13.6 15 
+
+μg mL -1 ) SEC-purified PET -KR1 in 1.5 mL microcentrifuge tubes at 30 °C and 300 rpm for 24 h. 16 
+
+Soluble aromatic products released during PET depolymerization were assessed by UV 17 
+
+absorbance at 242 nm using a NanoDrop 1000 spectrophotometer (Thermo Scientific); signals 18 
+
+were baseline-corrected by subtraction of the corresponding time-zero (t = 0) absorbance and 19 
+
+expressed as relative activity (%), normalized to the highest blank-corrected value. 20 
+
+21 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+15 
+
+PET depolymerization kinetics and product analysis 1
+
+To evaluate the PET depolymerization profile of PET -KR1, reactions were performed at 40, 45, 2
+
+50, 55 and 60 °C for up to 168 h , with sampling at 1, 2, 3, 4, 5, 6, 8, 10, 24, 48, 72, 96, and 168 h .3
+
+Reactions (1 mL total volume) contained an aPET film coupon (8.5 mg) and were initiated by 4
+
+adding 26 μL SEC -purified PET -KR1 to 974 μL of 100 mM sodium phosphate buffer (pH 8.3) in 1.5 5
+
+mL microcentrifuge tubes (final enzyme concentration 500 nM), followed by incubation at the 6
+
+indicated temperature with shaking at 300 rpm. At each time point, soluble aromatic products 7
+
+were quantified by measuring absorbance at 242 nm (NanoDrop), and signals were baseline-8
+
+corrected by subtraction of the corresponding time-zero reading. Absorbance values were 9
+
+converted to TPA eq using a TPA standard curve, and specific activity ( μmol products h -1 mg enzyme -1 )10 
+
+was calculated from the initial rates of the linear region of product formation when linearity was 11 
+
+observed; for conditions that plateaued early, specific activities were not determined. Final 12 
+
+specific productivity ( μmol products h -1 mg enzyme -1 ) was calculated at 168 h from the endpoint TPA eq 13 
+
+values and compared across temperatures. 14 
+
+PET film depolymerization products were quantified spectrophotometrically as TPAeq, providing 15 
+
+a rapid method for comparative kinetic screening across multiple temperatures. UV-based 16 
+
+quantification of soluble aromatic PET hydrolysis products has previously been shown to 17 
+
+correlate well with HPLC-derived measurements for relative activity comparisons and kinetic 18 
+
+profiling 56 . For the following cryo-milled PET experiments, product concentrations were 19 
+
+determined by HPLC to enable individual quantification of TPA, MHET, and BHET and analysis of 20 
+
+product distributions. 21 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+16 
+
+To evaluate the effects of temperature and PET morphology on the depolymerization activity of 1
+
+PET -KR1, reactions were conducted at 45, 50, 60, and 65 °C for up to 168 h. The same buffer was 2
+
+used with reactions (1 mL total volume) containing 8.5 mg of cryo-milled amorphous PET (aPET) 3
+
+powder (particle size < 500  μm) and were initiated by the addition of purified PET -KR1 fraction 4
+
+corresponding to 500 nM (14.9 μg mL -1 ) at the final reaction volume. Separate reaction tubes 5
+
+were prepared for each sampling time point and incubated under the specified conditions. At 6
+
+each time point, a single tube was removed from incubation for analysis. 7
+
+At each time point, a defined volume of supernatant from the reaction tube was carefully 8
+
+withdrawn, appropriately diluted and filtered (0.20  μm). Depolymerization products were 9
+
+quantified by High-Performance Liquid Chromatography (HPLC) using a Macherey-Nagel 10 
+
+NUCLEOSIL 100-5 C18 HD column (Dueren, Germany) at 40 oC and an isocratic mobile phase at a 11 
+
+flow of 1 mL/min consisting of solvent A (Milli-Q water with 0.1% (v/v) trifluoroacetic acid; VWR, 12 
+
+Radnor, PA) and solvent B (acetonitrile; Merck, Darmstadt, Germany) at an 80:20 (v/v) ratio. 13 
+
+Standard curves were constructed using TPA, MHET and BHET (Sigma, Saint-Louis, USA) at known 14 
+
+concentrations. 15 
+
+The total product release was calculated according to the following equation (Eq.1): 16 
+
+[𝑇𝑇𝑇𝑇𝑇𝑇𝑇𝑇𝑇𝑇 𝑝𝑝𝑝𝑝 𝑇𝑇 𝑝𝑝𝑝𝑝𝑝𝑝 𝑇𝑇 𝑝𝑝 ] = [ 𝑇𝑇𝑇𝑇𝑇𝑇 ] + [ 𝑀𝑀𝑀𝑀𝑀𝑀 𝑇𝑇 ] + [ 𝐵𝐵 𝑀𝑀𝑀𝑀𝑇𝑇 ] Eq. 1 17 
+
+To compare product distributions among conditions, the following metrics were calculated based 18 
+
+on the molar concentration of products, according to Equations 2 and 3: 19 
+
+𝑇𝑇𝑇𝑇𝑇𝑇  𝑇𝑇𝑇𝑇  𝑀𝑀𝑀𝑀𝑀𝑀 𝑇𝑇  𝑝𝑝𝑇𝑇𝑇𝑇 𝑟𝑟 𝑇𝑇  = [𝑇𝑇𝑇𝑇𝑇𝑇 ][𝑀𝑀𝑀𝑀𝑀𝑀 𝑇𝑇 ] Eq.2 20 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+17 
+
+𝑇𝑇𝑇𝑇𝑇𝑇 𝑝𝑝𝑝𝑝𝑝𝑝 𝑟𝑟𝑇𝑇 𝑝𝑝 (%) = [𝑇𝑇𝑇𝑇𝑇𝑇 ][𝑇𝑇𝑇𝑇𝑇𝑇 ]+[𝑀𝑀𝑀𝑀𝑀𝑀 𝑇𝑇 ]+[𝐵𝐵 𝑀𝑀𝑀𝑀𝑇𝑇 ] ∙ 100 Eq.3 1
+
+2
+
+Docking of PET tetramer 3
+
+For docking analysis, a PET-tetramer model substrate (2-HE(MHET) 4 ) was constructed from the 4
+
+SMILES string 5
+
+“OCCOC(=O)c1ccc(cc1)C(=O)OCCOC(=O)c1ccc(cc1)C(=O)OCCOC(=O)c1ccc(cc1)C(=O)OCCOC(=O)c 6
+
+1ccc(cc1)C(=O)OCCO” and energy-minimized using the steepest descent algorithm with the 7
+
+MMFF94 force field (100 steps) in Avogadro (v1.2.0) 57 . The PET -KR1 structure predicted by 8
+
+ColabFold (see Bioinformatic Screening section) was used as the receptor model. Protein and 9
+
+ligand structures were prepared using AutoDock Tools (v.1.5.7) 58 , where polar hydrogens were 10 
+
+added and Kollman charges were assigned to the protein. The ligand was assigned Gasteiger 11 
+
+charges and converted to pdbqt format. As the oligomers of PET have very high conformability, 12 
+
+compared to the post-consumer PET in which the chains do not exhibit freedom of movement 59 ,13 
+
+torsional rotations along ester bonds (between the aromatic ring carbon and carbonyl carbon, 14 
+
+and between the carbonyl carbon and ester oxygen) were constrained to prevent intramolecular 15 
+
+collapse during docking. Docking simulations were performed using AutoDock Vina (v1.1.2) 60 16 
+
+with a cubic grid box encompassing the entire protein (grid center: x = -1.052, y = -0.658, z = -17 
+
+0.981; box size: 68 × 68 × 68 Å). The exhaustiveness parameter was set to 25 and the energy 18 
+
+range to 4 kcal mol⁻¹. For each docking run, nine poses were generated, and calculations were 19 
+
+performed in triplicate. The top docking pose with the lowest predicted binding energy and a 20 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+18 
+
+catalytically relevant orientation relative to the active site was selected for subsequent molecular 1
+
+dynamics simulations. 2
+
+3
+
+Molecular dynamics simulations 4
+
+Two types of systems, PET -KR1 (apo) and PET -KR1 in complex with PET-tetramer (holo) were 5
+
+employed for the molecular dynamics (MD) simulations using the GROMACS (v.2024.4) software 6 
+
+> 61
+
+. The systems were generated using a TIP3P water system and the CHARMM36 force field 62 .7
+
+The ligand parameters were prepared based on the CHARMM36 force field using the CGenFF 8
+
+server 63 and the protein-ligand complex was generated by combining the corresponding 9
+
+topologies and atom coordinates. A cubic box was centered around the protein and protein-10 
+
+ligand complex respectively with at least 1.2 nm distance around the molecules and the systems 11 
+
+were solvated with water. Following solvation, the total system charges were neutralized by the 12 
+
+addition of sodium and chloride ions. Subsequently, the systems were energy minimized using 13 
+
+the steepest descent algorithm with 5X10 6 steps and a 0.01 step size until a maximum force lower 14 
+
+than 100 kJ/mol was achieved. Following energy minimization, the systems underwent stepwise 15 
+
+equilibration. First, NVT equilibration was performed for 100 ps at 300 K using the V-rescale 16 
+
+thermostat (τ_t = 0.1 ps; 2 fs timestep). This was followed by NPT equilibration for 100 ps at 300 17 
+
+K and 1 bar using the V-rescale thermostat (τ_t = 0.1 ps) and C -rescale barostat (τ_p = 2.0 ps ; 2 fs 18 
+
+timestep). During both equilibration stages, harmonic position restraints (1000 kJ mol⁻¹ nm⁻²) 19 
+
+were applied to the PET tetramer ligand heavy atoms (defined via indexing a restrained ligand 20 
+
+topology) to maintain proximity to the initial docked orientation. Production MD simulations 21 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+19 
+
+were then performed for 500 ns per system in the NPT ensemble at 300 K and 1 bar, using the V-1
+
+rescale thermostat (τ_t = 0.1 ps) and Parrinello –Rahman barostat (τ_p = 2.0 ps ). Bonds involving 2
+
+hydrogen atoms were constrained using the LINCS algorithm, enabling a 2 fs integration 3
+
+timestep. A Verlet cutoff scheme applied 1.2 nm cutoffs for short-range electrostatics (PME; 4
+
+pme_order = 4; fourierspacing = 0.16 nm) and van der Waals interactions (force-switch 1.0–1.2 5
+
+nm). All ligand restraints were removed for production runs. Each system (apo and holo) was 6
+
+simulated in triplicate, with independent replicates initiated from distinct atomic velocity 7
+
+distributions during system preparation. 8
+
+Periodic boundary conditions were applied in all directions, and center-of-mass motion was 9
+
+removed at each timestep. System stability was evaluated by root-mean-square deviation 10 
+
+(RMSD) of backbone atoms using least-squares fitting, as implemented in the gmx rms module. 11 
+
+Residue-level flexibility was assessed via root-mean-square fluctuation (RMSF) analysis using the 12 
+
+gmx rmsf module. Binding free energies (ΔG_bind) were calculated for the holo protein complex 13 
+
+using gmx_MMPBSA (v1.5.1) 64,65 for each triplicate production trajectory and total binding 14 
+
+energies were averaged across replicas. Protein–ligand interactions were further analyzed by 15 
+
+calculating distances between protein residues and the PET tetramer across holo simulations 16 
+
+using MDAnalysis 66,67 . Residues were considered in contact with the ligand if any atom distance 17 
+
+was ≤ 4.5 Å. Interaction occupancy was defined as: 18 
+
+𝑂𝑂 𝑝𝑝𝑝𝑝𝑝𝑝𝑝𝑝𝑇𝑇 𝑂𝑂 𝑝𝑝𝑝𝑝  (%) = 𝑓𝑓𝑓𝑓𝑓𝑓 𝑚𝑚 𝑓𝑓𝑠𝑠 𝑖𝑖𝑖𝑖𝑖𝑖𝑖𝑖𝑖𝑖𝑖𝑖𝑖𝑖𝑖𝑖𝑖𝑖𝑖𝑖𝑖𝑖 𝑓𝑓𝑓𝑓𝑓𝑓 𝑚𝑚 𝑓𝑓𝑠𝑠 𝑖𝑖𝑖𝑖𝑖𝑖𝑖𝑖 𝑡𝑡 ∗ 100 . Eq.4 19 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+20 
+
+Finally, the residues with occupancy (%) ≥ 30% across MD replicas were retained and the Average 1
+
+occupancy (%) and Average distance from the ligand were calculated to highlight putative 2
+
+PET-binding regions. 3
+
+4
+
+Rational disulfide engineering of PET -KR1 5
+
+To further explore whether the thermostability of PET -KR1 could be improved for enhanced PET 6
+
+depolymerization at elevated temperatures, a rational disulfide-bond engineering strategy was 7
+
+applied. Two independent disulfide-prediction platforms, Disulfide by Design 2 and the Maestro 8
+
+web server, were used to identify candidate residue pairs in the PET -KR1 AlphaFold-predicted 9
+
+model 68,69 . Four putative disulfide pairs were prioritized for experimental testing based on 10 
+
+literature-supported positions in related PET hydrolases, consensus between the two prediction 11 
+
+tools, and the structural feasibility of the proposed cysteine substitutions: R1, N206C/S260C; R2, 12 
+
+E15C/P220C; R3, G6C/P20C; and R4, A142C/V168C. These candidates were selected as a small 13 
+
+pool of putative stabilizing disulfide bonds for downstream validation. 14 
+
+The R1 variant was first generated as a single mutant and used as the reference engineered 15 
+
+construct for comparison with the wild-type enzyme. In parallel, combinatorial variants were 16 
+
+designed to test whether additional predicted disulfides could act synergistically with R1, 17 
+
+including R1+R2, R1+R3, and R1+R4. The corresponding cysteine-substitution constructs were 18 
+
+gene-synthesized and cloned into the pET-29b(+) vector (Twist Bioscience), similarly to the wild-19 
+
+type construct, and recombinant proteins were expressed under the same conditions. 20 
+
+21 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+21 
+
+Data Analysis 1
+
+All experimental data are reported as mean ± standard deviation (SD). A minimum of three 2
+
+independent experiments were performed for all assays except stated otherwise. Unless 3
+
+otherwise stated, data are reported as mean ± standard deviation (SD). For the initial aPET film 4
+
+degradation activity and Tm evaluation, a minimum of three independent experiments, each 5
+
+comprising technical triplicates were performed. pNPB esterase pH optimum assays were 6
+
+performed in nine independent experiments, each comprising technical triplicates. pNPB 7
+
+esterase temperature optimum and aPET film pH optimum assays were performed in three 8
+
+independent experiments, each comprising technical duplicates. The aPET film degradation 9
+
+assays were performed in technical triplicate measurements while the HPLC-based aPET powder 10 
+
+depolymerization experiments were performed as technical duplicates. Specific activity was 11 
+
+determined in the initial linear region of product formation, and specific productivity were 12 
+
+calculated from endpoint (168 h) TPA-equivalent (film kinetics) or total HPLC-measured (powder 13 
+
+kinetics) products values. MM/PBSA binding free energies are reported as the mean ± SD across 14 
+
+three independent MD replicas. Comparisons between conditions and between enzymes are 15 
+
+presented descriptively; no formal hypothesis tests were applied, given the number of 16 
+
+independent replicates. Data were processed and plotted in GraphPad Prism v9.0.0. 17 
+
+18 
+
+19 
+
+20 
+
+21 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+22 
+
+Results and discussion 1
+
+Targeted screening of 277 plastic-associated metagenomes yields 21 high-confidence PETase 2
+
+candidates 3
+
+Analysis of 277 metagenomes from environments exposed to plastics using ProteoSeeker 37 4
+
+identified over 77 million predicted proteins (Figure 1A). At the time of the analysis (November 5
+
+2024), no dedicated PETase Pfam domain existed, necessitating use of custom Hidden Markov 6
+
+Models (HMMs) and proxy domains—cutinase (PF01083), chlorophyllase (PF07224, PF12740), 7
+
+and dienelactone hydrolase (PF01738)—consistent with contemporary strategies reported in 8
+
+very recently published studies 30,32,33,70 . Consequently, seek mode (Pfam-targeted) and 9
+
+taxonomy mode (domain-agnostic) outputs from ProteoSeeker were pooled without domain 10 
+
+exclusion, yielding 54 candidates bearing canonical PETase Type I/II catalytic motifs (Gly-His-Ser-11 
+
+Met-Gly-Gly-Gly-Gly or Gly-Trp-Ser-Met-Gly-Gly-Gly-Gly). All 54 candidates passed length 12 
+
+filtering (250–350 amino acid residues). C-terminal disulfide analysis— requiring ≥2 cysteines at 13 
+
+specific positions validated by MAFFT MSA with characterized PETases—identified 30 candidates. 14 
+
+CD-HIT (100% identity) dereplication yielded 21 unique sequences. TM-Align superposition of 15 
+
+AlphaFold models vs LCC (PDB:4EB0) confirmed all 21 exhibited TM-scores ≥0.9 (mean 16 
+
+0.95±0.01), demonstrating highly conserved α/β -hydrolase folds regardless of Pfam status. 17 
+
+This combined validation filtering ensured candidate robustness independent of evolving domain 18 
+
+annotations. Satisfyingly, re-analysis of these 21 final candidates using current HMMER 19 
+
+databases revealed universal PETase domain assignment. PF12740—originally annotated as 20 
+
+"Chlorophyllase2" during our initial November 2024 screening—now consistently identifies as 21 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+23 
+
+"PETase/PET hydrolase-like" across all sequences: the original 12 seek-mode hits plus the 9 1
+
+taxonomy-mode hits lacking user-specified domains. This demonstrates recent Pfam model 2
+
+evolution incorporating PETase-specific sequence features discovered post-analysis. 3
+
+However, the presence of a PF12740 domain is not sufficient on its own. Although this annotation 4
+
+indicates similarity to the broader PETase-like family, proteins annotated with this domain very 5
+
+often lack one or more essential determinants of bona fide activity, including the complete 6
+
+catalytic motif and the C-terminal disulfide bond. Our multi-step filtering therefore, was essential 7
+
+to distinguish biochemically relevant PETases from domain-positive false positives. 8
+
+9
+
+Plastic-associated metagenomes yield candidates spanning established PETase subtypes and 10 
+
+hybrid architectures 11 
+
+BLASTP against Swiss-Prot (2025_12) revealed 19 candidates (PETcand1–19) with modest 12 
+
+identity (41–76%) to characterized PETases, while PETcand20–21 exceeded 93% (Figure 1). nr 13 
+
+hits were predictably higher for most, except PETcand9 and PETcand16 (max 63.8% and 76.6%), 14 
+
+reflecting nr's abundance of predicted homologs versus the curated, biochemically validated 15 
+
+entries of Swiss-Prot. The primary sequences of PETcand1–21 are reported in Supplementary 16 
+
+Figure S1. 17 
+
+Since recent 2025 PETase discoveries (e.g., Seo et al ., Norton-Baker et al . and Wu et al . 24,30,31 )18 
+
+are incompletely annotated in Swiss-Prot, an additional 2,575 sequences from these studies were 19 
+
+screened. Notably , only five candidates (PETcand1,3,9,15,16; ≤80% max %ID, marked by ×) 20 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+24 
+
+remain novel against this expanded set, underscoring the rapid expansion of PETase sequence 1
+
+space and need for experimental validation (Figure 1B). 2
+
+3
+
+4
+
+Figure 1. Discovery pipeline & Sequence identity heatmap of putative PETases from plastic 5
+
+metagenomes. (A) Schematic overview of the ProteoSeeker -based discovery workflow: 277 6
+
+plastic-associated metagenomes were retrieved from ENA, translated via gene prediction (>77 7
+
+million predicted proteins), and filtered by PETase catalytic motifs and length (250–350 aa) to 8
+
+yield 54 candidates; subsequent stringent filtering based on disulfide-bond/MSA features 9
+
+reduced this set to 30 candidates, and final redundancy removal plus structural similarity filtering 10 
+
+yielded 21 non-redundant candidates. (B) Maximum % identity values for PETcand1–21 via 11 
+
+BLASTP against Swiss-Prot (2025_12), nr, and PETase sets from Seo et al. (2025), Norton-Baker et 12 
+
+al. (2025), and Wu et al. (2025); all hits ≥82% coverage. Color scale: light blue ( ∼41%) to light red 13 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+25 
+
+(100%). Dashed lines denote low Swiss-Prot identity candidates; × marks five novel sequences 1
+
+(52–80% identity). 2
+
+Maximum-likelihood phylogenetic analysis of the selected 21 putative PETases and 13 3
+
+biochemically characterized PETases was performed. α/β -hydrolase references resolved distinct 4
+
+PETase-linked radiation within the superfamily, rooted against classical outgroups including 5
+
+dienelactone hydrolases (DLH; Figure 2). While PETases do not form a strictly monophyletic clade 6
+
+excluding all other hydrolases, the topology reveals well-supported subclusters corresponding to 7
+
+established subtypes. 8
+
+Within the PETase-associated radiation, several well-supported subclusters are observed: Type I 9
+
+(purple; GHSMGGGG motif, single C-terminal disulfide) containing the well-known enzymes LCC, 10 
+
+Mipa-P etc., plus GWSMGGGG enzymes (Kubu-P, CaPETase) that cluster with canonical Type I 11 
+
+topology. A second radiation features extended loop regions neighboring Type I, encompassing 12 
+
+Type IIa (dark blue), Type IIb (blue), and Type I* (light purple) subgroups—all bearing the 13 
+
+GWSMGGGG motif. 14 
+
+The 21 candidates identified here distribute across this PETase radiation rather than a single 15 
+
+subtype. Notably, PETcand1–2 and PETcand9–14 occupy intermediate positions within the 16 
+
+PETase-associated radiation, combining Type I GHSMGGGG motifs with Type II-like extended 17 
+
+loops and secondary disulfides—combinations of sequence and structural features typically 18 
+
+associated with distinct PETase subtypes (Figure 2). 19 
+
+Consistent with prior reports that some cutinase- and esterase-like hydrolases exhibit low-level 20 
+
+or promiscuous activity toward synthetic polyesters, reference sequences (CUT1, AXE2) embed 21 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+26 
+
+within the PETase-linked cluster rather than distant outgroups 71,72 . Critically, no metagenomic 1
+
+candidates associate with classical outgroups, confirming their PETase relatedness. This 2
+
+distribution—spanning established subtypes plus putative hybrids—demonstrates plastic-3
+
+associated metagenomes as rich sources of putative PETase diversity. 4
+
+5
+
+Figure 2. Phylogenetic analysis of PETases and related α/β -hydrolases. 6
+
+Maximum-likelihood tree of the 21 putative PETases from plastic-associated metagenomes 7
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+27 
+
+identified in this work , 13 biochemically characterized PETases, and representative α/β -1
+
+hydrolases. PETases are colored by established functional subtypes: Type I (purple), Type I* (light 2
+
+purple), Type IIa (dark blue) and Type IIb (blue). Metagenome-derived candidates are shown in 3
+
+black (this work) while characterized PETases are shown in bold. Cutinase (CUT1) and acetyl xylan 4
+
+esterase (AXE2) cluster within the broader PETase-associated radiation, whereas dienelactone 5
+
+hydrolases (DLH) and lipases were included as distant outgroups. Bootstrap values (1,000 6
+
+replicates) are shown at key nodes. 7
+
+8
+
+To identify key sequence features of PETases, all putative enzymes were aligned with 9
+
+characterized reference PETases using MAFFT and visualized using the ESPript server (Figure S1), 10 
+
+while a focused alignment of selected candidates appears in Figure 3. Generally, PETases 11 
+
+featuring a single C-terminal disulfide bond and the characteristic GHSMGGGG motif are 12 
+
+classified as Type I. Conversely, enzymes bearing the GWSMGGGG motif with extended α2 -α3 13 
+
+and β8 -α6 loops represent either Type I* or Type II subtypes. Type I* retain a single (slightly 14 
+
+repositioned) C-terminal disulfide, whereas Type II possess an additional disulfide connecting  β715 
+
+beta sheet with  η4 alpha helix. Type IIb enzymes exhibit Ser at the position homologous to Ser238 16 
+
+in IsPETase, while Type IIa harbor Tyr, Phe, or Trp at this site. 17 
+
+Intriguingly, the unclassified enzymes Kubu-P and CaPETase—which possess the GWSMGGGG 18 
+
+motif but lack other Type II characteristics—cluster with Type I PETases in our phylogenetic 19 
+
+analysis (Figure 2). PETcand3–7 align as canonical Type I sequences within the corresponding 20 
+
+clade. PETcand15–21 appropriately position near Type II references, with Type IIb candidates 21 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+28 
+
+generally accurate except PETcand15 (Trp) and PETcand18 (Phe) at the subtype-defining position; 1
+
+PETcand16,17,19 cluster near Type IIa. Notably, PETcand1,2,8,9 bear the Type I GHSMGGGG 2
+
+motif alongside Type II-like extended loops, while PETcand10–14 additionally possess the second 3
+
+disulfide. These hybrid sequences predominantly cluster between Type I and Type II/I* clades, 4
+
+consistent with their mixed features—except PETcand9 and PETcand14 near the root. Similar 5
+
+feature combinations have been reported in previously characterized PET hydrolases, 6
+
+underscoring the structural variability within the family. PETcand10–14 exhibit high similarity to 7
+
+low-expression, negligible PET hydrolysis clusters, whereas PETcand8 homologs show expression, 8
+
+and PETcand1,2,9 represent relatively novel sequences. 9
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+29 
+
+1
+
+Figure 3. Multiple sequence alignment of metagenomic PETase candidates (this work) with 2
+
+characterized Type I, IIa, IIb, and I* reference PETases. Secondary structure elements derived 3
+
+from LCC crystal structure (PDB: 6THS). Key diagnostic features annotated: Ser-His-Asp catalytic 4
+
+triad (red triangles), C-terminal disulfides (purple/blue lines), α2 -α3 and β8 -α6 loops 5
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+30 
+
+characteristic of Type II/I* enzymes (green boxes), catalytic motifs (GHSMGGGG/GWSMGGGG; 1
+
+orange), and Type IIb-defining Ser238 (black). Protein sequences aligned using MAFFT and 2
+
+visualized with ESPript server. 3
+
+4
+
+The combined analyses prioritized PETcand1 and 9 (low-identity Type I-like hybrids with 5
+
+extended loops) and PETcand15 and 16 (canonical Type II with novel sequence profiles) for 6
+
+experimental validation (Figures 1– 3). PETcand2 was excluded due to ≥90% sequence identity 7
+
+with PETcand1. These four candidates—spanning hybrid and established subtypes from plastic-8
+
+associated metagenomes—were selected for recombinant expression, PET-degrading activity 9
+
+verification, and biochemical characterization. 10 
+
+11 
+
+Functional screening of metagenomic sequences reveals two novel PETases 12 
+
+To experimentally validate PET depolymerization activity, four prioritized metagenome-derived 13 
+
+PETase candidates (PETcand1, PETcand9, PETcand15, and PETcand16) were selected for 14 
+
+recombinant production based on their sequence novelty. Genes encoding the mature enzymes 15 
+
+(signal peptide removed) were codon-optimized for E. coli , cloned in pET-29b (+) vectors to 16 
+
+introduce a C-terminal His tag, and expressed in E. coli SHuffle T7 Express to support cytosolic 17 
+
+disulfide bond formation. Recombinant proteins were purified by immobilized metal affinity 18 
+
+chromatography (IMAC) followed by size-exclusion chromatography (SEC). 19 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+31 
+
+Of the four candidates, only PETcand1 and PETcand15 yielded sufficient soluble protein and were 1
+
+obtained as SEC-purified preparations for downstream screening. PETcand9 was detected only in 2
+
+the insoluble fraction, whereas PETcand16 was undetectable in both soluble and insoluble 3
+
+fractions. Initial PET hydrolysis activity was assessed using amorphous PET (aPET) film coupons 4
+
+(~8.5 mg) incubated with 500 nM (14.9 μg mL -1 ) enzyme in 100 mM sodium phosphate buffer (pH 5
+
+8.0) at 30 °C and 300 rpm for 3 d. Released soluble aromatic products (TPA, MHET, BHET, and 6
+
+soluble oligomers) were quantified by absorbance at 242 nm, baseline-corrected to time-zero 7
+
+controls, and reported as terephthalic acid equivalents (TPAeq) based on a TPA standard curve. 8
+
+Under these screening conditions, both enzymes produced detectable soluble products, with 9
+
+PETcand1 showing 3.1-fold higher product release than PETcand15 (Figure 4A). In parallel, 10 
+
+differential scanning fluorimetry (DSF) indicated higher apparent thermostability for PETcand1 11 
+
+(T m = 66.5 °C) than for PETcand15 ( T m = 53.6 °C) (Figure 4A and Figure S2). PET depolymerization 12 
+
+is promoted by a combination of high catalytic activity and sufficient thermostability to sustain 13 
+
+turnover over extended reaction times, particularly when operating close to the glass-transition 14 
+
+temperature of PET (Tg ≈ 70 °C), where increased polymer-chain mobility can improve enzyme 15 
+
+access to ester bonds. Based on its favorable balance of catalytic output and thermostability in 16 
+
+our initial screening, PETcand1 was selected for detailed biochemical and process-level 17 
+
+characterization and is hereafter referred to as PET ‑KR1. 18 
+
+19 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+32 
+
+1
+
+Figure 4. Initial screening and biochemical characterization of PET -KR1. (A) Initial PET hydrolysis 2
+
+screening of SEC-purified PETcand1 (PET -KR1) and PETcand15 using amorphous PET (aPET) film 3
+
+coupons at 30 °C for 3 days; soluble aromatic products released to the supernatant were 4
+
+quantified by UV absorbance at 242 nm and reported as TPA equivalents (TPAeq) (blue bars), and 5
+
+apparent melting temperatures ( 
+
+Tm) were determined by differential scanning fluorimetry (DSF) 6
+
+using SYPRO Orange (pink bars). (B) Temperature dependence of PET -KR1 esterase activity (30– 7
+
+90 °C, pH 8.0) measured using p-nitrophenyl butyrate (pNPB) and expressed as relative activity 8
+
+normalized to the maximum. (C) pH dependence of PET -KR1 esterase activity (pH 5.0–9.0) 9
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+33 
+
+measured with pNPB across the indicated buffer systems (100 mM citrate –phosphate, sodium 1
+
+phosphate, or Tris–HCl) and expressed as relative activity normalized to the maximum. (D) pH 2
+
+dependence of PET -KR1 PET hydrolysis under alkaline conditions (pH 8.0–9.5) assessed by aPET 3
+
+depolymerization and quantification of soluble aromatic products at 242 nm in the indicated 4
+
+buffers (100 mM sodium phosphate, Tris–HCl, or Na 2 CO 3 ) activities are shown relative to the 5
+
+maximum. 6
+
+7
+
+Temperature and pH dependence of PET ‑KR1 activity 8
+
+To understand better the functional window of PET -KR1, its esterase activity was quantified using 9
+
+the proxy substrate pNPB across a broad temperature range (30– 90 °C) at pH 8.0. PET -KR1 10 
+
+maintained high relative activity between 30 and 65 °C, reaching a maximum at 65 °C. Then, it 11 
+
+exhibited a steep activity decline at ≥70 °C (Figure 4B), consistent with thermal inactivation as 12 
+
+assay temperatures approach the protein’s unfolding transition. This trend is in agreement with 13 
+
+the aforementioned DSF analysis , which had revealed a Tm of 66.5 °C (Figure 4A), where Tm14 
+
+corresponds to the midpoint of the thermal unfolding transition (i.e., ~50% of the protein 15 
+
+population unfolded under the assay conditions) 73 . As the folded fraction decreases and 16 
+
+unfolded species accumulate, catalytic activity typically drops due to loss of the active-site 17 
+
+geometry and, in many cases, irreversible denaturation pathways such as aggregation 74,75 .18 
+
+Together, the close agreement between the temperature optimum (65 °C), the DSF-derived T m19 
+
+(66.5 °C ), and the sharp activity loss above 70 °C supports thermostability as a key factor limiting 20 
+
+PET -KR1 performance at elevated temperatures. 21 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+34 
+
+The pH dependence of PET -KR1 esterase activity was assessed using the soluble proxy substrate 1
+
+pNPB from pH 5.0 to 9.0 in three 100 mM buffer systems (citrate –phosphate, sodium phosphate, 2
+
+and Tris–HCl). PET -KR1 activity increased with pH and plateaued at pH 8–9 (Figure 4C), indicating 3
+
+a preference for neutral-to-alkaline conditions in the pNPB assay. Because alkaline conditions can 4
+
+increase non-enzymatic hydrolysis of chromogenic esters, PET depolymerization (aPET film) was 5
+
+used to directly evaluate performance at higher pH values (pH 8.0–9.5) in sodium phosphate, 6
+
+Tris–HCl, and Na 2 CO 3 buffers (Figure 4D). In this substrate-relevant assay, maximal activity was 7
+
+observed at pH 8.0 in sodium phosphate, whereas the same nominal pH (8.0) in Tris–HCl yielded 8
+
+lower activity (~46% relative), pointing to buffer-identity effects rather than pH alone. This 9
+
+interpretation is supported by prior work showing that Tris can inhibit PET hydrolysis for cutinase-10 
+
+like PET hydrolases (e.g., LCC and TfCut2), consistent with interference/competition effects, 11 
+
+which are more pronounced for polymeric substrates than for small soluble esters such as pNPB 12  
+
+> 76
+
+. Despite this buffer dependence at pH 8.0, PET -KR1 retained >40% relative PET hydrolysis 13 
+
+activity across pH 8.5–9.5 in Tris and carbonate buffers, supporting robustness under mildly 14 
+
+alkaline conditions. Thus, in line with Standardization guidelines for bacterial PET hydrolases, 15 
+
+where lab-scale PET depolymerization assays are frequently pH-controlled near 7–8 using low-16 
+
+concentration phosphate or Tris buffers, 100 mM sodium phosphate buffer (pH 8.0) was selected 17 
+
+for downstream experiments unless stated otherwise 77,78 .18 
+
+19 
+
+20 
+
+21 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+35 
+
+PET film depolymerization kinetics for PET ‑KR1 1
+
+To quantify PET -KR1 performance under process-relevant, prolonged reaction conditions, we 2
+
+monitored aPET film depolymerization at 40– 60 °C for up to 168 h and quantified soluble 3
+
+products as TPA equivalents (TPAeq) over time (Fig. 5A). Importantly, this time-course 4
+
+experiment was designed as a process-oriented screen to identify operating conditions that 5
+
+balance early productivity and sustained activity on relevant PET substrate, rather than to define 6
+
+the enzyme’s intrinsic catalytic optimum on a soluble model ester. Total product accumulation 7
+
+profiles revealed strong temperature dependence, with substantial depolymerization observed 8
+
+at 40– 50 °C, while reactions at 55– 60 °C produced only minimal soluble products over the full-9
+
+time course (Figure 5A, C). Specific activity , calculated from the first 4 h of product formation, 10 
+
+peaked at 50 °C (~2.7  μmol products h -1 mg enzyme -1 ) (Fig. 5B), despite the higher temperature 11 
+
+optimum (65 °C) measured in the short pNPB esterase assay (see Temperature and pH 12 
+
+dependence of PET ‑KR1 activity section). This shift is consistent with thermostability limiting 13 
+
+performance in the PET film assay: unlike the pNPB readout (1 ‑min incubation), PET 14 
+
+depolymerization requires sustained catalysis over hours to days on an insoluble, hydrophobic 15 
+
+polymer surface and is therefore more sensitive to time ‑dependent thermal inactivation, 16 
+
+particularly at elevated temperatures. Accordingly, the 50 °C reaction exhibited rapid early 17 
+
+product release followed by a pronounced slowdown after 48 h, reaching a plateau and specific 18 
+
+productivity of 0.57  μmol products h -1 mg enzyme -1 by 168 h (Fig ure 5A, C). At 45 °C, product formation 19 
+
+remained robust for longer and only began to decelerate after 96 h, ultimately reaching the 20 
+
+highest specific productivity over the 168-h reaction (~0.73  μmol products h-1 mg enzyme -1 ) (Figure 5A, 21 
+
+C). In contrast, at 40 °C, product accumulation proceeded more steadily across the entire time 22 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+36 
+
+window without an obvious plateau, but with a lower final specific productivity (~0.4  μmol products 1
+
+h -1 mg enzyme -1 ) (Figure 5A, C). Together, these data indicate that PET -KR1 has high intrinsic 2
+
+esterolytic potential at elevated temperature (as suggested by the pNPB profile); yet, its effective 3
+
+PET depolymerization performance over multi-day reactions is constrained, suggesting that 4
+
+functional stability becomes limiting above ~50 °C and, potentially, limited by surface accessibility 5
+
+of the PET film to the enzyme, highlighting thermostability as a key target for applying protein 6
+
+engineering to unlock higher-temperature PET hydrolysis. 7
+
+8
+
+9
+
+Figure 5. PET film depolymerization kinetics of PET -KR1 across temperature. (A) Time-course 10 
+
+release of soluble aromatic products during depolymerization of amorphous PET (aPET) film by 11 
+
+PET -KR1 at 40, 45, 50, 55, and 60 °C over 168 h. Soluble products were quantified by UV 12 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+37 
+
+absorbance at 242 nm, baseline -corrected to the corresponding time-zero control and converted 1
+
+to TPAeq using a TPA standard curve. (B) Specific activity per mg of enzyme calculated from the 2
+
+linear region within the first 4 h of the reaction. (C) Final specific productivity of total products 3
+
+(end-point TPAeq) after 168 h as a function of temperature. 4
+
+5
+
+PET powder depolymerization time courses reveal enhanced substrate accessibility and a 6
+
+shifted temperature apparent process optimum 7
+
+To evaluate the effect of PET morphology on enzyme performance, PET -KR1 was incubated with 8
+
+cryo-milled amorphous PET (aPET) powder at 45, 50, 60 and 65 °C for up to 168 h, and soluble 9
+
+depolymerization products (TPA, MHET and BHET) were quantified by HPLC. In contrast to PET 10 
+
+film depolymerization, where maximal specific productivity was observed at 45 °C and declined 11 
+
+markedly at higher temperatures, aPET powder hydrolysis showed a clear apparent process 12 
+
+optimum at 50 °C, reaching approximately 3.61  μmol products h -1 mg enzyme -1 of total soluble products 13 
+
+after 168 h (Figure 6A, C). By comparison, reactions at 45 °C accumulated 1.66  μmol products h -1 14 
+
+mg enzyme -1 , whereas reactions at 60 °C reached an early plateau in product formation and final 15 
+
+specific productivity of 1.8  μmol products h -1 mg enzyme -1 , while virtually no product formation was 16 
+
+detected at 65 °C. 17 
+
+The specific activities followed the same trend, increasing from 1.66  μmol products h -1 mg enzyme -1 at 18 
+
+45 °C to nearly 6.51  μmol products h -1 mg enzyme -1 at 50 °C before decreasing substantially at 60 °C 19 
+
+(Figure 6B). The higher initial rates observed for PET powder relative to PET film likely reflect the 20 
+
+substantially larger accessible surface area of the cryo-milled substrate, which facilitates enzyme 21 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+38 
+
+adsorption and ester-bond cleavage. Notably, the initial specific rate at 50 °C exceeded that 1
+
+measured for aPET film under the same conditions (2.7  μmol products h -1 mg enzyme -1 ), while the 2
+
+specific productivity was approximately 5-fold higher than the maximum obtained with aPET film 3
+
+(0.72  μmol products h -1 mg enzyme -1 at 50 °C). These observations are consistent with substrate 4
+
+accessibility becoming a major limitation during film depolymerization. 5
+
+The product accumulation profiles further revealed distinct kinetic behaviors. At 50 °C, product 6
+
+release accelerated after an initial lag phase and continued throughout the 168-h incubation, 7
+
+suggesting sustained catalytic activity and possible progressive access to newly exposed polymer 8
+
+surfaces. In contrast, the 45 °C reaction displayed slower but more stable product accumulation, 9
+
+while the 60 °C reaction rapidly approached a plateau, consistent with partial thermal 10 
+
+inactivation of PET -KR1 despite the improved substrate accessibility of the powder. The absence 11 
+
+of detectable depolymerization at 65 °C is consistent with the enzyme's measured melting 12 
+
+temperature ( Tm = 66.5 °C) and supports, once again, thermostability as the principal factor 13 
+
+limiting performance at elevated temperatures. Although PET film and powder depolymerization 14 
+
+were quantified using different analytical approaches, UV-based TPA-equivalent measurements 15 
+
+have been shown to reproduce relative activity trends observed by HPLC and are widely used for 16 
+
+kinetic screening of PET hydrolases 56 . Therefore, the substantially higher productivity observed 17 
+
+for cryo-milled PET is unlikely to be attributable solely to analytical methodology and therefore 18 
+
+likely reflects a genuine effect of substrate morphology rather than an analytical artifact. Overall, 19 
+
+the powder depolymerization experiments demonstrate that increasing substrate surface area 20 
+
+substantially enhances PET -KR1 performance and shifts the apparent process optimum from 45 21 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+39 
+
+°C for aPET film to 50 °C for aPET powder, highlighting the strong influence of substrate 1
+
+morphology on depolymerization efficiency. 2
+
+To contextualise PET -KR1 within the PETase landscape, we performed a semi-quantitative 3
+
+comparison with the benchmark wild-type enzymes Mipa-P, Kubu-P, CaPETase, IsPETase, and 4
+
+LCC, based on data reported by Seo et al. (2025) 24 under closely related conditions (Table S1). 5
+
+Because substrate loading, PET morphology, agitation, enzyme concentration, and other 6
+
+unreported experimental details differ between studies, this comparison is intended for 7
+
+contextual benchmarking rather than strict kinetic equivalence. Under this framework, PET -KR1's 8
+
+specific activity at 50 °C (6.5 μmol h⁻¹ mg⁻¹) is comparable to the highest specific activities 9
+
+reported for IsPETase and CaPETase, while its specific productivity at 50 °C (3.6 μmol h⁻¹ mg⁻¹) is 10 
+
+the highest among the five reference wild-type enzymes. Its Tm of 66.5 °C is consistent with the 11 
+
+lower-Tm benchmarks, though substantially below the highly engineered Kubu-P and LCC 12 
+
+variants. 13 
+
+14 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+40 
+
+1
+
+Figure 6. PET powder depolymerization product profile over different times and temperatures. 2
+
+(A) Time-course release of soluble aromatic products during depolymerization of amorphous PET 3
+
+(aPET) powder by PET -KR1 at 45, 50, 60 and 65 °C over 168 h. Soluble products were quantified 4
+
+by HPLC-UV and refer to the sum of produced TPA, MHET and BHET (B) Specific activity calculated 5
+
+from the linear region (C) Specific productivity after 168 h as a function of temperature. 6
+
+7
+
+Product distribution analysis reveals enhanced monomerization at elevated temperatures 8
+
+To further investigate the PET-depolymerization behavior of PET -KR1, product distributions were 9
+
+analyzed using the TPA/MHET ratio and TPA purity metrics (Figure 7). Whereas total product 10 
+
+release reflects overall depolymerization efficiency, these parameters provide insight into the 11 
+
+extent of intermediate accumulation and monomer formation during PET hydrolysis. 12 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+41 
+
+The TPA/MHET ratio of PET -KR1 increased progressively over time under all conditions tested, 1
+
+indicating gradual conversion of MHET into terephthalic acid (TPA) (Figure 7A). However, the 2
+
+magnitude of this increase was strongly temperature dependent. At 45 and 50 °C, the ratio 3
+
+remained below 1.5 after 72 h, indicating substantial accumulation of MHET relative to TPA. In 4
+
+contrast, reactions at 60 °C showed much higher TPA/MHET ratios, reaching approximately 8.2 5
+
+after 72 h, while at 65 °C, MHET was fully depleted. Consistent with these observations, TPA 6
+
+purity increased continuously throughout the reaction and approached 90–100% at 60–65 °C, 7
+
+whereas only ~55% TPA purity was observed at 45–50 °C after 72 h (Figure 7B). These results 8
+
+indicate that although overall product formation by PET -KR1 was lower at elevated temperatures 9
+
+(Figure 6), the soluble products released under these conditions were enriched in the final 10 
+
+monomer TPA, indicating a shift toward more complete hydrolysis of released intermediates. 11 
+
+Interestingly, BHET, an upstream intermediate in the PET hydrolysis pathway, was not detected 12 
+
+during PET depolymerization, suggesting that any BHET released by PET -KR1 may be rapidly 13 
+
+converted to MHET before measurable accumulation occurs. This observation is consistent with 14 
+
+a depolymerization profile that favors downstream monomer formation. Overall, these results 15 
+
+suggest that PET -KR1 exhibits moderate depolymerization activity together with a favorable 16 
+
+monomerization profile near its upper operational limit. 17 
+
+18 
+
+19 
+
+20 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+42 
+
+1
+
+2
+
+Figure 7. Product distribution analysis during PET hydrolysis. (A) TPA-to-MHET ratio and (B) TPA 3
+
+product purity from PET hydrolysis over time at different temperatures. 4
+
+5
+
+Docking and molecular dynamics indicate stable PET binding in PET -KR1 6
+
+To gain molecular insight into PET binding, a PET tetramer model substrate was docked onto the 7
+
+AlphaFold-predicted structure of PET -KR1. The top-ranked docking pose yielded a binding score 8
+
+of −9.2 kcal/mol and positioned the polymer within a shallow surface cleft, near the catalytic 9
+
+triad. The ester bond of the substrate was oriented in a catalytically relevant configuration, 10 
+
+consistent with binding modes reported for previously characterized PETases. Molecular 11 
+
+dynamics (MD) simulations were subsequently performed to evaluate the stability of the PET– 12 
+
+PET -KR1 complex. Analysis of backbone RMSD and residue-level RMSF profiles indicated 13 
+
+comparable structural stability between apo and holo systems (Figure S3, Figure S4), suggesting 14 
+
+that substrate binding does not compromise overall protein integrity. Binding free energy 15 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+43 
+
+calculations using the MM/PBSA approach across three independent simulations yielded 1
+
+consistent ΔG_bind values (−27.1, −20.7, and −23.0 kcal/mol), with an average of −23.6 ± 3. 32
+
+kcal/mol, supporting a thermodynamically favorable interaction (Table S1). It must be noted that 3
+
+these values should be interpreted qualitatively, as MM/PBSA estimates of absolute binding 4
+
+affinities carry known systematic uncertainties. Energy decomposition indicated that binding was 5
+
+primarily driven by van der Waals interactions, highlighting the importance of hydrophobic 6
+
+contacts between PET -KR1 and the aromatic backbone of the substrate. Electrostatic 7
+
+contributions were smaller, while solvation effects opposed binding, consistent with partial 8
+
+desolvation upon complex formation. Residue-level interaction analysis across MD trajectories 9
+
+identified a set of putative PET-binding residues located around the catalytic Ser132, forming a 10 
+
+defined substrate-binding pocket (Figure 8). Residues exhibiting high average interaction 11 
+
+occupancy (>80%) across all three replicas were classified as strong interactors, while those 12 
+
+observed interacting in only two replicas were considered transient contributors. Key residues 13 
+
+consistently involved in PET binding included Phe59, Ile180, Phe211, Thr60, and Met133. 14 
+
+Structural comparison with well-characterized PETases further supports the functional relevance 15 
+
+of these interactions. Specifically, Phe59 of PET -KR1 aligns with Tyr87 of IsPETase and Tyr95 of 16 
+
+LCC, residues previously implicated in π –π interactions with the terephthalate moiety of PET 79 .17 
+
+Similarly, Met133 and Ile180 correspond to residues in IsPETase (Met161 and Ile208) and LCC 18 
+
+(Met166 and Val212) that have been proposed to contribute to substrate binding through 19 
+
+hydrophobic interactions 80 . Phe211 of PET -KR1 aligns with Phe243 of LCC, which has been 20 
+
+suggested to stabilize aromatic rings of PET 80,81 . Additional residues identified in this study 21 
+
+provide further insight into substrate recognition. Thr60, conserved across PET -KR1, LCC, and 22 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+44 
+
+IsPETase, may contribute to binding through hydrogen bonding with ester or terminal groups of 1
+
+the PET oligomer, although its role has not been previously characterized. Conversely, Trp157, 2
+
+corresponding to Trp185 in IsPETase and Trp190 in LCC, displayed high interaction occupancy but 3
+
+was only present in two of the three replicas, suggesting a more transient role in substrate 4
+
+stabilization. Overall, the identified interaction network is consistent with known PETase binding 5
+
+motifs and highlights the importance of hydrophobic and aromatic interactions in substrate 6
+
+recognition. These findings demonstrate that MD simulations provide valuable insight into the 7
+
+dynamic nature of PET binding, complementing static docking predictions and supporting the 8
+
+observed catalytic activity of PET -KR1. 9
+
+10 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+45 
+
+1
+
+Figure 8. Molecular dynamics analysis of PET binding in PET -KR1 and structural comparison 2
+
+with characterized PETases. (A) AlphaFold-predicted structure of PET -KR1 shown as a gray 3
+
+surface with the best-docked 4PET oligomer pose (shown as pink in stick representation) used to 4
+
+.CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint 46 
+
+initiate the holo simulations. Residues interacting with 4PET across the three MD replicas are 1
+
+mapped onto the structure and colored according to interaction persistence: strong interactors, 2
+
+dark blue; medium interactors, blue; and transient interactors, light blue. (B) Residues retained 3
+
+for final analysis were those exhibiting interaction occupancy ≥ 30% in at least two of the three 4
+
+replicas; the table reports their average occupancy and mean residue–ligand distance across the 5
+
+simulations. (C) Structural superposition of PET -KR1 (gray) with IsPETase (pink; PDB: 5XJH) and 6
+
+LCC (blue; PDB: 4EB0), highlighting the conserved catalytic triad region. (D) Zoomed view of 7
+
+additional 4PET-interacting residues in IsPETase and LCC that overlap with the majority of the 8
+
+interaction hotspots identified by the MD-based analysis of PET -KR1. 9
+
+10 
+
+Engineering potential of PET -KR1 11 
+
+Consistent with previous studies showing that metagenome-derived enzymes can provide robust 12 
+
+starting scaffolds for protein engineering efforts 82 , the results obtained in this study indicate that 13 
+
+thermostability of PET -KR1 is likely a major limiting factor during PET depolymerization. Although 14 
+
+PET -KR1 exhibits a temperature optimum at 65 °C during pNPB hydrolysis, PET depolymerization 15 
+
+experiments showed an apparent process optimum at lower temperatures (45–50 °C). This 16 
+
+indicates that further stabilization could improve the overall performance under process relevant 17 
+
+conditions. Therefore, rational disulfide bond engineering was investigated as a promising 18 
+
+stabilizing strategy. 19 
+
+Given the successful application of disulfide engineering in PETases like LCC, Mipa-P and Kubu-P, 20 
+
+PET -KR1 was screened for equivalent stabilizing positions 23,24 . Candidate disulfide bonds were 21 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+47 
+
+identified by superimposing the AlphaFold model of PET -KR1 with these enzymes and comparing 1
+
+known stabilizing positions with independent predictions from Disulfide by Design 2 and the 2
+
+Maestro web server tools. While DbD2 identifies disulfide-compatible residue pairs based on 3
+
+geometric criteria alone, Maestro evaluates the thermodynamic effect of introducing the bond 4
+
+through energy minimization and ΔΔG calculation, making them complementary tools for 5
+
+candidate selection. Four candidate disulfide pairs were selected for evaluation. Two candidates 6
+
+(R1 and R3) corresponded to positions previously reported to improve thermostability in related 7
+
+PET hydrolases. In addition, R1 and R2 were the only consensus predictions identified by both 8
+
+computational tools, making R2 an attractive candidate despite the absence of literature 9
+
+precedent. Finally, R4 was included as an additional high-ranking stabilization candidate based 10 
+
+on its favorable prediction score. 11 
+
+Among these, the single R1 variant of PET -KR1, corresponding to the N206C/S260C cysteine pair, 12 
+
+showed a Tm of 70 ℃, representing a modest but reproducible increase in apparent melting 13 
+
+temperature of 3.5 ℃ (Figure 9 and Figure S2) relative to wild-type PET -KR1 ( Tm = 66.5 ℃). 14 
+
+Notably, this disulfide pair has repeatedly been validated as a stabilizing site, increasing Tm by 15 
+
++9.5 °C in LCC (D238C/S283C), +4.5 °C in Mipa-P (A241C/S286C), and +5.0 °C in Kubu-P 16 
+
+(A236C/S281C), and was therefore incorporated into the engineered benchmark enzymes LCC-17 
+
+ICCG, Mipa-PM19, and Kubu-PM12 23,24 . The smaller Δ Tm gain relative to related PETases may 18 
+
+reflect differences in the local structural context of the N206/S260 region, which could influence 19 
+
+the effective stabilization achievable by this disulfide. 20 
+
+By contrast, the combinatorial variants R1+R2, R1+R3, and R1+R4 resulted in lower thermal 21 
+
+stability than wild-type PET -KR1, with  ΔT m values of -4.5 °C , -3.5 °C and -12.5 °C thereby offsetting 22 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+48 
+
+the beneficial effect of the R1 variant. Among these, the promising R3 disulfide pair (G6C/P20C), 1
+
+which corresponds to the stabilizing L49C/S61C pair in Mipa-P and had previously been reported 2
+
+to increase Tm by 2.6 °C, did not perform as expected when combined with R1. Overall, our 3
+
+results suggest that PET -KR1 appears to be amenable to protein engineering as supported by the 4
+
+successfully stabilized N206C/S260C variant. Although the stability gains obtained here were 5
+
+modest, the results support further stabilization through additional disulfide engineering, 6
+
+structure-guided stability design and/or directed evolution. 7
+
+8
+
+9
+
+Figure 9. Rational disulfide engineering of PET -KR1. The single native C-terminal disulfide of PET -10 
+
+KR1 is shown in blue, the successfully engineered R1 pair (N206C/S260C) in green, and the 11 
+
+remaining candidate disulfides R2 (E15C/P220C), R3 (G6C/P20C), and R4 (A142C/V168C) in pink. 12 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+49 
+
+The table summarizes the melting temperature shift ( Δ
+
+Tm) of the variants tested relative to the 1
+
+wild-type enzyme, showing that R1 provided the only stabilizing effect, whereas the 2
+
+combinatorial variants R1+R2, R1+R3, and R1+R4 were destabilizing. The model shown in grey is 3
+
+the AlphaFold-predicted structure of the wild type PET -KR1 while the predicted cysteine 4
+
+substitutions and putative disulfides were modeled in Chimera (v1.19) software, followed by local 5
+
+energy minimization. 6
+
+7
+
+Conclusions 8
+
+In this study, we developed a targeted metagenomic discovery pipeline and applied it to 277 9
+
+publicly available plastic-associated metagenomes, shortlisting 21 high-confidence PETase 10 
+
+candidates from more than 77 million predicted proteins through successive sequence- and 11 
+
+structure-based filtering. Experimental validation identified two novel PET hydrolases, including 12 
+
+PET -KR1, a thermostable enzyme ( Tm = 66.5 °C) that combines a Type I catalytic motif with Type 13 
+
+II-like structural features. PET -KR1 depolymerized PET across a broad temperature range with 14 
+
+markedly higher productivity on powdered than on film PET substrate, consistent with greater 15 
+
+substrate accessibility. While less active overall at higher temperatures (60–65 °C), PET -KR1 16 
+
+generated a product pool more strongly enriched in the terminal monomer TPA. Molecular 17 
+
+simulations identified a conserved hydrophobic substrate-binding network around the catalytic 18 
+
+serine, and rational engineering of the N206C/S260C disulfide raised thermostability by 3.5 °C, 19 
+
+confirming that PET -KR1 is amenable to further optimization. 20 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+50 
+
+The wild-type predecessors of current industrial benchmarks were themselves modest 1
+
+performers prior to engineering, underscoring the biotechnological value of expanding the 2
+
+available scaffold repertoire. PET -KR1 represents one such scaffold, while the targeted workflow, 3
+
+built entirely on publicly available tools and open-access data, provides a reproducible strategy 4
+
+for mining plastic-associated metagenomes toward biocatalytic PET recycling. 5
+
+6
+
+Supporting Information 7
+
+Full multiple sequence alignment of PET -KR1 with characterized PETases; differential scanning 8
+
+fluorimetry (DSF) melt curves of PET -KR1, the engineered PET -KR1 variant (N206C/S260C), and 9
+
+PET-KR2; molecular dynamics analyses (RMSD and RMSF); MM/PBSA binding free-energy 10 
+
+calculations; cross-study comparison of PET -KR1 with representative wild-type PETases; and 11 
+
+supplementary methods describing the benchmarking analysis (PDF). Curated list of the 277 12 
+
+plastic-associated metagenomic datasets retrieved from the European Nucleotide Archive (ENA), 13 
+
+including SRA accession numbers and ProteoSeeker screening statistics (CSV). 14 
+
+15 
+
+Acknowledgements 16 
+
+This research was supported by (i) the Horizon Europe Programme under the “Widening 17 
+
+Participation & Spreading Excellence” component (call ERA Chairs “HORIZON- WIDERA-2022-18 
+
+TALENTS-01-01−ERA Chairs”); Project “Boost4Bio”; Grant Agreement No. 101087471, support for 19 
+
+K.R., D.B., D.Z., and G.S.; and (ii) the Horizon Europe Programme under the “Widening 20 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+51 
+
+Participation & Spreading Excellence” component (call Twinning “HORIZON-WIDERA-2021-1
+
+ACCESS-03-1”); Project “Twin4Promis”; Grant Agreement No. 101079363, support for D.Z. and 2
+
+G.S.; I.A. and D.Z. would like to thank the Cost Action Programme COZYME - COmputationally 3
+
+assisted design of enZYMEs (CA21162) for supporting a research mobility that initiated the 4
+
+collaboration between Luleå University of Technology and the Institute for Bio-innovation, 5
+
+Biomedical Sciences Research Center “Alexander Fleming“. 6
+
+7
+
+Additional Information 8
+
+Accession codes: The nucleotide sequences of the genes encoding PET -KR1 and PET -KR2 reported 9
+
+in this study have been submitted to the DDBJ/ENA/GenBank databases and are currently under 10 
+
+review. Accession numbers will be provided upon release by the database and updated in the 11 
+
+final published version of the manuscript. 12 
+
+13 
+
+References 14 
+
+(1) Plastics Europe. Plastics the Fast Facts 2025 . https://plasticseurope.org/knowledge-hub/plastics-15 
+
+the-fast-facts-2025/ (accessed 2025-12-22). 16 
+
+(2) Geyer, R.; Jambeck, J. R.; Law, K. L. Production, Use, and Fate of All Plastics Ever Made. Sci. Adv. 17 
+
+2017 , 3 (7), e1700782. https://doi.org/10.1126/sciadv.1700782. 18 
+
+(3) Jambeck, J. R.; Geyer, R.; Wilcox, C.; Siegler, T. R.; Perryman, M.; Andrady, A.; Narayan, R.; Law, K. L. 19 
+
+Plastic Waste Inputs from Land into the Ocean. Science 2015 , 347 (6223), 768–771. 20 
+
+https://doi.org/10.1126/science.1260352. 21 
+
+(4) Sheldon, R. A.; Norton, M. Green Chemistry and the Plastic Pollution Challenge: Towards a Circular 22 
+
+Economy. Green Chem. 2020 , 22 (19), 6310–6322. https://doi.org/10.1039/D0GC02630A. 23 
+
+(5) Thiounn, T.; Smith, R. C. Advances and Approaches for Chemical Recycling of Plastic Waste. J. Polym. 24 
+
+Sci. 2020 , 58 (10), 1347–1364. https://doi.org/10.1002/pol.20190261. 25 
+
+(6) MacLeod, M.; Arp, H. P. H.; Tekman, M. B.; Jahnke, A. The Global Threat from Plastic Pollution. 26 
+
+Science 2021 , 373 (6550), 61–65. https://doi.org/10.1126/science.abg5433. 27 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+52 
+
+(7) Filiciotto, L.; Rothenberg, G. Biodegradable Plastics: Standards, Policies, and Impacts. ChemSusChem 1
+
+2021 , 14 (1), 56–72. https://doi.org/10.1002/cssc.202002044. 2
+
+(8) Brooks, A. L.; Wang, S.; Jambeck, J. R. The Chinese Import Ban and Its Impact on Global Plastic 3
+
+Waste Trade. Sci. Adv. 2018 , 4 (6), eaat0131. https://doi.org/10.1126/sciadv.aat0131. 4
+
+(9) Ragaert, K.; Delva, L.; Van Geem, K. Mechanical and Chemical Recycling of Solid Plastic Waste. 5
+
+Waste Manag. 2017 , 69 , 24–58. https://doi.org/10.1016/j.wasman.2017.07.044. 6
+
+(10) Lamtai, A.; Elkoun, S.; Robert, M.; Mighri, F.; Diez, C. Mechanical Recycling of Thermoplastics: A 7
+
+Review of Key Issues. Waste 2023 , 1 (4), 860–883. https://doi.org/10.3390/waste1040050. 8
+
+(11) Liu, Q.; Martinez-Villarreal, S.; Wang, S.; Ngoc Thanh Tien, N.; Kammoun, M.; De Roover, Q.; Len, C.; 9
+
+Richel, A. The Role of Plastic Chemical Recycling Processes in a Circular Economy Context. Chem. 10 
+
+Eng. J. 2024 , 498 , 155227. https://doi.org/10.1016/j.cej.2024.155227. 11 
+
+(12) Huang, J.; Veksha, A.; Chan, W. P.; Giannis, A.; Lisak, G. Chemical Recycling of Plastic Waste for 12 
+
+Sustainable Material Management: A Prospective Review on Catalysts and Processes. Renew. 13 
+
+Sustain. Energy Rev. 2022 , 154 , 111866. https://doi.org/10.1016/j.rser.2021.111866. 14 
+
+(13) Tournier, V.; Duquesne, S.; Guillamot, F.; Cramail, H.; Taton, D.; Marty, A.; André, I. Enzymes’ Power 15 
+
+for Plastics Degradation. Chem. Rev. 2023 , 123 (9), 5612–5701. 16 
+
+https://doi.org/10.1021/acs.chemrev.2c00644. 17 
+
+(14) Buchholz, P. C. F.; Feuerriegel, G.; Zhang, H.; Perez -Garcia, P.; Nover, L.; Chow, J.; Streit, W. R.; 18 
+
+Pleiss, J. Plastics Degradation by Hydrolytic Enzymes: The PLASTICS -ACTIVE Enzymes Database— PAZ Y .19 
+
+Proteins Struct. Funct. Bioinforma. 2022 , 90 (7), 1443–1456. https://doi.org/10.1002/prot.26325. 20 
+
+(15) Wei, R.; Zimmermann, W. Microbial Enzymes for the Recycling of Recalcitrant Petroleum -based 21 
+
+Plastics: How Far Are We? Microb. Biotechnol. 2017 , 10 (6), 1308–1322. 22 
+
+https://doi.org/10.1111/1751-7915.12710. 23 
+
+(16) Nicholson, S. R.; Rorrer, N. A.; Carpenter, A. C.; Beckham, G. T. Manufacturing Energy and 24 
+
+Greenhouse Gas Emissions Associated with Plastics Consumption. Joule 2021 , 5 (3), 673–686. 25 
+
+https://doi.org/10.1016/j.joule.2020.12.027. 26 
+
+(17) Singh, A.; Rorrer, N. A.; Nicholson, S. R.; Erickson, E.; DesVeaux, J. S.; Avelino, A. F. T.; Lamers, P.; 27 
+
+Bhatt, A.; Zhang, Y.; Avery, G.; Tao, L.; Pickford, A. R.; Carpenter, A. C.; McGeehan, J. E.; Beckham, G. 28 
+
+T. Techno-Economic, Life-Cycle, and Socioeconomic Impact Analysis of Enzymatic Recycling of 29 
+
+Poly(Ethylene Terephthalate). Joule 2021 , 5 (9), 2479–2503. 30 
+
+https://doi.org/10.1016/j.joule.2021.06.015. 31 
+
+(18) Webb, H.; Arnott, J.; Crawford, R.; Ivanova, E. Plastic Degradation and Its Environmental 32 
+
+Implications with Special Reference to Poly(Ethylene Terephthalate). Polymers 2012 , 5 (1), 1–18. 33 
+
+https://doi.org/10.3390/polym5010001. 34 
+
+(19) Deraman, R.; Nawi, M. N. M.; Yasin, M. N.; Ismail, M. H.; Ahmed, R. S. M. O. M. Polyethylene 35 
+
+Terephthalate Waste Utilisation for Production of Low Thermal Conductivity Cement Sand Bricks. J. 36 
+
+Adv. Res. Fluid Mech. Therm. Sci. 2021 , 88 (3), 117–136. 37 
+
+https://doi.org/10.37934/arfmts.88.3.117136. 38 
+
+(20) Qiu, J.; Chen, Y.; Zhang, L.; Wu, J.; Zeng, X.; Shi, X.; Liu, L.; Chen, J. A Comprehensive Review on 39 
+
+Enzymatic Biodegradation of Polyethylene Terephthalate. Environ. Res. 2024 , 240 , 117427. 40 
+
+https://doi.org/10.1016/j.envres.2023.117427. 41 
+
+(21) Dhaka, V.; Singh, S.; Anil, A. G.; Sunil Kumar Naik, T. S.; Garg, S.; Samuel, J.; Kumar, M.; Ramamurthy, 42 
+
+P. C.; Singh, J. Occurrence, Toxicity and Remediation of Polyethylene Terephthalate Plastics. A 43 
+
+Review. Environ. Chem. Lett. 2022 , 20 (3), 1777–1800. https://doi.org/10.1007/s10311-021-01384-44 
+
+8. 45 
+
+(22) Maity, W.; Maity, S.; Bera, S.; Roy, A. Emerging Roles of PETase and MHETase in the Biodegradation 46 
+
+of Plastic Wastes. Appl. Biochem. Biotechnol. 2021 , 193 (8), 2699–2716. 47 
+
+https://doi.org/10.1007/s12010-021-03562-4. 48 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+53 
+
+(23) Tournier, V.; Topham, C. M.; Gilles, A.; David, B.; Folgoas, C.; Moya-Leclair, E.; Kamionka, E.; 1
+
+Desrousseaux, M.-L.; Texier, H.; Gavalda, S.; Cot, M.; Guémard, E.; Dalibey, M.; Nomme, J.; Cioci, G.; 2
+
+Barbe, S.; Chateau, M.; André, I.; Duquesne, S.; Marty, A. An Engineered PET Depolymerase to Break 3
+
+down and Recycle Plastic Bottles. Nature 2020 , 580 (7802), 216–219. 4
+
+https://doi.org/10.1038/s41586-020-2149-4. 5
+
+(24) Seo, H.; Hong, H.; Park, J.; Lee, S. H.; Ki, D.; Ryu, A.; Sagong, H.-Y.; Kim, K.-J. Landscape Profiling of 6
+
+PET Depolymerases Using a Natural Sequence Cluster Framework. Science 2025 , 387 (6729), 7
+
+eadp5637. https://doi.org/10.1126/science.adp5637. 8
+
+(25) Carbios. Supported by significant progress in the financing of its industrial project in France, Carbios 9
+
+confirms its objective to build the Longlaville plant . https://www.carbios.com/en/supported-by-10 
+
+significant-progress-in-the-financing-of-its-industrial-project-in-france-carbios-confirms-its-11 
+
+objective-to-build-the-longlaville-plant/. 12 
+
+(26) Carbios. CARBIOS presents the results of its Annual General Meeting of June 18, 2026 .13 
+
+https://www.carbios.com/en/carbios-presents-the-results-of-its-annual-general-meeting-of-june-14 
+
+18-2026/. 15 
+
+(27) Bell, E. L.; Smithson, R.; Kilbride, S.; Foster, J.; Hardy, F. J.; Ramachandran, S.; Tedstone, A. A.; Haigh, 16 
+
+S. J.; Garforth, A. A.; Day, P. J. R.; Levy, C.; Shaver, M. P.; Green, A. P. Directed Evolution of an 17 
+
+Efficient and Thermostable PET Depolymerase. Nat. Catal. 2022 , 5 (8), 673–681. 18 
+
+https://doi.org/10.1038/s41929-022-00821-3. 19 
+
+(28) Yoshida, S.; Hiraga, K.; Takehana, T.; Taniguchi, I.; Yamaji, H.; Maeda, Y.; Toyohara, K.; Miyamoto, K.; 20 
+
+Kimura, Y.; Oda, K. A Bacterium That Degrades and Assimilates Poly(Ethylene Terephthalate). 21 
+
+Science 2016 , 351 (6278), 1196–1199. https://doi.org/10.1126/science.aad6359. 22 
+
+(29) Sulaiman, S.; Yamato, S.; Kanaya, E.; Kim, J.-J.; Koga, Y.; Takano, K.; Kanaya, S. Isolation of a Novel 23 
+
+Cutinase Homolog with Polyethylene Terephthalate-Degrading Activity from Leaf-Branch Compost 24 
+
+by Using a Metagenomic Approach. Appl. Environ. Microbiol. 2012 , 78 (5), 1556–1562. 25 
+
+https://doi.org/10.1128/AEM.06725-11. 26 
+
+(30) Norton-Baker, B.; Komp, E.; Gado, J. E.; Denton, M. C. R.; Mathews, I. I.; Murphy, N. P.; Erickson, E.; 27 
+
+Storment, O. O.; Sarangi, R.; Gauthier, N. P.; McGeehan, J. E.; Beckham, G. T. Machine Learning-28 
+
+Guided Identification of PET Hydrolases from Natural Diversity. ACS Catal. 2025 , 15 (18), 16070– 29 
+
+16083. https://doi.org/10.1021/acscatal.5c03460. 30 
+
+(31) Wu, B.; Zhong, B.; Zheng, L.; Huang, R.; Jiang, S.; Li, M.; Hong, L.; Tan, P. Harnessing Protein 31 
+
+Language Model for Structure-Based Discovery of Highly Efficient and Robust PET Hydrolases. Nat. 32 
+
+Commun. 2025 , 16 (1), 6211. https://doi.org/10.1038/s41467-025-61599-z. 33 
+
+(32) Alam, I.; Marasco, R.; Momin, A. A.; Aalismail, N.; Laiolo, E.; Martin, C.; Sanz-Sáez, I.; Baltá Foix, B.; 34 
+
+Sá, E. L.; Kamau, A.; Guzmán-Vega, F. J.; Jamil, T.; Acinas, S. G.; Gasol, J. M.; Gojobori, T.; Agusti, S.; 35 
+
+Daffonchio, D.; Arold, S. T.; Duarte, C. M. Widespread Distribution of Bacteria Containing PETases 36 
+
+with a Functional Motif across Global Oceans. ISME J. 2025 , 19 (1), wraf121. 37 
+
+https://doi.org/10.1093/ismejo/wraf121. 38 
+
+(33) Acosta, D. J.; Barth, D. R.; Bondy, J.; Appler, K. E.; De Anda, V.; Ngo, P. H. T.; Alper, H. S.; Baker, B. J.; 39 
+
+Marcotte, E. M.; Ellington, A. D. Plastic Degradation by Enzymes from Uncultured Deep Sea 40 
+
+Microorganisms. ISME J. 2025 , 19 (1), wraf068. https://doi.org/10.1093/ismejo/wraf068. 41 
+
+(34) Vongsouthi, V.; Georgelin, R.; Matthews, D.; Saunders, J.; Lee, B. M.; Ton, J.; Damry, A. M.; Frkic, R. 42 
+
+L.; Spence, M. A.; Jackson, C. J. Ancestral Reconstruction of Polyethylene Terephthalate Degrading 43 
+
+Cutinases Reveals a Rugged and Unexplored Sequence-Fitness Landscape. Biochemistry April 27, 44 
+
+2024. https://doi.org/10.1101/2024.04.25.591214. 45 
+
+(35) Pinto, M.; Langer, T. M.; Hüffer, T.; Hofmann, T.; Herndl, G. J. The Composition of Bacterial 46 
+
+Communities Associated with Plastic Biofilms Differs between Different Polymers and Stages of 47 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+54 
+
+Biofilm Succession. PLOS ONE 2019 , 14 (6), e0217165. 1
+
+https://doi.org/10.1371/journal.pone.0217165. 2
+
+(36) Howard, S. A.; Carr, C. M.; Sbahtu, H. I.; Onwukwe, U.; López, M. J.; Dobson, A. D. W.; McCarthy, R. 3
+
+R. Enrichment of Native Plastic -associated Biofilm Communities to Enhance Polyester Degrading 4
+
+Activity. Environ. Microbiol. 2023 , 25 (12), 2698–2718. https://doi.org/10.1111/1462-2920.16466. 5
+
+(37) Filis, G.; Bezantakou, D.; Rigkos, K.; Noti, D.; Saridis, P.; Zarafeta, D.; Skretas, G. ProteoSeeker : A 6
+
+Feature -Rich Metagenomic Analysis Tool for Accessible and Comprehensive Metagenomic 7
+
+Exploration. Adv. Sci. 2025 , 2414877. https://doi.org/10.1002/advs.202414877. 8
+
+(38) David, Y.; Alisha, A.; Awais, A.; Rajkumar, D.; Dipayan, G.; Muhammad, H.; Maira, I.; Eugene, I.; 9
+
+Vishnukumar, K.; Amnon, K.; Manish, K.; Ankur, L.; Isuru, L.; Lili, M.; Colman, O.; Joana, P.; Ruben, P.; 10 
+
+Stephane, P.; Nadim, R.; Jeena, R.; Iva, T.; Marianna, V.; Senthilnathan, V.; Zahra, W.; Peter, W.; 11 
+
+Tony, B.; Guy, C.; Ugis, S. The European Nucleotide Archive in 2025. Nucleic Acids Res. 2026 , 54 (D1), 12 
+
+D120–D127. https://doi.org/10.1093/nar/gkaf1295. 13 
+
+(39) Mistry, J.; Chuguransky, S.; Williams, L.; Qureshi, M.; Salazar, G. A.; Sonnhammer, E. L. L.; Tosatto, S. 14 
+
+C. E.; Paladin, L.; Raj, S.; Richardson, L. J.; Finn, R. D.; Bateman, A. Pfam: The Protein Families 15 
+
+Database in 2021. Nucleic Acids Res. 2021 , 49 (D1), D412–D419. 16 
+
+https://doi.org/10.1093/nar/gkaa913. 17 
+
+(40) Li, D.; Liu, C.-M.; Luo, R.; Sadakane, K.; Lam, T.-W. MEGAHIT: An Ultra-Fast Single-Node Solution for 18 
+
+Large and Complex Metagenomics Assembly via Succinct de Bruijn Graph. Bioinformatics 2015 , 31 19 
+
+(10), 1674–1676. https://doi.org/10.1093/bioinformatics/btv033. 20 
+
+(41) Rho, M.; Tang, H.; Ye, Y. FragGeneScan: Predicting Genes in Short and Error-Prone Reads. 21 
+
+(42) Eddy, S. R. Profile Hidden Markov Models. Bioinformatics 1998 , 14 (9), 755–763. 22 
+
+https://doi.org/10.1093/bioinformatics/14.9.755. 23 
+
+(43) Sonnendecker, C.; Oeser, J.; Richter, P. K.; Hille, P.; Zhao, Z.; Fischer, C.; Lippold, H.; Blázquez -24 
+
+Sánchez, P.; Engelberger, F.; Ramírez -Sarmiento, C. A.; Oeser, T.; Lihanova, Y.; Frank, R.; Jahnke, H.; 25 
+
+Billig, S.; Abel, B.; Sträter, N.; Matysik, J.; Zimmermann, W. Low Carbon Footprint Recycling of Post -26 
+
+Consumer PET Plastic with a Metagenomic Polyester Hydrolase. ChemSusChem 2022 , 15 (9), 27 
+
+e202101062. https://doi.org/10.1002/cssc.202101062. 28 
+
+(44) Kall, L.; Krogh, A.; Sonnhammer, E. L. L. Advantages of Combined Transmembrane Topology and 29 
+
+Signal Peptide Prediction--the Phobius Web Server. Nucleic Acids Res. 2007 , 35 (Web Server), 30 
+
+W429–W432. https://doi.org/10.1093/nar/gkm256. 31 
+
+(45) Katoh, K.; Standley, D. M. MAFFT Multiple Sequence Alignment Software Version 7: Improvements 32 
+
+in Performance and Usability. Mol. Biol. Evol. 2013 , 30 (4), 772–780. 33 
+
+https://doi.org/10.1093/molbev/mst010. 34 
+
+(46) Fu, L.; Niu, B.; Zhu, Z.; Wu, S.; Li, W. CD-HIT: Accelerated for Clustering the next-Generation 35 
+
+Sequencing Data. Bioinformatics 2012 , 28 (23), 3150–3152. 36 
+
+https://doi.org/10.1093/bioinformatics/bts565. 37 
+
+(47) Mirdita, M.; Schütze, K.; Moriwaki, Y.; Heo, L.; Ovchinnikov, S.; Steinegger, M. ColabFold: Making 38 
+
+Protein Folding Accessible to All. Nat. Methods 2022 , 19 (6), 679–682. 39 
+
+https://doi.org/10.1038/s41592-022-01488-1. 40 
+
+(48) Jumper, J.; Evans, R.; Pritzel, A.; Green, T.; Figurnov, M.; Ronneberger, O.; Tunyasuvunakool, K.; 41 
+
+Bates, R.; Žídek, A.; Potapenko, A.; Bridgland, A.; Meyer, C.; Kohl, S. A. A.; Ballard, A. J.; Cowie, A.; 42 
+
+Romera-Paredes, B.; Nikolov, S.; Jain, R.; Adler, J.; Back, T.; Petersen, S.; Reiman, D.; Clancy, E.; 43 
+
+Zielinski, M.; Steinegger, M.; Pacholska, M.; Berghammer, T.; Bodenstein, S.; Silver, D.; Vinyals, O.; 44 
+
+Senior, A. W.; Kavukcuoglu, K.; Kohli, P.; Hassabis, D. Highly Accurate Protein Structure Prediction 45 
+
+with AlphaFold. Nature 2021 , 596 (7873), 583–589. https://doi.org/10.1038/s41586-021-03819-2. 46 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+55 
+
+(49) Sulaiman, S.; You, D.-J.; Kanaya, E.; Koga, Y.; Kanaya, S. Crystal Structure and Thermodynamic and 1
+
+Kinetic Stability of Metagenome-Derived LC-Cutinase. Biochemistry 2014 , 53 (11), 1858–1869. 2
+
+https://doi.org/10.1021/bi401561p. 3
+
+(50) Zhang, Y. TM-Align: A Protein Structure Alignment Algorithm Based on the TM-Score. Nucleic Acids 4
+
+Res. 2005 , 33 (7), 2302–2309. https://doi.org/10.1093/nar/gki524. 5
+
+(51) Camacho, C.; Coulouris, G.; Avagyan, V.; Ma, N.; Papadopoulos, J.; Bealer, K.; Madden, T. L. BLAST+: 6
+
+Architecture and Applications. BMC Bioinformatics 2009 , 10 (1), 421. https://doi.org/10.1186/1471-7
+
+2105-10-421. 8
+
+(52) Wong, T. K. F.; Ly-Trong, N.; Ren, H.; Demotte, P.; Baños, H.; Roger, A. J.; Susko, E.; Bielow, C.; Maio, 9
+
+N. D.; Goldman, N.; Hahn, M. W. IQ-TREE 3: Phylogenomic Inference Software Using Complex 10 
+
+Evolutionary Models. 11 
+
+(53) Kalyaanamoorthy, S.; Minh, B. Q.; Wong, T. K. F.; Von Haeseler, A.; Jermiin, L. S. ModelFinder: Fast 12 
+
+Model Selection for Accurate Phylogenetic Estimates. Nat. Methods 2017 , 14 (6), 587–589. 13 
+
+https://doi.org/10.1038/nmeth.4285. 14 
+
+(54) Letunic, I.; Bork, P. Interactive Tree of Life (iTOL) v6: Recent Updates to the Phylogenetic Tree 15 
+
+Display and Annotation Tool. Nucleic Acids Res. 2024 , 52 (W1), W78–W82. 16 
+
+https://doi.org/10.1093/nar/gkae268. 17 
+
+(55) Gouet, P.; Courcelle, E.; Stuart, D. I.; M√©toz, F. ESPript: Analysis of Multiple Sequence Alignments 18 
+
+in PostScript. Bioinformatics 1999 , 15 (4), 305–308. 19 
+
+https://doi.org/10.1093/bioinformatics/15.4.305. 20 
+
+(56) Zhong-Johnson, E. Z. L.; Voigt, C. A.; Sinskey, A. J. An Absorbance Method for Analysis of Enzymatic 21 
+
+Degradation Kinetics of Poly(Ethylene Terephthalate) Films. Sci. Rep. 2021 , 11 (1), 928. 22 
+
+https://doi.org/10.1038/s41598-020-79031-5. 23 
+
+(57) Hanwell, M. D.; Curtis, D. E.; Lonie, D. C.; Vandermeersch, T.; Zurek, E.; Hutchison, G. R. Avogadro: 24 
+
+An Advanced Semantic Chemical Editor, Visualization, and Analysis Platform. J. Cheminformatics 25 
+
+2012 , 4 (1), 17. https://doi.org/10.1186/1758-2946-4-17. 26 
+
+(58) Forli, S.; Huey, R.; Pique, M. E.; Sanner, M. F.; Goodsell, D. S.; Olson, A. J. Computational Protein– 27 
+
+Ligand Docking and Virtual Drug Screening with the AutoDock Suite. Nat. Protoc. 2016 , 11 (5), 905– 28 
+
+919. https://doi.org/10.1038/nprot.2016.051. 29 
+
+(59) Thomsen, T. B.; Almdal, K.; Meyer, A. S. Significance of Poly(Ethylene Terephthalate) (PET) Substrate 30 
+
+Crystallinity on Enzymatic Degradation. New Biotechnol. 2023 , 78 , 162–172. 31 
+
+https://doi.org/10.1016/j.nbt.2023.11.001. 32 
+
+(60) Trott, O.; Olson, A. J. AutoDock Vina: Improving the Speed and Accuracy of Docking with a New 33 
+
+Scoring Function, Efficient Optimization, and Multithreading. J. Comput. Chem. 2010 , 31 (2), 455– 34 
+
+461. https://doi.org/10.1002/jcc.21334. 35 
+
+(61) Abraham, M. J.; Murtola, T.; Schulz, R.; Páll, S.; Smith, J. C.; Hess, B.; Lindahl, E. GROMACS: High 36 
+
+Performance Molecular Simulations through Multi-Level Parallelism from Laptops to 37 
+
+Supercomputers. SoftwareX 2015 , 1–2 , 19–25. https://doi.org/10.1016/j.softx.2015.06.001. 38 
+
+(62) Huang, J.; Rauscher, S.; Nawrocki, G.; Ran, T.; Feig, M.; De Groot, B. L.; Grubmüller, H.; MacKerell, A. 39 
+
+D. CHARMM36m: An Improved Force Field for Folded and Intrinsically Disordered Proteins. Nat. 40 
+
+Methods 2017 , 14 (1), 71–73. https://doi.org/10.1038/nmeth.4067. 41 
+
+(63) Vanommeslaeghe, K.; Hatcher, E.; Acharya, C.; Kundu, S.; Zhong, S.; Shim, J.; Darian, E.; Guvench, O.; 42 
+
+Lopes, P.; Vorobyov, I.; Mackerell, A. D. CHARMM General Force Field: A Force Field for Drug -like 43 
+
+Molecules Compatible with the CHARMM All -atom Additive Biological Force Fields. J. Comput. 44 
+
+Chem. 2010 , 31 (4), 671–690. https://doi.org/10.1002/jcc.21367. 45 
+
+(64) Miller, B. R.; McGee, T. D.; Swails, J. M.; Homeyer, N.; Gohlke, H.; Roitberg, A. E. MMPBSA.Py : An 46 
+
+Efficient Program for End-State Free Energy Calculations. J. Chem. Theory Comput. 2012 , 8 (9), 47 
+
+3314–3321. https://doi.org/10.1021/ct300418h. 48 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+56 
+
+(65) Valdés-Tresanco, M. S.; Valdés-Tresanco, M. E.; Valiente, P. A.; Moreno, E. gmx_MMPBSA: A New 1
+
+Tool to Perform End-State Free Energy Calculations with GROMACS. J. Chem. Theory Comput. 2021 ,2
+
+17 (10), 6281–6291. https://doi.org/10.1021/acs.jctc.1c00645. 3
+
+(66) Michaud -Agrawal, N.; Denning, E. J.; Woolf, T. B.; Beckstein, O. MDAnalysis: A Toolkit for the 4
+
+Analysis of Molecular Dynamics Simulations. J. Comput. Chem. 2011 , 32 (10), 2319–2327. 5
+
+https://doi.org/10.1002/jcc.21787. 6
+
+(67) Gowers, R.; Linke, M.; Barnoud, J.; Reddy, T.; Melo, M.; Seyler, S.; Domański, J.; Dotson, D.; Buchoux, 7
+
+S.; Kenney, I.; Beckstein, O. MDAnalysis: A Python Package for the Rapid Analysis of Molecular 8
+
+Dynamics Simulations. In SciPy ; Austin, Texas, 2016; pp 98–105. https://doi.org/10.25080/Majora-9
+
+629e541a-00e. 10 
+
+(68) Craig, D. B.; Dombkowski, A. A. Disulfide by Design 2.0: A Web-Based Tool for Disulfide Engineering 11 
+
+in Proteins. BMC Bioinformatics 2013 , 14 (1), 346. https://doi.org/10.1186/1471-2105-14-346. 12 
+
+(69) Laimer, J.; Hofer, H.; Fritz, M.; Wegenkittl, S.; Lackner, P. MAESTRO - Multi Agent Stability Prediction 13 
+
+upon Point Mutations. BMC Bioinformatics 2015 , 16 (1), 116. https://doi.org/10.1186/s12859-015-14 
+
+0548-6. 15 
+
+(70) Jahanshahi, D. A.; Barzani, M. R. R.; Bahram, M.; Ariaeenejad, S.; Kavousi, K. Metagenomic 16 
+
+Exploration and Computational Prediction of Novel Enzymes for Polyethylene Terephthalate 17 
+
+Degradation. Ecotoxicol. Environ. Saf. 2025 , 289 , 117640. 18 
+
+https://doi.org/10.1016/j.ecoenv.2024.117640. 19 
+
+(71) Liu, Y.; Liu, C.; Liu, H.; Zeng, Q.; Tian, X.; Long, L.; Yang, J. Catalytic Features and Thermal Adaptation 20 
+
+Mechanisms of a Deep Sea Bacterial Cutinase-Type Poly(Ethylene Terephthalate) Hydrolase. Front. 21 
+
+Bioeng. Biotechnol. 2022 , 10 , 865787. https://doi.org/10.3389/fbioe.2022.865787. 22 
+
+(72) Perez-Garcia, P.; Chow, J.; Costanzi, E.; Gurschke, M.; Dittrich, J.; Dierkes, R. F.; Molitor, R.; 23 
+
+Applegate, V.; Feuerriegel, G.; Tete, P.; Danso, D.; Thies, S.; Schumacher, J.; Pfleger, C.; Jaeger, K.-E.; 24 
+
+Gohlke, H.; Smits, S. H. J.; Schmitz, R. A.; Streit, W. R. An Archaeal Lid-Containing Feruloyl Esterase 25 
+
+Degrades Polyethylene Terephthalate. Commun. Chem. 2023 , 6 (1), 193. 26 
+
+https://doi.org/10.1038/s42004-023-00998-z. 27 
+
+(73) Tijare, P.; Kumar, N.; Raghava, G. P. S. Prediction and Design of Thermostable Proteins with a 28 
+
+Desired Melting Temperature. Sci. Rep. 2025 , 15 (1), 16683. https://doi.org/10.1038/s41598-025-29 
+
+98667-9. 30 
+
+(74) Bemporad, F.; Gsponer, J.; Hopearuoho, H. I.; Plakoutsi, G.; Stati, G.; Stefani, M.; Taddei, N.; 31 
+
+Vendruscolo, M.; Chiti, F. Biological Function in a Non -native Partially Folded State of a Protein. 32 
+
+EMBO J. 2008 , 27 (10), 1525–1535. https://doi.org/10.1038/emboj.2008.82. 33 
+
+(75) Leuenberger, P.; Ganscha, S.; Kahraman, A.; Cappelletti, V.; Boersema, P. J.; Von Mering, C.; 34 
+
+Claassen, M.; Picotti, P. Cell-Wide Analysis of Protein Thermal Unfolding Reveals Determinants of 35 
+
+Thermostability. Science 2017 , 355 (6327), eaai7825. https://doi.org/10.1126/science.aai7825. 36 
+
+(76) Schmidt, J.; Wei, R.; Oeser, T.; Belisário -Ferrari, M. R.; Barth, M.; Then, J.; Zimmermann, W. Effect of 37 
+
+Tris, MOPS, and Phosphate Buffers on the Hydrolysis of Polyethylene Terephthalate Films by 38 
+
+Polyester Hydrolases. FEBS Open Bio 2016 , 6 (9), 919–927. https://doi.org/10.1002/2211-39 
+
+5463.12097. 40 
+
+(77) Arnal, G.; Anglade, J.; Gavalda, S.; Tournier, V.; Chabot, N.; Bornscheuer, U. T.; Weber, G.; Marty, A. 41 
+
+Assessment of Four Engineered PET Degrading Enzymes Considering Large-Scale Industrial 42 
+
+Applications. ACS Catal. 2023 , 13 (20), 13156–13166. https://doi.org/10.1021/acscatal.3c02922. 43 
+
+(78) Wei, R.; Westh, P.; Weber, G.; Blank, L. M.; Bornscheuer, U. T. Standardization Guidelines and 44 
+
+Future Trends for PET Hydrolase Research. Nat. Commun. 2025 , 16 (1), 4684. 45 
+
+https://doi.org/10.1038/s41467-025-60016-9. 46 
+
+> .CC-BY-NC-ND 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737215 doi: bioRxiv preprint
+
+57 
+
+(79) Burgin, T.; Pollard, B. C.; Knott, B. C.; Mayes, H. B.; Crowley, M. F.; McGeehan, J. E.; Beckham, G. T.; 1
+
+Woodcock, H. L. The Reaction Mechanism of the Ideonella Sakaiensis PETase Enzyme. Commun. 2
+
+Chem. 2024 , 7 (1), 65. https://doi.org/10.1038/s42004-024-01154-x. 3
+
+(80) Joo, S.; Cho, I. J.; Seo, H.; Son, H. F.; Sagong, H.-Y.; Shin, T. J.; Choi, S. Y.; Lee, S. Y.; Kim, K.-J. 4
+
+Structural Insight into Molecular Mechanism of Poly(Ethylene Terephthalate) Degradation. Nat. 5
+
+Commun. 2018 , 9 (1), 382. https://doi.org/10.1038/s41467-018-02881-1. 6
+
+(81) Fecker, T.; Galaz-Davison, P.; Engelberger, F.; Narui, Y.; Sotomayor, M.; Parra, L. P.; Ramírez-7
+
+Sarmiento, C. A. Active Site Flexibility as a Hallmark for Efficient PET Degradation by I. Sakaiensis 8
+
+PETase. Biophys. J. 2018 , 114 (6), 1302–1312. https://doi.org/10.1016/j.bpj.2018.02.005. 9
+
+(82) Hogg, B. N.; Schnepel, C.; Finnigan, J. D.; Charnock, S. J.; Hayes, M. A.; Turner, N. J. The Impact of 10 
+
+Metagenomics on Biocatalysis. Angew. Chem. Int. Ed. 2024 , 63 (21), e202402316. 11 
+
+https://doi.org/10.1002/anie.202402316. 12 
+
+13 
+
+Table of Contents (TOC)/Abstract Graphic 14 
+
+15

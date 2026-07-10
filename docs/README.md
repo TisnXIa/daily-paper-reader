@@ -6,31 +6,42 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-09
-- 运行时间：2026-07-09 21:25:43 UTC
+- 最新运行日期：2026-07-10
+- 运行时间：2026-07-10 20:35:22 UTC
 - 运行状态：成功
-- 本次总论文数：3
+- 本次总论文数：6
 - 精读区：2
-- 速读区：1
+- 速读区：4
 
 ### 今日简报（AI）
-今日精读两篇高分论文，聚焦纳米孔宏基因组测序与细菌耐药性检测及可视化工具；速读一篇高维多组学因果发现方法。  
-最值得关注：纳米孔宏基因组可直接关联临床耐药决定因子与病原体，VicMAG工具能直观展示细菌毒力和耐药基因。  
-建议普通读者关注临床耐药监测中纳米孔测序的应用价值，并尝试用VicMAG可视化自己的宏基因组数据。
-- 详情：[/202607/09/README](/202607/09/README)
+今日精读行星尺度微生物群落建模与丹麦粘细菌代谢多样性研究，速读涵盖植物根际菌群、塑料降解酶与环境抗性组。
+
+最值得关注：异养微生物间的代谢协同及病毒影响机制，以及粘细菌从土壤到海洋的代谢适应策略。
+
+建议优先阅读精读两篇高分论文，并关注速读中塑料降解酶新支架的工程潜力。
+- 详情：[/202607/10/README](/202607/10/README)
 
 ### 精读区论文标签
-1. [Nanopore metagenomic sequencing links clinically relevant resistance determinants to pathogens](/202607/09/biorxiv-10-64898-2026-02-16-706128-v2-nanopore-metagenomic-sequencing-links-clinically-relevant-resistance-determinants-to-pathogens)  
+1. [Planetary-scale heterotrophic microbial community modeling assesses metabolic synergy and viral impacts](/202607/10/biorxiv-10-1101-2025-02-13-638167-v3-planetary-scale-heterotrophic-microbial-community-modeling-assesses-metabolic-synergy-and-viral-impacts)  
    标签：评分：9.0/10、query:microbiome
-   evidence：基于甲基化的宏基因组质粒-宿主关联方法用于耐药基因归属
-2. [VicMAG, an open-source tool for visualizing circular metagenome-assembled genomes highlighting bacterial virulence and antimicrobial resistance](/202607/09/biorxiv-10-64898-2026-03-31-714378-v2-vicmag-an-open-source-tool-for-visualizing-circular-metagenome-assembled-genomes-highlighting-bacterial-virulence-and-antimicrobial-resistance)  
-   标签：评分：9.0/10、query:microbiome
-   evidence：VicMAG: 可视化环形MAG并标注毒力和耐药基因的开源工具
+   evidence：为全球海洋宏基因组开发了基因组规模超生物代谢模型
+2. [From soil to sea: unravelling the metabolic versatility and social dynamics of Myxococcota bacteria from different Danish environments](/202607/10/biorxiv-10-64898-2026-07-10-737566-v1-from-soil-to-sea-unravelling-the-metabolic-versatility-and-social-dynamics-of-myxococcota-bacteria-from-different-danish-environments)  
+   标签：评分：8.0/10、query:microbiome
+   evidence：利用超过1万宏基因组和400个rRNA基因数据集分析微生物多样性和代谢
 
 ### 速读区论文标签
-1. [Causal ASCEND: Scalable Two-tier Causal Discovery on High Dimensional Multi-omics Data](/202607/09/2607.04527v1-causal-ascend-scalable-two-tier-causal-discovery-on-high-dimensional-multi-omics-data)  
+1. [Physiological, Behavioral, and Genetic Factors that Shape Interactions in a Plant-Growth-Promoting Maize Rhizosphere Synthetic Community](/202607/10/biorxiv-10-64898-2026-07-09-737579-v1-physiological-behavioral-and-genetic-factors-that-shape-interactions-in-a-plant-growth-promoting-maize-rhizosphere-synthetic-community)  
    标签：评分：7.0/10、query:microbiome
-   evidence：多组学数据因果发现用于微生物组
+   evidence：描述用于玉米根际微生物组分析的合成群落
+2. [Targeted mining of plastic-associated metagenomes uncovers a novel thermostable PETase expanding scaffold space for engineering](/202607/10/biorxiv-10-64898-2026-07-10-737215-v1-targeted-mining-of-plastic-associated-metagenomes-uncovers-a-novel-thermostable-petase-expanding-scaffold-space-for-engineering)  
+   标签：评分：7.0/10、query:microbiome
+   evidence：针对塑料相关宏基因组的靶向挖掘流程，发现PETase酶
+3. [Ecological specificity and interconnectivity in Danish environmental resistomes](/202607/10/biorxiv-10-64898-2026-07-09-737170-v1-ecological-specificity-and-interconnectivity-in-danish-environmental-resistomes)  
+   标签：评分：6.0/10、query:microbiome
+   evidence：全国性宏基因组测序研究耐药组组成和连通性
+4. [High throughput chromatographic ultra-purification of virus-like particles for downstream viromics](/202607/10/biorxiv-10-64898-2026-07-09-737491-v1-high-throughput-chromatographic-ultra-purification-of-virus-like-particles-for-downstream-viromics)  
+   标签：评分：6.0/10、query:microbiome
+   evidence：用于下游病毒组宏基因组学的高通量病毒样颗粒纯化方法
 
 
 <div class="dpr-home-promo-card">
