@@ -6,42 +6,32 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-10
-- 运行时间：2026-07-10 20:35:22 UTC
+- 最新运行日期：2026-07-11
+- 运行时间：2026-07-11 21:05:27 UTC
 - 运行状态：成功
-- 本次总论文数：6
+- 本次总论文数：4
 - 精读区：2
-- 速读区：4
+- 速读区：2
 
 ### 今日简报（AI）
-今日精读行星尺度微生物群落建模与丹麦粘细菌代谢多样性研究，速读涵盖植物根际菌群、塑料降解酶与环境抗性组。
-
-最值得关注：异养微生物间的代谢协同及病毒影响机制，以及粘细菌从土壤到海洋的代谢适应策略。
-
-建议优先阅读精读两篇高分论文，并关注速读中塑料降解酶新支架的工程潜力。
-- 详情：[/202607/10/README](/202607/10/README)
+今日精读宏基因组蛋白质语境化模型与质粒组装工具，速读微生物群落代谢与核糖体DNA分析。最值得关注方向：基于状态空间模型的蛋白质功能预测，以及长读长测序在核糖体DNA甲基化分析中的整合应用。建议优先学习PLAGUE质粒重建工具，并结合纳米孔测序数据探索微生物群落功能。
+- 详情：[/202607/11/README](/202607/11/README)
 
 ### 精读区论文标签
-1. [Planetary-scale heterotrophic microbial community modeling assesses metabolic synergy and viral impacts](/202607/10/biorxiv-10-1101-2025-02-13-638167-v3-planetary-scale-heterotrophic-microbial-community-modeling-assesses-metabolic-synergy-and-viral-impacts)  
+1. [Metagenomic contextualization of proteins with state space models](/202607/11/biorxiv-10-64898-2026-07-07-736993-v1-metagenomic-contextualization-of-proteins-with-state-space-models)  
    标签：评分：9.0/10、query:microbiome
-   evidence：为全球海洋宏基因组开发了基因组规模超生物代谢模型
-2. [From soil to sea: unravelling the metabolic versatility and social dynamics of Myxococcota bacteria from different Danish environments](/202607/10/biorxiv-10-64898-2026-07-10-737566-v1-from-soil-to-sea-unravelling-the-metabolic-versatility-and-social-dynamics-of-myxococcota-bacteria-from-different-danish-environments)  
+   evidence：使用状态空间模型进行宏基因组功能注释
+2. [PLAGUE: Improved confidence plasmid reconstruction from short read assemblies](/202607/11/biorxiv-10-64898-2026-07-10-737741-v1-plague-improved-confidence-plasmid-reconstruction-from-short-read-assemblies)  
    标签：评分：8.0/10、query:microbiome
-   evidence：利用超过1万宏基因组和400个rRNA基因数据集分析微生物多样性和代谢
+   evidence：用于宏基因组质粒重建的新软件工具
 
 ### 速读区论文标签
-1. [Physiological, Behavioral, and Genetic Factors that Shape Interactions in a Plant-Growth-Promoting Maize Rhizosphere Synthetic Community](/202607/10/biorxiv-10-64898-2026-07-09-737579-v1-physiological-behavioral-and-genetic-factors-that-shape-interactions-in-a-plant-growth-promoting-maize-rhizosphere-synthetic-community)  
+1. [Planetary-scale heterotrophic microbial community modeling assesses metabolic synergy and viral impacts](/202607/11/biorxiv-10-1101-2025-02-13-638167-v3-planetary-scale-heterotrophic-microbial-community-modeling-assesses-metabolic-synergy-and-viral-impacts)  
    标签：评分：7.0/10、query:microbiome
-   evidence：描述用于玉米根际微生物组分析的合成群落
-2. [Targeted mining of plastic-associated metagenomes uncovers a novel thermostable PETase expanding scaffold space for engineering](/202607/10/biorxiv-10-64898-2026-07-10-737215-v1-targeted-mining-of-plastic-associated-metagenomes-uncovers-a-novel-thermostable-petase-expanding-scaffold-space-for-engineering)  
-   标签：评分：7.0/10、query:microbiome
-   evidence：针对塑料相关宏基因组的靶向挖掘流程，发现PETase酶
-3. [Ecological specificity and interconnectivity in Danish environmental resistomes](/202607/10/biorxiv-10-64898-2026-07-09-737170-v1-ecological-specificity-and-interconnectivity-in-danish-environmental-resistomes)  
+   evidence：基于基因组尺度的超级生物代谢模型预测微生物群落功能
+2. [Integrated analysis of ribosomal DNA copy number and methylation using nanopore long-read sequencing](/202607/11/biorxiv-10-64898-2026-07-05-736662-v1-integrated-analysis-of-ribosomal-dna-copy-number-and-methylation-using-nanopore-long-read-sequencing)  
    标签：评分：6.0/10、query:microbiome
-   evidence：全国性宏基因组测序研究耐药组组成和连通性
-4. [High throughput chromatographic ultra-purification of virus-like particles for downstream viromics](/202607/10/biorxiv-10-64898-2026-07-09-737491-v1-high-throughput-chromatographic-ultra-purification-of-virus-like-particles-for-downstream-viromics)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：用于下游病毒组宏基因组学的高通量病毒样颗粒纯化方法
+   evidence：使用长读长进行rDNA分析的计算流程
 
 
 <div class="dpr-home-promo-card">

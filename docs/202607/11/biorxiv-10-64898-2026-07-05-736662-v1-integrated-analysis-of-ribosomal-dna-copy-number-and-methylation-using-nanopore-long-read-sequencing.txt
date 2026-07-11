@@ -1,0 +1,1930 @@
+Title: Integrated analysis of ribosomal DNA copy number and methylation using nanopore long-read sequencing
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.07.05.736662v1.full.pdf
+
+Number of Pages: 30
+
+Markdown Content:
+Integrated analysis of ribosomal DNA copy number and 
+
+# methylation using nanopore long -read sequencing 
+
+Zaka Wing -Sze Yuen 1,2,3 , Noemie Leeder 1,2,3 , Thejaani Udumanne 4, Andrew Garvie 5, Lee 
+
+Wong 5, Emiliana Weiss 2, Lex van Loon 2, Austen Ganley 6, Ross Hannan 2, Eduardo Eyras 1,2,3, *, 
+
+Nadine Hein 2, * 
+
+> 1
+
+EMBL Australia Partner Laboratory Network at the Australian National University, Canberra, ACT 2601, Australia  
+
+> 2
+
+The Shine -Dalgarno Centre for RNA Innovation, The John Curtin School of Medical Research, Australian National 
+
+University, Canberra, ACT 2601, Australia  
+
+> 3
+
+The Centre for Computational Biomedical Sciences, The John Curtin School of Medical Research, Australian National 
+
+University, Canberra, ACT 2601, Australia  
+
+> 4
+
+St Vincent's Centre for Applied Medical Research , Darlinghurst, NSW, Australia  
+
+> 5
+
+Department of Biochemistry and Molecular Biology, Monash Biomedicine Discovery Institute, Monash University, 
+
+Melbourne VIC, Australia  
+
+> 6
+
+School of Biological Sciences, University of Auckland, Auckland, New Zealand 
+
+# Abstract 
+
+Ribosomal RNA (rRNA) provides the structural and catalytic core of ribosomes and is encode d
+
+by ribosomal RNA genes (r DNA) arranged in tandem repeat arrays.  rDNA  copy number (CN) is 
+
+highly dynamic , representing a clinically relevant form of structural variation, but its accurate 
+
+quantification has been challenging due to its highly repetitive and GC -rich nature. Here, we 
+
+present RICO (Ribosomal DNA Integrated Copy Number and Methylation Analysis) , a novel 
+
+computational pipeline for integrated estimation of rDNA CN and methylation using nanopore 
+
+long -read sequencing. RICO leverages long sequencing reads that span entire rDNA repeats, 
+
+mapped to an rDNA -augmented reference genome, and normalizes coverage using an array 
+
+of single -copy genes. We show that RICO provides accurate rDNA CN estimat es in simulated 
+
+datasets and reproducib le measurements across human samples , with strong agreement to 
+
+short -read sequencing and PCR -based methods. As biological validation , RICO detects a 40% 
+
+reduction in rDNA CN in Atrx -knockout mouse cells , consistent with established effects of ATRX 
+
+loss on rDNA CN , and captures detected increased total and active rDNA CN in malignant cells 
+
+from a MYC -driven B -cell lymphoma mouse model, in line with prior psoralen -based 
+
+chromatin studies. Applying RICO to independent human cohorts, we uncover that individuals 
+
+with higher total rDNA CN consistently exhibited higher fractions of hig h-methylated rDNA 
+
+copies, suggesting a dosage compensation mechanism that potentially maintains a similar 
+
+number of active rDNA copies across individuals . Together, RICO enables integrated analysis 
+
+of rDNA CN and methylation state, providing a scalable framework for investigating rDNA 
+
+regulation across population and disease studies. 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+# Introduction 
+
+Ribosom al  RNAs  (rRNA s) are encoded by ribosomal RNA genes (rDNA) and serve as the 
+
+structural scaffold and catalytic component of ribosomes , the essential molecular machines 
+
+responsible for protein synthesis . These genes are organized as tandem repeats distributed 
+
+across multiple chromosomes (Figure 1a) . In mammalian genomes, these rDNA repeats span 
+
+hundreds of kilobases to megabases . Each rDNA repeat encodes three rRNAs (18S, 5.8S, and 
+
+28S ) as part of a 45S precursor RNA transcribed by RNA polymerase I (Pol I) , representing the 
+
+first and rate -limiting step of ribosome b iogenesis (Moss, Langlois, Gagnon -Kugler, & 
+
+Stefanovsky, 2007; Panov, Hannan, Hannan, & Hein, 2021) . Adjacent transcription units are 
+
+separated by an approximately 30 kb intergenic spacer (IGS) composed of highly repetitive 
+
+elements. 
+
+In humans, rDNA repeats are arranged head -to -tail within the nucleolar organizer regions 
+
+(NORs) on the short arms of acrocentric chromosomes 13, 14, 15, 21, and 22, whereas the 5S 
+
+rRNA gene arrays reside on chromosome 1 (Henderson, Warburton, & Atwood, 1972) . In mice, 
+
+the rDNA repeats are located on chromosomes 12, 15, 16, 18, and 19, while the 5S genes are 
+
+encoded on chromosome 8 (Britton -Davidian, Cazaux, & Catalan, 2012; McStay, 2016) .
+
+Despite their essential role in protein synthesis, the number of 45S rDNA repeats, referred to 
+
+as the rDNA copy number (CN), varies substantially between individuals, typically ranging from 
+
+approximately 100 to 600 copies per haploid genom e (Francisco Rodriguez -Algarra, Evans, & 
+
+Rakyan, 2024) .
+
+This variability , or copy number variation (CNV) , reflects common structural variation s
+
+resulti ng from deletions or duplications of large DNA segments. CNVs account for 
+
+approximately 5 to 10% of the variability across human genome s and contribute substantially 
+
+to natural genetic diversity (Zarrei, MacDonald, Merico, & Scherer, 2015) . Despite  substantial 
+
+inter -individual variation in rDNA CN , the functional consequences of this variation remain 
+
+poorly understood . One proposed explanation is that  rDNA repeat s exist in heterogeneous 
+
+chromatin states, with only a subset of repeats being transcriptionally active at any given time 
+
+in normal cells , while others are transcriptionally silen t. DNA methylation at CpG sites within 
+
+the rDNA promoter and transcribed regions has been widely associated with repression of 
+
+rRNA gene transcription (Gagnon -Kugler, Langlois, Stefanovsky, Lessard, & Moss, 2009) ,
+
+whereas hypomethylated repeats are generally considered more accessible to RNA Pol I and 
+
+thus more likely to be transcriptionally active (McStay & Grummt, 2008) . Although rDNA 
+
+methylation does not directly measure rRNA synthesis, it is widely used as a proxy for the 
+
+transcriptional competence of individual rDNA copies. Consequently, variation in the 
+
+proportion of methylated and unmethylated repeats may influence the functional dosage of 
+
+active rRNA genes independently of total rDNA CN . However, it remains unclear whether 
+
+epigenetic regulation of rDNA, including DNA methylation, acts to buffer variation in total 
+
+rDNA CN by maintaining a relatively constant pool of transcriptionally competent rDNA 
+
+repeats. 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+Accumulating evidence suggests that rDNA CN is more  dynamic  than traditionally assumed 
+
+and can change in response to genetic, developmental, or environmental factors . Althou gh 
+
+the functional consequences of rDNA CNV re main incompletely understood , alterations in 
+
+rDNA C N ha ve bee n associated  with impaired genome maintenance and dis ease susceptibility, 
+
+which link rDNA CNV to several disorders. For example, increased rDNA CNV has been 
+
+reported in Bloom syndrome and progeroid syndromes, both of which arise from mutations 
+
+in DNA repair genes that elevate cancer risk and accelerate aging (Gál et al., 2024; Hallgren, 
+
+Pietrzak, Rempala, Nelson, & Hetman, 2014; Hori, Engel, & Kobayashi, 2023) .
+
+rDNA instability has also been implicated in cancer , with both gains and losses in rDNA CN 
+
+observed depending on tumour type . For instance, loss of Alpha -Thalassemia/X -linked 
+
+Intellectual Disability (ATRX ), a chromatin –modifier and tumour -suppressor gene frequently 
+
+mutated in gliomas and other malignancie s, results in significant rDNA CN reduction and 
+
+increases tumour cell sensitivity to RNA  Pol l inhibitors  (Udugama et al., 2018) . Furthermore, 
+
+rDNA CN Vs have also been associated with invasive ductal breast carcinoma (Valori et al., 
+
+2020) (Lou et al., 2021; Xu et al., 2023) . Beyond cancer, altered rDNA CN has been associated 
+
+with neurodegenerative disease, including higher rDNA CN in dementia with Lewy bodies 
+
+(Hallgren et al., 2014) . In addition to cell intrinsic genetic causes, rDNA CN can also be 
+
+modulated by exposure to environmental factors , for instance, hexavalent chromium induces 
+
+a transient increase in rDNA CN (Lou et al., 2021; Xu et al., 2023) .
+
+Despite these associations, it remains unclear whether changes in rDNA CN actively contribute 
+
+to disease phenotypes or arise as downstream consequences of disrupted genome 
+
+maintenance . One major source of uncer tainty is that total rDNA CN alone does not capture 
+
+the functional dosage of rRNA genes , a s only a subset of copies of rDNA repeats are 
+
+transcriptionally active at any given time . Moreover, rRNA output is not solely determined by 
+
+the number of active repeats, but also by the transcriptional activity of each active copy, which 
+
+can vary depending on cellular context (Panov et al., 2021) . Therefore, a pproaches to 
+
+accurately measure rDNA CN and rDNA methylation across entire repeats , alongside 
+
+transcriptional activity, are critical for understanding how rDNA CNV relates to disease. 
+
+Several methods have been developed for measuring rDNA CN , which can be categorised into 
+
+two major approaches – experimental and computational. Current e xperimental approaches 
+
+include quantitative DNA hybridization, pulse -field gel electrophoresis (PFGE), quantitative 
+
+real -time PCR (qPCR) and digital droplet PCR (ddPCR). In general, they all depend on 
+
+biochemical reactions or separation techniques that requires the use of specific probes or 
+
+primers to target specific rDNA sequences and reference genes . However, the high GC content 
+
+and repetitive nature of the rDNA repeats complicate the use of PCR, which reduces accuracy 
+
+and may introduce bias in CN estimates .
+
+Computational  approaches, on the other hand, estimate rDNA CN from whole -genome 
+
+sequencing (WGS) data, and existing methods have relied exclusively on short -read 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+sequencing. These approaches infer CN by comparing the sequencing coverage over the rDNA 
+
+to a background coverage derived from the whole genome , a single chromosome, or from a 
+
+set of single -copy genes (J. G. Gibbons, Branco, Yu, & Lemos, 2014; Hall, Turner, & Queitsch, 
+
+2021; Francisco Rodriguez -Algarra et al., 2024; F. Rodriguez -Algarra et al., 2022; Sharma et al., 
+
+2022) . However, due to the repetitive nature of the rDNA r epe ats, GC -rich ness , and nearly 
+
+homogene ity , short reads often fail to map uniquely, limiting the accuracy and confidence of 
+
+the resulting CN estimates. 
+
+To overcome the limitations of both qPCR - and short -read –based methods, we developed 
+
+RICO, a novel computational methodology for estimating rDNA CN using Oxford Nanopore 
+
+Technologies (ONT) long -read sequencing. By leveraging reads that span entire rDNA repeats, 
+
+RICO improves the resolution and accuracy of CN estimation in highly repetitive rDNA arrays .
+
+We demonstrated high accuracy and reproducibility through b enchmarking with simulated 
+
+nanopore datasets with known CN, independent sequencing runs of reference  samples , and 
+
+comparison with short -read –derived rDNA CN estimates from the 1000 Genomes Project . We 
+
+further validate RICO in dynamic biological systems using mouse models with established 
+
+alterations in rDNA CN, including recovery of the expected ~40% rDNA CN reduction in Atrx -
+
+knockout (KO) mouse embryonic stem cells (mESCs) and increased active rDNA copies in MYC -
+
+driven lymphoma cells. 
+
+In addition, integrated methylation analyses of Nanopore rea ds re veals substantial variation 
+
+in both total rDNA CN and the fraction of low -methylated rDNA repeats across individuals. 
+
+Notably, individual s with lower total rDNA CN frequently exhibited a higher proportion of low -
+
+methylated repeats, resulting a strong inverse relations hip between the total rDNA CN and 
+
+the fraction of putatively active rDNA copies . Consequently, the estimated number of 
+
+transcriptionally competent rDNA repeats varied considerably less than total rDNA CN, 
+
+suggesting a potential buffering mechanism that may help maintain a relatively stable pool of 
+
+active rDNA copies despite variation in total CN.  Together, our results demonstrate that RICO 
+
+ena bles the integrated analysis of rDNA CN and methylation, providing a more complete view 
+
+of rDNA regulation in normal and disease contexts. 
+
+# Results 
+
+# rDNA  CN estimation using long reads 
+
+RICO provides a computational framework for estimating rDNA CN from long read WGS data. 
+
+RICO leverages Nanopore signal -level basecalling with modification detection, mapping to an 
+
+rDNA -augmented reference genome, and coverage -based CN quantification (Figure 1b) .
+
+Reads from unaligned modBAM files are aligned using minimap2 to either human or mouse 
+
+reference genomes augmented with concatenated rDNA repeat units, depending on the 
+
+species analysed (see Methods). Since long reads can span entire rDNA units , and even 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+multiple consecutive units in the presence of ultra -long reads, reference genomes containing 
+
+1 to 10 concatenated rDNA copies were generated. This allow s us to evaluate mapping 
+
+behaviour and select a configuration that maximizes optimal alignment while minimizing read 
+
+splitting across repeat boundaries. For CN estimation, coverage from each rDNA unit in the 
+
+augmented reference is calculated separately and summed to represent the total rDNA 
+
+coverage. 
+
+After read mapping , only primary alignments are retained to ensure reads are uniquely 
+
+mapped to either the rDNA locus or non -rDNA regions of the genome , reducing contributions 
+
+from residual rDNA -like regions elsewhere . This produces an aligned modBAM file that serves 
+
+as the basis for both coverage quantification and methylation analysis .
+
+Two coverage strategies are tested in our results , based on either mean or  mode  coverage, 
+
+which we evaluate in our systematic benchmarking below. In contrast to short -read methods ,
+
+which estimate CN from individual components (18S, 5.8S, 28S), RICO calculate s the mean 
+
+coverage across the full 45S locu s, encompassing the 5’ETS, 18S, ITS1, 5.8S, ITS2, 28S, 3’ET S
+
+regions. 
+
+In the mean -coverage approach , rDNA CN is estimated by normalising the summed rDNA 
+
+coverage across the 45S rDNA locus in the augmented reference to the mean coverage of 
+
+curated single -copy gene (SCG) panels (Figure 1b). For augmented references containing 
+
+multiple concatenated rDNA copies , the additional repeat copies are used only during read 
+
+alignment to improve mapping of long reads spanning repeat boundaries. For CN estimation, 
+
+coverage is calculated independently for each rDNA repeat unit and combined to obtain the 
+
+total 45S rDNA cove rage before normalisation, ensuring that CN estimates are independent 
+
+of the number of rDNA units included in the reference. In parallel, we implemented a mode -
+
+based strategy adapted from a previous study (Sharma et al., 2022) , in which coverage is 
+
+computed using 1 kb sliding windows and rDNA CN is inferred from the most frequently 
+
+observed coverage values. Detailed descriptions of both approaches are provided in the 
+
+Methods and Supplementary Information. 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+Figure 1. Structure of mammalian rDNA repeat s and overview of RICO .
+
+(a) Schematic representation of rDNA repeat s in mammalian genomes . rDNA repeat units are 
+
+arranged in long tandem arrays . Each repeat is ~43 -45 kb in length and contains a single 45S 
+
+rDNA locus , comprising the 18S, 5.8S, and 28S rRNA genes (shown in green) separated by 
+
+internal transcribed spacers (ITS1 and ITS2) and flanked by external transcribed spacers (5′ETS 
+
+and 3′ETS), followed by an intergenic spacer (IGS) . (b) Overview of RICO for estimating rDNA 
+
+CN from long -read Nanopore sequencing data. RICO takes an unaligned modified BAM 
+
+(modBAM) file as input, which can be generated by basecalling raw signal data , i.e. POD5 ,
+
+using Nanopore basecallers such as Dorado . Unaligned modBAM files are aligned to human 
+
+or mouse reference genomes containing five concatenated rDNA repeats using minimap2 and 
+
+samtools . The human rDNA reference KY962518.1 and mouse rDNA reference BK000964.3 are 
+
+used for human and mouse samples, respectively (see Methods). Coverage across the 45S 
+
+rDNA locus and curated panels of single -copy genes (SCGs) is quantified using samtools and 
+
+bedtools . For references containing multiple concatenated rDNA copies , mean coverage 
+
+values from individual rDNA units are summed to obtain total rDNA coverage, and rDNA CN is 
+
+estimated as the ratio of summed rDNA coverage to mean SCG coverage . In parallel, CpG 
+
+methylation is quantified directly from aligned modBAM files using modkit , enabling joint 
+
+analysis of rDNA CN and rDNA methylation state. RICO is implemented as both a Nextflow -
+
+based high performance computing workflow and a standalone bash workflow for local 
+
+execution and is available at  https://github.com/comprna/RICO .
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+# Accurate recovery of rDNA copy number using simulated Nanopore 
+
+# reads 
+
+To assess the quantitative accuracy of RICO , we first benchmarked it using simulated datasets 
+
+with  predefined rDNA CN s. Simulated reads were generated with Badread (Wick, 2019) using 
+
+a reference genome in which the human rDNA repeat was in cor porated at fixed CN s of 100 
+
+and 300. 
+
+We then simulated reads to mimic realistic  whole -genome Nanopore sequencing 
+
+characteristics, including read length and error profile, ensuring direct comparability with 
+
+empirical data. Read length characteristics to incorporate into the simulated reads were 
+
+extracted from WGS Nanopore runs of the human reference sample HG002, which exhibit ed 
+
+a bimodal distribution (Fig. 2a). We thus simulated two read populations per CN condition 
+
+(100 or 300) , one population enriched in short reads and one enriched in long reads (Fig. 2a) .
+
+Reads from these simulations were subsequently combined to form the final benchmarking 
+
+datasets. 
+
+We applied both the mean -coverage and mod e-coverage approaches , testing three different 
+
+human single -copy gene (SCG ) reference panels as normalization controls (see Methods) . In 
+
+both simulations, CN estimates increased with the number of rDNA repeats included in the 
+
+mapping reference and plateaued after two repeats , indicating that mapping saturation had 
+
+been reached such that expanding the mapping reference with additional rDNA repeats would 
+
+no t alter coverage estimates. 
+
+While t he CN estimates did not vary significantly across SCG panels, SCG -2 and SCG -3 yielded 
+
+estimates closest to the predefined simulated CN. Additionally, t he mean -coverage method 
+
+consistently produc ed estimates closer to the expected values than the mode -coverage 
+
+approach (Fig. 2 b) (Suppl ementary Fig ure . 1) . This suggests that the mean coverage better 
+
+captures quantitative differences in rDNA abundance. Overall, the simulations demonstrate 
+
+that RICO can reliably recover predefined rDNA CN under controlled conditions and support 
+
+the use of the mean -coverage approach for subsequent analyses .
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+Figure 2 . rDNA CN estimation using simulated long -read datasets. 
+
+(a) Read -length distributions of simulated datasets (sim100 and sim300) and two PromethION 
+
+whole -genome sequencing runs of HG002 (hg002 -1 and hg002 -2). Simulations were 
+
+parameterised to recapitulate the bimodal read length distribution observed in HG002 data, 
+
+combining short -read and long -read length profiles. 
+
+(b) Estimated rDNA CN across different number of rDNA repeats (1 to 5) included in the 
+
+mapping reference for simulations with 100 (left) and 300 (right) known rDNA copies. CN were 
+
+calculated using the mean -coverage approach with three different single -copy gene (SCG) 
+
+reference panels (SCG -1, SCG -2, SCG -3). Results for the mode -coverage approach are shown 
+
+in Supplementary Fig ure . 1. 
+
+# Consistent rDNA copy number estimates across replicates in human 
+
+# trio samples 
+
+We next evaluated the reproducibility of RICO using publicly available WGS data from the 
+
+Genome in a Bottle (GIAB) Ashkenazi Trio (HG002, HG003, HG004 ) and the Han Chinese tr io 
+
+(HG005, HG006, HG007) . First, we tested whether the rDNA CN estimates stabilise d after two 
+
+or more rDNA repeats are included in the augmented mapping reference. Consistent with the 
+
+simulated reads, f or the Ashkenazi Trio, CN estimates reached a plateau after two repea ts 
+
+(Figure 3a) . For example, HG002 yielded 231 and 236 copies in the two analysed replicates 
+
+(indicated as ONT -1 and ONT -2). Similarly, HG 003 and HG004 showed similarly concordant 
+
+estimates across replicates (182 and 185 for HG003, and 243 and 244 for HG004) (Figure 3a). 
+
+To further validate the reproducibility of our approach, we performed an additional 
+
+sequencing experiment for HG002 ( indicated as HG002 -ANU) (Figure 3b) . RICO yielded a CN 
+
+estimate of 230 copies differing only by fewer than five copies from the public ly available 
+
+HG002 datasets (Figures 3a & 3b) . Overall, the mean -coverage approach produced highly 
+
+consistent CN estimates across independent sequencing runs , with variation within 1 to 7
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+copies. This reproducibility suggests that RICO is largely insensitive to sequencing batch effects 
+
+and provides robust rDNA CN estimates across independently generated datasets. 
+
+In contrast to the mean -coverage approach, mode -based estimates varied considerably 
+
+depending on the SCG  sets  used and the sequencing runs analysed (Supplementary Figure 3). 
+
+For example, in HG002 , the SCG -1 and SCG -2 panels yielded differences of 22 and 13 copies 
+
+between runs, whereas estimates based on SCG -3 differed by only one copy . Although HG004 
+
+showed less than 5-copy differences between runs for SCG -1 and SCG -2, there was a
+
+difference of 13 copies when using SCG -3 (Supplementary Figure 3 ). In  our additional HG002 
+
+sequencing run , the mode -coverage approach produced CN estimates consistent with the 
+
+mean -coverage method (Supplementary Figure 4) , indicating that the two approaches can 
+
+yield similar estimates in some conditions.  Taken together, these analyses suggest that the 
+
+mean -based approach used in RICO yields more consistent and reproducible CN estimates 
+
+across independent sequencing runs from the same individual , whereas the mode -based 
+
+approach shows more variable performance. 
+
+Given the confirmed plateau behaviour, all subsequent analyses were performed using a n
+
+augmented reference containing five rDNA repeat units. Although two rDNA units were 
+
+sufficient to achieve stable CN estimates, five units were selected as a conservative 
+
+configuration within the plateau range, providing additional mapping space for long reads 
+
+spanning multiple consecutive rDNA units while avoi ding excessive reference expansion. 
+
+Applying RICO to the Han Chinese trio yielded similarly consistent CN estimates between 
+
+replicates (indicated as ONT -1 and ONT -2) , with variations of no more than 7 copies per sample 
+
+(Figure 3c). Overall, CN estimates were highly concordant between sequencing runs for the 
+
+same individual, with observed differences ranging from one to seven copies validating 
+
+reproducibility cross independent sequencing runs (Figures 3a -c). 
+
+To assess whether differences in sequencing yield and read length could influence CN 
+
+estimation, we examined the total number of reads and the distribution of read lengths across 
+
+all datasets ( Supplementary Figure 5 ). The public datasets exhibited broadly comparable 
+
+profiles , with approximately 6 - 10 million reads per run and mean read lengths of 
+
+approximately 13 kb . In contrast, our HG002 sequencing run ( HG002 -ANU ) had a lower yield 
+
+(~3.8 million reads) but substantially longer reads ( mean length ~26 kb). Despite these 
+
+differences, the CN estimates remained stable across datasets, sug gesting that RICO is 
+
+insensitive to sequencing yield and read length distribution .
+
+Next, to estimate the proportion of active rDNA repeat units, we leveraged the Nanopore 
+
+signal information to examine rDNA methylation profiles at the single -read level (Figure 3 d). 
+
+Across replicates, methylation distributions were highly consistent within each sample, while 
+
+clear differences were observed between individuals. For example, in HG003, more than half 
+
+of rDNA reads were classified as low -methylated ( blue ; methylation <0.3 ), whereas HG005 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+exhibited a substantially higher fraction of highly methylated reads (red ; methylation >0.7 )
+
+(Figure 3d) . These results indicate that rDNA methylation profiles are reproducible across 
+
+sequencing runs and reflect individ ual -specific epigenetic states. 
+
+We next investigated the relationship between rDNA CN estimates and the per -read 
+
+methylation profiles. Since a low -methylated  45S rDNA copies are generally associated with 
+
+an open chromatin state, we used this methylation status as a proxy for transcriptionally 
+
+active rDNA repeats. The number of active rDNA copies was therefore estimated by 
+
+multiplying total rDNA CN by the fraction of low -methylated reads for each sample (Figure 
+
+3d, right panel). We observed a strong negative relationship between total rDNA CN and the 
+
+proportion of low -methylated rDNA reads (Spearman’s ρ = -0.97 ) ( Figure 3e), such that 
+
+individuals with higher rDNA CN tend to have a lower fraction of active repeats. Th ese findings 
+
+support the hypothesis that epigenetic regulation buffers variation in total rDNA CN by 
+
+modulating the fraction of active repeats, thereby helping maint ain a relatively stable number 
+
+of transcriptionally active rDNA repeats .
+
+Importantly, these results were robust to variation in filtering parameters used for methylation 
+
+classification, including CpG call probability thresholds, minimum numbers of CpG sites per 
+
+read, and alternative methylation cutoffs ( Supplementary Figures 6-9). Across all parameter 
+
+combinations, methylation distributions remained consistent within samples (Supplementary 
+
+Figures 6-7) , and the inverse relationship between rDNA CN and the proportion of low -
+
+methylated reads was preserved , with Spearman ’s ρ below -0.7 (Supplementary Figures 8-9) .
+
+These results indicate that the observed relationship is not dependent on specific parameter 
+
+choices but supports the concept of rDNA buffering as one underlying mechanism of rDNA 
+
+regulation. 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+Figure 3. rDNA CN estimation in Ashkenazi and Han Chinese trio samples. 
+
+(a) Estimated rDNA CN (y -axis) using the single copy gene set 2 (SCG -2) and different number 
+
+of rDNA repeats in the augmented mapping reference (x -axis; 1 to 10 rDNA repeats ) for the 
+
+Ashkenazi trio samples HG002 (son), HG003 (father), and HG004 (mother) . Results are shown 
+
+for two independent sequencing runs (ONT -1 and ONT -2). Results for SCG -1 and SCG -3 are 
+
+shown in Supplementary Figure 2. 
+
+(b) rDNA CN estimates across increasing number s of rDNA repeats in the mapping reference 
+
+for an additional sequencing experiment for HG002 ( HG002 -ANU) , used as an independent 
+
+validation. 
+
+(c) rDNA CN estimates for the Han Chinese trio samples (HG005 , HG006 and HG007) , again 
+
+derived from two independent Nanopore sequencing runs (ONT -A and ONT -B) using a 
+
+mapping reference containing five rDNA repeats. Overall, in (a -c), CN estimates are highly 
+
+concordant between sequencing runs for the same individual, with observed differences 
+
+ranging from one to seven copies, showing reproducibility between runs. 
+
+(d) Per -read rDNA methylation profiles across samples. Each horizontal bar represents the 
+
+proportion of rDNA reads classified as low (<0.3), intermediate (0.3 - 0.7), or high (>0.7) 
+
+methylation based on the fraction of modified CpG sites per read. Analyses were performed 
+
+using all CpG calls , without filtering by the number of CpG sites per read. The total number of 
+
+rDNA reads (log10 scale) is shown in the middle panel and the estimated number of active 
+
+rDNA copies ( % low -methylated reads × total rDNA CN) is shown on the right. 
+
+(e) Relationship between total rDNA CN (45S CN as in a -c) and the proportion of low -
+
+methylated (active) rDNA reads (as determined from the proportion in blue in d) across 
+
+samples. Each point represents an individual run , as coloured by the sample . The black line 
+
+shows the linear regression fit, with Spearman correlation ( ρ) and corresponding p -value 
+
+indicated. 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+# Biological va li dation of rDNA copy number change in mouse models 
+
+To test whether RICO can detect biologically established rDNA C N difference s, we studied a
+
+mESC model with experimentally validated rDNA CN loss. We used mESCs with a CRISPR -Cas9 
+
+knock out (KO) of the Atrx gene (Udugama et al., 2018) , a tumour suppressor frequently 
+
+mutated in gliomas and other cancers and linked to genome instability . Previous qPCR 
+
+measurements of rDNA CN in these samples have shown a relative 40 -50% loss of rDNA copies 
+
+in the Atrx -KO compared to wild -type (WT) mESC s (Udugama et al., 2018) .
+
+We performed Nanopore WGS on WT and Atrx -KO ESCs and applied RICO using mouse 
+
+augmented mapping references containing between 1 and 10 concatenated rDNA repeats, 
+
+similar to our approach for human datasets (Methods). Across all mapping references , both 
+
+the mean and mode coverage approach es consistently detected a reduction in rDNA CN of 
+
+39% and 42%, respectively, in the KO relative to WT (Fig ure 4a) . These estimates closely match 
+
+the pre viously reported relative qPCR measurements, providing independent biological 
+
+support for the accuracy of the RICO pipeline . Read -length  distributions were also highly 
+
+similar between samples (Supplementary Figure 10), indicating that the observed CN 
+
+difference s were unlikely to be driven by sequencing -length bias. 
+
+We next examined the rDNA methylation profiles in the same samples at the single -read level 
+
+(Figure 4b) . Consistent with prior studies showing  that DNA in mouse ESC s is largely 
+
+unmethylated (Betto et al., 2021; Udugama et al., 2018) , nearly all rDNA reads in both WT and 
+
+Atrx -KO ESCs were classified as low -methylated (Figure 4 b). Integrating methylation with total 
+
+rDNA CN , we estimated 122 active rDNA copies for the WT sample and 74 active copies for 
+
+the Atrx -KO sample . Importantly, these methylation and active CN estimates remained highly 
+
+consistent across multiple filtering strategies (Supplementary Figures 11 -12). Across all 
+
+parameter combinations, both samples remained predominantly low -methylated, and the 
+
+estimated a ctive rDNA CN showed minimal variation. Th is finding is consistent with prior 
+
+results that Atrx loss decreases the abundance of transcriptionally competent rDNA chromatin 
+
+(Udugama et al., 2018) . Together, these results indicate that RICO yields stable and biologically 
+
+consistent rDNA CN estimates under conditions with experimentally validated rDNA CN 
+
+alterations. 
+
+To provide further biological validation, we applied RICO to a MYC -driven B -cell lymphoma 
+
+mouse model ( Eμ-Myc ), in which malignant transformation is associated with elevated 
+
+ribosome biogenesis , increased rRNA expression , a significant increase in the fraction of 
+
+transcriptionally active rDNA repeats in malignant (MAL) B-cells relative to WT controls, as 
+
+demonstrated by previous psoralen cross -linking experiments (Diesch et al., 2019) . As these 
+
+samples were sequenced using an ultra -long Nanopore library preparation protocol, the Eμ-
+
+Myc datasets contained fewer total reads but substantially longer read lengths than the mESC 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+datasets, with mean read lengths exceeding 30 kb in both WT and MAL samples 
+
+(Supplementary Figure 10). 
+
+In this model , we not only detected increased total rDNA CN in MAL cells relative to WT 
+
+controls (Figure 4c) but also observed increased active rDNA CN after taking into account the 
+
+rDNA methylation profiles (Figures 4d -e). Using the 0.3/0.7 methylation cutoff , MAL cells 
+
+exhibited a higher proportion of low -methylated rDNA reads than WT cells (54% versus 43%, 
+
+respectively), corresponding to an increase in estimated active rDNA CN (66 versus 48 copies ,
+
+res pectively ) (Figure 4d ). Applying the more stringent 0.1/0.9 cutoff further accentuated this 
+
+difference . While WT cells were dominated by intermedia tely methylated reads (93%), MAL 
+
+cells showed a broader methylation distribution characterised by increased fractions of both 
+
+unmethylated -like (41%) and highly methylated (14%) reads (Figure 4e). As a result, the 
+
+estimated active rDNA CN differed markedly between WT and MAL cells (6 versus 50 copies, 
+
+respectively ) (Figure 4 e). These patterns remained consistent across different filtering 
+
+strategies, including different CpG call probability thresholds and minimum CpG counts per 
+
+read (Supplementary Figures 13 -14 ). Across all parameter combinations, MAL cells 
+
+consistently exhibited a greater fraction of low -methylated rDNA reads and increased active 
+
+rDNA CN relative to WT controls. These findings are consistent with previous psoralen -based 
+
+results and further support the ability of RICO to detect biologically meaningful differences in 
+
+the abundance of transcriptionally competent rDNA repeats. 
+
+Figure 4. Biological v alidation of rDNA CN estimation in mouse Atrx -knoc ko ut (KO) and Eμ-
+
+Myc model s.
+
+(a) Estimated rDNA copy number (CN) (y -axis) for wild -type (WT) and Atrx -KO mouse 
+
+embryonic stem cells (ESCs) across augmented mapping references containing 1 –10 rDNA 
+
+repeats (x -axis) . Bars show CN estimates obtained using the mean -coverage (top) and mode -
+
+coverage (bottom) approaches. Orange markers indicate the percentage reduction in rDNA CN 
+
+in KO relative to WT. 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+(b)  Per -read rDNA methylation profiles in WT and Atrx -KO ESCs. All rDNA reads were classified 
+
+as low -methylated (<0.3) (blue). The total number of rDNA reads (log10 scale) and estimated 
+
+active rDNA copy number (total rDNA CN × fraction of low -methylated reads) are shown on 
+
+the right. 
+
+(c) Estimated rDNA CN in a MYC -driven B -cell lymphoma mouse model (E μ-Myc ). rDNA CN 
+
+was calculated for WT and lymphoma (MAL) samples using a mapping reference augmented 
+
+with five rDNA repeats, applying both the mean -coverage (left) and mode -coverage (right) 
+
+approaches. 
+
+(d-e) Per -read rDNA methylation profiles in WT and MAL Eμ-Myc cells under different 
+
+methylation classification thresholds. Reads were classified using either a 0.3/0.7 cutoff ( d) or 
+
+a more stringent 0.1/0.9 cutoff ( e) based on the fraction of modified CpG sites per read. The 
+
+total number of rDNA reads (log10 scale) and estimated active rDNA copy number are shown 
+
+on the right. 
+
+# rDNA copy number estimates across human populations 
+
+Our results in trios and mouse models prompted us to examine whether similar relationships 
+
+between rDNA CN and transcriptionally active copies are observed across human populations. 
+
+To this end, we studied the rDNA CN across data from t he 1000 Genomes Project (1KGP) . First, 
+
+we used short -read –derived rDNA CN estimates across 1KGP samples, which offer a valuable 
+
+comparative dataset for assessing cross -platform reproducibility (Hall et al., 2021) . Although 
+
+short -read –based estimates have limitations , they remain widely used for population -level 
+
+analyses, as they provide consistent relative differences between individuals , (Hall et al., 2021) 
+
+and provide an important reference point for validating the consistency of rDNA CN 
+
+estimations using RICO. 
+
+To assess the concordance between RICO -derived long -read rDNA CN estimates and 
+
+established short -read approaches, we compared 45S rDNA CN inferred using RICO from 
+
+Nanopore long -read sequencing da ta with short -read –based estimates derived from both the 
+
+18S and 28S rRNA regions for 1kGP samples (Hall et al., 2021) . In total, we analyzed 22 
+
+samples from 4 different ancestry groups (African, America n, East Asian, and European) for 
+
+which there were short -read data estimates available (Hall et al., 2021) as well as Nanopore 
+
+long -read sequences from the ONT -1KGP project (Gustafson et al., 2024) . The correlation with 
+
+short -read 18S CN estimates explained 71% of the variance in long -read 45S CN (Figure 5a), 
+
+while 50% of the variance was detected when comparing long -read estimates with short -read 
+
+28S CN (Figure 5b). We also observed that short -read methods generally produced higher CN 
+
+estimates compared with the long -read approach (Supplementary Figure 1 5). Although the 
+
+resulting CN estimates differed between methods, consistent trends across individuals were 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+observed, supporting the ability of the long -read approach to capture relative differences in 
+
+rDNA CN between individuals. 
+
+We next examined rDNA methylation profiles in the 1KGP samples at the single -read level 
+
+(Figure 5c). Methylation distributions showed substantial variation between individuals. Some 
+
+samples, such as HG00326 and HG00372, exhibited predominantly low -methylated rDNA 
+
+reads (99% and 87% respectively ), whereas others, including GM18861 and HG03069, showed 
+
+substantially higher fractions of highly methylated reads (33% and 42% respectively ).
+
+We then integrated rDNA CN estimates with per -read methylation profiles t o investigate the 
+
+relationship between total rDNA copies and methylation state in this independent cohort ,
+
+using low -methylated rDNA reads as a proxy for transcriptionally active rDNA repeats / (Figure 
+
+5c, right panel). We again detected a strong negative relationship between total rDNA CN and 
+
+the proportion of low -methylated rDNA reads (Spearman’s ρ = -0.93; Figure 5d), indicating 
+
+that individuals with higher rDNA CN tend to have a lower fraction of active repeats. 
+
+Consistent with the trio datasets, these findings independently support the hypothesis that 
+
+epigenetic regulation may buffer variation in total rDNA CN by helping maintain a relatively 
+
+stable pool of transcriptionally active rDNA repeats.  Importantly, this inverse relationship 
+
+between rDNA CN and the proportion of low -methylated reads was preserved across multiple 
+
+filtering strategies (Spearman’s ρ < -0.86 ) ( Supplementary Figures 16-19 ), indicating that the 
+
+observed relationship is re producible across independent cohorts and analytical settings. 
+
+To further provide validation of the long -read rDNA CN estimates, we performed qPCR assays 
+
+targeting multiple rDNA regions in two 1KGP samples with markedly different rDNA CN 
+
+estimates detected by both long -read and short -read approaches , HG00326 and HG03069 
+
+(Figure 5a & 5b). Consistent with both sequencing -based approaches , HG03069 showed 
+
+substantially higher relative CN across 18S, 5.8S, 28S, and IGS regions compared with HG00326 
+
+(Figure s 5e and 5f ). Same trends were detected using normalization to either RPPH1 or p53, 
+
+supporting the robustness of our estimated rDNA CN differences using RICO .
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+Figure 5 . rDNA CN estimation in 1KGP samples. 
+
+Comparison of long -rea d-based 45S rDNA CN estimates (y -axis) to short -read -based rDNA CN 
+
+estimates (x -axis) across individuals based on 18S CN estimates (a) and 28S CN estimates (b) .
+
+(c) Per -read rDNA methylation profiles across samples. Each horizontal bar represents the 
+
+proportion of rDNA reads classified as low (<0.3), intermediate (0.3 - 0.7), or high (>0.7) 
+
+methylation based on the fraction of modified CpG sites per read. Analyses were performed 
+
+using all CpG calls and without filtering on the number of CpG sites per read. The total number 
+
+of rDNA reads (log10 scale) is shown in the middle panel and the estimated number of active 
+
+rDNA copies ( % low -methylated reads × total rDNA CN) are shown on the right. 
+
+(d) Relationship between total rDNA copy number (45S CN as in a -c) and the proportion of 
+
+low -methylated (active) rDNA reads (as determined from the proportion in blue in d) across 
+
+samples. Each point represents an individual run, as coloured by the sample. The black line 
+
+shows the linear regression fit, with Spearman correlation ( ρ) and corresponding p -value 
+
+indicated. 
+
+(e –f) qPCR validation of rDNA CN differences between HG00326 and HG03069. Relative 
+
+abundance of the 18S, 28S, and IGS regions was quantified by qPCR and normalised to either 
+
+(e) RPPH1 or (f) p53 . Grey bars represent HG00326 and light -blue bars represent HG03069. 
+
+Points indicate replicates  from the same cell line isolated at different passage numbe r (n = 4), 
+
+and bars represent mean ± SD. 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+# Discussion 
+
+Interest in rDN A CNV has increased substantially because altered rDNA copies has been 
+
+associated with ageing, developmental disorders, neurodegeneration, and multiple cancer 
+
+types (Rodriguez-Algarra, Whittaker, del Castillo del Rio, & Rakyan, 2025) . However, the 
+
+biological interpretation of these associations remains challenging because published rDNA 
+
+CN estimates often vary considerably between studies and analytical approaches (Hall et al., 
+
+2021) . Technical factors such as sequencing platform, batch effects, reference selection, and 
+
+analytical methodology can substantially influence inferred rDNA CN estimates, raising 
+
+concerns about the reproducibility of reported associations. These challenges are further 
+
+compounded by the highly repetitive nature of rDNA, which makes controlled experimental 
+
+manipulation difficult and limits our ability to directly test the r elationship between rDNA CN, 
+
+epigenetic regulation, and disease phenotypes. Consequently, robust and reproducible 
+
+approaches for rDNA CN estimation are essential for determining whether rDNA CNV truly 
+
+contributes to disease phenotypes and for understanding how rDNA responds to cellular and 
+
+external stress .
+
+To address these challenges, we developed RICO for estimating rDNA CN from Nanopore WGS 
+
+data. By leveraging long reads that span the full 45S rDNA transcription unit and using curated 
+
+single -copy gene panels for normalisation, RICO addresses several key technical limitations of 
+
+conventional rDNA CN estimation methods. Systematic benchmarking using simulated 
+
+nanopore datasets with predefined rDNA CN provides strong evidence that RICO accurately 
+
+recover s simulated rDNA CN under controlled conditions . These analyses also demonstrate d
+
+that rDNA CN estimates converge once two rDNA repeat units were incorporated in to the 
+
+augmented mapping reference , indicating that further expansion of the rDNA units in the 
+
+reference does not substantially alter CN estimates. Application of RICO to human GI AB trio 
+
+samples further demonstrates high reproducibility across independent sequencing runs and 
+
+individuals , indicating that RICO is robust to technical variability and well suited for large scale 
+
+comparative analyses. Using the mean coverage approach consistently produce s more 
+
+reproducible estimates across mammalian datasets than the mo de approach originally 
+
+developed  in yeast (Sharma et al., 2022) . One possible explanation is that mammalian  rDNA 
+
+repeats are substantially larger and more structurally complex than those found in yeast ( 9
+
+kb per repeat ), increasing sensitivity of mode -based estimates to local coverage fluctuations .
+
+While mode -based coverage strategies have been shown to be effective in yeast (Sharma et 
+
+al., 2022) , our analyses indicate that in human genomes a mean coverage approach yields 
+
+more accurate and reproducible rDNA CN estimates. The mode -based method exhibited 
+
+greater sensitivity to coverage fluctuations and reference panel composition, resulting in 
+
+incre ased variability across sequencing runs, particularly in the human datasets. These 
+
+findings suggest that differences in genome complexity limit the direct transferability of 
+
+coverage mode -based approaches from yeast to mammalian samples. 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+Our results also highlight ongoing challenges in the field regarding the reliability and 
+
+comparability of published rDNA CN estimates. Across the 1KGP samples, long -read -based CN 
+
+estimates were consistently lower than those derived from short -read sequenci ng. However, 
+
+despite these systematic differences in values, long -read and short -read estimates showed a 
+
+positive correlation across samples, indicating substantial agreement between methods. 
+
+These differences likely arise from both sequencing technology and analytical strategy . Library 
+
+preparation protocols and batch effects have been shown to influence rDNA CN estimates 
+
+(Hall et al., 2021) , and the short read and long read datasets we analysed here were generated 
+
+using different experimental workflows . In terms of analytical strategies, short -read 
+
+sequencing infers rDNA CN from more fragmented reads and relies on high coverage signals 
+
+across highly repetitive regions, whereas RICO leverages longer reads that span entire rDNA 
+
+repeats, improving mapping specificity and reducing ambiguity at repeat boundaries. While 
+
+short -read -based approaches remain valuable for detecting relative differences across large 
+
+cohorts, they are less well suited for accurate absolute CN quantification in highly repetitive 
+
+and G C-rich regions. 
+
+Other differences in analytical strategies may also contribute to discrepancies between 
+
+studies. Some studies estimate background coverage using mean read depth from one single 
+
+chromosome, whereas our approach uses curated panels of single -copy genes for 
+
+normalisation. Moreover, Hall et al. (2021) aligned rDNA reads to the old rDNA reference 
+
+sequence (U13369.1), while RICO uses the most recent rDNA reference (KY962518.1) (Fan et 
+
+al., 2022) . Small differences in sequence composition, repeat structure, and the handling of 
+
+rDNA -like pseudogenes in the reference genome may therefore lead to systematic shifts in CN 
+
+estimates between methods. 
+
+Accurate  assembly of complete rDNA arrays within chromosome -scale genomes remains 
+
+technically challenging because of the highly repetitive structure and sequence homogeneity 
+
+of rDNA loci, despite major advances enabled by telomere -to -telomere (T2T) long -read 
+
+assem blies (Nurk et al., 2022) . Notably, the human rDNA reference sequence used in RICO 
+
+(KY962518.1) was the most recent one, but it was generated and analysed in GRCh38 
+
+assembly (Fan et al., 2022) , highlighting the continued challenges associated with fully 
+
+resolving human rDNA arrays. Our analyses further confirm substantial inter -individual 
+
+variability in rDNA CN and methylation states, suggesting that personalised approaches may 
+
+be required to c omprehensively resolve rDNA organisation and regulation. 
+
+Applying RICO to the mouse Atrx -KO ESC and Eμ-Myc model s demonstrat es its utility in 
+
+biologic al ly relevant systems  with known alterations in rDNA regulation. In Atrx -KO mESC s,
+
+RICO recovers the previously reported reduction in total rDNA CN following Atrx loss 
+
+(Udugama et al., 2018) . Integration of methylation information further revealed a reduction 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+in the estimated number of low -methylated, transcriptionally competent rDNA repeats in 
+
+Atrx -deficient cells. Previous studies have shown decreased DNA methylation at rDNA repeats 
+
+in primary peripheral blood mononuclear cells from patients with ATRX syndrome, consistent 
+
+with altered regulation of transcriptionally active rDNA copies (R. J. Gibbons et al., 2000) . In 
+
+our analysis, rDNA methylation should be interpreted as a proxy for transcriptional 
+
+competence rather than a direct measurement of rRNA synthesis or chromatin accessibility; 
+
+nonetheless, these methylation changes are consistent with previously reported defects in 
+
+rDNA regulation following ATRX loss. 
+
+We also obtained results in the Eμ-Myc mouse model concordant with previous psoralen 
+
+cross -linking studies showing increased fractions of transcriptionally active rDNA repeats 
+
+during MYC -driven malignant transformation (Diesch et al., 2019) . Together, these two mouse 
+
+models demonstrate that RICO can detect biologically meaningful changes in both total rDNA 
+
+copies and the abundance of transcriptionally active rDNA repeats across distinct cellular and 
+
+disease contexts. 
+
+Despite the observed variation in total rDNA CN and rDNA methylation profiles across 
+
+replicates and individuals, we recovered a strong inverse relationship between total rDNA CN 
+
+and the proportion of low -methylated rDNA reads. In low -rDNA CN samples such as HG00326, 
+
+nearly all rDNA copies are classified as low -methylated , whereas individuals with higher total 
+
+rDNA CN generally exhibited a smaller proportion of low -methylated repeats. Our results 
+
+expand a recent study by Hori, Shimamoto, and Kobayashi (2021) , providing further evidence 
+
+of a strong negative correlation between total rDNA CN and the proportion of unmethylated 
+
+rDNA reads , implying that the absolute number of active repeats may be constrained across 
+
+individuals . These findings support the idea that mammals have developed a buffering 
+
+mechanism that preserves sufficient rDNA transcriptional capacity despite variation in total 
+
+CN. Our analyses raise the possibility that a minimum number of transcriptionally active rDNA 
+
+repeats is required for cellular homeostasis although this will require direct experimental 
+
+validation. 
+
+One possible explanation for th e observed inverse relationship is that cells maintain a 
+
+relatively stable pool of transcriptionally active rDNA repeats to balance ribosome production 
+
+with genome stability. Under this model, excess rDNA copies may function as a reserve that 
+
+can be recruited under specific developmental, physiological, or pathological conditions, while 
+
+limiting the requirement for all repeats to remain transcriptionally active simultaneously. Such 
+
+buffering could also reduce replication -transcription conflicts within highly repetitive rDNA 
+
+arrays and contribute to maintenance of nucleolar organisation. 
+
+However, rDNA methylation does not directly measure transcriptional output but instead 
+
+serves here as a proxy for transcriptional competence . Therefore, the buffering suggested 
+
+here may operate in conjunction with additional regulatory layers, including modulation of 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+transcriptional activity per active repeat, particularly in contexts such as cancer , where rRNA 
+
+output can be elevated without corresponding increases in rDNA CN (Hein, Hannan, George, 
+
+Sanij, & Hannan, 2013) . Future studies integrating long -read methylation profiling with 
+
+measurements of nascent rRNA transcription, RNA Polymerase I occupancy, and chromatin 
+
+accessibility will be required to determine how variation in transcriptionally competent repeat 
+
+number tra nslates into functional ribosome biogenesis. 
+
+An important implication of our findings is that total rDNA CN alone may provide an 
+
+incomplete measure of functional rDNA status. Individuals with similar total rDNA CN may 
+
+differ substantially in the fraction of transcriptionally competent repeats, wherea s individuals 
+
+with markedly different total CN may maintain comparable pools of low -methylated repeats. 
+
+Future studies investigating associations between rDNA variation and disease may therefore 
+
+benefit from considering both total rDNA copies and epigenetic state rather than either 
+
+metric in isolation. 
+
+To conclude, RICO provides a robust framework for analysing rDNA CN and methylation from 
+
+Nanopore WGS data. By enabling simultaneous estimation of total rDNA CN and 
+
+transcriptionally competent rDNA fractions, RICO opens new opportunities to investigate how 
+
+rDNA CNV contributes to genome regulation and disease processes in a dynamic biological 
+
+context. 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+# Method s
+
+# Nanopore data processing and basecalling 
+
+Raw Nanopore signal files (POD5/FAST5) were basecalled using Dorado (v1.2 ) with 
+
+methylation calling enabled. Modified BAM (modBAM) files were generated with base -
+
+modification tags (MM/ML) retained to allow downstream extraction of CpG methylation 
+
+information. Basecalling was performed on a high -performance computing (HPC) cluster using 
+
+GPU nodes and Dorado’s defa ult model for WGS .
+
+# Construction of rDNA -augmented reference genomes 
+
+For human samples, the GRCh38 reference genome and the human rDNA reference sequence 
+
+KY962518.1 were used. A modified GRCh38 reference was generated by appending the 
+
+complete rDNA repeat sequence as an additional chromosome. To minimise misalignment to 
+
+par tial rDNA -like regions elsewhere in the genome, four highly homologous loci on 
+
+chromosome 21 (>99% identity to the rDNA unit) were hard -masked, following Fan et al. 
+
+(2022) . To evaluate the effect of tandem repeat context on read alignment, additional 
+
+reference genomes containing 1 -10 concatenated rDNA copies (rDNA×N) were constructed .
+
+These augmented references provide additional mapping space for ultra -long reads spanning 
+
+multiple consecutive rDNA units, allowing the impact of reference repeat number on 
+
+alignment behaviour and CN estimation to be systematically assessed. 
+
+For mouse samples, the GRCm39 reference genome and the mouse rDNA reference 
+
+BK000964.3 were used. All reference genomes were indexed using minimap2 with the -d
+
+option. Coordinates for rDNA subregions (5′/3′ ETS, 18S, 5.8S, 28S rRNA, ITS1/2, and IGS) for 
+
+both human and mouse references are provided in Supplementary Table 1 and 2, respectively .
+
+Because the mouse rDNA reference is annotated at the 3′ end of the repeat unit , the mouse 
+
+sequence was rotated to position the promoter region at the start of the reference for 
+
+consistency with the human rDNA reference organisation. As for human reference , mouse 
+
+augmented reference genomes containing 1 -10 concatenated rDNA repeats were generated 
+
+to assess alignment behaviour across different tandem repeat context. 
+
+# Read alignment and filtering 
+
+Basecalled reads in unaligned modBAM format were converted to FASTQ using samtools fastq ,
+
+retaining modification tags with parameters: -T “MM,ML” , and aligned with minimap2 (v2.28) 
+
+to the appropriate rDNA -augmented reference genome (human or mouse). Alignments were 
+
+performed using the parameters: ax map -ont --secondary=no -Y -y. Aligned reads were sorted 
+
+and indexed using samtools (v1.22) . Reads mapping exclusively to the rDNA chromosome 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+were isolated for the downstream coverage quantification using samtools view. Equivalent 
+
+commands were used for mouse samples with the corresponding rDNA reference. 
+
+# Construction of single copy gene (SCG) sets 
+
+Human SCG panels 
+
+To generate reference panels of putative SCGs for use as background coverage controls, the 
+
+GENCODE primary gene annotation (GRCh38.p14) and the Catalogue of Somatic Mutations In 
+
+Cancer ( COSMIC ) cancer gene set were first obtained . Genes listed in COSMIC were excluded 
+
+to avoid regions known to undergo recurrent somatic alterations. We further removed genes 
+
+shorter than 300 bp to minimise coverage instability. 
+
+To reduce ambiguity arising from paralogous or partially duplicated loci, each candidate gene 
+
+was aligned against the full gene set using BLAST. Genes with significant sequence similarity 
+
+to any other gene (E -value < 1×10⁻⁶) were removed. This E -value thre shold ensures that only 
+
+genes with high -confidence unique sequence content are retained. We then further refined 
+
+the panel by re -running BLAST with increasing word -size parameters (100, 500, 1000, 1500, 
+
+and 2000 bp). Larger word sizes require longer exact -match seeds and therefore preferentially 
+
+eliminate genes with weaker or fragmented homology, allowing us to progressively filter out 
+
+loci that migh t otherwise introduce ambiguous mapping. These filtering steps then produced 
+
+three preliminary SCG panels corresponding to word -size thresholds (100, 1500, and 2000 bp). 
+
+Genes located on the sex chromosomes were excluded to restrict the panels to loci with 
+
+consistent diploid dosage across individuals regardless of sex. 
+
+To further improve coverage stability, we applied an additional round of filtering to remove 
+
+genes likely to be affected by mapping artefacts or repetitive content. First, intronless genes ,
+
+i.e. single -exon genes were excluded, as exploratory analyses revealed that these loci 
+
+frequently exhibited highly variable coverage across samples. Second, using RepeatMasker 
+
+annotations, we removed genes overlapping annotated repetitive elements, except for simple 
+
+repeats and low -complexity r epeats , which are less likely to influence coverage estimates. 
+
+These filtering steps yielded three progressively refined SCG panels that differed in the 
+
+number of retained genes: 17 4 genes in SCG -1, 37 3 genes in SCG -2, and 5 14 genes in SCG -3.
+
+Despite reductions in panel size, the mean and median coverage across genes remained highly 
+
+consistent between versions, while the distribution of gene -level coverage became markedly 
+
+less variable following removal of intronless and repeat -associated loc i (add results to Suppl?) .
+
+This increased stability provided greater confidence in using these SCG panels as a robust 
+
+background reference for rDNA CN estimation. 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+Mouse SCG panels 
+
+Mouse SCG panels were constructed using an analogous workflow. Human COSMIC genes 
+
+were first mapped to mouse orthologues to exclude COSMIC -associated loci from the mouse 
+
+gene set. Following BLAST filtering using word sizes of 1000, 1500, and 2000 bp, intro nless 
+
+genes and repeat -associated loci were removed. This resulted in 44 genes (SCG -1), 141 genes 
+
+(SCG -2), and 196 genes (SCG -3). Given the limited size of SCG -1 and the similar performance 
+
+of SCG -2 and SCG -3, a single mouse SCG panel (mSCG, 141 genes) was retai ned for 
+
+downstream analyses. 
+
+# Mean -based coverage estimation of rDNA 
+
+Coverage across the full 45S rDNA transcription unit (5′ETS -28S) was computed using bedtools 
+
+coverage, with regions defined by an rDNA BED annotation corresponding to the selected 
+
+rDNA×N reference. For references containing multiple concatenated rDNA copies, coverage 
+
+was calculated independently for the 45S region of each individual rDNA unit, and coverage 
+
+values were summed to obtain the total rDNA coverage. This approach prevents dilution of 
+
+covera ge estimates caused by increasing the number of rDNA units in the reference and 
+
+ensures that CN estimation is not biased by the selected rDNA reference configuration. For 
+
+background normalisation, coverage across SCG panels (SCG -1, SCG -2, SCG -3 for human; 
+
+mSCG for mouse) was calculated using samtools depth . M ean SCG coverage was calculated as 
+
+the total depth divided by the number of genes in the SCG set . rDNA CN estimates were 
+
+computed for each SCG version as: 
+
+𝑟𝐷𝑁𝐴 𝑐𝑜𝑝𝑦 𝑛𝑢𝑚𝑏𝑒𝑟 = 𝑆𝑢𝑚𝑚𝑒𝑑 𝑟𝐷𝑁𝐴 𝑐𝑜𝑣𝑒𝑟𝑎𝑔𝑒 
+
+𝑀𝑒𝑎𝑛 𝑆𝐶𝐺 𝑐𝑜𝑣𝑒𝑟𝑎𝑔𝑒 
+
+# Simulated reads 
+
+To benchmark rDNA CN under controlled conditions, Nanopore reads were simulated using 
+
+Badread (Wick, 2019) . Badread generates synthetic reads by fragmenting reference DNA, 
+
+ligating adapters, and introducing substitutions, insertions, deletions, and low -complexity 
+
+artifacts according to their empirically derived error models. 
+
+The simulation reference genome was derived from the human GRCh38 assembly and 
+
+included autosomal chromosomes 1 -22 only, as all SCGs used for CN normalization are 
+
+located on autosomes. As in the alignment step for real sequencing data, genomic regions 
+
+with high sequence similarity to the rDNA reference were masked to minimise ambiguous 
+
+read alignment (Fan et al., 2022) .
+
+To model different rDNA CN scenarios , the complete human reference rDNA sequence 
+
+(KY962518.1, ~44 kb) was appended to the reference genome as a separate contig. Simulated 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+genomes with defined rDNA CN s were generated by concatenating multiple rDNA units, 
+
+resulting in references containing 100 or 300 rDNA copies, respectively. 
+
+Nanopore reads were simulated from each reference genome using the “pretty good” 
+
+Badread preset, with a target mean genomic coverage of 40 x, calculated based on the total 
+
+size of the reference genome including the rDNA insert. Default Badread parameters were 
+
+used unless otherwise specified like below .
+
+To ensure that simulated datasets closely reflected empirical Nanopore WGS characteristics, 
+
+read length distributions were configured to recapitulate using two PromethION WGS runs of 
+
+the HG002 sample, which exhibited a bimodal read length profile. For each rDNA CN scenario 
+
+(100 and 300 copies), t wo independent simulations were performed to capture the bimodal 
+
+read -length characteristics observed in empirical Nanopore data. For the short -read length 
+
+distribution , a mean fragment length of 900 bp and a standard deviation of 100 bp were used. 
+
+For the long -read length distribution , a mean fragment length of 20 kb and a standard 
+
+deviation of 10 kb were set. Reads from these two simulations for each scenario were then 
+
+combined to form the final benchmarking datasets, thereby reproducing the bimodal read -
+
+length distribution observed in HG002 sequencing runs. 
+
+Because simulated reads do not contain base -modification information, alignments were 
+
+performed directly from FASTQ files rather than modBAM files. Apart from this difference, all 
+
+downstream processing steps , ii ncluding alignment to rDNA -augmented references, filtering 
+
+of primary alignments, and rDNA CN estimation using both mean - and mode -based coverage 
+
+approaches , were identical to those applied to real Nanopore sequencing data used later .
+
+# Genome in a Bottle (GIAB) trio samples 
+
+For each individual, genomic DNA was sequenced on two independent Oxford Nanopore 
+
+PromethION R10.4.1 flow cells (FLO -PRO114M) using the Ligation Sequencing Kit V14 
+
+chemistry (SQK -LSK114) according to standard ONT protocols. These datasets were used as 
+
+technical replicates to assess reproducibility of rDNA CN estimation a nd methylation profiling. 
+
+Full dataset descriptions, sample metadata, and sequencing summaries are provided within 
+
+the corresponding S3 dataset resources. 
+
+In addition, we generated an in -house WGS dataset for HG002 using the same PromethION 
+
+FLO -PRO114M flow -cell chemistry and SQK -LSK114 library preparation protocol. This dataset 
+
+was processed alongside the publicly available GIAB datasets and included as an additional 
+
+technical replicate for benchm arking reproducibility. 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+# Mouse ESC samples 
+
+High -molecular -weight (HMW) genomic DNA samples were prepared at Monash University. 
+
+WT and Atrx -KO mouse ESCs have been previously described, including their derivation and 
+
+culture conditions, by Udugama et al. (2018) . HMW genomic DNA was extracted from WT and 
+
+Atrx KO ESCs using the Monarch® HMW DNA Extraction Kit (New England Biolabs), following 
+
+the manufacturer’s instructions with conditions optimi sed to preserve long DNA fragments. 
+
+Cells were harvested at similar densities to minimi se confounding effects of cell state on DNA 
+
+quality, and DNA preparations were assessed for concentration, purity, and fragment size 
+
+before library preparation. 
+
+DNA was then sheared using a Megaruptor system, followed by barcoded Nanopore library 
+
+preparation using the Oxford Nanopore Native Barcoding Kit ( SQK -NBD114 -24 ). WT and KO 
+
+samples were multiplexed and sequenced together on a single Oxford Nanopore PromethION 
+
+R10.4.1 flow cell (FLO -PRO114M) . Flow -cell washes and reloads were performed where 
+
+possible during sequencing to maximise data yield. 
+
+# Eμ-Myc mouse lymphoma samples 
+
+All animal experiments were conducted in compliance with the ethics protocol approved by 
+
+the Australian National University’s Animal Experimentation Ethics Committee project 
+
+A2018/46 . A heterozygous E μ-Myc colony was maintained by mating transgenic positive males 
+
+of C57BL/6J background with wild -type C57BL/6J females. Experimental mice were sacrificed 
+
+within the appropriate age range. Wild -type mice aged 4 -10 weeks and transgenic positive 
+
+mice aged 10 -25 we eks exhibiting clear signs of lymphoma, such as enlarged lymph nodes, 
+
+rapid breathing, hunching, slow movement and ruffled fur, were utilised for sample collection. 
+
+Lymphomas arising in this model can originate from either IgM -negative (IgM -) or IgM -positi ve 
+
+(IgM+) clone. To reduce potential confounding variability, we used more prevalent pre -B cell 
+
+population (B220+/IgM -) in this study. Pre -B cells were isolated from bone marrow and sorted 
+
+via Fluorescence -Activated Cell Sorting (FACS). Genomic DNA was extracted from 10 6 sorted 
+
+pre -B cells per samples using the Monarch HMW DNA Extraction Kit for Cells & Blood (NEB 
+
+Cat. No. #T3050) according to the manufacturer’s instructions. 
+
+# Human lymphoblast oid cell lines 
+
+Both human lymphoblastoid cell lines, HG00326 and HG03069 were purchased form Coriell 
+
+Institute for Medical Research. Both cell lines were maintained in RPMI -1640 supplemented 
+
+with 15 % Fetal Bovine Serum (FBS) and GlutaMax (Thermo) . Prior to DNA extraction c ells 
+
+were seeded at 0.6 x10 6 cells per ml in 3 ml complete media in a 6 well plate and incubate 
+
+overnight. Genomic DNA was extracted from 2 x10 6cells per samples using either the 
+
+Monarch HMW DNA Extraction Kit for Cells & Blood (NEB Cat. No. #T3050) according to the 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+manufacturer’s instructions for long read sequencing or the Macherey -Nagel N ucleo Spin 
+
+Tissue DNA, RNA and protein isolation kit (MN cat. No. 740952.25) for q uantitative 
+
+polymerase chain reaction (q PCR ) analysis . DNA concentration s were measured using 
+
+the Nanodrop .
+
+# Copy number qPCR 
+
+QPCR analysis was performed using 20ng of gDNA per reaction and was performed on the 
+
+StepOne Plus Real -Time PCR System (Applied Biosystems) using a SYBRGreen Fast Master Mix 
+
+(Applied Biosystems) using the following parameter: denaturation for 10 s at 95 °C ,
+
+amplification for 30 s at 61 °C for a total of 40 cycles . Primers pai rs (Merck) specific for the 
+
+28S, 18S, IGS rDNA region and single copy gene s p53 and RPPH1 (primer sequences see Table 
+
+1) were designed and for each replicate relative 28S, 18S and IGS Ct values were normalised 
+
+to single copy gene p53 or RPPH1 Ct values (delta CT) and f old change over HG00326 was 
+
+calculated via the delta delta Ct method. Dissociation curve s for each sample w ere analysed 
+
+to control for u nspecific amplification .
+
+Primer  Sequence (5' - 3') 
+
+h_18S_for  AGTTATGGTTCCTTTGGTCGCT 
+
+h_18S_rev  GACCGGGTTGGTTTTGATCTGA 
+
+h_28S_for  GAAGCAGAATTCACCAAGCGTT 
+
+h_28S_rev  GCCAAGCACATACACCAAATGT 
+
+h_IGS_for  TCGCAATATCGTGTTCCCGT 
+
+h_IGS_rev  GGCATCCTCCGAAAGAGGTT 
+
+h_p53_for  TGTCCTTCCTGGAGCGATCT 
+
+h_p53_rev  CAAACCCCTGGTTTAGCACTTC 
+
+h_RPPH1_for  AGCTTGGAACAGACTCACGG 
+
+h_RPPH1_rev  AATGGGCGGAGGAGAGTAGT 
+
+HMW genomic DNA libraries were prepared using the Oxford Nanopore ultra -long DNA 
+
+sequencing kit (SQK -ULK114) and sequenced on Oxford Nanopore PromethION R10.4.1 flow 
+
+cells (FLO -PRO114M). The WT sample was sequenced on a single PromethION flow cell. The 
+
+MAL sample was initially sequenced on one flow cell , however, reduced pore performance 
+
+and library overloading were observed during sequencing. Therefore, the same MAL library 
+
+was reloaded onto a second flow cell at approximately half of the original loading 
+
+concentration. Sequencing data from both MAL runs were subsequently combined for 
+
+downstream analyses. 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+# 1000 Genomes Project long -read (1KGP -ONT) samples 
+
+The 1KGP -ONT s amples analysed in this study were prepared using ONT sequencing kit (SQK -
+
+LSK114 ) and sequenced on Oxford Nanopore PromethION R10.4.1 flow cells (FLO -PRO114M) .
+
+# Data Availability 
+
+Oxford Nanopore WGS data for the GIAB Ashkenazi trio (HG002, HG003, HG004) and Han 
+
+Chinese trio (HG005, HG006, HG007) were obtained from publicly available ONT reference 
+
+datasets (GIAB 2023.05 and 2025.01 releases). Dataset descriptions are available at: 
+
+https://epi2me.nanoporetech.com/giab -2023.05/  and 
+
+https://epi2me.nanoporetech.com/giab -2025.01/ . Sequencing data are hosted in the AWS S3 
+
+repositories: s3://ont -open -data/giab_2023.05/ and s3://ont -open -data/giab_2025.01/. 
+
+Oxford Nanopore WGS datasets for 1KGP samples were generated by the 1KGP Long -Read 
+
+Sequencing Consortium, led by Danny Miller and Evan Eichler, using high -coverage 
+
+PromethION sequencing of high -molecular -weight DNA derived from Coriell 1KGP cell lines. 
+
+Additional details reg arding the consortium and sequencing effort are available through the 
+
+consortium resource and associated publication by Gustafson et al. (2024) . The datasets 
+
+analysed in this study were obtained through the ONT -1KGP resource hosted at the Australian 
+
+National Computational Infrastructure (NCI), Australia, under NCI project de95 
+
+(https://geonetwork.nci.org.au/geonetwork/srv/eng/catalog.search#/metadata/f6758_587 
+
+1_3955_7179 ). This resource was established through collaboration between Zaka Yuen and 
+
+Hasindu Gamaarachchi to provide Australian researchers with local HPC -scale access to long -
+
+read population sequencing datasets, including raw POD5/BLOW5 signal data and processed 
+
+Nanopore sequencing outputs. 
+
+Oxford Nanopore WGS d ata sets generated in this work is available at NCBI Sequence Read 
+
+Archive ( SRA ) under BioP roject accession PRJNA1473546 . These include GIAB HG002 sample ,
+
+WT and Atrx -KO mESC s, and E μ-Myc lymphoma models. 
+
+RICO source code and documentation are available at : https://github.com/comprna/RICO .
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+# Acknowledgements 
+
+We thank Hasindu Gamaarachchi (UNSW Sydney ) for collaborating in the preparation of the 
+
+1KGP samples at the National Computing Infrastructure (NCI). 
+
+This research was supported by the Australian Research Council (ARC) Discovery Project grants 
+
+DP220101352, DP250100070 , and DP250103133; and by the National Health and Medical 
+
+Research Council (NHMRC) Ideas Grant 2018833. This research was also indirectly supported 
+
+by the Australian Government’s National Collaborative Research Infrastructure Strategy 
+
+(NCRIS) through access to computational resources provided by the National Computational 
+
+Infrastructure (NCI) through the Nati onal Computational Merit Allocation Scheme (NCMAS) 
+
+and the ANU Merit Allocation Scheme (ANUMAS). The funding bodies had no role in study 
+
+design, data collection, or data analysis. 
+
+# References 
+
+Betto, R. M., Diamante, L., Perrera, V., Audano, M., Rapelli, S., Lauria, A., . . . Martello, G. 
+
+(2021). Metabolic control of DNA methylation in naive pluripotent cells. Nature genetics, 
+
+53 (2), 215 -229. doi:10.1038/s41588 -020 -00770 -2
+
+Britton -Davidian, J., Cazaux, B., & Catalan, J. (2012). Chromosomal dynamics of nucleolar 
+
+organizer regions (NORs) in the house mouse: micro -evolutionary insights. Heredity 
+
+(Edinb), 108 (1), 68 -74. doi:10.1038/hdy.2011.105 
+
+Diesch, J., Bywater, M. J., Sanij, E., Cameron, D. P., Schierding, W., Brajanovski, N., . . . 
+
+Poortinga, G. (2019). Changes in long -range rDNA -genomic interactions associate with 
+
+altered RNA polymerase II gene programs during malignant transformation. Commun Biol, 
+
+2, 39. doi:10.1038/s42003 -019 -0284 -y
+
+Fan, W. , Eklund, E., Sherman, R. M., Liu, H., Pitts, S., Ford, B., . . . Laiho, M. (2022). Widespread 
+
+genetic heterogeneity of human ribosomal RNA genes. RNA, 28 (4), 478 -492. 
+
+Gagnon -Kugler, T., Langlois, F., Stefanovsky, V., Lessard, F., & Moss, T. (2009). Loss of human 
+
+ribosomal gene CpG methylation enhances cryptic RNA polymerase II transcription and 
+
+disrupts ribosomal RNA processing. Molecular cell, 35 (4), 414 -425. 
+
+Gál, Z., Boukoura, S., Oxe, K. C., Badawi, S., Nieto, B., Korsholm, L. M., . . . Dahl, C. (20 24). 
+
+Hyper -recombination in ribosomal DNA is driven by long -range resection -independent 
+
+RAD51 accumulation. Nature Communications, 15 (1), 7797. 
+
+Gibbons, J. G., Branco, A. T., Yu, S., & Lemos, B. (2014). Ribosomal DNA copy number is coupled 
+
+with gene expression variation and mitochondrial abundance in humans. Nature 
+
+Communications, 5 (1), 4850. doi:10.1038/ncomms5850 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+Gibbons, R. J., McDowell, T. L., Raman, S., O'Rourke, D. M., Garrick, D., Ayyub, H., & Higgs, D. 
+
+R. (2000). Mutations in ATRX, encoding a SWI /SNF -like protein, cause diverse changes in 
+
+the pattern of DNA methylation. Nature genetics, 24 (4), 368 -371. doi:10.1038/74191 
+
+Gustafson, J. A., Gibson, S. B., Damaraju, N., Zalusky, M. P. G., Hoekzema, K., Twesigomwe, D., 
+
+. . . Miller, D. E. (2024). High -coverage nanopore sequencing of samples from the 1000 
+
+Genomes Project to build a comprehensive catalog of human genetic variati on. Genome 
+
+Res, 34 (11), 2061 -2073. doi:10.1101/gr.279273.124 
+
+Hall, A. N., Turner, T. N., & Queitsch, C. (2021). Thousands of hi gh -quality sequencing samples 
+
+fail to show meaningful correlation between 5S and 45S ribosomal DNA arrays in humans. 
+
+Scientific reports, 11 (1), 449. doi:10.1038/s41598 -020 -80049 -y
+
+Hallgren, J., Pietrzak, M., Rempala, G., Nelson, P. T., & Hetman, M. (2014). Neurodegeneration -
+
+associated instability of ribosomal DNA. Biochimica et Biophysica Acta (BBA) -Molecular 
+
+Basis of Disease, 1842 (6), 860 -868. 
+
+Hein, N., Hannan, K. M., George, A. J., Sanij, E., & Hannan, R. D. (2013). The nucleolus: an 
+
+emerging target fo r cancer therapy. Trends in molecular medicine, 19 (11), 643 -654. 
+
+Henderson, A., Warburton, D., & Atwood, K. (1972). Location of ribosomal DNA in the human 
+
+chromosome complement. Proceedings of the National Academy of Sciences, 69 (11), 
+
+3394 -3398. 
+
+Hori, Y., Engel, C., & Kobayashi, T. (2023). Regulation of ribosomal RNA gene copy number, 
+
+transcription and nucleolus organization in eukaryotes. Nature Reviews Molecular Cell 
+
+Biology, 24 (6), 414 -429. 
+
+Hori, Y., Shimamoto, A., & Kobayashi, T. (2021). The human ribosomal DNA array is composed 
+
+of highly homogenized tandem clusters. Genome research, 31 (11), 1971 -1982. 
+
+Lou, J., Yu, S., Feng, L., Guo, X., Wang, M., Branco, A. T., . . . Lemos, B. (2021). Environmentally 
+
+induced ribosomal DNA (rDNA) instability in human cells and populations exposed to 
+
+hexavalent chromium [Cr (VI)]. Environment International, 153 , 106525. 
+
+doi: https://doi.org/10.1016/j.envint.2021.106525 
+
+McStay, B. (2016). Nucleolar organizer regions: genomic ‘dark matter’requiring illumination. 
+
+Genes & development, 30 (14), 1598 -1610. 
+
+McStay, B., & Grummt, I. (2008). The epigenetics of rRNA genes: from molecular to 
+
+chromosome biology. Annual review of cell and developmental biology, 24 , 131 -157. 
+
+Moss, T., Langlois, F., Gagnon -Kugler, T., & Stefanovsky, V. (2007). A housekeeper with power 
+
+of attorney: the rRNA genes in ribosome biogenesis. Cellular and Molecular Life Sciences, 
+
+64 (1), 29 -49. doi:10.1007/s00018 -006 -6278 -1
+
+Nurk, S., Koren, S., Rhie, A., Rautiainen, M., Bzikadze, A. V., Mikheenko, A., . . . Gershman, A. 
+
+(2022). The complete sequence of a human genome. Science, 376 (6588), 44 -53. 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 6, 2026. ;https://doi.org/10.64898/2026.07.05.736662 doi: bioRxiv preprint
+
+Panov, K. I., Hannan, K., Hannan, R. D., & Hein, N. (2021). The Ribosomal Gene Loci -The Power 
+
+behind the Throne. Genes (Basel), 12 (5). doi:10.3390/genes12050763 
+
+Rodriguez -Algarra, F., Evans, D. M., & Rakyan, V. K. (2024). Ribosomal DNA copy number 
+
+variation associates with hematological profiles and renal function in the UK Biobank. Cell 
+
+Genomics, 4 (6). 
+
+Rodriguez -Algarra, F., Seaborne, R. A. E., Danson, A. F., Y ildizoglu, S., Yoshikawa, H., Law, P. P., 
+
+. . . Rakyan, V. K. (2022). Genetic variation at mouse and human ribosomal DNA influences 
+
+associated epigenetic states. Genome Biol, 23 (1), 54. doi:10.1186/s13059 -022 -02617 -x
+
+Rodriguez-Algarra, F., Whittaker, E., del Castillo del Rio, S., & Rakyan, V. K. (2025). Assessing 
+
+human ribosomal DNA variation and its association with phenotypic outcomes. Bioessays, 
+
+47 (4), e202400232. 
+
+Sharma, D., Denmat, S. H. -L., Matzke, N. J., Hannan, K., Hannan, R. D., O'Sullivan, J. M ., & 
+
+Ganley, A. R. D. (2022). A new method for determining ribosomal DNA copy number 
+
+shows differences between Saccharomyces cerevisiae populations. Genomics, 114 (4), 
+
+110430. doi: https://doi.org/10.1016/j.ygeno.2022.110430 
+
+Udugama, M., Sanij, E., Voon, H. P., Son, J., Hii, L., Henson, J. D., . . . Pearson, R. B. (2018). 
+
+Ribosomal DNA copy loss and repeat instability in ATRX -mutated cancers. Proceedings of 
+
+the National Academy of Sciences, 115 (18), 4737 -4742. 
+
+Valori, V., Tus, K., Laukaitis, C., Harris, D. T., LeBeau, L., & Maggert, K. A. (2020). Human rDNA 
+
+copy number is unstable in metastatic breast cancers. Epigenetics, 15 (1 -2), 85 -106. 
+
+doi:10.1080/15592294.2019.1649930 
+
+Wick, R. R. (2019). Badread: simulation of error -prone long reads. Journal of Open Source 
+
+Software, 4 (36), 1316. 
+
+Xu, H., Shi, L., Feng, L., Wu, F., Chen, J., Qin, Y., . . . Lou, J. (2023). Hexavalent chromium [Cr(VI)] -
+
+induced ribosomal DNA copy number variation and DNA damage responses and their 
+
+associations with nucleolar protein HRAS in humans and cells. Environmental Pollution, 
+
+331 , 121816. doi: https://doi.org/10.1016/j.envpol.2023.121816 
+
+Zarrei, M., MacDonald, J. R., Merico, D., & Scherer, S. W. (2015). A copy number variation map 
+
+of the human genome. Nature Reviews Genetics, 16 (3), 172 -183.

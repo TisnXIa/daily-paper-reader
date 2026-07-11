@@ -1,0 +1,266 @@
+Title: Metagenomic contextualization of proteins with state space models
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.07.07.736993v1.full.pdf
+
+Number of Pages: 12
+
+Markdown Content:
+# Metagenomic contextualization of proteins with state space models 
+
+Nima Azbijari †⋆ Jacob H. Wynne ‡ Andrew R. Thurber ‡ Maude David †
+
+† Oregon State University ‡ UC Santa Barbara 
+
+⋆ Corresponding author: azbijarn@oregonstate.edu 
+
+## Abstract 
+
+Since the early adoption of metagenomics (the culture-free sequencing of microbial community genomes) in 2011, sequence data has increased over 500-fold across ecosystems. This surge in data has outpaced reliable taxonomic and functional annotation, with over half of sequences lacking confident functional assignment. These unknown sequences limit our understanding of microbial processes central to planetary health and human health. Recent advances in genomic language mod-eling have made progress in the interpretation of metagenomics datasets. Most state-of-the-art models rely on transformer architectures, which limit the maximum sequence length and therefore capture only a fraction of assembled metagenomic sequences due to the quadratic scaling of attention. This prevents training and inference on sequences with broad context, including multiple coding and non-coding regions. To overcome this limitation, we propose leveraging new model architectures that scale linearly with sequence length, making them more suitable for modeling longer metagenomic sequences. Here, we introduce Nammu, a mixed-modality Mamba-based foundation model with 167M parameters trained on the OpenMetaGenomic (OMG) corpus. Nammu is a bidirectional encoder trained with a 20K context length using a curriculum strategy, first on 64M protein sequences and then on 32M mixed-modality metagenomic contigs. We compared Nammu to gLM2, a mixed-modality transformer also trained on OMG using 37% more tokens, using taxonomy inference on a marine dataset from the Critical Assess-ment of Metagenome Interpretation (CAMI). Nammu outperforms gLM2 at every taxonomic level. We further assessed function via KEGG Orthology prediction in deep-sea metagenome-assembled genomes, where Nammu outperforms gLM2 (150M). These results demonstrate improved performance. 
+
+## 1 Introduction 
+
+Rapid declines in sequencing costs have driven an unprecedented expansion of biological sequence datasets spanning a broad diversity of organisms. [ 6, 11 , 28]. Metagenomics is the culture-free sequencing of microbial community genomes, enabling the study of heterogeneous, uncultured microbial communities where a single sample can contain sequences from thousands of species [ 42 ]. From these shotgun sequencing approaches—initially dominated by short reads and now increasingly incorporating long reads—sequences are assembled into contigs , which reconstruct longer genomic fragments, enable recovery of complete or partial genes, and provide the genomic context needed to identify novel functions and link genes to organisms [ 33]. These contigs provide a rich source of sequence data well suited for unsupervised learning, as proteins are embedded within their native genomic context rather than treated in isolation. Assembled sequences can span tens of thousands of base pairs, capturing neighboring genes and regulatory elements. This context—such as synteny, gene fusion, and phylogenetic profiles—offers informative signals for protein function prediction 
+
+> Preprint.
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.07.736993 doi: bioRxiv preprint
+
+beyond sequence similarity alone. [ 18 , 35 , 38]. These contextual signals provide a foundation for learning richer sequence representations in modeling frameworks, enabling more effective application to downstream biological tasks. In recent years, deep learning has emerged as a promising approach in metagenomic analysis, im-proving functional annotation, taxonomic classification, and structure prediction beyond traditional similarity-based methods. Protein language models such as [ 23 , 32 , 24 , 2] for example are trained on large-scale protein sequence databases using self-supervised objectives, enabling them to learn representations that capture structural and functional properties, and have demonstrated strong perfor-mance in tasks such as functional annotation or structure prediction. In contrast to protein sequence models, genomic language models are trained directly on nucleotide sequences, enabling them to capture regulatory elements, gene organization, and non-coding regions, and have demonstrated strong performance across downstream tasks [ 36 , 31 , 3 , 30 ]. Despite these advances, most models remain unimodal, focusing on either protein or nucleotide representations independently rather than jointly modeling proteins together with their surrounding genomic context. Furthermore, most current deep learning protein language models process protein sequences indepen-dently, considering one open reading frame (ORF) (or coding region) at a time, without incorporating their broader genomic or environmental context. Yet, biological evidence shows that protein function is often shaped by broader context—such as gene neighborhood, operon structure, and co-occurrence patterns—suggesting that incorporating additional sequence context may improve functional infer-ence [ 27 ]. Importantly, the genomic context surrounding protein-coding sequences extends beyond genes themselves to include non-coding regions. As a result, protein function is influenced not only by sequence and neighboring genes, but also by the regulatory landscape in which it is embedded. Incorporating non-coding sequence context therefore provides complementary information that is not captured by protein-centric models alone. Capturing this extended context requires models capable of processing sequences much longer than those of individual proteins alone. Still, most existing genomic language models rely on transformer architectures, whose quadratic scaling with sequence length limits efficient modeling of long metagenomic contigs. This creates a major challenge for incorporating a broader genomic context, as many assembled sequences span tens of thousands of base pairs. Here, we propose Nammu, a state space model (SSM)–based framework designed to overcome these limitations by extending the effective context window while jointly modeling protein sequences and surrounding non-coding DNA within a unified framework. We hypothesize that state space models (SSMs) [ 13 , 25 , 14, 12 ] are well suited to capture the broader genomic context in which proteins are embedded. In particular, we leverage Mamba [ 12], a sequence-to-sequence architecture with linear-time complexity O(L), enabling efficient processing of long metagenomic sequences. We implement extensions that introduce bidirectionality [ 36 ] to further allow both modeling of upstream and downstream dependencies between genomic regions [ 12 ]. Together, these properties enable modeling of mixed-modality metagenomic contigs over substantially longer genomic contexts than is typically feasible with transformer-based approaches. 
+
+Related Work Protein language models such as ESM-2 [ 23 ] have demonstrated strong performance in learning representations that capture structural and functional properties from large-scale protein sequence databases. However, these models typically process protein sequences independently, without incorporating their broader genomic context. Biological evidence suggests that protein function is often influenced by surrounding context, including gene neighborhood, operon structure, regulatory elements, and co-occurrence patterns [ 27 , 18, 35 , 38 ]. These observations suggest that incorporating extended genomic context may improve functional inference. To address this limitation, recent work has explored modeling directly on metagenomic contigs, where nucleotide and protein sequences are combined to preserve their native genomic organization. gLM represented genes as words within contigs using pooled ESM-2 embeddings, enabling the capture of regulatory syntax and gene-gene relationships [ 19 ]. gLM2 extended this framework by modeling contigs directly at base-pair resolution using both coding and non-coding regions, strand information, and positional context to capture finer-grained contextual relationships [ 7]. At the time of this work, gLM2 remains the only mixed-modality genomic language model. Despite these advances, most genomic language models rely on transformer architectures [ 39], whose quadratic scaling with sequence length limits efficient modeling of long metagenomic contigs. As 2   
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.07.736993 doi: bioRxiv preprint Nammu Model Overview
+> Input Sequence
+> …
+> L=20k
+> (truncated)
+> Mamba Block
+> Mamba Block
+> Shared linear projections (In/Out)
+> Out projection In projection
+> Bimamba Block
+> In projection Out projection
+> Reverse stream
+> Forward stream
+> Output
+> Sum 18 Bimamba layers (Nammu)
+> …
+> Total Parameters:
+> 167M
+> Conceptual differences
+> Transformer architecture
+> Lack of mixed-modality
+> Transformer, protein only
+> ESM-2
+> Caduceous
+> gLM2
+> Pretraining strategy
+> Stage 1: Protein-only training Open MetaGenomic Corpus (OMG)
+> Nucleotide
+> Protein
+> Stage 2: Contextualized training
+> Nammu Nammu
+> 64M protein sequences
+> 15% MLM
+> 32M mixed-modality contigs (<20K)
+> 30% MLM
+> 270M contigs
+
+Figure 1: Nammu training pipeline. A two-stage pretraining strategy is applied to the Open MetaGe-nomic (OMG) corpus. Stage 1 consists of protein-only masked language modeling (MLM) to learn protein-level representations. Stage 2 introduces mixed-modality metagenomic contigs composed of nucleotide and protein sequences, enabling contextualized representation learning in which proteins are modeled within their surrounding genomic environment. a result, transformer-based approaches such as NTv2 [ 8] have demonstrated strong performance in genomic modeling, but remain constrained by shorter fixed context windows. Other models such as gLM2 typically also rely on fixed context windows (e.g., 4096 tokens), requiring long contigs to be partitioned into smaller segments and recombined post hoc. This restricts the ability to capture dependencies extending across full metagenomic contigs and limits the amount of genomic context that can be incorporated into a single representation. To address these limitations, alternative architectures have been proposed to better capture long-range dependencies, including state space models (SSMs) and hybrid approaches combining convolutions with attention [ 31 , 30 , 3, 37 , 40 ]. SSM-based models such as ProtMamba, LC-PLM, and Caduceus [37, 40, 36 ] demonstrate the potential of state space architectures for modeling long biological sequences, but remain focused on either protein-only or nucleotide-only representations. Here, Nammu extends SSM-based modeling to mixed-modality metagenomic contigs containing both nucleotide and amino acid sequences. Nammu employs a bidirectional BiMamba architecture inspired by prior bidirectional SSM formula-tions [ 36 ], but does not use a reverse complement module. Because the pre-training scheme combines coding and non-coding regions across modalities, reverse complement symmetry does not apply. Instead, strand orientation is represented explicitly through dedicated tokens identifying forward and reverse segments. Parameters are shared between the forward and reverse projection blocks. This framework introduces the following contributions: • We develop an efficient sequence model based on the Mamba architecture that scales linearly with sequence length, enabling the processing of substantially longer metagenomic contigs than transformer-based approaches. • We introduce a multimodal framework that jointly models protein sequences and surrounding non-coding DNA, capturing extended genomic context beyond protein-centric representa-tions. • We demonstrate that our model, Nammu, achieves improved or comparable performance to gLM2 using fewer training tokens, and enhances performance across benchmark tasks and metagenomic functional annotation when genomic context is incorporated. 3
+
+.CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.07.736993 doi: bioRxiv preprint 2 Methods 
+
+Biological sequence modeling has been dominated by transformer-based architectures [ 29 , 17 , 16 ,7, 23 ], despite their quadratic scaling with sequence length. In contrast, state space models provide linear-time alternatives that enable modeling over substantially longer contexts [ 37 , 36 ]. Here, we introduce Nammu, a Mamba-1–based sequence model for mixed-modality metagenomic inputs [ 12 ]. Nammu employed a BiMamba architecture [36] with shared projections across forward and reverse sequence directions, enabling efficient long-context modeling. Unlike prior genomic models that assume reverse-complement symmetry, Nammu was designed for inputs that interleave amino acid and nucleotide segments, enabling unified representation learning across heterogeneous biological modalities. 
+
+2.1 Data OpenMetaGenomic corpus The model was trained using the OpenMetaGenomic (OMG) corpus as the primary data source. For the initial pre-training phase on proteins, we use OMG_prot which is the protein-only subset of from the OMG dataset. This subset of proteins created by the authors consists of 207M total proteins and was constructed by clustering sequences at 50% identity and removing singleton clusters [ 7]. For contig-level training we use the full OMG corpus which in total consists of 271M contigs, spanning 3.3B coding sequences and 2.8B intergenic sequences [7]. 
+
+Diverse Genomic Embedding Benchmark In order to benchmark across a variety of biological tasks we used the Diverse Genomic Embedding Benchmark (DGEB) suite [ 41 ] to test and compare Nammu. DGEB provides broad coverage across biology, spanning 6 task types across 18 datasets which include protein function, properties, evolution, mutation effects, and DNA sequence classi-fication. It integrates both protein and DNA sequences, with some tasks covering both modalities to test how models perform across amino acids and nucleotides. The datasets are small, consisting of 10 3 to 10 4 examples per dataset. Critically, this benchmark focuses on evaluating models on biologically meaningful tasks beyond sequence similarity, such as remote homology and variant effects, but remains focused on individual proteins or genes rather than using contigs as input. 
+
+Critical Assessment for Metagenome Interpretation (CAMI) To evaluate Nammu’s performance on taxonomic classification of metagenomic contigs, we selected a representative marine sample from the Critical Assessment of Metagenomic Interpretation (CAMI) II challenge dataset, a community-driven benchmark for metagenomics methods, based on simulated metagenomic (MTG) reads generated from known reference genomes.[ 26 ]. We filtered contigs to include a length of 1Kbp or larger, and included only those classified to species, resulting in 102K unique contigs spanning 246 species, 177 genera, and 37 classes. For each contig, ORFs were predicted by Prodigal [ 20 ] and translated as amino acids. Contigs were then reassembled following the encoding scheme of the OMG corpus [ 7], where non-coding regions were represented as nucleotides, and protein regions were represented as amino acids. The dataset was randomly split into 80/20 train/test scheme for downstream classification tests. 
+
+Environmentally Sampled Deep-Sea Metagenomes To evaluate Nammu’s performance on func-tional tasks, we tested its proficiency at identifying distinct KEGG Orthologs (KOs) using environ-mental sequencing, in contrast to CAMI benchmark datasets, which are simulated from reference genomes For this task, we opted to use metagenome-assembled genomes (MAGs) from a highly complex, yet understudied environment: deep sea methane seeps [ 15 ]. Methane seeps represent unique microbial communities and function, given their chemical complexity. This results in a number of chemosynthetic and heterotrophic niches that remain poorly described with current methods. We used >3,000 MAGs generated by [ 15 ], spanning 16 methane seeps globally. From these MAGs, we predicted 6.2M open reading frames (ORFs) using Prodigal [ 20 ] and functionally annotated them using the tool DIAMOND [ 4] with the KEGG database [ 21 ], using a cutoff of 90 percent sequence identity and an e-value lower than 1 × 10 −5 to ensure highest confidence orthology predictions. This resulted in 67,172 ORFs that were functionally classified with a KO number, spanning 2,080 unique KOs. To test the performance of protein classification including context, contigs were reassembled following the OMG scheme where coding regions were represented as amino acids and non-coding regions were represented as nucleotides [7]. 4
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.07.736993 doi: bioRxiv preprint
+
+2.2 Overview of the Nammu architecture 
+
+The Nammu framework consists of 18 BiMamba blocks with shared linear projections between the forward and reverse streams (Figure 1). Each block processes the forward and reverse of the input and adds the results. The reverse is only done across the sequence dimension. The SSM module in each Mamba block models each coordinate in an embedding with its own state space. This allows each coordinate along the sequence to be modeled as a signal in parallel with all other coordinates before having the learned signals mixed through the output projection. 
+
+Sequence Embedding Model and Training We employed a curriculum learning strategy in which Nammu was first trained as a protein language model, then further pretrained on metagenomic contigs containing interleaved nucleotide and protein segments, extending prior staged bidirectional Mamba training approaches for protein sequence modeling [ 40]. All models were trained with a fixed maximum context length of 20K tokens, with longer contigs truncated to this length. This context size was selected based on the contig length distribution of the OMG dataset, in which more than 95% of contigs are shorter than 20Kbp. Longer context lengths were associated with increased computational cost and training time with minimal increase in dataset coverage. Nammu was first pretrained on 64M protein sequences using a masked language modeling objective with 15% random masking. In the second phase of pre-training on mixed-modality sequences, we increase the masking rate to 30%, following the same strategy as gLM2. Training was done in a self-supervised manner by masked language modeling (MLM) [ 10 ]. Given an input sequence consisting of proteins or DNA, along with strand orientation tokens as defined in [ 7], tokenization was performed at the resolution of the base pair, resulting in x = ( x1, x 2, . . . , x N ),where each xi was either an amino acid, nucleotide, or strand orientation token. This is the same tokenization scheme as gLM2. A random subset M ⊂ { 1, . . . , N } of token positions is masked. The model was trained to predict the original tokens at masked positions given the corrupted sequence ˜x,where masked tokens were replaced by a special [MASK] token. The MLM loss was defined as: 
+
+LMLM = − 1
+
+|M| 
+
+X
+
+> i∈M
+
+log Pθ (xi | ˜x) (1) where Pθ (xi | ˜x) was the probability assigned by the model with parameters θ to the true token xi at masked position i, conditioned on the full corrupted sequence ˜x. These sequences were processed by stacks of bidirectional mamba blocks and trained with the masked language modeling objective as defined in equation 1. 
+
+The BiMamba Block Each BiMamba block in Nammu is based on Mamba-1 [ 12 ] and processes the projected input through a convolution and non-linearity before the SSM, alongside a parallel gating branch. The in and out projections are shared for both directions, while the SSM parameters remain independent. This weight-tying scheme reduces parameter count while preserving full bidirectional context. This bidirectional formulation was introduced in Caduceus [36]. Protein pretraining was performed on 64M sequences from the 207M protein sequence OMG dataset (OMG_prot). Nammu was trained for 500K steps using AdamW with a batch size of 128 and a linear learning rate decay schedule. The model was then further pretrained on the OMG contig database for 250K steps using AdamW with a batch size of 128 and a cosine learning rate schedule ranging from 1 × 10 −3 to 1 × 10 −4 over 600K training steps, following gLM2. We stopped at 250K steps due to no improvement in the training loss. This stage used a masked language modeling objective with 30% random masking. All training was conducted on an NVIDIA GH200 system, with a total training time of approximately two months. Across both training stages, Nammu was trained on approximately 230B total tokens. The overall training scheme is as follows: • Tokenization is the same as gLM2 • Nammu is initially pre-trained on 64M protein sequences using masked language modeling with 15% masking rate. A linear learning rate decay is used. • Nammu is pre-trained for a second phase for 32M contigs using masked lanuage modeling with a 30% masking rate, observing contextualized proteins and intergenic segments of nucleotides. A cosine learning rate decay is used. 5
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.07.736993 doi: bioRxiv preprint
+
+2.3 Uni-modal benchmarking Diverse Genomic Embedding Benchmark We used the Diverse Genomic Embedding Benchmark (DGEB) suite [ 41] to evaluate Nammu on a broad range of non-contextualized unimodal biological tasks using protein or nucleotide datasets (Figure 2). DGEB evaluates model performance across diverse task categories, including classification, gene mining, evolutionary distance similarity, cluster-ing and retrieval, with an emphasis on sequence diversity and biological generalization [ 41 ]. While DGEB provides a comprehensive benchmark for evaluating unimodal representations, it does not include tasks jointly involving nucleotide and protein sequences or broader metagenomic contigs. For protein tasks, representative protein language models with similar parameter scales were selected for comparison, including ESM2-150M and gLM2-150M [ 23, 7]. For nucleotide tasks, representative genomic language models included gLM2-150M, Caduceus-PS, and NTv2-250M [36, 8]. 
+
+Environmentally Sampled Deep-Sea Metagenomes To benchmark unimodal protein classification performance independently of genomic context, protein sequences extracted from annotated ORFs were evaluated directly against representative protein language models. ESM-2 was selected as a primary comparison model due to its strong performance across DGEB protein tasks during unimodal benchmarking. This benchmark specifically evaluates the protein-level functional classification capabilities of Nammu without incorporating surrounding genomic context. 
+
+2.4 Multi-modal benchmarking Testing taxonomic capability in a simulated metagenomic dataset. We compared taxonomic performance between Nammu and gLM2 using a simulated metagenome from the CAMI II challenge, as gLM2 is currently the only other mixed-modality genomic language model available for direct comparison. For this task, each model generated training and test embeddings, and classification of test embeddings was determined through zero-shot transfer via kNN (10 neighbors and cosine similarity metric) and a ridge classifier from scikit-learn [ 34 , 1]. For contigs longer than its context window (4096 tokens), gLM2 classification was executed using a rolling window with a stride of 1024 positions. We then averaged the chunks together to aggregate the embeddings. We compared the performance of these approaches using Accuracy, Macro F1, Matthews Correlation Coefficient [ 5 ], Precision, and Recall. Performance metrics were calculated across taxonomic levels, including class, order, family, genus, and species to demonstrate performance as the task increases in granularity. To test the difference in performance of classifiers using long-context, we filtered to include contigs above 4,096 tokens resulting in 2,685 training and 672 test sequences spanning 45 species, 39 genera, and 17 classes. 
+
+Testing Functional Contextualization on Deep-Sea Metagenomes. We compared functional annotation proficiency between models using Kegg Orthologs predictions in deep sea sediment (see Dataset section, Environmentally Sampled Deep-Sea Metagenomes). Train and test datasets were split with an 80/20 scheme resulting in 53,737 and 13,435 train and test sequences respectively. KO classification was performed on contig embeddings using a zero-shot transfer kNN with cosine similarity and 10 neighbors, comparing Nammu to gLM2. Three context window schemes were carried out for gLM2 including no sliding window, as well as a sliding window with two stride lengths (1024, 2048). For the gLM schemes using a rolling window, embedding chunks were averaged. In addition to contextualized embeddings, we embedded and classified protein sequences only using kNN (single nearest neighbor). For this task, we compared the performance of mixed modality models (Nammu, gLM2) to a single-modality protein language model ESM2 [23] (150M parameters). 
+
+## 3 Results 
+
+3.1 Uni-modal benchmarking Diverse Genomic Embedding Benchmark. To evaluate Nammu under unimodal conditions without incorporating genomic context, we benchmarked its performance on DGEB using isolated protein and nucleotide sequences independently. For the DGEB uni-modal protein tasks we found that Nammu outperforms gLM2 on 8 out of 14 tasks, yet underperforms compared to ESM-2 (Figure 2 B). Nammu outperformed gLM2 across clustering, retrieval, and classification. ESM2 performed comparably, yet consistently higher on all protein tasks with the exception of RpoB 6
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.07.736993 doi: bioRxiv preprint MIBiG
+> Classification
+> 16S Bacterial
+> Phylogeny
+> 18S Eukaryotic
+> Phylogeny
+> E.coli RNA
+> Clustering
+> RpoB Bacterial
+> Phylogeny
+> 16S Archaeal
+> Phylogeny
+> RpoB Archaeal
+> Phylogeny
+> EC Classification
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> Primary metric score
+
+DGEB uni-modal DNA Tasks A) 
+
+> Nammu-C (Mid)
+> Nammu-C (Last)
+> gLM2-150M (Mid)
+> gLM2-150M (Last)
+> caduceus-ps (Mid)
+> caduceus-ps (Last)
+> NTv2-250M (Mid)
+> NTv2-250M (Last)
+> MopB Clustering
+> Cyano Operonic Pair
+> Vibrio Operonic Pair
+> Arch Retrieval
+> E.coli Operonic Pair
+> Euk Retrieval
+> MIBiG Classification
+> EC Classification
+> FeFeHydrogenase Phylogeny
+> BacArch BiGene
+> RpoB Archaeal Phylogeny
+> Convergent Enzymes
+> Classification
+> RpoB Bacterial Phylogeny
+> ModAC Paralogy BiGene
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> 0.7
+> 0.8
+> Primary metric score
+
+DGEB Uni-modal Protein Tasks 
+
+> Nammu-C (Mid)
+> Nammu-C (Last)
+> gLM2-150M (Mid)
+> gLM2-150M (Last)
+> esm2_t30_150M (Mid)
+> esm2_t30_150M (Last)
+
+B) Figure 2: Performance of Nammu middle and final layers on DGEB unimodal benchmarking tasks. (A) DNA tasks compared against gLM2, Caduceus-PS, and NTv2. (B) Protein tasks compared against gLM2 and ESM-2. Primary metrics follow [ 41 ]. Nammu outperformed gLM2 across several tasks, while specialized unimodal models achieved the strongest performance on modality-specific benchmarks, highlighting the tradeoff between unimodal specialization and broader contextual mixed-modality modeling. Bacterial phylogeny, compared to gLM2 and Nammu. Overall, models for the same layer considerd, performed within remarkably narrow margins within each protein task ranging within 10% of each other. For the DGEB DNA-specific tasks, we observed mixed results. Nammu outperformed gLM2 on the majority of the tasks and, in some cases, outperformed DNA-only models. However, dedicated DNA models, particularly NTv2, demonstrated especially strong performance (Figure 2 A). Nammu outperformed gLM2 in 6 of 8 DNA specific tasks ranging from 16S bacterial phylogeny, and the the minimum information about a biosynthetic gene cluster task (MiBiG classification), alongside four others. In contrast, gLM2 outperformed Nammu in 18S Eukaryotic phylogeny and RpoB Archaeal phylogeny. Caduceus showed more variability across tasks underperforming Nammu in 4 out of 8, while NTv2-250M significantly outperformed all other models in 3 tasks (MiBiG classification, RpoB Archaeal phylogeny, EC classification), While underperforming in others (16S bacterial phylogeny, RpoB bacterial phylogeny). Overall, Nammu outperformed gLM2 despite both models being trained on the same corpus, while using fewer training tokens (230B for Nammu versus 315B for gLM2) and a larger context length. In this specific benchmark setting, performance on some tasks remained 7
+
+.CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.07.736993 doi: bioRxiv preprint Table 1: Comparison of model embeddings with k-nearest neighbor classification on KEGG Orthology performance. Top: metagenomic contextualized proteins. Bottom: context-free embeddings (each model only sees the protein sequence). Nammu exhibits better performance across all measured metrics. Model MCC Macro F1 Macro Prec Macro Recall Top-1 Acc Top-5 Acc 
+
+Metagenomic context 
+
+Nammu 0.57 0.31 0.32 0.35 0.57 0.91 gLM2-150 NW 0.27 0.13 0.17 0.14 0.27 0.51 gLM2-150 (2048) 0.53 0.26 0.28 0.30 0.53 0.91 gLM2-150 (1024) 0.53 0.26 0.28 0.30 0.53 0.91 
+
+Context-free 
+
+Nammu 0.55 0.30 0.32 0.33 0.55 0.90 gLM2-150 0.51 0.25 0.28 0.29 0.51 0.88 ESM2-150 0.45 0.18 0.18 0.23 0.45 0.90 higher for specialized unimodal DNA or protein models, as limited contextual information was intentionally available. 
+
+Environmentally Sampled Deep-Sea Metagenomes. To further evaluate context-free unimodal protein classification on a real-world functional annotation task, we benchmarked Nammu on KEGG Ortholog (KO) prediction using protein sequences extracted from deep-sea metagenomic ORFs. ESM-2 was selected as the primary unimodal comparison model due to its strong overall performance on DGEB protein tasks, alongside gLM2. In this setting, Nammu outperformed both gLM2 (0.30 MCC vs. 0.25 MCC) and ESM-2 (0.30 MCC vs. 0.18 MCC) without incorporating surrounding genomic context (bottom table 1). Given the strong DGEB performance of ESM-2 (Figure 2), these results suggest that model performance can vary substantially across functional tasks. 
+
+3.2 Multi-modal benchmarking results Zero-shot transfer of contextualized embeddings for function prediction on Environmentally Sampled Deep-Sea Metagenomes. For mixed-modality KO prediction on metagenomic contigs, Nammu embeddings used with a kNN classifier outperformed gLM2 across top-1 accuracy, MCC, and F1 score (top table 1). Across all contextualization regimes tested, Nammu consistently maintained strong performance, whereas gLM2 performance was more sensitive to contextual windowing strategies, particularly the use of sliding windows (0.27 MCC without windowing vs. 0.53 MCC with sliding windows). 
+
+Zero-shot transfer on taxonomic classification We assessed gLM2 and Nammu embeddings of metagenomic sequences to predict taxonomy and multiple levels. Figure 3 illustrates embeddings from both models used to train a kNN classifier and a ridge regression classifier to predict taxonomy. Across the full set of sequences, we found that Nammu performs better for all taxonomic levels, ranging from a 84% increase in MCC at class (0.46 Ridge MCC for Nammu vs. 0.25 Ridge MCC for gLM2), where at species level we get 0.09 Ridge MCC for Nammu vs. 0.03 MCC gLM2. Both models perform better with longer sequences (>4096 bp). In this scenario, the performance gap between models is even larger, showing Nammu signicantly outperforming gLM2 (0.95 Ridge MCC Nammu vs. 0.8 Ridge MCC for gLM2 for class). Overall, Nammu outperforms gLM2 across sequence length and taxonomic classes in predicting taxonomy from mixed-modality contigs. 
+
+## 4 Discussion and Limitations 
+
+This research introduces Nammu, a Mamba-based foundation model for metagenomic sequences. Building on prior advances in bidirectional Mamba architectures and mixed-modality genomic language modeling, Nammu is, to our knowledge, the first state space–based genomic language model designed for long-context mixed nucleotide–protein metagenomic representation learning. The ability of Nammu to model substantially longer contexts, together with its performance on taxonomic 8       
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.07.736993 doi: bioRxiv preprint 0.0
+> 0.5
+> 1.0
+> kNN Score
+> Top-1 Accuracy Macro F1 MCC Precision Recall
+> Class
+> Order
+> Family
+> Genus
+> Species
+> 0.0
+> 0.5
+> 1.0
+> Ridge Score
+> Class
+> Order
+> Family
+> Genus
+> Species
+> Class
+> Order
+> Family
+> Genus
+> Species
+> Class
+> Order
+> Family
+> Genus
+> Species
+> Class
+> Order
+> Family
+> Genus
+> Species
+> Nammu gLM2 ≥4096 bp All lengths
+
+Figure 3: Performance on taxonomic levels for contigs of all lengths and greater than or equal to 4096 tokens in length. Nammu consistently performs better across all taxonomic levels. classification and contextualized functional annotation tasks, highlights the potential utility of state space models for metagenomic representation learning. More broadly, these results support the use of the OMG corpus as a large-scale pretraining resource for genomic language modeling and suggest that contextualizing proteins within longer genomic regions may improve learning of remote homologous relationships. While Table 1 demonstrates that Nammu performs competitively on protein-specific tasks, the DGEB and CAMI benchmarks suggest stronger performance gains on contig-level tasks that incorporate broader genomic context. This behavior may reflect the advantages of Mamba architectures on longer sequences and extended contextual representations [ 12 ]. Although extracting protein embeddings from contextualized contig representations appears promising, models such as ESM-2 learn highly effective local protein representations through self-attention, which may be sufficient for many protein-level tasks. However, in low sequence similarity regimes, a more comprehensive evaluation across functional tasks and sequence identities below 40% will be important to determine whether metagenomic contextualization improves characterization of microbial “dark matter.” Several limitations and future directions remain to be explored, including scaling across model size and context length, as well as evaluation of newer state space model variants [ 9, 22]. Although Nammu was trained with a 20K context window, prior work suggests that Mamba-based models may generalize to substantially longer sequences than those observed during training [ 12, 40 ]. Explicit evaluation on longer metagenomic contigs remains an important direction for future work. In addition to functional annotation and taxonomic classification, contextualized metagenomic representations may prove useful for other core microbiome tasks, including metagenomic bin refinement, particularly in low-coverage or highly complex microbial communities where fragmented assemblies limit current approaches. Together with recent work such as gLM2, these findings further motivate contextual metagenomic language modeling as a framework for biological discovery. Future applications of Nammu may span multiple areas of microbiology and enable broader use of mixed-modality contextual genomic representations across downstream biological tasks. Code is provided at https://anonymous.4open.science/r/nammu-133D/ .
+
+## References 
+
+[1] Guillaume Alain and Yoshua Bengio. Understanding intermediate layers using linear classifier probes. arXiv preprint arXiv:1610.01644 , 2016. [2] Nadav Brandes, Dan Ofer, Yam Peleg, Nadav Rappoport, and Michal Linial. Proteinbert: a universal deep-learning model of protein sequence and function. Bioinformatics , 38(8):2102– 2110, 2022. 9
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.07.736993 doi: bioRxiv preprint
+
+[3] Garyk Brixi, Matthew G Durrant, Jerome Ku, Mohsen Naghipourfar, Michael Poli, Gwanggyu Sun, Greg Brockman, Daniel Chang, Alison Fanton, Gabriel A Gonzalez, et al. Genome modelling and design across all domains of life with evo 2. Nature , pages 1–13, 2026. [4] Benjamin Buchfink, Chao Xie, and Daniel H Huson. Fast and sensitive protein alignment using diamond. Nature methods , 12(1):59–60, 2015. [5] Davide Chicco and Giuseppe Jurman. The advantages of the matthews correlation coefficient (mcc) over f1 score and accuracy in binary classification evaluation. BMC genomics , 21(1):6, 2020. [6] UniProt Consortium. Uniprot: a hub for protein information. Nucleic acids research ,43(D1):D204–D212, 2015. [7] Andre Cornman, Jacob West-Roberts, Antonio Pedro Camargo, Simon Roux, Martin Bera-cochea, Milot Mirdita, Sergey Ovchinnikov, and Yunha Hwang. The omg dataset: An open metagenomic corpus for mixed-modality genomic language modeling. bioRxiv , pages 2024–08, 2024. [8] Hugo Dalla-Torre, Liam Gonzalez, Javier Mendoza-Revilla, Nicolas Lopez Carranza, Adam Henryk Grzywaczewski, Francesco Oteri, Christian Dallago, Evan Trop, Bernardo P De Almeida, Hassan Sirelkhatim, et al. Nucleotide transformer: building and evaluating robust foundation models for human genomics. Nature Methods , 22(2):287–297, 2025. [9] Tri Dao and Albert Gu. Transformers are ssms: Generalized models and efficient algorithms through structured state space duality. arXiv preprint arXiv:2405.21060 , 2024. [10] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. Bert: Pre-training of deep bidirectional transformers for language understanding. In Proceedings of the 2019 conference of the North American chapter of the association for computational linguistics: human language technologies, volume 1 (long and short papers) , pages 4171–4186, 2019. [11] Igor V Grigoriev, Henrik Nordberg, Igor Shabalov, Andrea Aerts, Mike Cantor, David Goodstein, Alan Kuo, Simon Minovitsky, Roman Nikitin, Robin A Ohm, et al. The genome portal of the department of energy joint genome institute. Nucleic acids research , 40(D1):D26–D32, 2012. [12] Albert Gu and Tri Dao. Mamba: Linear-time sequence modeling with selective state spaces. In 
+
+First conference on language modeling , 2024. [13] Albert Gu, Karan Goel, Ankit Gupta, and Christopher Ré. On the parameterization and initialization of diagonal state space models. Advances in neural information processing systems , 35:35971–35983, 2022. [14] Albert Gu, Karan Goel, and Christopher Ré. Efficiently modeling long sequences with structured state spaces. arXiv preprint arXiv:2111.00396 , 2021. [15] Yingchun Han, Chuwen Zhang, Zhuoming Zhao, Yongyi Peng, Jing Liao, Qiuyun Jiang, Qing Liu, Zongze Shao, and Xiyang Dong. A comprehensive genomic catalog from global cold seeps. 
+
+Scientific Data , 10(1):596, 2023. [16] Thomas Hayes, Roshan Rao, Halil Akin, Nicholas J Sofroniew, Deniz Oktay, Zeming Lin, Robert Verkuil, Vincent Q Tran, Jonathan Deaton, Marius Wiggert, et al. Simulating 500 million years of evolution with a language model. Science , 387(6736):850–858, 2025. [17] Mingyang Hu, Fajie Yuan, Kevin Yang, Fusong Ju, Jin Su, Hui Wang, Fei Yang, and Qiuyang Ding. Exploring evolution-aware &-free protein language models as protein function predictors. 
+
+Advances in Neural Information Processing Systems , 35:38873–38884, 2022. [18] Martijn Huynen, Berend Snel, Warren Lathe III, and Peer Bork. Predicting protein function by genomic context: quantitative evaluation and qualitative inferences. Genome research ,10(8):1204–1210, 2000. [19] Yunha Hwang, Andre L Cornman, Elizabeth H Kellogg, Sergey Ovchinnikov, and Peter R Girguis. Genomic language model predicts protein co-regulation and function. Nature commu-nications , 15(1):2880, 2024. 10 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.07.736993 doi: bioRxiv preprint
+
+[20] Doug Hyatt, Gwo-Liang Chen, Philip F LoCascio, Miriam L Land, Frank W Larimer, and Loren J Hauser. Prodigal: prokaryotic gene recognition and translation initiation site identifica-tion. BMC bioinformatics , 11(1):119, 2010. [21] Minoru Kanehisa and Susumu Goto. Kegg: kyoto encyclopedia of genes and genomes. Nucleic acids research , 28(1):27–30, 2000. [22] Aakash Lahoti, Kevin Y Li, Berlin Chen, Caitlin Wang, Aviv Bick, J Zico Kolter, Tri Dao, and Albert Gu. Mamba-3: Improved sequence modeling using state space principles. arXiv preprint arXiv:2603.15569 , 2026. [23] Zeming Lin, Halil Akin, Roshan Rao, Brian Hie, Zhongkai Zhu, Wenting Lu, Nikita Smetanin, Robert Verkuil, Ori Kabeli, Yaniv Shmueli, et al. Evolutionary-scale prediction of atomic-level protein structure with a language model. Science , 379(6637):1123–1130, 2023. [24] Ali Madani, Bryan McCann, Nikhil Naik, Nitish Shirish Keskar, Namrata Anand, Raphael R Eguchi, Po-Ssu Huang, and Richard Socher. Progen: Language modeling for protein generation. 
+
+arXiv preprint arXiv:2004.03497 , 2020. [25] Harsh Mehta, Ankit Gupta, Ashok Cutkosky, and Behnam Neyshabur. Long range language modeling via gated state spaces. arXiv preprint arXiv:2206.13947 , 2022. [26] Fernando Meyer, Adrian Fritz, Zhi-Luo Deng, David Koslicki, Till Robin Lesker, Alexey Gurevich, Gary Robertson, Mohammed Alser, Dmitry Antipov, Francesco Beghini, et al. Critical assessment of metagenome interpretation: the second round of challenges. Nature methods , 19(4):429–440, 2022. [27] Matej Mihelˇ ci´ c, Tomislav Šmuc, and Fran Supek. Patterns of diverse gene functions in genomic neighborhoods predict gene function and phenotype. Scientific reports , 9(1):19537, 2019. [28] Alex L Mitchell, Alexandre Almeida, Martin Beracochea, Miguel Boland, Josephine Burgin, Guy Cochrane, Michael R Crusoe, Varsha Kale, Simon C Potter, Lorna J Richardson, et al. Mgnify: the microbiome analysis resource in 2020. Nucleic acids research , 48(D1):D570–D578, 2020. [29] Geraldene Munsamy, Gavin Ayres, Carla Greco, Keith Kam, Gus Minto-Cowcher, John John St, Tanggis Bohnuud, Matthew Bakalar, William Chow, Robert Pecoraro, et al. Designing ai-programmable therapeutics with the eden family of foundation models. bioRxiv , pages 2026–01, 2026. [30] Eric Nguyen, Michael Poli, Matthew G Durrant, Brian Kang, Dhruva Katrekar, David B Li, Liam J Bartie, Armin W Thomas, Samuel H King, Garyk Brixi, et al. Sequence modeling and design from molecular to genome scale with evo. Science , 386(6723):eado9336, 2024. [31] Eric Nguyen, Michael Poli, Marjan Faizi, Armin Thomas, Michael Wornow, Callum Birch-Sykes, Stefano Massaroli, Aman Patel, Clayton Rabideau, Yoshua Bengio, et al. Hyenadna: Long-range genomic sequence modeling at single nucleotide resolution. Advances in neural information processing systems , 36:43177–43201, 2023. [32] Erik Nijkamp, Jeffrey A Ruffolo, Eli N Weinstein, Nikhil Naik, and Ali Madani. Progen2: exploring the boundaries of protein language models. Cell systems , 14(11):968–978, 2023. [33] Georgios A Pavlopoulos, Fotis A Baltoumas, Sirui Liu, Oguz Selvitopi, Antonio Pedro Camargo, Stephen Nayfach, Ariful Azad, Simon Roux, Lee Call, Natalia N Ivanova, et al. Unraveling the functional dark matter through global metagenomics. Nature , 622(7983):594–602, 2023. [34] Fabian Pedregosa, Gaël Varoquaux, Alexandre Gramfort, Vincent Michel, Bertrand Thirion, Olivier Grisel, Mathieu Blondel, Peter Prettenhofer, Ron Weiss, Vincent Dubourg, et al. Scikit-learn: Machine learning in python. the Journal of machine Learning research , 12:2825–2830, 2011. [35] Matteo Pellegrini, Edward M Marcotte, Michael J Thompson, David Eisenberg, and Todd O Yeates. Assigning protein functions by comparative genome analysis: protein phylogenetic profiles. Proceedings of the National Academy of Sciences , 96(8):4285–4288, 1999. 11 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.07.736993 doi: bioRxiv preprint
+
+[36] Yair Schiff, Chia-Hsiang Kao, Aaron Gokaslan, Tri Dao, Albert Gu, and Volodymyr Kuleshov. Caduceus: Bi-directional equivariant long-range dna sequence modeling. Proceedings of machine learning research , 235:43632, 2024. [37] Damiano Sgarbossa, Cyril Malbranke, and Anne-Florence Bitbol. Protmamba: a homology-aware but alignment-free protein state space model. Bioinformatics , 41(6):btaf348, 2025. [38] Daulet Toibazar, Maxat Kulmanov, and Robert Hoehndorf. Context-based protein function prediction in bacterial genomes. bioRxiv , pages 2024–10, 2024. [39] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. Advances in neural information processing systems , 30, 2017. [40] Yingheng Wang, Zichen Wang, Gil Sadeh, Luca Zancato, Alessandro Achille, George Karypis, and Huzefa Rangwala. Lc-plm: Long-context protein language modeling using bidirectional mamba with shared projection layers. bioRxiv , pages 2024–10, 2024. [41] Jacob West-Roberts, Joshua Kravitz, Nishant Jha, Andre Cornman, and Yunha Hwang. Diverse genomic embedding benchmark for functional evaluation across the tree of life. bioRxiv , pages 2024–07, 2024. [42] John C Wooley, Adam Godzik, and Iddo Friedberg. A primer on metagenomics. PLoS computational biology , 6(2):e1000667, 2010. 12
