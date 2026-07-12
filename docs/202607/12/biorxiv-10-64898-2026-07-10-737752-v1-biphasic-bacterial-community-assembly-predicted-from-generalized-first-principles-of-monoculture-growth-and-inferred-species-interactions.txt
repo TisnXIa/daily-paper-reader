@@ -1,0 +1,3122 @@
+Title: Biphasic bacterial community assembly predicted from generalized first principles of monoculture growth and inferred species interactions
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.07.10.737752v1.full.pdf
+
+Number of Pages: 46
+
+Markdown Content:
+1
+
+Biphasic bacterial community assembly predicted from generalized first principles of 1
+
+monoculture growth and inferred species interactions 2
+
+3
+
+4
+
+Isaline Guex 1,2 , M elanie L. Stäubli 3, Anna Sintsova 3, Vladimir Sentchilo 1, Senka Causevic 1,5
+
+Adline Vouillamoz 2, Clara Bailey 1, Hans -Joachim Ruschewey h3, Shinichi Sunagawa 3,6
+
+Christian Mazza 2, Jan Roelof van der Meer 1*
+
+7
+
+8
+
+1) Department of Fundamental Microbiology, University of Lausanne, 1015 Lausanne, Switzerland 9
+
+2) Department of Mathematics, University of Fribourg, Switzerland 10 
+
+3) Department of Biology, Institute of Microbiology, ETH Zürich, Switzerland 11 
+
+*) Corresponding author 12 
+
+Jan Roelof van der Meer, Department of Fundamental Microbiology, University of Lausanne, 1015 13 
+
+Lausanne, Switzerland 14 
+
+Email: janroelof.vandermeer@unil.ch 15 
+
+16 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+2
+
+17 
+
+(which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint 3
+
+Abstract 18 
+
+Microbial communities occur in all habitats , yet how individual grow th on available nutrients scales to 19 
+
+communit y assembly remains poorly understood . Th is gap stems largely from the unknown effect s of 20 
+
+species interactions . These interactions arise because individual population s both consume and 21 
+
+transform primary substrates into metabolites exploitable by others, and because parasitic and predatory 22 
+
+mechanisms can release cell ular building blocks that enable nutrient reuse . Here, w e present a23 
+
+mathematical framework that predicts community growth and compositional succession from 24 
+
+monoculture growth kinetic s, resource availability , and species interaction parameters . To parametrize 25 
+
+species interactions, we use a simulat ed -annealing optimization algorithm to search parameter space for 26 
+
+sets that minimize the difference between modeled community growth and experimental time series 27 
+
+from soil microcosms inoculated with defined communit ies of 20 or 21 soil isolates, with or without an 28 
+
+opportunistic bacteriovorous member . The o ptimized interaction parameter sets were then used to 29 
+
+predict growth dynamics in an independent 21 -member community and in species drop -out 30 
+
+communities . We find that community development is biphasic: an initial phase dominated by 31 
+
+competition for primary resources driven by inherent strain growth kinetics, followed by a phase 32 
+
+governed by cross -feeding and biomass formation on released byproducts. Paired metatranscriptom ic 33 
+
+analysis corroborated predicted shifts in individual growth states and revealed metabolic repurposing 34 
+
+associated with the sudden renewed availability of metabolites and cell ular building blocks . Model 35 
+
+simulations that excluded species interactions reproduced only one -fifth of the observed community 36 
+
+biomass , highlighting the importance of cross -feeding for soil community growth . Overall , models that 37 
+
+integrate monoculture growth kinetics with inferred species interactions can predict the dynamics of 38 
+
+medium -complexity communit ies from starting inocula even when environmental nutrient composition is 39 
+
+largely unknown. 40 
+
+41 
+
+42 
+
+43 
+
+44 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+4
+
+INTRODUCTION 45 
+
+Growth is a core property of bacterial populations , determined by species -inherent metabolic capacities ,46 
+
+biotic interactions, available resource s, and the physic ochemical properties of their habitat . The k inetics 47 
+
+of single -strain cultures growing on finite resources are well studied : Monod’s original mathematical 48 
+
+formulat ion of growth kinetics (1), refined many times since (2-4), is now widely accepted . By contrast, 49 
+
+mi cro bes in natural environments or host -associat ed communities rarely exist as pure cultures ; they 50 
+
+occur within diverse multispecies assemblages (5, 6 ). Because microbial communities are crucial for 51 
+
+health and ecosystem function ing , a central question is how to extend single -species growth formalism s52 
+
+to describe growth of multiple species under defined substrate and habitat conditions (here after 53 
+
+“community growth ”).54 
+
+The main challenge is that multi species mixtures generate dynamic interactions that can enhance or 55 
+
+inhibit individual development , and these interactions are not captured by the original Monod 56 
+
+framework . Although several approaches have been proposed - including consumer -resource models (7-57 
+
+13 ), or generalized Lotka -Volterra formulations (14 -19 ), none consistently link emerging species 58 
+
+interactions to Monod -type , substrate -dependent growth kinetics for individual species. A useful 59 
+
+community -growth framework therefore needs two components : (1) a descri ption of substrate 60 
+
+conversion to biomass that retains the classical dependenc e of growth rate and substrate availability , and 61 
+
+(2) a way to represent how emerg ent interactions modify each species’ substrate -dependent growth 62 
+
+kinetics .63 
+
+We and others previously proposed a chemical -reaction -network formalism that is analogous to Monod 64 
+
+growth kinetics , in which growth of a bacterial population on a single substrate arises from two coupled 65 
+
+processes: direct consumption of the primary (added) substrate and later uptake of released metabolic 66 
+
+byproducts (20, 21 ). In mono culture s, measured biomass yield and growth rates reflect the combined 67 
+
+effect of primary -substrate use and byproduct recycling, because the two contributions are difficult to 68 
+
+separate experimentally . In multispecies communities, however, byproducts released by one species can 69 
+
+be taken up by another , and vice -versa ; this cross -feeding can be captured mathematically as species -70 
+
+specific waste production that serves as additional substrate for growth (20, 21 ). We previously showed 71 
+
+that modeling two -species competiti on on a single resource is substantially improve d by including such 72 
+
+cross -feeding , compared with alternative community -growth models (21 ). Thus, accounting for 73 
+
+metabolite exchange is essential for describ ing community dynamics – a conclusion supported by many 74 
+
+experimental studies showing widespread metabolite release during growth (22 -24 ), and that 75 
+
+demonstrate the important role of byproduct -mediated cross -feeding in shap ing community composition 76 
+
+and diversity (25 -29 ), stability (25, 30 ) and spatial structure (31, 32 ).77 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+5
+
+The major objective of the current work was to extend the cross -feeding growth model for cocultures 78 
+
+(21 ) to community level including emerging species interactions (Methods ). We hypothesized that two 79 
+
+main components exist that underly species interactions. The first could be called substrate -mediated 80 
+
+interactions (SMINT) , such as being the result of cross -feeding on metabolites leaked during 81 
+
+transformation of the primary available substrates in the system. SMINT can have a positive but also a 82 
+
+negative component if the released metabolites are growth inhibitory to the other species. The second 83 
+
+component we call parasitic interactions (PARINT) , being the result of predation or damage inflicted by 84 
+
+one species on the other, as a result of which cell contents leaks out and can be again used as growth 85 
+
+substrates or biomass building blocks by others .86 
+
+In absence of available interaction parameter sets, we use a simulated -annealing optimization (SAO) 87 
+
+algorithm that iterative ly searches parameter values to minimize the differences of model -predicted and 88 
+
+experimental observations of community growth (Fig. 1). Communities consisted of 20 or 21 soil isolates 89 
+
+inoculated into sterile soil microcosms as described previously (33, 34 ). Optimized SMINT - and PARINT -90 
+
+parameter sets were then used to predict growth and species succession in an independently started soil -91 
+
+inoculated 21 -member community . Paired metatranscriptomic analysis was used underpin growth -92 
+
+related gene expression and explain metabolic differences among community members appearing as a 93 
+
+result of species interactions . Finally, we used the model to predict outcomes for species drop -out 94 
+
+communities and compared interaction patterns in soil -grown versus mixed liquid culture conditions for 95 
+
+the same community .96 
+
+97 
+
+RESULTS 98 
+
+A mathematical community growth model based on monoculture growth rates and inferred 99 
+
+interspecific interactions 100 
+
+We generalize a community growth model based on first principles of Monod kinetics, under the 101 
+
+assumption that community growth is an extension of inherent growth physiology of the individual 102 
+
+bacterial strains that constitute the assembled community, constrained by the dynamic utilization of 103 
+
+primary resources and widened by appearing metabolic byproducts released by other community 104 
+
+members (Fig. 1 , Methods ). Growth rates under unknown nutrient conditions can be simulated by 105 
+
+random sampling of growth rate distributions measured for individual strains under diverse substrate 106 
+
+conditions (Fig. 1A). Utilization of byproducts for biomass formation is coded as being the result of 107 
+
+metabolic waste production or of parasitic and predatory release and reuse ( Methods, eq. 1 &2 ). The 108 
+
+parameter values describing biomass formation from byproduct utilization are estimated by an SAO -109 
+
+algorithm that minimizes the discrepancy between observed and simulated absolute population 110 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+6
+
+abundances over time (Fig. 1B). Optimized parameter sets can subsequently be used for predicti ons of 111 
+
+growth dynamics in unseen communities (Fig. 1C). 112 
+
+The substrate utilization capacit ies of each of the 21 soil isolates (table S1) were determined in pure 113 
+
+culture from Biolog growth plates with 30 individual carbon substrates , complemented by growth assays 114 
+
+in complex and defined media , and in aqueous extracts of soil organic matter . In addition, the total 115 
+
+population size of each individual strain grown alone in sterilized soil microcosms was recorded . All 116 
+
+strains grew on complex medium (PTYG) and soil extract, but to var ying extents on individual substrates 117 
+
+(Fig. 2A). Monoculture -observed maximum specific growth rate s were represented by log -normal 118 
+
+distribution s with few substrates supporting high and most substrates resulting in low growth rates (Fig. 119 
+
+2B). Monoculture observed maximum population sizes after one week in soil microcosms differe d up to 120 
+
+200 -fold (Fig. 2C) , which was unrelated to the width of the per -species log -normal growth rate 121 
+
+distribution (compare, e.g., growth of Microbacterium or Luteibacter with Pseudomonas sp. strain 1), 122 
+
+attesting to the varying capacity of the s pecies to colonize the soil with its available resources. The 123 
+
+simulated maximum population biomass after one week of monoculture growth in soil microcosms , using 124 
+
+the measured kinetic parameters and their fitted log -normal distribution s, was very similar to the 125 
+
+observed population densities (Fig. 2C , biomass converted to cells per gram of soil ), indicating that the 126 
+
+growth model accurately captures observed monoculture data in absence of any species interactions .127 
+
+Compared to growth within a n inoculated community in the soil microcosms, about 60% of the strains 128 
+
+(13 out of 21) perform ed better in isolation and the others better in community (Fig. 2C) . In contrast ,129 
+
+none of the species in monoculture microcosm s reache d a population size equivalent to the total 130 
+
+observed community size , although (an arbitrary) sum of all monoculture sizes slightly surpasses the total 131 
+
+community size (Fig. 2D , P = 0.02 91 , two -sided Wilcoxon ranksum test ). Assuming the same resource 132 
+
+availabilit ies in the starting soil material for the microcosms , this indicate s that species grow ing in the 133 
+
+community mobilize the available nutrients in a different manner than any species alone , for example, as 134 
+
+a result of species interactions . This is evident for strains with higher maximum biomass in community 135 
+
+than in isolation (e.g., Lysobacter and Pseudomonas sp. strain 2; Fig . 2C ). 136 
+
+Aqueous -extractable compounds from the soil microcosms categorized into 12 chemical groups by 137 
+
+hydrophilic interaction liquid chromatography coupled to mass -spectrometry (HILIC -MS ) analysis were 138 
+
+dominated by purines, amino acids and pyrimidines, suggesting these to be the primary available 139 
+
+substrates for growth (table S2) . Substrate levels decreased rapidly in growing communities in the first 1–140 
+
+3 days , with little refractory compound accumulating at later time points (e.g., categories 141 
+
+phosphoglycolipids and vitamins and precursors; Fig. 2 E, table S 2). In quantitative terms, an estimated 142 
+
+10.1 % of C mass of the measured primary resources was converted into bacterial biomass, 5.3 % was 143 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+7
+
+detected in the aqueous phase after one week, and the rest is C waste (Fig. 2 F; refractory non -water 144 
+
+extracted compounds or disappeared from the system as e.g., CO 2). 145 
+
+Substrate -mediated interactions are major enablers for community growth 146 
+
+Next, we sought to dissect the contributions of observed community growth in soil microcosms 147 
+
+attributable to either inherent individual strain kinetic differences or to emerging species interactions. 148 
+
+We first focused on interactions arising from metabolite cross -feeding from primary substrate conversion 149 
+
+(SMINT) . For this we used a 20 -member defined representative soil community (33, 34 ) (SynCom -20; no 150 
+
+inclusion of known predators such as Lysobacter ; table S 1). The SynCom -20 grown in soil microcosms 151 
+
+rapidly expanded in total size in the first 3 days, reaching its maximum total biomass after day 7 followed 152 
+
+by a slower decline (Fig. 3A, biomass converted from measured cell numbers and average dry weights per 153 
+
+strain, see Methods ; table S1 ). The community became dominated by 5 –6 strains, which showed 154 
+
+different succession patterns. Starting from even initial strain proportions, the relative abundances 155 
+
+of Pseudomonas sp. strains 1 and 2 and Rahnella increased after one day, followed by a steep increase 156 
+
+in Flavobacterium and a more gradual increase in Caulobacter , Variovorax , and other minor species (Fig. 157 
+
+3A). 158 
+
+SMINT -parameters were estimated by the SAO -algorithm (Methods ) trained on 5 out of 8 combined 159 
+
+replicate datasets from two independent soil -grown SynCom -20 experiments , with 3 random picked 160 
+
+replicates left out for subsequent validation . SAO -estimations were repeated 10 times from growth 161 
+
+kinetic values picked randomly from the log -normal distributions (Fig. 3B) . Community growth 162 
+
+simulations with optimized SMINT -parameter s reproduced the observed community growth quite well, 163 
+
+both in terms of individual population size s, trajectories and final total community biomass (Fig. 3B -D;164 
+
+mean theta cosine trajectory value of 0.4445, Table 1) . Observed growth trajectories of some strains 165 
+
+showed an initial temporary decrease in population size (e.g., Cohnella, Rhodococcus , Burkholderia ; Fig. 166 
+
+3D) , which may be due to a decrease of cell viability with respect to the measured inoculum size by flow 167 
+
+cytometry. Because growth simulations are initiated with the measured inoculum size, an actual loss of 168 
+
+inoculum viability will lead to an overestimation of simulated population growth . The 10 independent 169 
+
+SAO -simulations start ed from freshly initiated subsampled kinetics showed good parameter convergence 170 
+
+and little variation among replicate s (Fig. 3 D). In contrast, drawing random kinetic starting values for 171 
+
+SMINT -parameters from the respective species ’ growth rate distributions without further SAO -runs 172 
+
+resulted in individual population growth strongly deviating from the experimental observations , despite 173 
+
+good convergence of community trajectories (fig. S1, Table 1) . This suggests that the SAO -algorithm is not 174 
+
+overfitting SMINT parameters, but capturing relevant biological meaning. 175 
+
+The effect of including SMINT on community growth was then simulated by setting the SMINT -parameter 176 
+
+values to zero. In this case the strains can only utilize and compete for primary available resources, which 177 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+8
+
+is determined by their individual kinetic parameters (i.e. maximum growth rates, yields and half -rate 178 
+
+constant K S). Simulated SynCom -20 growth with out SMINT -effects starkly underestimated the 179 
+
+experimentally observed population sizes of all strains, most evident for the dominating members (Fig. 180 
+
+3B) . Predicted growth trajectories had overall lower scores (cosine theta value of 0.2499, Table 1) . In 181 
+
+addition, the total estimated SynCom -20 biomass in simulations without SMINT only reached one -fifth of 182 
+
+the experimentally observed values (Fig. 3C, P = 0.0229 , permutation test on Cliff’s index ). This large 183 
+
+difference would indicate that substrate -mediated metabolite cross -feeding is a key component for 184 
+
+productivity of soil communities and benefits community member growth widely .185 
+
+Substrate utilization as a function of community growth was also correct ly reproduced in the SMINT 186 
+
+SynCom -20 simulations (Fig. 3E), mirroring the rapid decrease in measured extractable soil compound 187 
+
+concentrations within the first day (Fig. 2E) . Different simulation runs indicated fast per -strain byproduct 188 
+
+appearance , a decrease between day 3 and 5, and then a slow stabilization at around 6.5 g C dry weight 189 
+
+(DW ) per ml (Fig. 3 E). This suggest s that the decrease in primary (water -extractable) resource s is the 190 
+
+consequence of the rapid consumption and increase in the population sizes of fast -growing community 191 
+
+members , followed by a second phase of slower community growth when waste products dominate and 192 
+
+are being consumed (Fig. 3D). 193 
+
+Estimating parasitic interactions from predat ion and cell building blocks turnover 194 
+
+In a second step we extended the community growth model with parasitic species interactions (PARINT) 195 
+
+resulting from predation and the corresponding reutilization of cell ular building blocks. For this we used 196 
+
+time series of soil microcosm -grow n communities of 21 strains (SynCom -21) that now include d the 197 
+
+opportunistic bacterial predator Lysobacter (table S 1). We assumed that we could keep the previous 198 
+
+optimized SMINT -parameter sets , since the same 20 soil bacteria would still be present in the SynCom -21 199 
+
+community, and use the SAO -algorithm to search only additional SMINT -values necessary for inclusion of 200 
+
+Lysobacter and estimate PARINT -parameter sets that we expected would be the result of Lysobacter 201 
+
+opportunistic predatory behaviour . Similar as for the SynCom -20 optimization , the SAO -iterations 202 
+
+explor ed parameter sets that would minimize the discrepancy between (new) experimental data of 203 
+
+SynCom -21 community growth and the growth dynamic simulations .204 
+
+Inclu ding Lysobacter in the SynCom inoculum considerably changed the community dynamics (Fig. 4A 205 
+
+with SynCom -21 vs Fig. 3A with SynCom -20 ). Total community size again increased most ly during the first 206 
+
+three days followed by a decline , but the dominant species were different in the SynCom -21 , with 207 
+
+notable higher proportions of Lysobacter and Pseudomonas sp . strain 2 and lower proportions of 208 
+
+Caulobacter , Variovorax, Flavobacterium and Microbacteriu m (Fig. 4B , PERMANOVA P = 0.0278 ). 209 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+9
+
+The importance of including PARINT -effects in SynCom -21 community demography can be deduced from 210 
+
+the difference of simulations with only the SMINT - or with both SMINT - and PARINT -parameter s. Using 211 
+
+only SMINT -values overestimated biomass growth of Flavobacterium , Variovorax and Caulobacter in the 212 
+
+SynCom -21 (Fig. 4C), whereas i nclusion of PARINT -parameters improved the simulated SynCom -21 213 
+
+population abundances for all species in comparison to the experimental data (Fig. 4D , Table 1 ). The 214 
+
+model was not completely correct for Lysobacter (overestimated) and Pseudomonas sp. strain 2 215 
+
+(underestimated; Fig. 4 D). Setting both SMINT - and PARINT - parameters to zero reduce d the simulated 216 
+
+SynCom -21 biomass to only approx. 20% of the experimentally observed levels (Fig. 4 E, P = 0.0042 ,217 
+
+permutation test on Cliff’s index ), again indicating the crucial importance of species interactions for 218 
+
+community productivity . Individual population growth was correctly recapitulated by the SMINT/PARINT -219 
+
+simulations, which even capture d an observed decrease in abundances of Flavobacterium , Caulobacter 220 
+
+and Variovorax after 3 days (Fig. 4 F). In contrast, growth was overestimat ed for some of the less 221 
+
+abundan t species (e.g., Phenylobacterium or Bradyrhizobium , Fig. 4F), possibly again because the ir actual 222 
+
+viability in the soil was lower than assumed from their inoculum size .223 
+
+To deduce the most likely prey for Lysobacter , we identified SynCom -strains grown in soil microcosms 224 
+
+that showed a large biomass reduction in presence of Lysobacter (Fig. 4B) ; further corroborated by 225 
+
+simulations with and without PARINT parameters (Fig. 4C &D ). Four species met this criterion: 226 
+
+Flavobacterium , Caulobacter , Microbacterium and Variovorax with more than 92% biomass reduction in 227 
+
+presence of Lysobacter . Estimations from the PARINT -parameter values suggested that Lysobacter 228 
+
+biomass growth from predation is biphasic , with a first strong peak between day 2 and 5, and a second 229 
+
+minor contribution thereafter (Fig. 4G). 230 
+
+Asymmetrical species interactions underly community biomass formation from byproducts 231 
+
+The combined SMINT - and PARINT -effects can be summarized as the amount of per -species biomass 232 
+
+form ed from byproducts being released by others and over time. Pseudomonas sp. strain 2 is the first to 233 
+
+grow in both SynCom -20 and SynCom -21 , and the simulations indicate that the population of this strain 234 
+
+alone would be responsible for byproducts in the range of 2×10 -3 g C ml –1 (Fig. 5A &B). Byproduct 235 
+
+formation coincides with growth as would be expected for release of metabolic intermediates and halts 236 
+
+when the population reaches stationary phase (Fig. 5C). Seen from the perspective of biomass formation, 237 
+
+Pseudomonas sp. strain 2 also consumes byproducts released by other members in the early stages of 238 
+
+SynCom -20 community growth (12 and 24 h) , whereas the cross -feeding on byproducts from 239 
+
+Pseudomonas sp. strain 2 emerges in later stage s of community growth (48 h and beyond, Fig. 5D). The 240 
+
+byproduct utilization matrix also suggests how other abundant strains in the SynCom -20 could profit from 241 
+
+dynamic byproduct release (e.g., Flavobacterium, Caulobacter , Variovorax and Microbacterium , Fig. 5D). 242 
+
+By contrast, simulations suggest that Devosia in SynCom -20 is a net producer but a poor consumer (Fig. 243 
+
+5D) . In the presence of Lysobacter in SynCom -21 , the byproduct utilization matrix changes (Fig. 5E) ,244 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+10 
+
+suggesting more production and utilization of byproducts by Pseudomonas sp. strain 2 in the first stage s245 
+
+(12 and 24 h), and a change to Flavobacterium as producer with Lysobacter becoming a consumer (from 246 
+
+48 h onwards – consist ent with their prey -predat or relation ). At later stages (168 h), Lysobacter is 247 
+
+changing into a byproduct producer, consistent with the idea of byproducts from cell lysis building blocks 248 
+
+being turned over, leading to new byproducts from which other species profit (Fig. 5E, see Methods for 249 
+
+the modeling concept). 250 
+
+Simulation predictions of dynamic interactions in a SynCom -21 community 251 
+
+So far , the simulation models with optimized SMINT - and PARINT -parameter values explained and 252 
+
+reproduced the observed growth of the SynCom -20 and -21 experimental datasets (Table 1). However, as 253 
+
+these models search parameter space to match experimental results it may come as no surprise that 254 
+
+their ‘fitting’ is relatively good. To gain more confidence in the biological significance of the optimized 255 
+
+species interaction parameters , we next used the optimized SMINT - and PARINT -parameter sets to 256 
+
+predict growth dynamics of an independently conducted SynCom -21 experiment starting with a different 257 
+
+inoculum. For this additional SynCom -21 experiment (SynCom -21 MT , Table 1 ), we also generated paired 258 
+
+time series metatranscriptomic and metagenomic data , which was used to infer in situ growth and to 259 
+
+inform potential cross -feeding behavior from gene expression changes of uptake systems and metabolic 260 
+
+pathways . In situ growth prediction was based on two tools: mTRAc and CoPTR. mTRAC is a binary 261 
+
+growth state classifier, which uses proportional abundances in a set of single -copy marker genes to 262 
+
+predict probabilities of growth ranging from 0 to 1 , and classifies strains to be either in a growing or a 263 
+
+non -growing state (35 ). CoPTR uses log 2-ratios of highest -to -lowest (Peak -to -Trough) metagenomic 264 
+
+sequencing coverage as a proxy for in situ growth rates (36 ).265 
+
+Similar a s in the previous experiments, growth of the SynCom -21 showed a succession of dominant 266 
+
+populations, notably again Pseudomonas sp. strain 2, Lysobacter, Rahnella, Flavobacterium and 267 
+
+Variovorax , as well as less dominant members (fig. S 2A &B ). The probabilities of growth , predicted by 268 
+
+mTRAc for eight of the major abundant SynCom -21 members , corresponded quite well to the population 269 
+
+dynamics predicted by the model that included SMINT - and PARINT -parameters (Fig. 6A , n = 10 270 
+
+simulations with randomly drawn parameter sets from the total of 40 ). All major community members 271 
+
+were classified to be growing during early time points (12 -38 h), but the ir probabilities of growth 272 
+
+decreased at intermediate time points (38 -168 h) in accordance with depleted primary nutrients (Fig. 2E ).273 
+
+A sharp decline in growth probability for several strains (e.g., Caulobacter , Flavobacterium and 274 
+
+Variovorax , Fig. 6A, fig. S2A &D ) coincide d with predicted and observed decrease s in population sizes ,275 
+
+which is an indicati on for predatory cell lysis by Lysobacter (Fig. 6A ; compar e to the previous SynCom -21 276 
+
+experiment in Fig. 4B ). The growth dynamic behaviour of other strains, notably Pseudomonas sp. strain 2277 
+
+and Rahnella , was more variable. The community demography model predicted for both a biphasic 278 
+
+growth , the transition time of which corresponded exactly to a transient decrease in the predicted 279 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+11 
+
+probability of growth from metatranscriptomic data at time point 24 h (Fig. 6A and higher time resolution 280 
+
+in fig. S 2F). At later time points (> 100 h) a larger variation in predicted probabilities of growth was 281 
+
+observed for all strains (Fig. 6A) , which probably reflect s heterogeneity in population behavior from 282 
+
+stationary phase cells, partial cell death , and renewed growth on released nutrients. Metagenomics -283 
+
+based predicted growth rates using CoPTR recapitulated similar population growth dynamics (i.e., steep 284 
+
+decrease in predicted in situ growth rates for the 38 -168 h time points) for fast -growing strains but failed 285 
+
+to predict a decrease in in situ growth rates of lowly abundant strains (fig . S3). 286 
+
+The p redicted biomass at day 21 for each of the strains was in agreement with the experimental data ,287 
+
+except for again overestimating Lysobacte r’s biomass (Fig. 6B) , whereas the total community biomass 288 
+
+was 1.29 -fold higher in the predictions than observed (fig. S2 C, P = 0.0047 , permutation test). The 289 
+
+trajectories of both predicted and observed communit y dynamics aligned well (Table 1, cosine theta -290 
+
+score = 0. 6749 ; fig. S2D ), indicating that community growth wa s correctly predicted by the demography 291 
+
+model .292 
+
+The model further predicted that early species interactions would be dominated by Flavobacterium 293 
+
+profiting from byproducts from Pseudomonas sp. strain 2 and Pseudomonas sp. strain 2 profiting from 294 
+
+Lysobacter , then transitioning to include Caulobacter , Lysobacter , Variovorax and Devosia as consumers 295 
+
+(Fig. 6C) , with Pseudomonas sp. strain 2 as the overall large st byproduct producer for the community ( fig. 296 
+
+S2E). To support or refute these predictions , we analyzed the paired SynCom -21 MT metatranscriptomics 297 
+
+dataset , focusing on three aspects: (i) expression of genes that could support the predatory behaviour of 298 
+
+Lysobacter , (ii) altered expression of transporter genes and (iii) of KEGG -orthology (ko ) pathways that 299 
+
+may reflect strain adaptation to changing resources . Expression c hanges in gene s associated with the ko -300 
+
+term Bacterial s ecretion systems (i.e., ko03 070) at time points 38 and 70 h were 4 -8 times higher for 301 
+
+Lysobacter than for Pseudomonas sp. strain 2 or Rahnella , whereas those for two -component systems or 302 
+
+chemotaxis were no t (Fig. 6 D) . Statistically significantly increased Lysobacter expression at time point 38 303 
+
+h compared to either 22 h or 70 h also included type IV and type VI secretion system genes , genes 304 
+
+annotat ed with ‘protease’ or ‘peptidase’ , or ‘twitching motility ’ (Fig. 6E) , which are hallmarks of its 305 
+
+predatory behavior (37, 38 ).306 
+
+To detect strain -specific altered expression of transporter genes, we c ategoriz ed the ir expression time 307 
+
+profiles in five subtypes (e.g. , TYPE 1: temporary increase between 22 and 38 h; TYPE 2: temporary 308 
+
+decrease , Fig. 6 F) among the strains with sufficient metatranscriptomic sequencing depth (i.e., at least 3 309 
+
+out of 5 replicates and 4 of 7 time points having reliable TPM -values , fig. S 4A & B ). Overall, most 310 
+
+transporter genes showed increased expression over time (TYPE 4: ‘up’; Fig. 6 F, fig S 4B), indicating the 311 
+
+strains to scaveng e for scarcer nutrients. On average, between 4 and 8% of annotated transporter s312 
+
+showed peaked expression (TYPE 1), and, for a subset of strains , 20 -26% show ing transient decreased 313 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+12 
+
+expression (TYPE 2, fig. S 4A &B ). This distinction in TYPE 1 and 2 transporter expression broadly divided 314 
+
+the behaviour of the SynCom -21 MT strains in to two groups, with both Pseudomonas strains , Rahnella 315 
+
+and Microbacterium in the category showing more transporters with peaked and fewer with transiently 316 
+
+decreased expression at 22 h and 38 h, and the others ( Caulobacter, Devosia , Flavobacterium , Lysobacter 317 
+
+and Variovorax ) with the opposite trend (i.e., fewer peaked and more decreased transporter expression; 318 
+
+Fig. 6 G, fig. S 4A &B ). Annotated transporter substrates covered a wide range of groups (Fig. 6 G),319 
+
+including mono - and disaccharides, amino acids, organic acids, nutrients (e.g., N, P) and some vitamins 320 
+
+(fig. S 5). Both the peaked and the diminished transporter expression at 22 and 38 h may signal a sudden 321 
+
+increase in available substrates , with peaks corresponding to those transporters that are under 322 
+
+concentration feedback control (i.e., higher concentration leading to higher expression), and troughs to 323 
+
+those that are insensitive (i.e., higher concentration outside meaning less expression needed to satisfy 324 
+
+cellular needs) . Th is sign for transitory increased substrate availability during community growth would 325 
+
+then be the result of by product release from fast -growing dominant populations such as Pseudomonas 326 
+
+sp. strain 2 and/or from lysed cells by Lysobacter predation .327 
+
+Species -dependent repurposing of metabolic pathway expression during community growth 328 
+
+To further corroborate this idea of temporarily increased availability of substrates in form of released 329 
+
+metabolites , we compared the expression time profiles for genes with in ko -pathways among the eight 330 
+
+strains with sufficient metatranscriptomes sequence depth (fig. S4A & B) . Principal component analysis 331 
+
+separated the strains in similar groups as for the transporter gene expression, with both Pseudomonas 332 
+
+strains and Rahnella displaying closer resemblance of ko -term expression patterns across time points ,333 
+
+and the others showing wider trajectories (fig. S6) .334 
+
+According to dynamic expression classification , 11 ko -term expression types could be distinguished (e.g., 335 
+
+transient , monotonous in - or decrease ; fig. S 4C) . The per -strain attribution of ko -terms to those 11 336 
+
+categories were notably different . F or example, Caulobacter and Variovorax show ed a clear dominance 337 
+
+of ko -terms attribut ed to category 9 ( low expression at start, then sharp increase between time points 38 338 
+
+and 70 h , followed by a stable expression ), Flavobacterium ko -terms were dominated by relatively high 339 
+
+expression in early but lower in later time points, whereas Devosia and Pseudomonas sp. strain 2 show ed 340 
+
+a more or less equal attribution of ko -terms to all expression categories ( Fig. 7A, fig. S 4D). Despite this 341 
+
+strong low -high transition in Caulobacter and Variovorax for almost all pathways, ko -terms for nucleotide 342 
+
+metabolism, citric acid cycle and energy metabolism showed opposite trends (Fig. 7A). This suggests that 343 
+
+cells remain active but take up available compounds feeding into those pathways, such as sugars and 344 
+
+amino acids, to avoid de novo synthesis. Ko -terms in s everal strains ( i.e., Flavobacterium , Lysobacter ,345 
+
+Pseudomonas sp. strain 1 and Rahnella ) showed remarkable lowest expression at t ime point 70 h, after 346 
+
+which they slowly increase d again . This is also indicative for temporary increased availablility of nutrients 347 
+
+like pyruvate, succinate, certain amino acids, or nucleotides, which can be taken up and avoids the 348 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+13 
+
+necessity of their biosynthesis (Fig. 7A). The sudden renewed nutrient availability is most likely the result 349 
+
+of lysis of Flavobacterium by Lysobacter (as in Fig. 4G). 350 
+
+Groups of ko -term s within the same expression category were then plotted on a global KEGG map to 351 
+
+illustrate corresponding temporal changes in metabolic pathway expression (fig. S7). When f ocusing on 352 
+
+two major community members and within the limits of resolution of the metatranscriptomics data , we 353 
+
+can see how Pseudomonas sp. strain 2 becomes metabolically active faster than Lysobacter , with all 354 
+
+biosynthetic pathways and genes for oxidative respiration activated at the earliest time point (Fig. 7B , T1 355 
+
+= 12 h ). At the second time point (T2, 22 h) , Pseudomonas sp. strain 2 shows growth retardation (fig. S2 F)356 
+
+alongside decre asing KEGG pathway expression , except for fatty acid degradation and branched -chain 357 
+
+amino acid metabolism that become induced (Fig. 7B ). In contrast, all Lysobacter pathways are now fully 358 
+
+active and detectable in metatranscriptomics data . A drastic change occurs in the next time points (38 359 
+
+and 70 h) , with almost all Lysobacter ko -pathways showing reduced expression , including cofactors, 360 
+
+vitamins, amino acids, sugars, and fatty acids, except for oxidative respiration (Fig. 7B , arrow ; fig. S 8). This 361 
+
+change follows the peak ed expression of secretion systems (Fig. 6D &E ) and the biomass decrease of the 362 
+
+assumed prey , and thus strongly suggests Lysobacter to uptake such compounds rather than spending 363 
+
+more energy in renewed biosynthesis. In parallel, Pseudomonas sp. strain 2 has also resumed growth ( Fig. 364 
+
+6A ), but still shows decreas ed expression of KEGG pathways for amino acid synthesis and sugars, 365 
+
+suggesting that at this point it is also consuming rather than biosynthesizing (Fig. 6D, T3/T4 ; fig. S 8). 366 
+
+Similar individual narratives can be presented for the other main SynCom21 members (fig. S 7 & S 8), in 367 
+
+some cases explaining the sharp decline in predicted growth probability at early time points (e.g., 368 
+
+Caulobacter and Devosia ’s decrease in KEGG pathway expression at 22, 38 and 70 h and decline in Fig. 369 
+
+6A ). Certain specific KEGG -pathway expression increases point to changed substrate availability, such as 370 
+
+the induced sugar metabolic pathways in Devosia at 38 h (fig. S 7, arrow). Flavobacterium’ s later 371 
+
+population growth and decline are consistent with its KEGG -pathway expression profiles, most of which 372 
+
+peak at 38 h but then completely collapse at 70 h ( Fig. 7A, fig. S8 ). In summary, the metatranscriptomic 373 
+
+data is consistent with the idea of significant substrate release from lysed cells and cross -feeding on 374 
+
+byproducts from fast -growing populations in the community . The results also suggest that a wide 375 
+
+spectrum of individual strategies exist s, such as tuning transporters to scar ce or rather abundant 376 
+
+substrate groups, and repurposing metabolic pathways correspondingl y (e.g., to avoid biosynthesis if 377 
+
+building blocks can be acquired by import ).378 
+
+Predict ions of reduced membership and habitat effects on community development 379 
+
+Finally, w e test ed the model with the SMINT - and PARINT -parameter values on three different SynCom 380 
+
+growth scenarios to understand its predictive value and/or specific limitations. In the first, we soil -381 
+
+inoculated reduced SynCom s lacking 5 -6 (rare and/or abundant) members (e.g., without Rah nella or 382 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+14 
+
+Lysobacter , table S1, fig. S 8). Overall, m ember removal caused a decrease in the fit of the simulated 383 
+
+community trajectories compared to the full 21 -member communities (Table 1), and a number of 384 
+
+deviations in abundant populations after day 7 (fig. S 8A), although overall community biomass 385 
+
+predictions were similar to the experimental observations and better in predictions that included species 386 
+
+interactions (fig. S 8B). Subcommunities containing Lysobacter produced poorer overall fits and showed 387 
+
+more variability between replicate simulations (fig. S 8C), indicating a potential importance of Rahnella 388 
+
+(missing in both) and Pseudomonas sp. strain 1 (missing in subcommunity 2) in stabilizing population 389 
+
+development of e.g., Variovorax , Microbacterium or Chitinophaga (fig. S 8C). In contrast, the 390 
+
+subcommunity lacking Lysobacter was more reproducibly predicted in the simulations (fig. S 8D, Table 1). 391 
+
+In the second scenario, we tested whether the model predictions could recapitulate an experimental 392 
+
+dataset of growing communities with the 21 members that were weekly diluted into fresh soil (fig. S 9). 393 
+
+The advantage of this experimental dataset was that the starting community sizes and species’ relative 394 
+
+abundances were better known , because of the tenfold dilution of the attained composition after each 395 
+
+week . However, we noticed that several members went to almost extinction in the model simulations, 396 
+
+but remained present in the experiments. This points at a dynamic development in the dilution -tra nsfer 397 
+
+experiment that the current model trained parameters do not capture well, except for a few dominant 398 
+
+community members and which may be the result of bottlenecks in soil -to -soil transmission of rarer 399 
+
+species (fig. S 9). Indeed, the model is sensitive to variations in starting inoculum composition (both 400 
+
+absolute and relative abundances), which can produce non -intuitive differences in growth outcomes for 401 
+
+dominant , fast -growing and lowly abundant, slow -growing populations (fig. S 10). 402 
+
+Finally, we re trained the SAO -algorithm on a n experimental dataset of the 21 -member inoculum grow n in403 
+
+liquid soil extract in mixed suspension (Fig. 1C, fig. S 11). Under these growth conditions, we would expect 404 
+
+different interactions to emerge because of the complete mixing and all cells being exposed to a mean 405 
+
+global change in substrate and byproduct concentrations. New SAO -optimization produced goodness of 406 
+
+community fits similar as for the soil -grown 21 -member communities (Table 1), but showed different 407 
+
+byproduct producers and their importance (e.g., Pseudomonas sp. strain 1 instead of 2, fig. S 11A), which 408 
+
+was reflected in the interaction matrices (fig. S 11D). In summary, these model simulations predicted 409 
+
+general trends correctly across scenarios, although – as expected – different inoculum compositions and 410 
+
+different habitats result ed in altered interaction patterns , which are captured imperfectly with 411 
+
+parameters optimized for the 20 - and 21 -member communit ies grown in soil .412 
+
+DISCUSSION 413 
+
+We ca n draw two major conclusions from our work. First, we show that it is possible to parametrize two 414 
+
+types of species interactions (SMINT, substrate -mediated byproduct formation and re utilization , and 415 
+
+PARINT, parasitic or predatory release of cell building blocks ) by iteratively minimizing dis crepancies 416 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+15 
+
+between experimental community data and simulated community growth from monoculture -derived 417 
+
+kinetic parameters (Fig. 1 , community demography model ). For successful parameter estimation the 418 
+
+experimental c ommunity growth data must encompass both changes in the absolute community size 419 
+
+(cell numbers or biomass) and relative compositional changes over time. We demonstrate that optimized 420 
+
+interaction parameter values are not simpl y fitte d values without biological meaning , because (i) multiple 421 
+
+independent initiations of the SAO -algorithm lead to converging values , (ii) parametrizing SMINT -values 422 
+
+by random sampling of individual species’ growth rates do not result in comparable community dynamics 423 
+
+(fig. S1) , (iii) the obtained interaction parameter values can be used in a predictive manne r with accurate 424 
+
+results (Fig. 6) , and (iv) the parameter values vary for communities grown in different habitats and 425 
+
+subcommunities with different compositions are more poorly predicted (fig. S9 -11). This is consistent 426 
+
+with the concept that species interactions will change depending on resource conditions , habitat and 427 
+
+community composition. 428 
+
+An important outcome of optimization by the SAO -process is that a single set for each of SMINT - and 429 
+
+PARINT -parameter matrices is sufficient to predict community growth, independent of time . The 430 
+
+interaction parameters in the community demography model (see Methods eq. 1 & 2), notably  𝜅 𝑖 2 
+
+> ′
+
+and 431 
+
+𝜅 𝑖 3 
+
+> ′
+
+, thus behave analogously as the μ max and K S of single population growth in relation to the (limiting) 432 
+
+substrate condition. In analogy to μmax and K S chang ing as a function of substrate, interaction parameter s433 
+
+change in dependence of growth conditions , and the number and constellation of neighbouring species. 434 
+
+Our data further demonstrate that e ven in absence of precise knowledge on the exact resources in the 435 
+
+soil microcosm s (e.g., Fig. 2E) , the SAO -algorithm can search interaction values starting from individual 436 
+
+monoculture substrate -growth rate distributions (Fig. 2B) that can accurately reproduce and predict 437 
+
+observed community composition changes over time . Having a generalized growth kinetic framework for 438 
+
+microbial communities from first principles of defined parametric species interactions that link to 439 
+
+individual growth kinetics is, to our knowledge, an important step forward. 440 
+
+Our second conclusion from the comparison of experimental community growth and simulations is that a 441 
+
+staggering part (70 -80 %) of community formed biomass seems to be the direct consequence of 442 
+
+byproduct utilization through SMINT - and/or PARINT -processes, and not primary resource utilization .443 
+
+There are lively discussions in current literature on whether interactions among community members are 444 
+
+on average more positive or more negative (39, 40 ), but our results indicate that this is perhaps not the 445 
+
+right question to ask , when explain ing community growth in a wider context from kinetic principles . We 446 
+
+find that community growth in the soil microcosms is a gradual biphasic process, with a first phase 447 
+
+dominated by primary resource utilization and a second phase characterized by assimilation and further 448 
+
+turnover of metabolic byproducts (or, in extremo, lysed cells). Comparison of individual and community 449 
+
+growth in soil microcosm s (as in Fig. 2 C) indicated that several strains profit from newly generated 450 
+
+resources that are otherwise not available to them in the soil habitat. Th is byproduct contribution can be 451 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+16 
+
+estimated by the community demography model by setting SMINT - and PARINT -parameters to zero, 452 
+
+which indicates that there is a major positive contribution of byproduct reuse (approximately 80%) on the 453 
+
+formed community biomass, and thus, that growing in a community for bacteria is overall profitable . We 454 
+
+acknowledge that this behavior could be something specific for the selected soil bacteria , or for a closed 455 
+
+system as in the microcosms, in terms of mobilizing unknown or poorly available resources th at can only 456 
+
+be achieved by a collaboration of strains . This general positive effect would have to be tested for 457 
+
+microbiomes in other habitats. In any case, t he communities of 20 or 21 isolates we work ed with here are 458 
+
+not a random assembly of laboratory strains but a representation of major soil phyla members, and , as 459 
+
+we have shown before, their attained community composition s resemble th ose of typical soils (albeit of 460 
+
+reduced diversity) (33, 34 ). For this reason, we believe that the community interaction types and 461 
+
+magnitudes we observe and postulate have relevance for the development of natural (soil) communities. 462 
+
+In that sense, we can conclude that species interactions have a positive effect on community growth ,463 
+
+even though most of the strains in our defined communities are also competing for directly available 464 
+
+carbon and nutrients. 465 
+
+The challenge for the community demography model as we propose it here is that there is no a priori 466 
+
+knowledge of any species interaction parameter values. Although numerous methods have been 467 
+
+proposed to measure or characterize interactions between bacterial species (28, 41 -46 ), there is no 468 
+
+consensus on the best parameter to cho ose, nor on the actual parametric values (like there is consensus 469 
+
+for using the maximum specific growth rate μ max ). We show that an SAO -algorithm that searches 470 
+
+parameter space and minimize s the discrepancy between experimental and simulated community 471 
+
+compositions can effectively parametrize paired -interaction matrices (Fig. 1B) . Interaction s are then 472 
+
+presented as the proportion of strain biomass formation attributable to pa ired influence (e.g., as in Fig. 473 
+
+5) . We are aware that the searching algorithm can produce completely unrealistic parameter values and 474 
+
+that , giv en the complexity of the system and the large number of possible interactions , the results may 475 
+
+strongly depend on the initial values . We mitigated this by using biologically meaningful initial kinetic 476 
+
+starting points based on mon oculture experiments and running multiple independently started SAO 477 
+
+cycles . In the process of parametrizing and testing the model, we then first estimated SMINT -interaction 478 
+
+coefficients using a 20 -member community without known predatory species . These parameter values 479 
+
+were kept unchanged and applied in a second SAO -step to explain growth of a 21 -member community 480 
+
+specifically including a Lysobacter predatory isolate , to derive only th e PARINT -parameter values and the 481 
+
+specific SMINT -values pertaining to its inclusion . This approach gave confident overall results for 482 
+
+validations of unseen SynCom -20 and -21 replicates . We assess this level of confidence from four 483 
+
+statistics applied to comparisons of experimental and simulated communities. This included compar ison 484 
+
+of the total attained community biomass (e.g., Fig. 3C, 4E), the individual member biomass es (e.g., Fig. 485 
+
+4B, C&D), individual population growth profiles (e.g., Fig. 4F) and complete community trajectory 486 
+
+comparisons (Table 1, theta cosine trajectory scores). From a final set of 40 optimized parameter value 487 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+17 
+
+matrices for byproduct and predation interactions , we then randomly picked eight to predict the 488 
+
+community development of a n independent SynCom -21 growth experiment using only the different 489 
+
+starting composition and abundances , and the monoculture growth kinetics (Fig. 6). This resulted in very 490 
+
+similar statistical confidence of the same comparative measures on the community behavior (Table 1) .491 
+
+In conjunction , paired metatranscriptomic growth state classification and expression analysis confirmed 492 
+
+the dynamics of individual populations within the SynCom -21 (e.g., Fig. 6A), and highlighted the types of 493 
+
+metabolic changes underl ying stages in community development ( Fig. 7 ). As the simulations also predict 494 
+
+which community members are acting as net producer, consumer or prey at any point in time, we can 495 
+
+quantify this contribution in terms of biomass growth or loss (Fig. 5 and Fig. 6C). In that respect it was 496 
+
+remarkable that the simulations predicted a biphasic growth for fast -growing community members such 497 
+
+as Pseudomonas sp. strain 2 and Rahnella , which coincided almost exactly with a transient decrease in 498 
+
+the probability of growth predicted by mTRAC metatranscriptomic marker gene expression (fig. S2E) (35 ).499 
+
+Further major interactions that the model predicted between Pseudomonas sp. strain 2, Lysobacter ,500 
+
+Flavobacterium and others (Fig. 6C) turned out to be biologically complex, with different strains having 501 
+
+different strategies to profit from released byproducts and compounds from lysed cells (fig. S5 -S8 ). For 502 
+
+some strains such as Lysobacter , Pseudomonas sp. strain 1 and 2, and Rahnella , this entailed an almost 503 
+
+complete temporary shutdown of metabolic pathway expression to take up the wealth of suddenly 504 
+
+available building blocks (Fig. 7). Overall, the r esults of different independently started training cycles, 505 
+
+comparison to randomized SMINT -values and model predictions on un seen and independent 506 
+
+experimental data give us confidence that the obtained interaction parameter values have true biological 507 
+
+meaning. 508 
+
+The community demography model is thus realistic, but, evidently, not perfect. Simulations indicate d509 
+
+that differences in starting abundances and composition of the inoculum have a direct influence on the 510 
+
+population succession and final biomass outcomes . This is a non -linear effect that influences abundant, 511 
+
+fast -growing populations in a different way than rare, slow -growing members. To experimentally 512 
+
+determine the exact starting abundances of the strains in the inoculum in the microcosms was more 513 
+
+challenging than anticipated , because sequencing methods such as 16S rRNA gene amplicon analysis that 514 
+
+we used to quantify relative proportions, do not take cell viability into account. In addition, it is 515 
+
+technically difficult to quantify absolute abundances from introduced low numbers of inoculum into a soil 516 
+
+matrix, because of extraction losses. We also saw that , although the model scaled relatively well from 20 517 
+
+to 21 species while keeping most SMINT -values and adding new PARIN T-parameter sets , it did less well in 518 
+
+predicting subcommunities that lack ed 5 or 6 members of both dominant and rare contributors from the 519 
+
+trained SMINT - and PARINT -sets (fig. S 8). This suggests that the interaction matri ces are not simply 520 
+
+scalable by inclusion of zeros for absent members, but indeed, that the interactions themselves also 521 
+
+change . Finally, there is also an influence of the habitat on the community developmental trajectory. This 522 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+18 
+
+became evident from c omparisons of simulations of SynCom -21 growth with soil extract in mixed liquid 523 
+
+growth conditions and with soil extract added to soil microcosms that showed alter ed interaction 524 
+
+matrices (fig. S 11). This is not unexpected, but limits the extrapolation from a single parameter data set 525 
+
+estimated for a specific community and habitat conditions .526 
+
+Even though the proposed mathematical principle of biomass formation through reutilization of released 527 
+
+waste from leaked metabolites or lysed cells is relatively simple, its complexity arises from the seemingly 528 
+
+multitudes and varying ways that strains within communities interact and change dynamically . To 529 
+
+improve and generalize predictive outcomes , one possibility is to generate more community growth data 530 
+
+and to parametrize SMINT - and PARINT -interaction coefficient s for specific strain compositions in the 531 
+
+SAO -procedure within the community demography growth model (Fig. 1) . This is a similar problem as 532 
+
+measuring mono culture growth kinetic parameters on a single substrate and apply ing these in other 533 
+
+conditions , but the challenge in the community demography is to obtain relevant experimental data sets 534 
+
+with (ideally) high temporal resolution of absolute compositional changes (growth and decline) . Another 535 
+
+possibility might be to build extended genome -scale metabolic models (GEMs) which can predict 536 
+
+resource utilization and perform dynamic flux balance analysis to predict monoculture growth rates 537 
+
+under specific conditions (47, 48 ). Such predictions could help providing the necessary starting values to 538 
+
+initialize our model (like in Fig. 2A &B). Newer GEM approaches are also able to simulate the overlapping 539 
+
+metabolite release and uptake space in in silico communities (28 ), which could eventually provide a basis 540 
+
+to more easily parametrize interaction coefficient matrices of the community demography model. 541 
+
+METHODS 542 
+
+Mathematical c oncept of bacterial community demograph y in finite systems 543 
+
+To describe the bacterial community demography of  𝑁 𝑆  bacterial species over time (i.e., their individual 544 
+
+population growth and decline within the community) in a finite but pristine habitat (here: representative 545 
+
+for a soil microcosm), we follow first principles of Monod growth physiology for biomass formation and 546 
+
+waste production from resource utilization, extended by cross -feeding on reciprocal wastes as previously 547 
+
+formulated for a two -species community (21 ). For simplicity and without other a priori knowledge, we 548 
+
+assume a lumped species -specific produc tion of waste  𝑊 𝑖  , which by definition consists of metabolic 549 
+
+byproducts that are not utilized at a later stage by the species itself, or else they would already be 550 
+
+included in the biomass yield on the primary resource. SMINT -interactions in the model thus only allow a 551 
+
+species  𝑆 𝑖  to consum e waste  𝑊 𝑗  produced by a different species  𝑆 𝑗  .552 
+
+The associated system of ordinary differential equations ( ODEs ) that describes the change in biomass of 553 
+
+species  𝑖  (𝑑 𝑆 𝑖 ); the change in waste concentrations  𝑑 𝑊 𝑖  , and  𝑑 𝑅 𝑖  , the change in resource concentrations, 554 
+
+is then the sum of growth on resources and cross -feeding growth on reciprocal wastes, minus cell death 555 
+
+(eq. 1) ,556 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+19 
+
+𝑑𝑆 𝑖 (𝑡 )
+
+𝑑𝑡 = 𝑆 𝑖 (𝑡 ) ∑ 𝐿 𝑅𝑒𝑠 (𝑖 , 𝑗 )𝑀 𝑅𝑒𝑠 
+
+(1) (𝑖 , 𝑗 ) 𝑅 𝑗 (𝑡 )
+
+𝑅 𝑗 (𝑡 ) + 𝐾 𝑅𝑒𝑠 (𝑖 , 𝑗 )
+
+𝑁 𝑅 
+
+𝑗 =1
+
+557 
+
++𝑆 𝑖 (𝑡 ) ∑ 𝑀 𝐶𝐹 
+
+(1)(𝑖 , 𝑗 ) 𝑇 𝑊 𝑗 
+
+𝐶𝐹 𝑊 𝑗 (𝑡 )
+
+𝑊 𝑗 (𝑡 ) + 𝐾 𝐵𝑃 (𝑖 , 𝑗 )
+
+𝑁 𝑀 
+
+𝑗 =1
+
+558 
+
+−𝑆 𝑖 (𝑡 )𝑀 𝐷𝑒𝑎𝑡 ℎ (𝑖 , 𝑖 ) 𝑇 𝑆 𝑖 
+
+𝐷𝑒𝑎𝑡 ℎ𝑊 𝑖 (𝑡 )
+
+𝑊 𝑖 (𝑡 ) + 𝐾 𝐷𝑒𝑎𝑡 ℎ (𝑖 , 𝑖 )
+
+559 
+
+− 𝑆 𝑖 (𝑡 )𝑇 𝐿𝑇 𝐷𝑒𝑎𝑡 ℎ 𝑑 𝑖 ,560 
+
+𝑑𝑊 𝑖 (𝑡 )
+
+𝑑𝑡 = 𝑆 𝑖 (𝑡 ) ∑ 𝐿 𝑅𝑒𝑠 (𝑖 , 𝑗 )𝑀 𝑅𝑒𝑠 
+
+(2) (𝑖 , 𝑗 ) 𝑅 𝑗 (𝑡 )
+
+𝑅 𝑗 (𝑡 ) + 𝐾 𝑅𝑒𝑠 (𝑖 , 𝑗 )
+
+𝑁 𝑅 
+
+𝑗 =1
+
+561 
+
++𝑆 𝑖 (𝑡 ) ∑ 𝑀 𝐶𝐹 
+
+(2)(𝑖 , 𝑗 ) 𝑇 𝑊 𝑗 
+
+𝐶𝐹 𝑊 𝑗 (𝑡 )
+
+𝑊 𝑗 (𝑡 ) + 𝐾 𝐵𝑃 (𝑖 , 𝑗 )
+
+𝑁 𝑀 
+
+𝑗 =1
+
+562 
+
+− ∑ 𝑆 𝑗 
+
+𝑁 𝑀 
+
+𝑗 =1
+
+(𝑡 )(𝑀 𝐶𝐹 
+
+(1)(𝑗 , 𝑖 ) + 𝑀 𝐶𝐹 
+
+(2)(𝑗 , 𝑖 )) 𝑇 𝑊 𝑖 
+
+𝐶𝐹 𝑊 𝑖 (𝑡 )
+
+𝑊 𝑖 (𝑡 ) + 𝐾 𝐵𝑃 (𝑗 , 𝑖 )
+
+563 
+
++𝑆 𝑖 (𝑡 )𝑀 𝐷𝑒𝑎𝑡 ℎ(𝑖 , 𝑖 ) 𝑇 𝑆 𝑖 
+
+𝐷𝑒𝑎𝑡 ℎ𝑊 𝑖 (𝑡 )
+
+𝑊 𝑖 (𝑡 ) + 𝐾 𝐷𝑒𝑎𝑡 ℎ (𝑖 , 𝑖 ),564 
+
+𝑑𝑅 𝑖 (𝑡 )
+
+𝑑𝑡 = − ∑ 𝑆 𝑗 (𝑡 )𝐿 𝑅𝑒𝑠 (𝑗 , 𝑖 )(𝑀 𝑅𝑒𝑠 
+
+(1) (𝑗 , 𝑖 ) + 𝑀 𝑅𝑒𝑠 
+
+(2) (𝑗 , 𝑖 )) 𝑅 𝑖 (𝑡 )
+
+𝑅 𝑖 (𝑡 ) + 𝐾 𝑅𝑒𝑠 (𝑗 , 𝑖 ) .
+
+𝑁 𝑆 
+
+𝑗 =1
+
+565 
+
+566 
+
+with  𝑁 𝑅  the number of (primary) resources in the system and  𝐿 𝑅𝑒𝑠 (𝑖 , 𝑗 ) represent ing the lag time 567 
+
+associated with species  𝑖  consuming resource  𝑗 . We introduce two resource -related matrices,  𝑀 𝑅𝑒𝑠  
+
+> (1)
+
+and 568 
+
+𝑀 𝑅𝑒𝑠  
+
+> (2)
+
+, both expressed in  ℎ−1. The matrix entry  𝑀 𝑅𝑒𝑠  
+
+> (1)
+
+(𝑖 , 𝑗 ) represents the effective biomass formation rate 569 
+
+associated with the consumption of the resource  𝑗  by species  𝑖 , and is analogous to the Monod maximum 570 
+
+growth rate  𝜇 𝑚𝑎𝑥 , or equivalent ly to the rate constant  𝜅 2
+
+> (𝑖 ,𝑗 )
+
+. The matrix entry  𝑀 𝑅𝑒𝑠  
+
+> (2)
+
+(𝑖 , 𝑗 ) represents the 571 
+
+effective waste production rate associated with the same process and is anal ogous to the rate constant 572 
+
+𝜅 3
+
+> (𝑖 ,𝑗 )
+
+. The half -saturation constant  𝐾 𝑅𝑒𝑠  is defined from the underlying mass -actio n kinetics as 573 
+
+𝐾 𝑅𝑒𝑠 (𝑖 , 𝑗 ) = 𝜅 2   
+
+> (𝑖 ,𝑗 )+𝜅 3
+> (𝑖 ,𝑗 )
+> 𝜅 1
+> (𝑖 ,𝑗 )
+
+, and can be interpreted as the  𝐾 𝑆  Monod -term of that reaction (21 ).574 
+
+In similar terms, the biomass formation from byproduct  𝑊 𝑗  by species  𝑖  is described by the constant 575 
+
+𝐾 𝐵𝑃  
+
+> 𝑖𝑗
+
+= 𝜅 2𝐵𝑃      
+
+> (𝑖 ,𝑗 )+𝜅 3𝐵𝑃
+> (𝑖 ,𝑗 )+𝜅 4𝐵𝑃
+> (𝑖 ,𝑗 )
+> 𝜅 1𝐵𝑃
+> (𝑖 ,𝑗 )
+
+= 𝜅 2𝐵𝑃    
+
+> ′(𝑖 ,𝑗 )+𝜅 3𝐵𝑃
+> ′(𝑖 ,𝑗 )
+> 𝜅 1𝐵𝑃
+> (𝑖 ,𝑗 )
+
+with coefficients  𝜅 2𝐵𝑃  
+
+> ′
+
+and  𝜅 3𝐵𝑃  
+
+> ′
+
+defin ing the interaction matrices 576 
+
+𝑀 𝐶𝐹  
+
+> (1)
+
+and  𝑀 𝐶𝐹  
+
+> (2)
+
+through the respective yields, and  𝑇 𝑊 𝑗  
+
+> 𝐶𝐹
+
+the threshold for uptake of waste. Species decay is 577 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+20 
+
+the sum of a species -density dependent death ( threshold  𝑇 𝑆 𝑖  
+
+> 𝐷𝑒𝑎𝑡 ℎ
+
+(≔ 𝑇 𝜙 (𝑆 𝑖 (𝑡 )) and half velocity constant 578 
+
+𝐾 𝐷𝑒𝑎𝑡 ℎ ), and a constant death rate  𝑑 𝑖  imposed when growth substrates (𝑅 ) become limiting below a 579 
+
+threshold  𝑇 𝐿 𝑇 𝐷𝑒𝑎𝑡 ℎ (≔ 𝑇 𝜙 (𝑅 (𝑡 )). This long -term death rate ( 𝑑 𝑖 , ∀ 𝑖 = 1, ⋯ , 𝑆 ) is represented by the 580 
+
+chemical reaction  𝑆 𝑖 → ∅, therefore leads to a decrease in the total biomass of the system. Thresholds 581 
+
+have unitless values in the interval [0 1]. 582 
+
+We assume the soil microcosm as a system with  𝑁 𝑅  different primary resources . R esource consumption 583 
+
+by the  𝑁 𝑆  species is then described by the matri ce s 𝑀 𝑅𝑒𝑠  
+
+> 𝑖
+
+∈ ℝ 
+
+> 0
+> 𝑁 𝑠 ×𝑁 𝑅
+
+, 𝑖 = 1,2 where rows correspond to 584 
+
+the consumers (bacterial species) and columns are the resources present in the system . 𝑁 𝑀  denotes the 585 
+
+number of species -specific waste products , which is equivalent to the number of species in the system 586 
+
+since we only assume a single lumped waste per species . The s pecies ’ lag time s 𝐿 𝑅𝑒𝑠  for primary resource 587 
+
+consumption are described by a matrix  𝑁 𝑆 × 𝑁 𝑅  taking value in  ℝ>0 (units in  ℎ). SMINT parameters (i.e., 588 
+
+the consumption of reciprocal waste from substrate -mediated interactions ) are captured in a matrix 589 
+
+𝑀 𝐶𝐹 ∈ ℝ>0 
+
+> 𝑁 𝑠 ×𝑁 𝑀
+
+where rows are the consum er species and columns are the species -specific wastes .590 
+
+Because cross -feeding on waste leads to biomass formation and production of further waste, the 591 
+
+coefficients of the cross -feeding matrix are divided into two sub -matrices . The f irst,  𝑀 𝐶𝐹  
+
+> (1)
+
+∈ ℝ 
+
+> 0
+> 𝑁 𝑠 ×𝑁 𝑀
+
+can 592 
+
+be either positive or zero and corresponds to the rate of bacterial biomass production on reciprocal 593 
+
+waste . The s econd sub -matrix , 𝑀 𝐶𝐹  
+
+> (2)
+
+∈ ℝ 
+
+> 0
+> 𝑁 𝑠 ×𝑁 𝑀
+
+corresponds to the rate of (new) byproduct production 594 
+
+from reciprocal waste utilization and is also positive. As explained above, species are not allowed to reuse 595 
+
+their own waste nor new byproducts formed from waste by others , because this is implicit in their own 596 
+
+biomass yield definition. Both matrices are related by the definition of biomass yield  𝜌 𝐶𝐹 = 𝑀 𝐶𝐹  
+
+> (1)
+> 𝑀 𝐶𝐹
+> (1)+𝑀 𝐶𝐹
+> (2)
+
+.597 
+
+While in princip le allowed that wastes could be inhibitory for growth, we specifically set  𝑀 𝐶𝐹  
+
+> (1)
+
+∈ ℝ>0 in 598 
+
+our simulations, assuming only cross -feeding and no inhibition . The matrix  𝑀 𝐷𝑒𝑎𝑡 ℎ describes the species 599 
+
+decay ( 𝑀 (𝑖 , 𝑖 )𝐷𝑒𝑎𝑡 ℎ ∈ ℝ>0 , 𝑀 (𝑖 , 𝑗 ) = 0 ∀𝑖 ≠ 𝑗 , 𝑖 = 1, ⋯ , 𝑁 𝑠  ), composed of the density -dependent 600 
+
+death and the constant turnover (see eq. 1 ).601 
+
+Parasitic interactions (PARINT), here for the communit ies containing Lysobacter , are add ed in a matrix 602 
+
+𝑀 𝑃𝑟𝑒𝑑 . As for the SMINT -effects , the PARINT -effect is also split in two parts  𝑀 𝑃𝑟𝑒𝑑  
+
+> (1)
+
+and  𝑀 𝑃𝑟𝑒𝑑  
+
+> (2)
+
+∈ ℝ𝑁 𝑆 ×𝑁 𝑆  ,603 
+
+with the first explaining the rate of prey biomass being turned into predator biomass , and the second the 604 
+
+byproducts formed from predated biomass. This impl ies a biomass decrease for the preys following the 605 
+
+rate  (𝑀 𝑃𝑟𝑒𝑑  
+
+> (1)
+
++ 𝑀 𝑃𝑟𝑒𝑑  
+
+> (2)
+
+) and a biomass increase for the predator following the rate  𝑀 𝑃𝑟𝑒𝑑  
+
+> (1)
+
+. Both are 606 
+
+related again by the predator yield ratio  𝛼 𝑝𝑟𝑒𝑑  with  𝛼 𝑝𝑟𝑒𝑑 = 𝑀 𝑃𝑟𝑒𝑑     
+
+> (1)
+> (𝑀 𝑃𝑟𝑒𝑑
+> (1)+𝑀 𝑃𝑟𝑒𝑑
+> (2))
+
+. The remaining prey biomass 607 
+
+is converted into byproduct at rate  𝑀 𝑃𝑟𝑒𝑑  
+
+> (2)
+
+corresponding to  1 − 𝛼 𝑃𝑟𝑒𝑑 . For th e predation case, the 608 
+
+complete system of ODEs in eq.1 is updated as follows (eq. 2) ,609 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+21 
+
+𝑑𝑆 𝑖 (𝑡 )
+
+𝑑𝑡 = 𝑆 𝑖 (𝑡 ) ∑ 𝐿 𝑅𝑒𝑠 (𝑖 , 𝑗 )𝑀 𝑅𝑒𝑠 
+
+(1) (𝑖 , 𝑗 ) 𝑅 𝑗 (𝑡 )
+
+𝑅 𝑗 (𝑡 ) + 𝐾 𝑅𝑒𝑠 (𝑖 , 𝑗 )
+
+𝑁 𝑅 
+
+𝑗 =1
+
+610 
+
++𝑆 𝑖 (𝑡 ) ∑ 𝑀 𝐶𝐹 
+
+(1)(𝑖 , 𝑗 ) 𝑇 𝑊 𝑗 
+
+𝐶𝐹 𝑊 𝑗 (𝑡 )
+
+𝑊 𝑗 (𝑡 ) + 𝐾 𝐵𝑃 (𝑖 , 𝑗 )
+
+𝑁 𝑀 
+
+𝑗 =1
+
+611 
+
+−𝑆 𝑖 (𝑡 )𝑀 𝐷𝑒𝑎𝑡 ℎ (𝑖 , 𝑖 ) 𝑇 𝑆 𝑖 
+
+𝐷𝑒𝑎𝑡 ℎ𝑊 𝑖 (𝑡 )
+
+𝑊 𝑖 (𝑡 ) + 𝐾 𝐷𝑒𝑎𝑡 ℎ (𝑖 , 𝑖 )
+
+612 
+
++ 𝑆 𝑖 (𝑡 ) ∑ 𝑀 𝑃𝑟𝑒𝑑 
+
+(1) (𝑖 , 𝑗 ) 𝑇 𝑆 𝑗 
+
+𝑃𝑟𝑒𝑑 𝑆 𝑗 (𝑡 )
+
+𝑆 𝑗 (𝑡 ) + 𝐾 𝑃𝑟𝑒𝑑 (𝑖 , 𝑗 )
+
+𝑁 𝑆 
+
+𝑗 =1
+
+613 
+
+− ∑ 𝑆 𝑗 (𝑡 )(𝑀 𝑃𝑟𝑒𝑑 
+
+(1) (𝑗 , 𝑖 ) + 𝑀 𝑃𝑟𝑒𝑑 
+
+(2) (𝑗 , 𝑖 )) 𝑇 𝑆 𝑖 
+
+𝑃𝑟𝑒𝑑 𝑆 𝑖 (𝑡 )
+
+𝑆 𝑖 (𝑡 ) + 𝐾 𝑃𝑟𝑒𝑑 (𝑗 , 𝑖 )
+
+𝑁 𝑆 
+
+𝑗 =1
+
+614 
+
+615 
+
+− 𝑆 𝑖 (𝑡 )𝑇 𝐿𝑇 𝐷𝑒𝑎𝑡 ℎ 𝑑 𝑖 ,616 
+
+𝑑𝑊 𝑖 (𝑡 )
+
+𝑑𝑡 = 𝑆 𝑖 (𝑡 ) ∑ 𝐿 𝑅𝑒𝑠 (𝑖 , 𝑗 )𝑀 𝑅𝑒𝑠 
+
+(2) (𝑖 , 𝑗 ) 𝑅 𝑗 (𝑡 )
+
+𝑅 𝑗 (𝑡 ) + 𝐾 𝑅𝑒𝑠 (𝑖 , 𝑗 )
+
+𝑁 𝑅 
+
+𝑗 =1
+
+617 
+
++𝑆 𝑖 (𝑡 ) ∑ 𝑀 𝐶𝐹 
+
+(2)(𝑖 , 𝑗 ) 𝑇 𝑊 𝑗 
+
+𝐶𝐹 𝑊 𝑗 (𝑡 )
+
+𝑊 𝑗 (𝑡 ) + 𝐾 𝐵𝑃 (𝑖 , 𝑗 )
+
+𝑁 𝑀 
+
+𝑗 =1
+
+618 
+
+− ∑ 𝑆 𝑗 
+
+𝑁 𝑀 
+
+𝑗 =1
+
+(𝑡 )(𝑀 𝐶𝐹 
+
+(1)(𝑗 , 𝑖 ) + 𝑀 𝐶𝐹 
+
+(2)(𝑗 , 𝑖 )) 𝑇 𝑊 𝑖 
+
+𝐶𝐹 𝑊 𝑖 (𝑡 )
+
+𝑊 𝑖 (𝑡 ) + 𝐾 𝐵𝑃 (𝑗 , 𝑖 )
+
+619 
+
++𝑆 𝑖 (𝑡 )𝑀 𝐷𝑒𝑎𝑡 ℎ (𝑖 , 𝑖 ) 𝑇 𝑆 𝑖 
+
+𝐷𝑒𝑎𝑡 ℎ𝑊 𝑖 (𝑡 )
+
+𝑊 𝑖 (𝑡 ) + 𝐾 𝐷𝑒𝑎𝑡 ℎ (𝑖 , 𝑖 )
+
+620 
+
++ 𝑆 𝑖 (𝑡 ) ∑ 𝑀 𝑃𝑟𝑒𝑑 
+
+(2) (𝑖 , 𝑗 ) 𝑇 𝑆 𝑗 
+
+𝑃𝑟𝑒𝑑 𝑆 𝑗 (𝑡 )
+
+𝑆 𝑗 (𝑡 ) + 𝐾 𝑃𝑟𝑒𝑑 (𝑖 , 𝑗 )
+
+𝑁 𝑆 
+
+𝑗 =1
+
+621 
+
+𝑑𝑅 𝑖 (𝑡 )
+
+𝑑𝑡 = − ∑ 𝑆 𝑗 (𝑡 )𝐿 𝑅𝑒𝑠 (𝑗 , 𝑖 )(𝑀 𝑅𝑒𝑠 
+
+(1) (𝑗 , 𝑖 ) + 𝑀 𝑅𝑒𝑠 
+
+(2) (𝑗 , 𝑖 )) 𝑅 𝑖 (𝑡 )
+
+𝑅 𝑖 (𝑡 ) + 𝐾 𝑅𝑒𝑠 (𝑗 , 𝑖 ) .
+
+𝑁 𝑆 
+
+𝑗 =1
+
+622 
+
+623 
+
+The cross -feeding threshold  𝑇 𝑊 𝑖  
+
+> 𝐶𝐹
+
+depends on byproduct concentration , and the threshold function 624 
+
+𝑇 𝑊 𝑖  
+
+> 𝐷𝑒𝑎𝑡 ℎ
+
+depends on the concentration of a species  𝑆 𝑖  . To be consistent with the previous notations, we 625 
+
+use the notation  𝑆 𝑖 = 𝑋 𝑖  within ODE s to identify the total biomass of a bacterial species  𝑆 𝑖  , but also as a 626 
+
+reference for the species itself. The ODE -implicit chemical reaction network impl ies a total (bio -)mass 627 
+
+conservation within the system with finite boundaries .628 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+22 
+
+To implement the model for  𝑁 𝑆  species and their SMINT -parameters , the ODEs of eq.1 are executed on a 629 
+
+set of matrices (Algorithm 1), which are individually and sequentially solved as outlined in Algorithm 2. In 630 
+
+case we include PARINT -parameters , we execute the ODEs of eq.2 and include the  𝑀 𝑝𝑟𝑒𝑑 -matrices. When 631 
+
+searching only PARINT - but not SMINT -interactions, matrix values from previous SMINT -searches can be 632 
+
+kept. The order of matrix layer fitting in the algorithm should theoretically not matter, but might affect 633 
+
+the results depending on the number of iterations. 634 
+
+Algorithm  1: Community demography matrices 
+
+Result: Return optimized matrix values for 
+
+𝑀 𝐶𝐹 , 𝑀 𝐷𝑒𝑎𝑡 ℎ , 𝑀 𝑅𝑒𝑠 & 𝐿 𝑅𝑒𝑠 , 𝑁 𝑅 , 𝑀 𝑝𝑟𝑒𝑑 
+
+Choose an integer  𝐾  as sample size for one loop 
+
+while  𝑗 < 𝐾  do 
+
+Iterate Algorithm 2 for 
+
+𝑀 𝐶𝐹 , 𝑀 𝐷𝑒𝑎𝑡 ℎ , 𝑀 𝑅𝑒𝑠 & 𝐿 𝑅𝑒𝑠 , 𝑁 𝑅 , 𝑀 𝑝𝑟𝑒𝑑 ; 𝑗 = 𝑗 + 1;
+
+end 
+
+635 
+
+Matrix parameter estimation from simulated -annealing optimization iteration 636 
+
+Depending on the chosen community composition (20 or 21 species, with or without predator; see 637 
+
+below), we preset or optimize selected parameter values in the matrices of Algorithm 1 using a simulated 638 
+
+annealing optimization (SA O) algorithm combined with an adaptive Gaussian random -walk proposal 639 
+
+inspired by the robust adaptive Metropolis scheme (49 ). The algorithm is divided into four blocks. In each 640 
+
+block, an SAO procedure is applied to sequentially fit the cross -feeding , self -inhibition , primary resource 641 
+
+consumption , and predation interaction parameters, while keeping the other interaction parameters 642 
+
+fixed. After the last block, the procedure returns to the first block to perform a second round of fitting. 643 
+
+This process is repeated until a predefined number  𝐾  of block iterations is reached.  At each iteration, 644 
+
+candidate parameter matrices are generated using a multivariate normal perturbation whose covariance 645 
+
+is adapted to target a desired acceptance rate. The candidate parameters are then used to solve the ODE 646 
+
+system of Eq. 1 (in case of only SMINT -interactions ) or Eq. 2 (in case of SMINT - and PARINT -interactions ),647 
+
+and the resulting simulated community compositions are compared to the empirical values through a 648 
+
+weighted error -based objective function (Algorithm 2) .649 
+
+Candidate solutions are accepted with probability :650 
+
+𝑃 acc = min  (1, exp  [ − 𝐸 cand − 𝐸 curr 
+
+𝑇 𝑖  ]),651 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+23 
+
+where  𝐸 cand  and  𝐸 curr  denote the objective function values of the candidate and current parameter sets, 652 
+
+respectively, and  𝑇 𝑖  is a temperature parameter that decreases over iterations according to a predefined 653 
+
+decay schedule. High temperatures allow wider exploration of the parameter space, while progressively 654 
+
+lower temperatures concentrate the search around low -error solutions. Although the candidate value 655 
+
+proposal distribution and covariance adaptation follow principles of robust adaptive Metropolis 656 
+
+sampling, the algorithm is used here exclusively for optimization rather than Bayesian inference. 657 
+
+Parameter sets of growth rates, resource consumption rates, and cross -feeding rates are further 658 
+
+constrained to the interval  [0 10 ] h−1 to avoid unrealistic values. Death rates are allowed to vary 659 
+
+between  0.012  and  10 h−1.660 
+
+Matrices are initiated as follows. The initial starting rates of the individual species in the community in 661 
+
+𝑀 𝑅𝑒𝑠  are randomly sampled from their log -normal fitted distribution of maximum observed growth rates 662 
+
+across a range of substrates and substrate conditions (Fig. 2B; see below) . Similarly, the initial l ag times in 663 
+
+𝐿 𝑅𝑒𝑠  are randomly drawn from their log -normal fitted lag phase distributions extracted from the same 664 
+
+monoculture growth conditions as for  μ𝑚𝑎𝑥 . The initial rates in the  𝑀 𝐶𝐹  cross -feeding matri ces are 665 
+
+independently sampled from the log -normal maximum observed growth rate distributions of the 666 
+
+monoculture s but multiplied by 0.8, under the assum ption that byproducts are used less efficiently than 667 
+
+the primary resources . T he  𝑀 𝐷𝑒𝑎𝑡 ℎ matrix is initiated with an equal death rate for each species of 0.0102 668 
+
+h–1 as suggested by literature values (50 ). As initial value for the predation rates in  𝑀 𝑃𝑟𝑒𝑑  we use 0.01 h –1.669 
+
+Based on targeted chemical analysis of aqueous -phase extracted compounds from the soil microcosms 670 
+
+we set the number of resources in  𝑁 𝑅  to 12, and divide the total measured organic carbon (TOC) 671 
+
+concentration in the soil microcosm system among the 12 compound groups in proportion to their 672 
+
+summed peak areas in the chemical analysis to obtain their starting concentrations (Fig. 2 E, table S1 ). For 673 
+
+fitting scenarios we take t he starting biomass (in g C DW ml –1) of the individual species in the community 674 
+
+as the mean of the experimentally determined absolute cell abundances (for each of the species) at t=0 ,675 
+
+multiplied by the average cell dry weight calculated according t o Ref. (51 ) .676 
+
+Algorithm 2: Matrix solver 
+
+Result: Return values for any of the matrix  Θ
+
+Choose an integer  𝐾  as sample size for one loop 
+
+Choose initial candidates for  Θ0and  𝜑 0 > 0;
+
+Define a sequence of positive adaptation steps  (𝜂 𝑖 )𝑖 ≥2 decaying to zero; 
+
+Choose a mean acceptance rate  𝛼 ∗ ∈ (0,1);
+
+Set  𝑖 = 1;
+
+while  𝑖 < 𝐾 𝑎𝑛𝑑 𝑠𝑡𝑜𝑝𝑝𝑖𝑛𝑔 𝑐𝑟𝑖𝑡𝑒𝑟𝑖𝑢𝑚 𝑛𝑜𝑡 𝑠𝑎𝑡𝑖𝑠𝑓𝑖𝑒𝑑  do 
+
+Generate a candidate  Θ̃ 𝑖 = Θ𝑖 −1 + 𝑀 𝑖 −1𝑤 𝑖 , where  𝑤 𝑖 ~ 𝒩 (0, 𝐼 )
+
+Solve eq. 1 for the candidate  Θ̃ 𝑖 , and use the resulting sequence 
+
+𝑥 𝑛 (Θ̃𝑖 ) for computing the objective function ;
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+24 
+
+Compute the ratio  𝛼 = 𝐹 (𝑓 (𝑦 ⃗ |Θ̃𝑖 )
+
+𝑓 (𝑦 ⃗ |Θ̃ 𝑖 −1)
+
+⁄ 𝑓 (Θ̃ 𝑖 )
+
+𝑓 (Θ̃ 𝑖 −1)
+
+⁄ , 𝑇 );
+
+Generate a random value  𝑞 ~𝑢𝑛𝑖𝑓 (0,1);
+
+if  𝛼 < 𝑞  then 
+
+| Θ𝑖 = Θ𝑖 −1;
+
+else 
+
+| Θ𝑖 = Θ̃𝑖 ;
+
+end 
+
+Update matrix  𝑀 𝑖 , using 
+
+𝑀 𝑖 𝑀 𝑖  
+
+> 𝑡
+
+= 𝑀 𝑖 −1 (𝐼 + 𝜂 𝑖 [𝛼 (Θ𝑖 −1, Θ̃𝑖 ) − 𝛼 ∗] 𝑤 𝑖 𝑤 𝑖 
+
+> 𝑡
+> ‖𝑤 𝑖 ‖2
+
+) 𝑀 𝑖 −1 
+
+> 𝑡
+
+;
+
+𝑖 = 𝑖 + 1 ;
+
+𝑇 (𝑖 ) = 𝑓 𝑇𝑒𝑚𝑝 (𝑇 (𝑖 ), 𝑖 , 𝐾 ) ;
+
+end 
+
+677 
+
+Community demography simulation training and prediction scenarios 678 
+
+To test and parameterize the community demographic model using experimental data, we constructed 679 
+
+bottom -up synthetic communities of either 20 ( SynCom -20 ) or 21 bacterial species (SynCom -21, same 680 
+
+members as SynCom -20 but additionally, the facultative bacterial predator Lysobacter, table S2 ) cultured 681 
+
+in soil microcosms and sampled over a period of three weeks ( see below and Table 1 for the specifics of 682 
+
+each experiment ). Each experiment produced the relative abundance s over time of the individual 683 
+
+populations forming the community (from 16S rRNA gene amplicon sequence data , with the soil -purified 684 
+
+bacterial cell fraction as basis for DNA isolation ; see below) and the total cell counts of the isolated cell 685 
+
+fraction. By multiplying the relative abundances with the total cell counts we derived absolute population 686 
+
+abundances over time (assuming that there were no species -specific DNA isolation biases). Each 687 
+
+experiment was conduc ted in 4-5 biological replicates. 688 
+
+To estimate SMINT -parameter values and test their effects , we used data from microcosm -grown 689 
+
+communities of 20 soil isolates ( SynCom -20 ), without Lysobacter . Two independently repeated 690 
+
+microcosm series, each with n=4 biological replicates were combined and split into two parts: one part 691 
+
+used for the SAO -algorithm (62.5% of the data, containing all replicates from the first experiment and 692 
+
+one replicate from the second), and the second part used for validation (37.5% of the data). In this case, 693 
+
+the model matrices comprised  𝑁 = 20  species and 12 resource groups. The i nitial matrix 694 
+
+parameterization followed the procedure described above, followed by the Algorithm 2 -procedure to 695 
+
+find the best cross -feeding matrix parameter sets that minimize the discrepancy between simulated 696 
+
+absolute biomass values of each community member and the corresponding experimental 697 
+
+measurements at each time point. Th is fitting procedure was repeated independently 10 times, yielding 698 
+
+10 independent parameter sets, which were compared to assess the uniqueness and consistency of the 699 
+
+optimization process when starting from the same initial conditions .700 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+25 
+
+As a control for the importance of SMINT -parameter optimization , we pick one of the 10 fitted  𝑀 𝑅𝑒𝑠  and 701 
+
+populate the  𝑀 𝐶𝐹  matrices per consumer -species with ra ndomly sample d values from their log -normal 702 
+
+growth rate distributions multiplied by 0.8. This was repeated six times (fig. S1). 703 
+
+To parametrize PARINT -effect s (i.e., including the additional  𝑀 Pred  matrix as explained above in Eq. 2) ,704 
+
+we used soil -microcosm grown communit ies of 21 strains, now including Lysobacter (n = 4 biological 705 
+
+replicates ; labeled SynCom -21 in Table 1 ). Importantly, this model simulation uses one of the optimized 706 
+
+sets of the  𝑀 CF  cross -feeding matric es values of the 20 species from the SynCom -20 in eq. 1 . The 707 
+
+Algorithm 2 procedure then only optimize s the resource/byproduct consumption and death parameters 708 
+
+for Lysobacter itself, and the predation matrices for the inclusion of Lysobacter in SynCom -21 . We bias 709 
+
+the potential preys for Lysobacter in the matrices based on a comparison of the species biomass between 710 
+
+the SynCom -20 and SynCom -21, resulting in only Caulobacter , Flavobacterium , Microbacterium , and 711 
+
+Variovorax . Additionally, we assume a yield of Lysobacter biomass formation from predation of 20%. 712 
+
+With t his simulation strategy the number of parameters to be estimated was drastically reduced, limit ing 713 
+
+risk s of overfitting. Th is PARINT SAO -procedure was repeated 40 times, yielding 40 combined matrix sets 714 
+
+of SMINT - and PARINT -parameter values .715 
+
+SMINT - and PARINT -matrix parametrization was repeated independently for SynCom -21 community data 716 
+
+growing in mixed -suspended liquid culture on soil extract medium (fig. S11). 717 
+
+Finally, we use 10 randomly drawn from the 40 optimized SMINT - and PARINT -parameter value sets from 718 
+
+soil -microcosm data to predict the outcomes of further defined communities grown in soil microcosms 719 
+
+(Fig. 1C). First, we repeated an independent SynCom -21 experiment (labeled SynCom -21 MT for the 720 
+
+Meta -Transcriptomics inclusion , Table 1 ) that was start ed from a freshly prepared mix ed inoculum. 721 
+
+Because the first time point of the SynCom -21 MT experiment was only taken after 12 h, we used starting 722 
+
+abundances for each of the community members that were retroprojected to t=0 from the experimental 723 
+
+data at t = 12 assuming exponential growth. Secondly, we produced three strain drop -out variants of the 724 
+
+21 -member defined community without rare or abundant members (fig. S8), which were regrown in 725 
+
+sterile soil microcosms as the other communities. Third, we use previous community data of weekly -726 
+
+transferred and one -tenth diluted soil microcosms inoculated with the 21 -member defined community 727 
+
+(34 ) to de novo predictions of species growth .728 
+
+Soil microcosm community growth experiments 729 
+
+SynCom -20 and SynCom -21 inocula (table S 1) were cultured in s terile soil microcosms consist ing of 90 g 730 
+
+dried, double -autoclaved river bank matrix (mostly sand and silt) in 500 ml capped Schott glass bottles, 731 
+
+complemented with 10 ml of a sterile water -extract of forest top soil (soil extract) to provide additional 732 
+
+carbon and nitrogen, as previously described (34 ). The measured total organic carbon content of soil 733 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+26 
+
+extract amounts to 0.738 mg C per ml , and the microcosms were kept at 10% gravimetric water content. 734 
+
+Microcosms we re inoculated with strain monocultures , or with the mixture of 20 or 21 species and 735 
+
+subsets thereof , in approximately equivalent cell counts, each individually precultured on R2A agar plates 736 
+
+(52 ) for 5 days at 18 –20 °C and harvested using a stainless -steel spreader bar and 5 ml pyrophosphate 737 
+
+solution ( 0.2% w/v tetrasodium -pyrophosphate decahydrate solution at pH 7.5) . Harvested cells were 738 
+
+suspended gently by pipetting and then centrifuged at 4000 × g for 7 minutes. After removing the 739 
+
+supernatant, the cells were resuspended in 5 ml pyrophosphate solution. Cell densities were SYBR -Green -740 
+
+stained and quantified by flow cytometry as previously described (34 ) and diluted, if needed, to a density 741 
+
+of 10 9 cells ml –1. Aliquots of 1 ml of each strain were then pooled together , mixed by slow vortexing and 742 
+
+diluted with sterile soil extract to produce an inoculum of 10 7 cells ml –1. Four replicate microcosms (90 g 743 
+
+matrix) were inoculated with 10 ml of the inoculum to achieve a starting density of 10 6 cells g –1 soil. DNA 744 
+
+was isolated from the inoculum (see below) to characterize the starting relative abundances of each 745 
+
+strain. Inoculated glass bottles were capped and placed on their sides on a Stuart SRT9D horizontal roller 746 
+
+mixer (Cole -Palmer, UK) during 2 h at room temperature to distribute the moist soil -inoculated material 747 
+
+homogenously . Microcosms were then incubated upright in the dark at 18 -20 °C for a duration of up to 748 
+
+three weeks .749 
+
+Microcosms were sampled at defined time intervals (typically, after 1 day, 3, 7, 9 or 10, 15 and 21 or 22 750 
+
+days) to quantify the community size and its composition. Before sampling, t he bottles were placed on a 751 
+
+horizontal roller mixer for 30 minutes , after which 10 g soil was removed with a sterile spatula (weight 752 
+
+recorded) and transferred to a 15 ml sterile Falcon tube (and the remainder microcosm was incubated 753 
+
+further) . Microbial cells were detached from the matrix by vortexing the soil samples with 10 ml 0.2% 754 
+
+sodium pyrophosphate solution on a Vortex -Genie 2 (Scientific Industries, USA) at full speed for 2 min. 755 
+
+Tubes were then placed vertically for 3 –5 minutes to sediment particles, and 5 ml of the clear liquid 756 
+
+phase above the sedimented material was aspirated and transferred into a fresh 15 ml Falcon tube 757 
+
+placed on ice. A 600 –μl aliquot of th is cell suspension was further passed through a 40 –μm cell strainer 758 
+
+(Corning, USA) into a 2 ml Eppendorf tube and placed on ice for quantifying total cell counts by flow 759 
+
+cytometry. The remaining cell suspension was centrifuged at 4000 rpm for 7 minutes at 21 °C in a swing -760 
+
+out rotor 5810R centrifuge (Eppendorf, USA). The supernatant was removed and the pellet was 761 
+
+resuspended in 2 ml pyrophosphate solution, which was transferred to fresh 2 ml Eppendorf tubes. This 762 
+
+suspension was centrifuged at 7000 × g for 7 minutes and the supernatant removed to leave a dry cell 763 
+
+pellet. These cell p ellets were stored at –80 °C until total DNA extraction. 764 
+
+16S rRNA gene amplicon sequencing and analysis 765 
+
+Total DNA was extracted and purified from thawed cell pellets with a DNeasy PowerSoil Pro Kit (Qiagen, 766 
+
+Germany) according to the provided protocol. Quantities of 10 ng purified DNA were used to amplify the 767 
+
+V3 –V4 region of the 16S rRNA gene in the polymerase chain reaction, which were subsequently indexed 768 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+27 
+
+using the Nextera XT primer 1 Set A/B and corresponding protocol as per instructions by Illumina, 769 
+
+described in detail in (53 ). The indexing strategy allowed for a final multiplexing of 192 samples per 770 
+
+library, which were spiked with 30% PhiX control v3 (Illumina Inc., USA) prior to 300 cycle paired -end 771 
+
+sequencing on MiSeq v3 (Illumina Inc., USA) or AVITI Sequencing System (Element Biosciences, San Diego, 772 
+
+CA, USA) using a Cloudbreak Freestyle ™ Medium Output Kit at the Lausanne Genomic Technologies 773 
+
+Facility. 774 
+
+The quality of the sequence reads was checked with FastQC 0.11.9 (54 ) and trimmed using Trimmomatic 775 
+
+0.39 (55 ) with a sliding window of 5:28. Paired reads were then merged using Flash 1.2.11 (56 ) with a 20 776 
+
+bp minimum and 170 bp maximum overlap with no allowed mismatches. To match reads to the member s777 
+
+of the SynCom -20 or SynCom -21 , we collected and aligned all sequence variants from the genome of 778 
+
+each member ( table S2 ) using ContEst16S (https://www.ezbiocloud.net/tools/contest16s) and Kalign3 779 
+
+(57 ). Species -specific regions (99 –100 bp) were chosen using Jalview 2.11.2.5 and used as a query for 780 
+
+grep , the Bash pattern matching tool, to count the number of each sequence per sample. Absolute 781 
+
+abundances of each query sequence match ing to the target species were summed and then divided by 782 
+
+the number of rRNA operons in each species . This number was normalised by the total number of grep 783 
+
+matches per sample to calculate the relative abundance of each community member. Absolute Syn Com 784 
+
+member abundances in the microcosms were then obtained by multiplying the relative abundances from 785 
+
+the 16S rRNA gene -derived counts with the total cell counts from flow cytometry. 786 
+
+RNA and DNA isolation for metatranscriptomic and metagenomic sequencing 787 
+
+For transcriptomics and microbial community analysis, microbial cells were first extracted from the soil 788 
+
+matrix by combining 10 g of microcosm with 20 ml of ice -cold 4 g/l sodium pyrophosphate decahydrate 789 
+
+solution in 50 ml polypropylen e conical tubes (Greiner bio -one) and 2 min vortexing at maximum power 790 
+
+settings on Vortex -Genie® 2 mixer (Scientific Industries). Cells from the supernatant were collected by 5 791 
+
+min centrifugation at 3220 g in a swing out rotor (Eppendorf A -4-62) at 0°C, flash -frozen in liquid nitrogen 792 
+
+and stored at -80°C. Total DNA and RNA were extracted using the RNeasy PowerSoil Pro Kit combined 793 
+
+with RNeasy PowerSoil DNA Elution Kit (Qiagen, Hilden, Germany) according to the manufacturer’s 794 
+
+instructions. 795 
+
+Following extraction, RNA was treated with TURBO DNAse (Invitrogen, Thermo Fisher Scientific, 796 
+
+Waltham, MA, USA) to remove residual genomic DNA and concentrated using an RNA Clean & 797 
+
+Concentrator -25 (Zymo Research, Irvine, CA, USA). Metatranscriptomic libraries were prepared from 100 -798 
+
+250 ng total RNA using the Zymo -Seq RiboFree Total RNA Library Kit (Zymo Research, Irvine, CA, USA), 799 
+
+which includes an integrated rRNA depletion step, following the manufacturer’s protocol. Libraries were 800 
+
+indexed using the Nextera XT v2 Index Kit A (Illumina, San Diego, CA, USA). Libraries were purified using 801 
+
+magnetic beads and pooled together, quantified with Qubit dsDNA BR Assay Kit and QuBit 2 Fluorometer 802 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+28 
+
+(Invitrogen, Thermo Fisher Scientific, Waltham, MA, USA), and fragment size distributions were assessed 803 
+
+by capillary electrophoresis on a 5300 Fragment Analyzer System (Agilent Technologies, Santa Clara, CA, 804 
+
+USA) prior to sequencing. 150 -bp paired -end sequencing was performed on an AVITI Sequencing System 805 
+
+using a Cloudbreak Freestyle ™ High Output Kit (Element Biosciences, San Diego, CA, USA) at the Lausanne 806 
+
+Genomic Technologies Facility. 807 
+
+Metat genomic and meta ranscriptomics data processing 808 
+
+The resulting raw reads from metagenomic and metatranscriptomic sequencing were cleaned by 809 
+
+removing adaptor sequences, low -quality -end trimming and removal of low -quality reads using BBTools v 810 
+
+38.18 (58 ). Available from:  https://sourceforge.net/projects/bbmap/ . The exact commands used for 811 
+
+quality control can be found on the Methods in Microbiomics webpage (Sunagawa, S. Data Preprocessing 812 
+
+- Methods in Microbiomics 0.0.1 documentation. Available from:  https://methods -in -813 
+
+microbiomics.readthedocs.io/en/latest/preprocessing/preprocessing.html  [doi: 814 
+
+https://doi.org/10.5281/zenodo.15019381 ] ). For metatranscriptomic analysis, r eads were mapped to 815 
+
+the concatenated soil SynCom -21 genomes with bowtie2 v. 2.5.1 (59 ) and quantified using featureCounts 816 
+
+v. 2.0.1 (60 ). Statistical analysis and data normalisation were performed independently for each strain as 817 
+
+described in Ref. (61 ), a Python re -implementation of the DESeq2 framework (62 ). DE -genes for 818 
+
+Lysobacter were further identified on log 2-TPM -counts for which at least 3 replicate data values were 819 
+
+available using MATTEST and MAFDR multiple test corrections implemented in MATLAB (version 820 
+
+R2023b). Probabilities of growth were inferred from expression of sets of conserved household genes 821 
+
+using mTRAC with default parameter s (35 ). The quality -controlled metagenomic reads were used for in 822 
+
+situ growth rate prediction of each of the members of the SynCom -21 MT community with CoPTR, under 823 
+
+default parameters (36 ).824 
+
+KEGG Orthology terms were assigned to predicted proteins using eggNOG -mapper v 2.1.12 with default 825 
+
+parameters against the eggNOG database (version 6.0 ) (63 ). Transporter annotations were generated 826 
+
+using gapseq with find –p transporter mode (64 ). Expression changes over time and per species in the 827 
+
+SynCom -21 MT experiment were further analyzed by KEGG orthology pathway terms (i.e., ko -terms) (65 ).828 
+
+Expression of genes annotat ed to ko -terms or transporters were categorized by their time profile based 829 
+
+on Pearson similarity scores to a select ‘type’ example (fig. S4 and Fig. 4E) . For direct representation, ko -830 
+
+pathway expression w as plotted as the log 2-TPM values per genome and time (e.g., Fig. 6D). Expression 831 
+
+differences over all common ko -pathway annotated genes were summarized in principal component 832 
+
+analysis (as in fig. S 6). Ko -pathways allocated to the same time profile category of fig. S4C were then 833 
+
+mapped per time -point and genome on the global KEGG metabolic maps by iPATH3 (66 ) for 834 
+
+representation, as explained in fig. S7 and summarized for a select pair of dominant strains in Fig. 7B .835 
+
+Quantifying total cell counts by flow cytometry 836 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+29 
+
+Total cell counts in the recovered soil cell suspensions were quantified by flow cytometry of SybrGreen -I837 
+
+stained suspensions according to the procedure outlined by the supplier (Thermofisher), counting gated 838 
+
+events above a FITC -value of 1000, as described previously (53 ). Cell counts were then converted to cells 839 
+
+per ml of soil water phase , using a gravimetric water content of 10 ml water per 100 g total material. Cell 840 
+
+counts were converted to average dry weight biomass (table S1) using the procedure outlined in Ref. 841 
+
+(51 ).842 
+
+Individual species growth rate s and substrate preferences 843 
+
+Different complementary methods were used to measure maximum specific growth rates of the 844 
+
+individual Syn Com members in pure liquid culture: (i) succinate as sole carbon substrate in minimal 845 
+
+medium, (ii) growth on a complex substrate composed of peptone, tryptone, yeast extract and glucose 846 
+
+(PTYG), (iii) growth on soil extract medium and (iv) substrate utilization in BIOLOG plates. Individual 847 
+
+maximum population densities in soil measured after 1 week of growth served to calculate an average 848 
+
+biomass yield (n = 4 replicates) .849 
+
+Growth kinetic measurements were started as follows. Individual Syn Com members were recovered from 850 
+
+their –80 °C glycerol stock, plated for five days at 18 -21 °C on R2A agar, after which a single isolated 851 
+
+colony was resuspended in 200 μl 21C minimal medium (67 ) with 5 mM succinate in a single well of a 96 -852 
+
+well plate. The increase in culture turbidity at 600 nm was measured using a BioTek Synergy H1 plate 853 
+
+reader for 48 h, with four replicates for each strain. In case of PTYG, the procedure was repeated with 854 
+
+medium containing 0.6 MgSO 4·7H 2O, 0.07 g CaCl 2·2H 2O, 0.5 g peptone, 0.5 g tryptone, 1 g yeast extract 855 
+
+and 1 g glucose per L. For growth on soil extract medium, strains were inoculated at similar densities as 856 
+
+before, but in this case, we measured population growth from increase in flow cytometry total counts. 857 
+
+For BIOLOG experiments, each strain was tested in triplicate on 30 different carbon substrates, and the 858 
+
+respiration values from conversion of the resazurin salt were measured using a BioTek plate reader at 859 
+
+590 nm. Growth curves were fitted with a Monod substrate -to -biomass function to extract maximum 860 
+
+population size,  𝐾 𝑆 , lag time and  μ𝑚𝑎𝑥 , as described previously (21 ).861 
+
+Liquid chromatography mass -spectrometry metabolite analysis 862 
+
+In order to get an approximation of the substrate utilization in the soil microcosms by the growing 863 
+
+SynCom -21 , we sampled (5 g) sterile control soil microcosms with soil extract added, and three replicates 864 
+
+of inoculated SynCom -21 microcosms after day 1, 3 and 10. Soil aliquots (5 g) were resuspended in 25 ml 865 
+
+pyrophosphate solution, vortexed at 700 rpm for 2 min, settled for 1 min, after which 0.5 ml of 866 
+
+supernatant was transferred to a clean Eppendorf vial. This was centrifuged for 2 min at maximum speed 867 
+
+(15,000 rpm in a Biofuge), the supernatant was filtered over a 0.2 μm syringe filter and flash -frozen in 868 
+
+liquid nitrogen. Samples were stored at –80 °C until analysis by Hydrophilic Interaction Liquid 869 
+
+Chromatography coupled to tandem mass spectrometry (HILIC – MS/MS) at the University of Lausan ne870 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+30 
+
+Metabolomics Facility. As this is targeted MS, we represent compounds by their peak areas. Compounds 871 
+
+are grouped by chemical category ( table S 2) to estimate 12 substrate classes in the soil (and soil extract 872 
+
+liquid) that build the  𝑁 𝑅𝑒𝑠  matrix mentioned above. We calculate the relative proportions of the total by 873 
+
+their peak area, sum those per chemical category, and use that proportion to derive an equivalent 874 
+
+compound availability (in mg C l –1) by multiplying the proportion with the TOC concentration of soil 875 
+
+extract. 876 
+
+Statistical analysis 877 
+
+To assess the quali ty of the total biomass prediction s between different models and simulations , we use 878 
+
+Cliff’s delta, a nonparametric effect -size measure. Cliff’s delta quantifies the degree of difference 879 
+
+between two groups without assuming any underlying distribution and does not require a minimum 880 
+
+sample size. The statistic ranges from −1 to 1, where 0 indicates complete overlap between the two 881 
+
+groups, and values close r to ±1 indicat ing that one group consistently yields larger values than the other. 882 
+
+A s tatistical significance can be attributed to Cliff’s delta by permutation testing (n = 100 ,000 883 
+
+permutations) . Group labels are randomly permuted after pooling the two observed groups, Cliff’s delta 884 
+
+is recomputed for each permutation, and the P value is reported as the proportion of permuted statistics 885 
+
+that are at least as extreme as the observed value. 886 
+
+To assess similarities in community composition at the last time point, we performed a PERMANOVA test 887 
+
+on the Bray –Curtis distance matrix. Assuming we have  𝑁  replicates of a community with  𝑆  species, the 888 
+
+Bray –Curtis distance matrix is defined as ,889 
+
+𝐷 (𝑖 , 𝑗 ) = 𝐷 (𝑗 , 𝑖 ) = ∑ |𝑥 𝑖𝑘 − 𝑥 𝑗𝑘 |𝑆 
+
+> 𝑘 =1
+
+∑ (𝑥 𝑖𝑘 + 𝑥 𝑗𝑘 )𝑆 
+
+> 𝑘 =1
+
+, 𝑖 , 𝑗 = 1 ⋯ 𝑁 ,890 
+
+where  𝑥 𝑖𝑘  denotes the abundance of species  𝑘  in replicate  𝑖 . Here,  𝐷 (𝑖 , 𝑗 ) = 0 corresponds to identical 891 
+
+community composition, whereas  𝐷 (𝑖 , 𝑗 ) = 1 indicates completely different community compositions. 892 
+
+The PERMANOVA permutation test evaluates the null hypothesis that the centroids and dispersion of the 893 
+
+communities are equivalent between the considered groups. 894 
+
+To assess the similarity between observed and simulated growth of individual populations, we use the 895 
+
+Pearson correlation coefficien t and its associated P value. The cosine similarity index was computed to 896 
+
+compare community trajectories at each time point and average d over all time points. Values close to 1 897 
+
+indicate similar dynamics, values close to 0 indicate different dynamics, while negative values correspond 898 
+
+to opposite dynamics. We complement these values with a permutation test to evaluate the significance 899 
+
+of the obtained similarity score. 900 
+
+Data availability 901 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+31 
+
+The community demography model (MATLAB version 2023b) is available from a single Zenodo link 902 
+
+(Version v1.0.0 ; 10.5281/zenodo.20428510 ) and from GitHub 903 
+
+(https://github.com/IsalineLucille22/Biphasic -bacterial -community -assembly -predicted -from -904 
+
+generalized -first -principles -of -monoculture -gro ). 905 
+
+The raw sequencing data generated in this study have been deposited in the European Nucleotide 906 
+
+Archive (ENA) under accession number PRJEB112616. 907 
+
+Acknowledgments 908 
+
+The authors thank Alan Pacheco for helpful critical comments on the manucript, and all members of the 909 
+
+NCCR Microbiomes for stimulating discussions during the various stages of this work. We thank Davin 910 
+
+Wijaja for his help in genome assemblies of the SynCom -21 isolates. 911 
+
+Parts of the abstract were improved for clarity by use of large -language models and verified by human 912 
+
+authors. 913 
+
+Funding 914 
+
+This work was supported by the Swiss National Centre in Competence Research NCCR Microbiomes to JM 915 
+
+and SS (No. 51NF40_180575 and 51NF40_ 225148) , and by the Swiss National Science Foundation 916 
+
+Sinergia program grant CRSII5 (189919/1 ) to J M and CM. 917 
+
+Author contributions 918 
+
+I.G., C.M. , S.C., M.S., A.S., S.S. and J.M. conceived the studies and designed experiments. S.C., C.B., V.S. 919 
+
+conducted soil microcosm experiment s. M.S., A.S., H.R. and J.M. analyzed metagenomic and 920 
+
+metatranscriptomic data. I.G., A.V. and C.M. conceptualized and coded the community demography 921 
+
+model. I.G. and J.M. conducted model simulations. I.G., C.M., A.S. and J.M. wrote the draft manuscript. 922 
+
+All authors provided input, verified, corrected and/or consented the final manuscript. 923 
+
+Competing interests 924 
+
+The authors declare that they have no competing interests. 925 
+
+926 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+32 
+
+Supplementary information 927 
+
+table S1: Characteristics of the 21 soil isolates .928 
+
+table S2: HILIC analysis of soil water extractable compounds .929 
+
+Supplementary FIG 1. Simulation outcomes of soil -growth of the 20 -member defined community with 930 
+
+random SMINT -values. 931 
+
+Supplementary FIG 2. Community demography in the 21 -member SynCom used for meta -transcriptomic 932 
+
+analysis 933 
+
+Supplementary FIG 3. Prediction of population growth in the SynCom -21 based on CoPTR calculations. 934 
+
+Supplementary FIG 4. Classification of transporter and KEGG -orthology pathway expression types in the 935 
+
+21 -membered SynCom used for metatranscriptomic analysis. 936 
+
+Supplementary FIG 5. Predicted substrate detail for any of the Type 1 (Peak at timepoint 2 or 3) or Type 2 937 
+
+(troughs) transporter expression profiles 938 
+
+Supplementary FIG 6. Principal component analysis comparison of ko -pathway annotated expression 939 
+
+changes among the eight abundant species in the SynCom -21 metatranscriptomics experiment. 940 
+
+Supplementary FIG 7. Temporal changes in KEGG orthology metabolic pathways in the growing SynCom -941 
+
+21 metatranscriptomics experiment 942 
+
+Supplementary FIG 8. Predictions from the SynCom -21 SMINT/PARINT -model for growth of 943 
+
+subcommunities with reduced composition. 944 
+
+Supplementary FIG 9. Predicted (A) and observed (B) community compositions of a weekly soil -diluted 945 
+
+SynCom -21. 946 
+
+Supplementary FIG 10. Simulated effect of differences in inoculum composition on community 947 
+
+development. 948 
+
+Supplementary FIG 11. Changing species interactions during SynCom -21 growth in liquid suspension. 949 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+33 
+
+950 
+
+Table 1: Theta cosine similarity between observed and simulated community trajectories. 951 
+
+Experiment  With SMINT and/or PARINT a No SMINT - or PARINT -parameters 
+
+SynCom  Habitat  Type a Theta b P value c Theta b P value c
+
+SynCom -21  Soil microcosms  SAO -SMINT/PARINT  0.7026  3.6 ×10 -3*** d 5.77 ×10 -2 0.235 
+
+SAO -SMINT  0.3473  4.1 ×10 -3**  4.76 ×10 -2 0.3815 
+
+SynCom -21 MT  Soil microcosms -
+
+metatranscriptomics 
+
+Prediction  0.6749  2.0 ×10 -4***  0.3052  1.1 ×10 -2** 
+
+SynCom -21 L Liquid mixed culture  SAO -SMINT/PARINT  0.9485  7.0×10 -3***  0.2389  7.6 ×10 -3
+
+SynCom20  Soil microcosms  SAO -SMINT  0.4445  1.4 ×10 -2**  0.2499  8.8 ×10 -2*
+
+SAO -Random SMINT  0.223  2. 1×10 -2**  0.2376  8.5 ×10 -2*
+
+SubCom C1  Soil microcosms  Prediction  0.335  0.123  0.2276  0.2038 
+
+SubCom C2  Soil microcosms  Prediction  0.3252  0.1288  0.2137  0.2513 
+
+SubCom C3  Soil microcosms  Prediction  0.5929  4.0 ×10 -2**  0.5828  4.1 ×10 -2** 
+
+952 
+
+a) SAO, simulated annealing optimization algorithm. SMINT , substrate -mediated interactions ; PARINT , byproduct usage from parasitic interactions and cell lysis ;953 
+
+random, random starting kinetic parameter values. Prediction, direct use of the SynCom -21 SAO -SMINT/PARINT -parameter values without further SAO -searches .954 
+
+b) Theta cosine similarity between community observations and simulations, including all species , time points and replicates. Value > 0.7 indicates high similarity in 955 
+
+community trajectories; 0.3 – 0.7: moderate similarity; tendency to develop in the same direction; 0 – 0.3 weak similarity and tendency to follow the same 956 
+
+trajectories. 957 
+
+c) P value represents the probability that permutations of the simulated time series value s would produce a similarity at least as extreme as the observed one ,958 
+
+tested against the null hypothesis that the temporal order of the community trajectory does not carry meaningful information about its similarity with the 959 
+
+reference and, therefore, random permutations of the temporal values would produce cosine similarities comparable to the obse rved. 960 
+
+d) Results of the test remain exploratory due to the small number of experimental replicates ( n = 3 – 5) . ***, P < 0.01 indicates strong evidence against the null 961 
+
+hypothesis ; ** P < 0.0 5, indicates evidence against the null hypothesis; * P < 0.1, suggests potential relationship. 962 34 
+
+REFERENCES 963 
+
+964 
+
+1. J. Monod, The Growth of Bacterial Cultures. Annual Review of Microbiology 3, 371 (1949).DOI 965 
+
+10.1146/annurev.mi.03.100149.002103 966 
+
+2. D. K. Button, Kinetics of nutrient -limited transport and microbial growth. Microbiol Rev 49 , 270 967 
+
+(1985).10.1128/mr.49.3.270 -297.1985 968 
+
+3. S. A. Kooijman, E. B. Muller, A. H. Stouthamer, Microbial growth dynamics on the basis of individual 969 budgets. Antonie Van Leeuwenhoek 60 , 159 (1991).10.1007/BF00430363 970 
+
+4. S. J. Pirt, The maintenance energy of bacteria in growing cultures. Proc R Soc Lond B Biol Sci 163 , 224 971 
+
+(1965).10.1098/rspb.1965.0069 972 
+
+5. L. R. Thompson, J. G. Sanders, D. McDonald, A. Amir, J. Ladau, K. J. Locey, R. J. Prill, A. Tripathi, S. M. 973 
+
+Gibbons, G. Ackermann, J. A. Navas -Molina, S. Janssen, E. Kopylova, Y. Vazquez -Baeza, A. Gonzalez, J. 974 
+
+T. Morton, S. Mirarab, Z. Zech Xu, L. Jiang, M. F. Haroon, J. Kanbar, Q. Zhu, S. Jin Song, T. Kosciolek, N. 975 A. Bokulich, J. Lefler, C. J. Brislawn, G. Humphrey, S. M. Owens, J. Hampton -Marcell, D. Berg -Lyons, V. 976 
+
+McKenzie, N. Fierer, J. A. Fuhrman, A. Clauset, R. L. Stevens, A. Shade, K. S. Pollard, K. D. Goodwin, J. 977 
+
+K. Jansson, J. A. Gilbert, R. Knight, C. Earth Microbiome Project, A communal catalogue reveals Earth's 978 
+
+multiscale microbial diversity. Nature 551 , 457 (2017).10.1038/nature24621 979 
+
+6. J. F. Matias Rodrigues, J. Tackmann, L. Malfertheiner, D. Patsch, E. Perez -Molphe -Montoya, N. Napflin, 980 
+
+D. Gaio, G. Rot, M. Danaila, M. E. Peluso, M. Dmitrijeva, T. S. B. Schmidt, C. von Mering, The 981 MicrobeAtlas database: Global trends and insights into Earth's microbial ecosystems. Cell ,982 
+
+(2026).10.1016/j.cell.2026.01.021 983 
+
+7. R. MacArthur, R. Levins, Competition, Habitat Selection, and Character Displacement in a Patchy 984 
+
+Environment. Proc Natl Acad Sci U S A 51 , 1207 (1964).10.1073/pnas.51.6.1207 985 
+
+8. M. Dal Bello, H. Lee, A. Goyal, J. Gore, Resource -diversity relationships in bacterial communities 986 
+
+reflect the network structure of microbial metabolism. Nat Ecol Evol 5, 1424 (2021).10.1038/s41559 -987 021 -01535 -8988 
+
+9. V. Dubinkina, Y. Fridman, P. P. Pandey, S. Maslov, Multistability and regime shifts in microbial 989 
+
+communities explained by competition for essential nutrients. Elife 8, e49720 990 
+
+(2019).10.7554/eLife.49720 991 
+
+10. C. Liao, T. Wang, S. Maslov, J. B. Xavier, Modeling microbial cross -feeding at intermediate scale 992 
+
+portrays community dynamics and species coexistence. PLoS Comput Biol 16 , e1008135 993 
+
+(2020).10.1371/journal.pcbi.1008135 994 
+
+11. P. Y. Ho, T. H. Nguyen, J. M. Sanchez, B. C. DeFelice, K. C. Huang, Resource competition predicts 995 
+
+assembly of gut bacterial communities in vitro. Nat Microbiol 9, 1036 (2024).10.1038/s41564 -024 -996 
+
+01625 -w997 
+
+12. J. E. Goldford, N. Lu, D. Bajic, S. Estrela, M. Tikhonov, A. Sanchez -Gorostiaga, D. Segre, P. Mehta, A. 998 Sanchez, Emergent simplicity in microbial community assembly. Science 361 , 469 999 
+
+(2018).10.1126/science.aat1168 1000 
+
+13. C. P. Mancuso, H. Lee, C. I. Abreu, J. Gore, A. S. Khalil, Environmental fluctuations reshape an 1001 
+
+unexpected diversity -disturbance relationship in a microbial community. Elife 10 ,1002 
+
+(2021).10.7554/eLife.67175 1003 
+
+14. D. Berry, S. Widder, Deciphering microbial interactions and detecting keystone species with co -1004 
+
+occurrence networks. Front Microbiol 5, 219 (2014).10.3389/fmicb.2014.00219 1005 
+
+15. D. Gonze, K. Z. Coyte, L. Lahti, K. Faust, Microbial communities as dynamical systems. Curr Opin 1006 
+
+Microbiol 44 , 41 (2018).10.1016/j.mib.2018.07.004 1007 
+
+16. X. Guo, J. Q. Boedicker, The Contribution of High -Order Metabolic Interactions to the Global Activity 1008 
+
+of a Four -Species Microbial Community. PLoS Comput Biol 12 , e1005079 1009 
+
+(2016).10.1371/journal.pcbi.1005079 1010  17. M. S. Laska, J. T. Wootton, Theoretical concepts and empirical approaches to measuring interaction 1011 
+
+strength. Ecology 79 , 461 (1998).Doi 10.1890/0012 -9658(1998)079[0461:Tcaeat]2.0.Co;2 1012 
+
+18. B. Momeni, L. Xie, W. Shou, Lotka -Volterra pairwise modeling fails to capture diverse pairwise 1013 
+
+microbial interactions. Elife 6, (2017).10.7554/eLife.25051 1014 
+
+19. Y. Xiao, M. T. Angulo, J. Friedman, M. K. Waldor, S. T. Weiss, Y. Y. Liu, Mapping the ecological 1015 
+
+networks of microbial communities. Nat Commun 8, 2042 (2017).10.1038/s41467 -017 -02090 -21016 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+35 
+
+20. R. Marsland, 3rd, W. Cui, J. Goldford, A. Sanchez, K. Korolev, P. Mehta, Available energy fluxes drive a 1017 
+
+transition in the diversity, stability, and functional structure of microbial communities. PLoS Comput 1018 Biol 15 , e1006793 (2019).10.1371/journal.pcbi.1006793 1019 
+
+21. I. Guex, C. Mazza, M. Dubey, M. Batsch, R. Li, J. R. van der Meer, Regulated bacterial interaction 1020 
+
+networks: A mathematical framework to describe competitive growth under inclusion of metabolite 1021 
+
+cross -feeding. PLoS Comput Biol 19 , e1011402 (2023).10.1371/journal.pcbi.1011402 1022 
+
+22. O. Ponomarova, K. R. Patil, Metabolic interactions in microbial communities: untangling the Gordian 1023 
+
+knot. Curr Opin Microbiol 27 , 37 (2015).10.1016/j.mib.2015.06.014 1024  23. J. F. Yamagishi, N. Saito, K. Kaneko, Adaptation of metabolite leakiness leads to symbiotic chemical 1025 
+
+exchange and to a resilient microbial ecosystem. PLoS Comput Biol 17 , e1009143 1026 
+
+(2021).10.1371/journal.pcbi.1009143 1027 
+
+24. N. Paczia, A. Nilgen, T. Lehmann, J. Gatgens, W. Wiechert, S. Noack, Extensive exometabolome 1028 
+
+analysis reveals extended overflow metabolism in various microorganisms. Microb Cell Fact 11 , 122 1029 
+
+(2012).10.1186/1475 -2859 -11 -122 1030  25. A. R. Pacheco, M. Moel, D. Segre, Costless metabolic secretions as drivers of interspecies interactions 1031 
+
+in microbial ecosystems. Nat Commun 10 , 103 (2019).10.1038/s41467 -018 -07946 -91032 
+
+26. A. R. Pacheco, M. L. Osborne, D. Segre, Non -additive microbial community responses to 1033 
+
+environmental complexity. Nat Commun 12 , 2365 (2021).10.1038/s41467 -021 -22426 -31034 
+
+27. T. Wang, A. Goyal, V. Dubinkina, S. Maslov, Evidence for a multi -level trophic organization of the 1035 
+
+human gut microbiome. PLoS Comput Biol 15 , e1007524 (2019).10.1371/journal.pcbi.1007524 1036  28. M. Schäfer, A. R. Pacheco, R. Kunzler, M. Bortfeld -Miller, C. M. Field, E. Vayena, V. Hatzimanikatis, J. A. 1037 
+
+Vorholt, Metabolic interaction models recapitulate leaf microbiota ecology. Science 381 , eadf5121 1038 
+
+(2023).10.1126/science.adf5121 1039 
+
+29. L. Oña, S. Giri, N. Avermann, M. Kreienbaum, K. M. Thormann, C. Kost, Obligate cross -feeding expands 1040 
+
+the metabolic niche of bacteria. Nat Ecol Evol 5, 1224 (2021).10.1038/s41559 -021 -01505 -01041 
+
+30. D. W. Rivett, T. Bell, Abundance determines the functional role of bacterial phylotypes in complex 1042 communities. Nat Microbiol 3, 767 (2018).10.1038/s41564 -018 -0180 -01043 
+
+31. E. Bauer, J. Zimmermann, F. Baldini, I. Thiele, C. Kaleta, BacArena: Individual -based metabolic 1044 
+
+modeling of heterogeneous microbes in complex communities. PLoS Comput Biol 13 , e1005544 1045 
+
+(2017).10.1371/journal.pcbi.1005544 1046 
+
+32. A. Dal Co, S. van Vliet, D. J. Kiviet, S. Schlegel, M. Ackermann, Short -range interactions govern the 1047 
+
+dynamics and functions of microbial communities. Nat Ecol Evol 4, 366 (2020).10.1038/s41559 -019 -1048 
+
+1080 -21049 
+
+33. S. Čaušević, J. Tackmann, V. Sentchilo, L. Malfertheiner, C. von Mering, J. R. van der Meer, Habitat 1050 
+
+filtering more than microbiota origin controls microbiome transplant outcomes in soil. ISME J 19 ,1051 
+
+(2025).10.1093/ismejo/wraf162 1052 
+
+34. S. Čaušević, J. Tackmann, V. Sentchilo, C. von Mering, J. R. van der Meer, Reproducible propagation of 1053 species -rich soil bacterial communities suggests robust underlying deterministic principles of 1054 
+
+community formation. mSystems , e0016022 (2022).10.1128/msystems.00160 -22 1055 
+
+35. D. Hoces, G. Greter, M. Arnoldini, M. L. Stäubli, C. Moresi, A. Sintsova, S. Berent, I. Kolinko, F. Bansept, 1056 
+
+A. Woller, J. Hafliger, E. Martens, W. D. Hardt, S. Sunagawa, C. Loverdo, E. Slack, Fitness advantage of 1057 
+
+Bacteroides thetaiotaomicron capsular polysaccharide in the mouse gut depends on the resident 1058 
+
+microbiota. Elife 12 , (2023).10.7554/eLife.81212 1059  36. T. A. Joseph, P. Chlenski, A. Litman, T. Korem, I. Pe'er, Accurate and robust inference of microbial 1060 
+
+growth dynamics from metagenomic sequencing reveals personalized growth rates. Genome Res 32 ,1061 
+
+558 (2022).10.1101/gr.275533.121 1062 
+
+37. Z. Pasternak, S. Pietrokovski, O. Rotem, U. Gophna, M. N. Lurie -Weinberger, E. Jurkevitch, By their 1063 
+
+genes ye shall know them: genomic signatures of predatory bacteria. ISME J 7, 756 1064 
+
+(2013).10.1038/ismej.2012.149 1065  38. H. Song, Y. Zhu, Z. Qu, M. Zhu, X. Li, L. Zhao, K. Wang, R. Zhang, L. Cui, Y. Li, Z. Bian, W. Zhang, Y. Chen, 1066 
+
+L. Du, J. L. Wang, X. Zhao, L. Deng, Y. Wang, Two -step localization driven by peptidoglycan hydrolase 1067 
+
+in interbacterial predation. ISME J 19 , (2025).10.1093/ismejo/wraf208 1068 
+
+39. J. D. Palmer, K. R. Foster, Bacterial species rarely work together. Science 376 , 581 1069 
+
+(2022).10.1126/science.abn5093 1070 
+
+40. J. Kehe, A. Ortiz, A. Kulesa, J. Gore, P. C. Blainey, J. Friedman, Positive interactions are common 1071 among culturable bacteria. Sci Adv 7, eabi7159 (2021).10.1126/sciadv.abi7159 1072 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+36 
+
+41. A. R. Pacheco, C. Pauvert, D. Kishore, D. Segre, Toward FAIR Representations of Microbial 1073 
+
+Interactions. mSystems 7, e0065922 (2022).10.1128/msystems.00659 -22 1074  42. A. Baichman -Kass, T. Song, J. Friedman, Competitive interactions between culturable bacteria are 1075 
+
+highly non -additive. Elife 12 , (2023).10.7554/eLife.83398 1076 
+
+43. L. S. Bittleston, M. Gralka, G. E. Leventhal, I. Mizrahi, O. X. Cordero, Context -dependent dynamics lead 1077 
+
+to the assembly of functionally distinct microbial communities. Nat Commun 11 , 1440 1078 
+
+(2020).10.1038/s41467 -020 -15169 -01079 
+
+44. M. Dubey, N. Hadadi, S. Pelet, N. Carraro, D. R. Johnson, J. R. van der Meer, Environmental 1080 connectivity controls diversity in soil microbial communities. Commun Biol 4, 492 1081 
+
+(2021).10.1038/s42003 -021 -02023 -21082 
+
+45. T. N. Enke, M. S. Datta, J. Schwartzman, N. Cermak, D. Schmitz, J. Barrere, A. Pascual -Garcia, O. X. 1083 
+
+Cordero, Modular Assembly of Polysaccharide -Degrading Marine Microbial Communities. Curr Biol 29 ,1084 
+
+1528 (2019).10.1016/j.cub.2019.03.047 1085 
+
+46. T. Miguel Trabajo, I. Guex, M. Dubey, E. Sarton -Loheac, H. Todorov, X. Richard, C. Mazza, J. R. van der 1086 Meer, Inferring bacterial interspecific interactions from microcolony growth expansion. Microlife 5,1087 
+
+uqae020 (2024).10.1093/femsml/uqae020 1088 
+
+47. V. Pandey, N. Hadadi, V. Hatzimanikatis, Enhanced flux prediction by integrating relative expression 1089 
+
+and relative metabolite abundance into thermodynamically consistent metabolic models. PLoS 1090 
+
+Comput Biol 15 , e1007036 (2019).10.1371/journal.pcbi.1007036 1091 
+
+48. O. Oftadeh, V. Hatzimanikatis, Genome -scale models of metabolism and expression predict the 1092 metabolic burden of recombinant protein expression. Metab Eng 84 , 109 1093 
+
+(2024).10.1016/j.ymben.2024.06.005 1094 
+
+49. M. Vihola, Robust adaptive Metropolis algorithm with coerced acceptance rate. Stat Comput 22 , 997 1095 
+
+(2012). https://doi.org/10.1007/s11222 -011 -9269 -51096 
+
+50. P. Servais, G. Billen, J. V. Rego, Rate of bacterial mortality in aquatic environments. Appl Environ 1097 
+
+Microbiol 49 , 1448 (1985).10.1128/aem.49.6.1448 -1454.1985 1098  51. M. Loferer -Krossbacher, J. Klima, R. Psenner, Determination of bacterial cell dry mass by transmission 1099 
+
+electron microscopy and densitometric image analysis. Appl Environ Microbiol 64 , 688 (1998) 1100 
+
+52. D. J. Reasoner, E. E. Geldreich, A new medium for the enumeration and subculture of bacteria from 1101 
+
+potable water. Appl Environ Microbiol 49 , 1 (1985) 1102 
+
+53. S. Čaušević, M. Dubey, M. Morales, G. Salazar, V. Sentchilo, N. Carraro, H. J. Rüscheweyh, S. 1103 
+
+Sunagawa, J. R. van der Meer, Niche availability and competitive loss by facilitation control 1104 
+
+proliferation of bacterial strains intended for soil microbiome interventions. Nat Commun 15 , 2557 1105 
+
+(2024).10.1038/s41467 -024 -46933 -11106 
+
+54. S. Andrews, FastQC: A quality control tool for high throughput sequence data. (2015) 1107 
+
+https://www.bioinformatics.babraham.ac.uk/projects/fastqc/ .1108 
+
+55. A. M. Bolger, M. Lohse, B. Usadel, Trimmomatic: a flexible trimmer for Illumina sequence data. 1109 Bioinformatics 30 , 2114 (2014).10.1093/bioinformatics/btu170 1110 
+
+56. T. Magoc, S. L. Salzberg, FLASH: fast length adjustment of short reads to improve genome assemblies. 1111 
+
+Bioinformatics 27 , 2957 (2011).10.1093/bioinformatics/btr507 1112 
+
+57. T. Lassmann, Kalign 3: multiple sequence alignment of large datasets. Bioinformatics 36 , 1928 (2020). 1113 
+
+https://doi.org/10.1093/bioinformatics/btz795 1114 
+
+58. B. Bushnell. (2014), 1115  59. B. Langmead, S. L. Salzberg, Fast gapped -read alignment with Bowtie 2. Nat Methods 9, 357 1116 
+
+(2012).10.1038/nmeth.1923 1117 
+
+60. Y. Liao, G. K. Smyth, W. Shi, featureCounts: an efficient general purpose program for assigning 1118 
+
+sequence reads to genomic features. Bioinformatics 30 , 923 (2014).10.1093/bioinformatics/btt656 1119 
+
+61. H. Klingenberg, P. Meinicke, How to normalize metatranscriptomic count data for differential 1120 
+
+expression analysis. PeerJ 5, e3859 (2017).10.7717/peerj.3859 1121  62. B. Muzellec, M. Telenczuk, V. Cabeli, M. Andreux, PyDESeq2: a python package for bulk RNA -seq 1122 
+
+differential expression analysis. Bioinformatics 39 , (2023).10.1093/bioinformatics/btad547 1123 
+
+63. C. P. Cantalapiedra, A. Hernandez -Plaza, I. Letunic, P. Bork, J. Huerta -Cepas, eggNOG -mapper v2: 1124 
+
+Functional Annotation, Orthology Assignments, and Domain Prediction at the Metagenomic Scale. 1125 
+
+Mol Biol Evol 38 , 5825 (2021).10.1093/molbev/msab293 1126 
+
+64. J. Zimmermann, C. Kaleta, S. Waschina, gapseq: informed prediction of bacterial metabolic pathways 1127 and reconstruction of accurate metabolic models. Genome Biol 22 , 81 (2021).10.1186/s13059 -021 -1128 
+
+02295 -11129 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+37 
+
+65. M. Kanehisa, Y. Sato, M. Kawashima, M. Furumichi, M. Tanabe, KEGG as a reference resource for gene 1130 
+
+and protein annotation. Nucleic Acids Res 44 , D457 (2016).10.1093/nar/gkv1070 1131  66. Y. Darzi, I. Letunic, P. Bork, T. Yamada, iPath3.0: interactive pathways explorer v3. Nucleic Acids Res 1132 
+
+46 , W510 (2018).10.1093/nar/gky299 1133 
+
+67. M. Batsch, I. Guex, H. Todorov, C. M. Heiman, J. Vacheron, J. A. Vorholt, C. Keel, J. R. van der Meer, 1134 
+
+Fragmented micro -growth habitats present opportunities for alternative competitive outcomes. Nat 1135 
+
+Commun 15 , 7591 (2024).10.1038/s41467 -024 -51944 -z1136 
+
+1137 
+
+1138 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+38 
+
+1139 
+
+FIG 1. Concept and design of the community demographic model. A) Individual monoculture growth 1140 
+
+kinetics on different substrates are used to construct per -species log -normal distributions of maximum 1141 
+
+specific growth rates and lag times, and to initiate community growth simulations. B) Schematic 1142 
+
+representation of a simulated annealing optimization (SAO) round to estimate species interaction 1143 
+
+parameters. The SAO -algorithm searches p arameter space of the interaction matri x values feeding into 1144 
+
+the demography model to narrow the difference s between observed and simulated absolute species 1145 
+
+abundances until the target acceptance ratio is reached. See Methods . C) Soil -grown SynCom -20 data are 1146 
+
+used to estimate substrate -mediated interaction parameter values (SMINT) that are next imposed to 1147 
+
+SynCom -21 experiments to estimate parasitic interaction parameters (PARINT). The optimized SMINT -1148 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+39 
+
+and PARINT -parameter sets are then used to predict community growth outcomes starting from new 1149 
+
+initial species abundances with initiated monoculture growth kinetic values in independently 1150 
+
+experimentally verified scenarios. MT, metatranscriptomics experiment. 1151 
+
+1152 
+
+1153 
+
+FIG 2. Monoculture growth kinetic profiles of soil isolates . A) Monoculture observed substrate 1154 
+
+utilization profiles (fitted maximum specific exponential growth rates, in h –1; as heatmap per color scale 1155 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+40 
+
+on the right), and B) deduced per -strain maximum growth rate profiles across all tested substrate 1156 
+
+conditions (normalized density plots with log -normal fitted density curves in red). Profiles of (B) are used 1157 
+
+for the initial random sampling of growth rates per substrate category in simulations. C) Comparison of 1158 
+
+soil -microcosm observed monoculture growth after 1 week ( n = 4 replicates), of simulated monoculture 1159 
+
+growth using kinetic values of A and B, and observed individual species growth with in the 21 -member 1160 
+
+community in soil (n = 4 replicates). M, higher in monoculture; C, higher in community; ND, no difference 1161 
+
+(P < 0.05; two -tailed paired t -test with FDR correction). D) Mean total community size in soil microcosms 1162 
+
+(bars) after 1 week of growth ( n = 4 replicates as individual dots, stacked by strain identity) compared to 1163 
+
+the mean of total sums of monoculture -colonized soil microcosms (arbitrarily grouped to n = 4 1164 
+
+replicates). P value from two -sided Wilcoxon ranksum test. E) Measured compounds (targeted HILIC -MS) 1165 
+
+in aqueous extract of soil microcosms at start (non -inoculated, Day 0), and over time of SynCom -21 1166 
+
+growth (Day 1, 3 and 10). Compounds grouped per category on the left; amounts represented as the 1167 
+
+mean sum of peak areas (bar diagram on right, n = 3 replicates as individual dots), and as proportion of 1168 
+
+Day 0 per category (heatmap, colorscale on top). F) Estimated carbon resource balance in SynCom -21 -1169 
+
+grown soil microcosms at day 10: total measured organic carbon (resource at start), bacterial biomass 1170 
+
+(converted from cell numbers with estimated per -species dry weights), refractory material (fraction of 1171 
+
+quantifiable compound in HILIC -MS at Day 10 compared to Day 0, table S 2), and the other byproducts 1172 
+
+(difference of total resources at start, biomass and refractory material). 1173 
+
+1174 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+41 
+
+1175 
+
+FIG 3. Estimation of substrate -mediated interactions during SynCom -20 community growth . A) Mean 1176 
+
+absolute growth of the SynCom -20 community in soil microcosms ( n = 4, expressed as biomass in g C dry 1177 
+
+weight (DW) ml -1 soil water; stacked by absolute strain population sizes as per color scale). B) Mean per 1178 
+
+species biomass difference (bars) at day 21 between observed soil microcosm -growth and community 1179 
+
+growth simulations in presence of substrate -mediated interactions (with SMINT) or in their absence (w/o 1180 
+
+SMINT, n = 8 simulations shown by individual dots). P values derived from PERMANOVA using Bray –Curtis 1181 
+
+distances. R ² represents the proportion of the total explained variance by either observation or 1182 
+
+simulation. C) Total maximum community biomass growth for simulations (Sim) with ( n = 8), or without 1183 
+
+SMINT ( n = 1, since deterministic), compared to experimental data (Obs, n = 3). P values obtained from a 1184 
+
+permutation test of Cliff ’s delta index , with n = 100,000 permutations . D) Individual observed (Obs, 1185 
+
+yellow) and simulated strain growth in the SynCom -20, in absence (blue) or in presence of SMINT 1186 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+42 
+
+(magenta). E) Simulated summed resource utilization and byproduct formation with optimized SMINT -1187 
+
+values ( n =8 simulations). 1188 
+
+1189 
+
+FIG 4. Estimation of parasitic interactions on growth of a 21 -member defined community with 1190 
+
+opportunistic bacterial predator. A) Mean absolute growth of the SynCom -21 community including the 1191 
+
+opportunistic predatory bacterium Lysobacter in soil microcosms ( n = 4, expressed as biomass in g C DW 1192 
+
+ml -1 soil water; stacked by absolute individual community member population sizes as per color scale). B) 1193 
+
+Mean per species biomass difference (bars) at day 21 between observed soil microcosm -grown SynCom -1194 
+
+20 and SynCom -21. C) and D) As (B) but for the differences between the experimental SynCom -21 data 1195 
+
+and growth simulations with optimized SMINT -parameters only (i.e., no parasitic release of cell building 1196 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+43 
+
+blocks ), or with SMINT - and optimized PARINT -parameters (n = 8 simulations shown by individual dots). P1197 
+
+values and R² from PERMANOVA using Bray –Curtis distances as in Fig. 3. E) Total maximum simulated 1198 
+
+(sim, n = 8) SynCom -21 community biomass growth with or without SMINT - and PARINT -parameters ,1199 
+
+compared to experimental data (Obs, n = 4). P values from a permutation test on the Cliff’s delta index 1200 
+
+with n = 100,000 permutations. F) Individual observed (Obs, yellow) or simulated SynCom -21 species 1201 
+
+growth with both SMINT and PARINT (Sim, magenta). G) Estimated prey -specific Lysobacter biomass gain 1202 
+
+over time from predation (species colors as in legend). 1203 
+
+1204 
+
+1205 
+
+FIG 5. Estimated interaction partners and growth effects from byproduct usage . A) and B) Mean formed 1206 
+
+byproducts (in g C per ml) from the individual strains over time in the simulated SynCom -20 (with SMINT -1207 
+
+parameters) or SynCom -21 communities (including both SMINT and PARINT). C) Example of the dynamics 1208 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+44 
+
+of byproduct formation for three strains in simulated SynCom -21 growth. D) and E) Interaction matrices 1209 
+
+of byproduct producers versus consumers at specific time points during SynCom -20 (only SMINT) or 1210 
+
+SynCom -21 simulated growth (SMINT and PARINT). asym, measure for the symmetry of the matrix (0 1211 
+
+corresponding to completely symmetrical, a value of 2 to maximal asymmetry). 1212 
+
+1213 
+
+1214 
+
+1215 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+45 
+
+FIG 6. Predicted growth and interactions of an independently inoculated 21 -member defined 1216 
+
+community in soil . A) Probability of growth for 8 of the 21 SynCom members estimated from expression 1217 
+
+of conserved housekeeping genes in metatranscriptomics (solid lines, scale on left axis) , and predicted 1218 
+
+corresponding population growth from the demography model including both SMINT - and PARINT -1219 
+
+parameters ( dotted lines, scale on right axis. Note the change in axis scales between panels for optimal 1220 
+
+presentation). Shaded areas encompass the 25 th and 75 th percentiles of the replicate variation ( n = 5 for 1221 
+
+observations, n = 10 for simulations). B) Comparison of the mean predicted and observed SynCom -21 1222 
+
+biomass at day 21 per individual strain. Bars show the mean difference with dots the individual values. 1223 
+
+PERMANOVA analysis as in Fig. 3. C) Predicted species interactions as amount of formed biomass per 1224 
+
+individual population (consumer) as a function of released byproduct (producer) and at different time 1225 
+
+points during community development. D) Changes in summed expression levels (as log 2 TPM) of KEGG -1226 
+
+orthology pathways for three abundant populations in the SynCom -21, measured from 1227 
+
+metatranscriptomics. E) Mean fold -change (bars) of Lysobacter differentially expressed genes (DE, false -1228 
+
+discovery rate < 0.05) at time point 38 h relative to either 22 h (dark blue) or 70 h (light blue) grouped by 1229 
+
+annotation key words relevant for its predatory life -style (dots are values from individual genes within 1230 
+
+key word groups) . F) Categorization of time expression profiles of genes for specific uptake systems, two 1231 
+
+of which ( TYPE 1 and 2) are reported in (G) with their predicted substrate groups and per genome (only 1232 
+
+shown when meta -transcriptomic data were reliable, fig. S 4). 1233 
+
+1234 
+
+1235 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 10, 2026. ;https://doi.org/10.64898/2026.07.10.737752 doi: bioRxiv preprint
+
+46 
+
+1236 
+
+FIG 7. Metabolic pathway repurposing during c ommunity growth in soil. A ) Mean expression changes 1237 
+
+in genes grouped by KEGG -orthology (ko) terms over time for the eight SynCom -21 members with 1238 
+
+reliable metatranscriptomic data (n = 4 biological replicates). Changes reported as z -score according to 1239 
+
+color legend. B) Changes in KEGG -pathway expression over time for Pseudomonas sp. strain 2 and 1240 
+
+Lysobacter (others, see fig. S 7) . Expression changes defined from categorization of time expression 1241 
+
+profiles of strain -specific genes annotated to ko -terms (as in fig. S4C & D), and grouped ko -terms per 1242 
+
+category mapped on the global KO -metabolic pathways as indicated on the right panel (colored regions 1243 
+
+correspond to metabolic pathways as per the legend). 1244 
+
+1245
