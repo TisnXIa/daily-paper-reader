@@ -1,0 +1,1093 @@
+Title: Panomap: Unbiased Nanopore Signal Mapping with Pangenome Variation Graphs
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.07.10.737796v1.full.pdf
+
+Number of Pages: 18
+
+Markdown Content:
+# Panomap: Unbiased Nanopore Signal Mapping with Pangenome Variation Graphs 
+
+Po Jui Shih 1,* , Zephan Sanghani 1, Andrea Guarracino 4,5 , Hasindu Gamaarachchi 2,3 , and Christopher Batten 1
+
+> 1Cornell University, Ithaca, NY, USA
+> 2School of Computer Science and Engineering, University of New South Wales, Sydney, 2052, NSW, Australia
+> 3Garvan Institute of Medical Research, Sydney, 2010, NSW, Australia
+> 4Department of Genetics, Genomics and Informatics, University of Tennessee Health Science Center, Memphis, TN 38163, USA
+> 5Bioinnovation and Genome Sciences, The Translational Genomics Research Institute (TGen), Phoenix, AZ 85004, USA
+> *Corresponding author: ps2229@cornell.edu
+
+Motivation: Signal-space nanopore mappers enable real-time mapping and filtering decisions directly from raw nanopore signals. However, existing signal-space mappers are built around linear references, and using a single representative reference can introduce reference bias when the sample di-verges from that reference. Pangenome reference collections can reduce this bias by representing diversity across related reference sequences, but linear-reference signal mappers must treat each sequence as a separate target, re-dundantly storing shared sequences. Pangenome variation graphs provide a more compact representation by storing shared sequences once and encoding variants as alternative paths through the graph. Although sequence-to-graph mapping is well established for basecalled reads, existing signal-space meth-ods do not directly use pangenome variation graphs. 
+
+Results: We present Panomap, the first signal-space mapper that operates on pangenome variation graphs. Panomap maps raw nanopore signals to graph references, allowing signal-space mapping to use pangenome diversity while representing shared sequences once. We evaluate Panomap in three settings. First, when a single reference already maps the sample well, Panomap pre-serves mapping accuracy as additional reference sequences are added to the reference collection, while state-of-the-art signal-space tools regress. Sec-ond, when the exact sample strain is absent from the reference collection, Panomap benefits from adding related assemblies from the same species to the pangenome reference. Third, using a highly polymorphic locus, we show that Panomap can map reads from alleles not represented in the refer-ence collection by using related alleles in the pangenome, with the largest gains for more divergent alleles and for decisions made from short prefixes of the read signal. In addition, Panomap’s graph index scales sublinearly with pangenome collection size. Together, these results show that Panomap brings population-aware reference representation into signal-space mapping. 
+
+Availability and Implementation: Panomap is open source and available at https://github.com/cornell-brg/panomap .
+
+Contact: ps2229@cornell.edu nanopore sequencing | pangenome variation graphs | raw signal mapping | seed-and-chain mapping | variation-aware mapping 
+
+Introduction 
+
+Nanopore sequencers produce long reads by passing DNA through a protein pore and measuring changes in ionic cur-rent as the molecule moves through the pore [1]. Unlike other platforms, nanopore sequencers stream this raw signal to the host computer while sequencing is still ongoing [2]. This en-ables real-time analysis in two distinct ways. First, analysis can begin before sequencing completes, overlapping compu-tation with data generation and reducing time to result. Sec-ond, in targeted sequencing, the analysis can feed decisions back to the sequencer to reject reads that are unlikely to be of interest, a process known as adaptive sampling [3–9]. Several tools now analyze nanopore signals directly, mak-ing mapping or filtering decisions from raw signal rather than from basecalled reads. This can reduce the computa-tion needed for early decisions and allow signal-space meth-ods to act as upstream filters for downstream analysis. UN-CALLED [4] maps raw signal to a reference using FM-index-based probabilistic event matching. Sigmap [10] in-troduced a streaming signal-space mapper using k-d-tree in-dexing, seed selection, and colinear chaining. RawHash [11] and RawHash2 [2] use hash-based seed-and-chain mapping over quantized signal tokens. Signal-space analysis also ex-tends beyond mapping. Raw nanopore signals contain infor-mation that is lost in the basecalled sequence: base modifi-cations such as 5-methylcytosine alter the ionic current, so evidence for these modifications is present in the raw signal rather than in the called bases. Nanopolish [12], Tombo [13], f5c [14], and Uncalled4 [15] align raw signal to a reference to detect these modifications. Rawsamble [16] performs de novo assembly directly from raw nanopore signals. Beyond these software methods, hardware-accelerated systems such as SquiggleFilter [17] and HARU [18] show that direct sig-nal analysis can support selective sequencing on resource-constrained devices. Across these signal-space tools, a common operation is matching reads to a reference. The choice of reference there-fore matters. A single linear reference represents only one sequence and cannot capture the diversity present across a population, from single-nucleotide differences to large struc-tural rearrangements. Pangenomes address this limitation by representing diversity across multiple related reference sequences. Specifically, pangenome variation graphs pro-vide a compact representation of this diversity, storing shared sequences once and encoding variants as alternative paths through the graph. The graph structure can also encode within-genome repeats as cycles [19, 20]. These graphs have been widely adopted in base-space mapping [21–24]. Signal-space tools are built around linear references, so a pangenome can be supplied to them only as a collection of individual reference sequences, not as a single graph. Seed-and-chain mappers such as RawHash2 [2] can index these se-quences as a multi-FASTA, treating each as a separate target. As a result, shared sequences are stored redundantly, and a read matching several related reference sequences yields sep-arate mapping results. Sigmoni [25] also operates on a col-lection of linear references, and its compressed index scales better to large pangenome collections. However, for both        
+
+> Shih et al. |bioR χiv |July 10, 2026 |1–18
+
+.CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.10.737796 doi: bioRxiv preprint RawHash2 and Sigmoni, the input reference remains a set of independent linear sequences, without representing how those sequences relate to one another. A pangenome varia-tion graph encodes both, storing shared sequences once and capturing their relationships in its topology, yet no signal-space tool takes such a graph as input. We present Panomap, the first signal-space mapper that oper-ates directly on pangenome variation graphs. Panomap ex-tends hash-based seed-and-chain signal mapping to graph references by indexing the paths embedded in the graph, chaining anchors within each path, and merging chains that map to the same shared graph region, all in signal space. This lets Panomap index shared sequences once, then relate map-ping results across paths in the graph instead of reporting them only as independent linear-reference hits. Our results show that Panomap enables signal-space mapping to use pangenome diversity without duplicating sequences shared across separate linear references. We demonstrate this through three evaluations. First, when a single reference al-ready maps the sample well, Panomap maintains mapping accuracy as the pangenome collection grows, while state-of-the-art signal-space tools regress. Second, when the ex-act sample strain is absent from the reference collection, Panomap improves mapping by adding related assemblies of the same species to the pangenome. Third, at a highly polymorphic locus, Panomap maps reads from alleles not represented in the reference by using related alleles in the pangenome, with the largest gains for more divergent al-leles and for decisions made from read signal of limited lengths. In addition, Panomap’s index scales sublinearly with pangenome collection size. Together, these results show that Panomap brings population-aware reference representation into signal-space mapping. 
+
+Methods 
+
+Figure 1 shows the Panomap workflow, including the external graph-building step that produces the reference graph in the GFA format (Figure 1a). Panomap is implemented in C++20 and takes this graph and raw nanopore reads in BLOW5 for-mat [26] as input. After processing each read, Panomap emits mappings in PAF or Graph Alignment Format (GAF) [23]. At a high level, Panomap follows two phases: indexing the graph reference and mapping raw nanopore reads. During indexing, Panomap expands the bidirected input graph into a directed graph and walks the paths embedded in the graph (Figure 1b). From these paths it builds two indexes. The first is a seed index, which maps hashed token seeds to the graph locations where they occur. Panomap builds it by 
+
+squigglizing each path’s base sequence into its expected event stream, tokenizing the events into discrete symbols, and hash-ing the result into seeds. The second is a graph coordinate in-dex that records where each node visit falls so Panomap can measure anchor distances along each path and detect chains that overlap across paths. During mapping, Panomap turns each read’s raw signal into tokens in the same symbol space used during indexing, so read seeds can match the indexed reference seeds (Figure 1c). It detects events by segmenting the signal into regions of similar current, tokenizes those events, looks up exact seed matches in the index, chains the resulting anchors, and emits a mapping decision. 
+
+Pangenome graph input and directional expansion. 
+
+Panomap takes a pangenome variation graph in GFA for-mat as the reference input. This graph is typically con-structed from a collection of input reference sequences us-ing tools such as pggb [27] or Minigraph-Cactus [28] (Fig-ure 1a). pggb constructs the graph reference-free through all-to-all alignment of input sequences ( wfmash [29]) followed by graph induction ( seqwish [30]), whereas Minigraph-Cactus starts from a primary reference genome and iteratively adds structural and small variants from the remaining input sequences. Both approaches produce graphs with nodes (nu-cleotide sequences), edges (adjacencies between nodes), and paths (ordered walks over nodes from input sequences). In these graphs, sequences shared across input sequences ap-pears once as shared nodes, while sequence differences ap-pear as alternative paths through the graph. Path information is essential for Panomap’s per-path indexing and chaining, so graph representations without paths, such as Minigraph’s out-put [23] or Bifrost’s colored compacted de Bruijn graph [31], are not supported. The input GFA is a bidirected sequence graph: each node can be traversed in either the forward or reverse-complement orientation. These two traversals correspond to different nucleotide strings and therefore produce different expected event streams under the pore model. As shown by the di-rectional expansion step in Figure 1, Panomap converts the bidirected input graph into a directed graph by creating sep-arate forward and reverse-complement copies of each node, edge, and path. This makes strand orientation explicit be-fore indexing. Rather than indexing one graph and han-dling reverse-complement matches as a separate case during mapping, Panomap indexes directed graph paths whose nu-cleotide sequences are already orientation-specific. 
+
+Per-path signal seed indexing. As part of graph index-ing (Figure 1b), Panomap builds the seed index by first z-score normalizing the pore-model table used for squiggliza-tion. The pore-model table defines the expected nanopore event value for each nucleotide kpore -mer. Panomap then walks each path through the directed graph. For each path, a window of width kpore slides over the path sequence, and each resulting kpore -mer is looked up in the normalized pore-model table. The sequence of lookup results forms the path’s expected event stream. An event-level homopolymer com-pression (HPC) step then merges consecutive events whose normalized values differ by less than a small threshold, anal-ogous to base-space HPC in minimap2 [32]. The resulting event stream is tokenized with the 4-bit adap-tive quantizer used by RawHash2 [2], which maps each nor-malized event value to one of 16 discrete tokens. Panomap then extracts seeds by hashing each window of kseed con-secutive tokens. Each seed is stored in the seed index as a       
+
+> 2|bioR χiv Shih et al. |Panomap: Nanopore Signal to Pangenome Graph Mapping
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.10.737796 doi: bioRxiv preprint Seed Index
+
+a. Graph reference building  
+
+> ACGT G
+> C
+> A
+> CGTA
+> T
+> C
+> GTA
+> .gfa
+
+Pangenome 
+
+Graph Builder …   
+
+> >hap -1ACGTACGTACGTACGT ... .fa
+> >hap -2ACGT GCGTACGTACGT ...
+> >hap -NACGT CCGTA TGTA GC T...
+> .fa
+> .fa
+
+Genome assemblies   
+
+> TGCA C
+> G
+> T
+> GCAT
+> A
+> G
+> CAT
+> ACGT G
+> C
+> A
+> CGTA
+> T
+> C
+> GTA
+
+b. Graph indexing 
+
+Squigglize 
+
+Tokenize 
+
+Seed Extract 
+
+> {●,▲,■,…}*
+> Pore Model LUT
+> (normalized) ℝᴺ
+> {A,C,G,T}*
+
+Build graph 
+
+coordinates 
+
+> hash
+
+Per -path walk 
+
+Chain 
+
+Map decision 
+
+c. Read mapping  
+
+> Nanopore signal chunk
+
+Event detect 
+
+Tokenize 
+
+> ℝᵀ
+> {●,▲,■,…}*
+
+Seed Extract hash lookup 
+
+> norm
+> Graph Coordinate
+> Inde x
+> ℝᴺ
+> store
+> Graph Anchors
+> (bidirected graph)
+> (directed graph)
+
+Directional 
+
+expansion Fig. 1. Panomap overview, showing (a) graph reference building, (b) graph indexing, and (c) read mapping. 
+
+seed record (u, o ) under the token-seed hash h, where u is the graph node containing the seed and o is the seed’s start offset within node u.Both squigglization and seed extraction require multi-base context. Parsing each node sequence alone misses context at node ends, while enumerating all possible node-edge walks through variant forks can quickly become impractical. Per-path walking avoids this problem by indexing only the paths stored in the graph. The seed index maps each seed hash h to a list of graph locations where that seed occurs. Because dif-ferent paths can visit the same shared node, path walking may emit the same graph location (u, o ) more than once for the same seed hash. After path walking, Panomap deduplicates seed records so that each graph location (u, o ) appears at most once for each seed hash h. During mapping, Panomap looks up each read seed in the seed index and retrieves a list of unique graph locations for that seed. By removing duplicate records from shared graph sequence, this deduplication lets the seed index scale sublinearly with pangenome size. 
+
+Graph coordinate index. In addition to the seed index, Panomap also builds a graph coordinate index during graph indexing (Figure 1b). This index contains two coordinate structures over the directed graph. The first structure records a path coordinate for each node visit, used for chaining. Dur-ing the path walk, Panomap tags each node visit with a path coordinate (p, r ), where p is the path identifier and r is the cumulative base position along path p at the start of the visit. A node may be visited multiple times within the same path or by multiple different paths, so a graph node can be associated with multiple path coordinates. During mapping, these coor-dinates are used to project graph locations onto the paths that contain them, allowing Panomap to measure anchor distances along each path for colinear chaining. Panomap stores one path coordinate for each visit, so the same graph node can correspond to multiple path positions. Each path therefore defines an independent linear coordinate system in which anchor distances reflect the true genomic distance along that path. During mapping, these coordinates are used to expand graph locations into positions along each path for colinear chaining. The second is an approximate global 1D coordinate system over the directed graph, used for chain deduplication. Per-path chaining can produce near-duplicate chains when multi-ple paths share the same region. To identify these overlaps, Panomap adapts the 1D path-guided stochastic gradient de-scent (1D PG-SGD) layout algorithm from ODGI [33, 34]. 1D PG-SGD places graph nodes along a line so that dis-tances between nodes roughly agree with their nucleotide       
+
+> Shih et al. |Panomap: Nanopore Signal to Pangenome Graph Mapping bioR χiv |3
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.10.737796 doi: bioRxiv preprint
+
+distances along the graph paths. Panomap modifies ODGI’s 1D PG-SGD in two ways. First, each node receives start and end coordinates rather than ODGI’s single start posi-tion, so intra-node positions can be interpolated and chains can be projected as 1D intervals. Second, the graph is par-titioned into connected components, and coordinates restart from zero within each component, since disconnected com-ponents share no distance along any path. These per-node coordinates are later used to detect overlapping chains. 
+
+Signal processing and anchor formation during map-ping. During read mapping (Figure 1c), Panomap maps each read incrementally, processing one signal chunk (a fixed-size block of raw signal samples) at a time. Within each chunk, the signal passes through a signal-space preprocessing pipeline that converts the raw signal to picoampere (pA) cur-rent, detects events using Scrappie’s two-window t-statistic detector [35], normalizes each chunk by z-score, and ap-plies the same event-level HPC used during indexing. The event stream is then tokenized with the same adaptive quan-tizer used during indexing, and seeds are extracted by hash-ing windows of kseed consecutive tokens. Each seed hash is queried against the seed index, returning matching graph lo-cations (u, o ). Combined with the seed’s read position q, each match forms a graph anchor (q, u, o ).
+
+Per-path colinear chaining. From the previous step, Panomap obtains a set of graph anchors (q, u, o ). Using the path coordinates from the graph coordinate index, Panomap expands each graph anchor into one path anchor (q, r ) for each path that visits its node, where r is the reference posi-tion on that path. It groups these path anchors by path and chains them independently within each path using the co-linear chaining formulation of RawHash2, which is based on minimap2 [32]. This procedure rewards anchors that progress consistently along both the read and the path, while penalizing large or uneven gaps, producing high-scoring chains as candidate mapping locations. Panomap identifies chains in decreasing order of chain score, reconstructing each by traceback from its endpoint anchor. It keeps chains that meet minimum score and anchor-count thresholds and whose scores are at least a configurable frac-tion of the top chain score. Panomap also deduplicates chains using the global 1D coordinates from the graph coordinate in-dex. Each chain’s start and end graph anchors are projected onto these coordinates, and a chain whose projected interval overlaps a higher-scoring chain in the same connected com-ponent above a configurable threshold is discarded as a du-plicate from the same region. This leaves one representative chain per genomic region. 
+
+Mapping decision. After each chunk, Panomap evaluates the top candidate chains and decides whether to emit a map-ping. It applies one of two rules depending on whether mul-tiple chains compete or only one chain is found. With mul-tiple chains, Panomap computes a weighted decision score adapted from RawHash2 [2]. This score is high when the best chain has high mapping quality and is clearly sepa-rated from the other chains in both mapping quality and chain score. Let Qbest and Cbest be the mapping quality and chain score of the best chain, and let ¯Q and ¯C be the corresponding means across competing chains. Defin-ing rq = min( Qbest /30 , 1) , rmq = max(0 , 1 − ¯Q/Q best ), and 
+
+rmc = max(0 , 1 − ¯C/C best ), the weighted decision score is 
+
+wsum = wq rq + wmq rmq + wmc rmc , where wq , wmq , and 
+
+wmc are configurable weights. Panomap emits a mapping if wsum exceeds a configurable threshold. The chain dedu-plication described above provides this rule with a non-redundant chain set; otherwise, near-duplicate chains across paths would make the best chain appear less distinct from its competitors. When only one chain is extracted, the weighted decision rule does not apply. Panomap accepts the single chain if its an-chor count exceeds a minimum threshold and its read and reference event spans are comparable under a configurable span-ratio threshold. If no mapping is emitted for the cur-rent chunk, Panomap retains the top candidate chains’ an-chors and processes them together with the next chunk. This chunk-by-chunk process continues until Panomap makes a confident decision or reaches c, the configurable maximum number of signal chunks it observes before deciding. A read still undecided at c is reported as unmapped. Deciding as early as possible reduces per-read processing time. Mappings are emitted in PAF or GAF format with per-read tags. 
+
+Results 
+
+The results are organized into four subsections. The first three evaluate Panomap’s mapping accuracy across different settings, and the fourth evaluates the cost of using pangenome references in terms of index size and per-read processing time. All experiments ran on an Intel Xeon Gold 6240 server with 72 physical cores, 144 threads, 376 GB RAM, and RHEL 8.10. Each tool uses 64 threads for mapping, with per-tool commands provided in the supplementary material. 
+
+Preserving accuracy under pangenome scaling when one reference already represents the sample. We first consider a setting where reads are already well represented by one reference. In this case, a pangenome mapper should maintain its accuracy as the reference collection grows. We evaluate Panomap against RawHash2 and Sigmoni using two binary classification tasks. The first task asks whether each tool can keep SARS-CoV-2 reads while rejecting unre-lated E. coli reads. The second task uses the same setup for 
+
+S. cerevisiae , asking whether each tool can keep S. cerevisiae 
+
+reads while rejecting unrelated E. coli reads. The on-target reads are real nanopore reads: 40,000 SARS-CoV-2 reads from InterARTIC [36] and 40,000 S. cerevisiae reads from SRA SRR8648503 . The unrelated off-target reads for both classification tasks are 40,000 simulated E. coli reads gener-ated with Squigulator [37] using the R9.4.1 preset from the E. coli K-12 MG1655 assembly (NCBI NC_000913.3 ). For both binary classification tasks, we scale the target reference collection from 1 to 8 reference sequences (full composition in Supplementary material Table S2). We write N for the                      
+
+> 4|bioR χiv Shih et al. |Panomap: Nanopore Signal to Pangenome Graph Mapping
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.10.737796 doi: bioRxiv preprint 1248
+> 1
+> 2
+> 4
+> 8
+> 0.62 0.85 0.93 0.94
+> 0.62 0.84 0.93 0.94
+> 0.62 0.84 0.93 0.94
+> 0.61 0.84 0.93 0.94
+
+F1                
+
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.46 0.76 0.91 0.94
+> 0.46 0.76 0.91 0.94
+> 0.46 0.76 0.91 0.94
+> 0.45 0.75 0.91 0.94
+
+Recall                
+
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.98 0.96 0.95 0.93
+> 0.98 0.96 0.95 0.93
+> 0.98 0.96 0.95 0.93
+> 0.98 0.97 0.95 0.93
+
+Spec.                
+
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.50 0.75 0.86 0.89
+> 0.50 0.75 0.86 0.89
+> 0.50 0.74 0.86 0.89
+> 0.49 0.74 0.86 0.88
+
+F1                
+
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.34 0.60 0.77 0.82
+> 0.34 0.60 0.77 0.82
+> 0.33 0.60 0.77 0.82
+> 0.33 0.59 0.77 0.82
+
+Recall                
+
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 1.00 0.99 0.98 0.97
+> 1.00 0.99 0.98 0.97
+> 1.00 0.99 0.98 0.97
+> 1.00 0.99 0.98 0.96
+
+Spec.                
+
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.22 0.48 0.73 0.85
+> 0.25 0.52 0.77 0.87
+> 0.24 0.52 0.77 0.88
+> 0.25 0.53 0.78 0.89
+
+Mapped frac.                
+
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.31 0.59 0.80 0.89
+> 0.33 0.62 0.82 0.90
+> 0.32 0.62 0.82 0.91
+> 0.32 0.62 0.83 0.91
+
+Macro F1                                                                                                                                                                                                                                                                                                                                                                         
+
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.62 0.85 0.93 0.94
+> 0.62 0.84 0.93 0.94
+> 0.62 0.84 0.93 0.94
+> 0.61 0.84 0.93 0.94
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.46 0.76 0.91 0.94
+> 0.46 0.76 0.91 0.94
+> 0.46 0.76 0.91 0.94
+> 0.45 0.75 0.91 0.94
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.98 0.96 0.95 0.93
+> 0.98 0.96 0.95 0.93
+> 0.98 0.96 0.95 0.93
+> 0.98 0.97 0.95 0.93
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.50 0.75 0.86 0.89
+> 0.50 0.75 0.86 0.89
+> 0.50 0.74 0.86 0.89
+> 0.50 0.74 0.86 0.88
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.34 0.60 0.77 0.82
+> 0.34 0.60 0.77 0.82
+> 0.33 0.59 0.77 0.82
+> 0.33 0.59 0.77 0.82
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 1.00 0.99 0.98 0.97
+> 1.00 0.99 0.98 0.97
+> 1.00 0.99 0.98 0.97
+> 1.00 0.99 0.98 0.96
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.22 0.48 0.73 0.85
+> 0.25 0.52 0.77 0.87
+> 0.24 0.52 0.77 0.88
+> 0.24 0.52 0.78 0.89
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.31 0.59 0.80 0.89
+> 0.33 0.62 0.82 0.90
+> 0.32 0.62 0.82 0.90
+> 0.32 0.62 0.82 0.91
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.78 0.81 0.73 0.68
+> 0.22 0.50 0.76 0.76
+> 0.09 0.38 0.72 0.77
+> 0.10 0.41 0.73 0.75
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.79 0.96 0.98 0.99
+> 0.12 0.34 0.69 0.84
+> 0.05 0.24 0.61 0.81
+> 0.05 0.27 0.65 0.83
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.77 0.59 0.27 0.07
+> 0.99 0.97 0.89 0.63
+> 0.99 0.98 0.92 0.69
+> 0.99 0.97 0.89 0.62
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.60 0.81 0.89 0.90
+> 0.08 0.32 0.74 0.90
+> 0.10 0.36 0.75 0.90
+> 0.10 0.35 0.75 0.90
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.43 0.71 0.84 0.91
+> 0.04 0.19 0.59 0.83
+> 0.06 0.22 0.61 0.84
+> 0.05 0.21 0.61 0.84
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.98 0.97 0.95 0.90
+> 1.00 1.00 1.00 0.99
+> 1.00 0.99 0.99 0.97
+> 1.00 1.00 0.99 0.98
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.25 0.53 0.75 0.86
+> 0.13 0.37 0.65 0.82
+> 0.10 0.32 0.64 0.83
+> 0.06 0.25 0.61 0.83
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.36 0.67 0.85 0.91
+> 0.20 0.51 0.77 0.89
+> 0.15 0.46 0.77 0.90
+> 0.10 0.39 0.75 0.91
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.38 0.62 0.75 0.84
+> 0.38 0.62 0.75 0.84
+> 0.36 0.59 0.71 0.79
+> 0.36 0.58 0.68 0.75
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.23 0.45 0.60 0.72
+> 0.23 0.45 0.60 0.72
+> 0.22 0.42 0.55 0.66
+> 0.22 0.41 0.52 0.60
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 1.00 1.00 1.00 1.00
+> 1.00 1.00 1.00 1.00
+> 1.00 1.00 1.00 1.00
+> 1.00 1.00 1.00 1.00
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.89 0.95 0.97 0.98
+> 0.89 0.94 0.95 0.96
+> 0.89 0.93 0.94 0.95
+> 0.89 0.93 0.94 0.93
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.86 0.92 0.94 0.96
+> 0.85 0.89 0.90 0.93
+> 0.86 0.88 0.90 0.91
+> 0.87 0.88 0.89 0.88
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.93 0.99 1.00 1.00
+> 0.93 0.99 1.00 1.00
+> 0.93 0.99 1.00 1.00
+> 0.93 0.99 1.00 1.00
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 1.00 1.00 1.00 1.00
+> 1.00 1.00 1.00 1.00
+> 1.00 1.00 1.00 1.00
+> 1.00 1.00 1.00 1.00
+> 1248
+> 1
+> 2
+> 4
+> 8
+> 0.31 0.45 0.62 0.76
+> 0.32 0.45 0.62 0.76
+> 0.31 0.44 0.59 0.73
+> 0.30 0.42 0.56 0.70
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> Panomap
+> (PGGB)
+> Panomap
+> (MC)
+> RawHash2 Sigmoni
+> Pangenome collection size ( N)
+
+Max. signal chunks ( c)
+
+(a) SARS-CoV-2 (b) S. cerevisiae (c) Zymo mock community Fig. 2. Cross-tool mapping accuracy across pangenome collection size N and maximum signal chunks c for (a) SARS-CoV-2, (b) S. cerevisiae , and (c) Zymo. Rows show tools and graph builders; columns show datasets and metrics. 
+
+number of target reference sequences in the collection, sam-pled at N = 1 , 2, 4, 8, and c for the maximum number of sig-nal chunks a tool sees before making a decision. Each chunk is configured to be 4000 signal samples. We report recall, specificity, and F1, where recall is the fraction of on-target reads kept and specificity is the fraction of off-target reads re-jected. Panomap maps to pangenome graphs built with pggb and Minigraph-Cactus (MC). RawHash2 and Sigmoni are given the same target pangenome collection, but represented as multi-FASTA references rather than as a graph. Sigmoni additionally includes a fixed E. coli reference as the off-target reference required by its binary classification mode. From Figures 2a and 2b, Panomap maintains its accuracy as the collection grows. Across all four collection sizes (N = 1 , 2, 4, 8), its F1 stays near 0.94 on SARS-CoV-2 and 0.89 on S. cerevisiae at c = 8 , and the pggb and MC graphs behave the same. In contrast, RawHash2 and Sigmoni regress as the reference collection scales. RawHash2 is strong at 
+
+N = 1 , though on SARS-CoV-2 its specificity worsens as the maximum number of signal chunks c grows, reaching 0.07 at 
+
+c = 8 . As more reference sequences are added, RawHash2’s recall falls, most sharply at small c: one-chunk recall on S. cerevisiae drops from 0.43 at N = 1 to 0.04 at N = 2 , low-ering its F1. RawHash2 treats each reference sequence as a separate target, so reads from the same genomic region can map to several sequences with near-equal scores. This re-duces the standout score used for the mapping decision, caus-ing some on-target reads to be discarded. Sigmoni’s F1 like-wise decreases as the reference collection grows for both the SARS-CoV-2 and S. cerevisiae classification tasks, with its 
+
+S. cerevisiae recall slipping from 0.96 at N = 1 to 0.88 at 
+
+N = 8 . Its specificity stays near 1.0 because the off-target reference in its index allows it to filter out off-target reads. Together, these results show that Panomap is robust to pangenome scaling when the reads are already well repre-sented by a single reference. 
+
+Improving accuracy through pangenome scaling when exact strains are absent. We next test whether adding re-lated strains helps when the exact strain that produced the reads is absent from the reference collection. In this setting, the added strains diversify the reference collection and should help improve mapping. We evaluate Panomap against RawHash2 and Sigmoni on a seven-way species classification task. We use the bacterial subset of the ZymoBIOMICS D6322 mock community reads curated by the Sigmoni authors, which includes 9,856 reads across seven bacterial species (yeast reads excluded) from [4]. Each tool assigns every read to one of the seven species. The reference includes all seven species, but represents each by related assemblies rather than the exact ZymoBIOMICS strain, mimicking a sample whose exact strains are unknown. For each species we scale the number of related assemblies from 1 to 8 ( N = 1 , 2, 4, 8). Ground-truth species labels come from basecalling each read and aligning it with minimap2 to per-species assemblies, following Sigmoni’s protocol. We re-port per-species F1 and summarize with macro F1, the mean across the seven species. Panomap maps to pggb and MC graphs, while RawHash2 and Sigmoni take the same assem-blies as multi-FASTA reference collections. From Figure 2c, Panomap’s accuracy improves as related as-semblies are added: macro F1 rises from 0.89 at N = 1 to 0.91 at N = 8 at c = 8 , with pggb and MC behaving the same. Conversely, RawHash2’s macro F1 at only one signal chunk drops from 0.36 at N = 1 to 0.10 at N = 8 , though recovers to 0.91 at up to 8 signal chunks. Sigmoni does not gain from the added assemblies: its macro F1 stays be-low Panomap’s and slips from 0.76 to 0.70 as assemblies are added (at c = 8 ). Because Sigmoni always assigns a species label, it never leaves a read unmapped, whereas Panomap and RawHash2 can. Macro F1 reflects unmapped reads as misses, so it compares the three tools on equal footing despite their different mapped fractions. 
+
+Shih et al. | Panomap: Nanopore Signal to Pangenome Graph Mapping bioR χiv | 5
+
+.CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.10.737796 doi: bioRxiv preprint Table 1. HLA-DRB1 recall for reads from selected source allele groups. Reads are simulated from each selected group and mapped against the fixed GRCh38 HLA-DRB1 reference ( N = 1 ) or pangenome references that exclude the source group (N = 48 or N = max). 
+
+Read source group (divergence %) N Recall at maximum signal chunks c
+
+1 2 4 8Group 15 (0.08%) 1 0.936 0.986 0.996 0.996 48 0.911 0.966 0.990 0.990 584 0.908 0.963 0.988 0.989 Group 12 (27.29%) 1 0.749 0.879 0.959 0.981 48 0.902 0.962 0.992 0.993 628 0.899 0.956 0.990 0.991 Group 07 (41.41%) 1 0.610 0.769 0.910 0.961 48 0.891 0.964 0.988 0.989 623 0.889 0.965 0.987 0.987 
+
+Thus, when the exact strain is absent from the reference, Panomap benefits from the added diversity of related assem-blies in the pangenome reference collection. 
+
+Recovering reads from unrepresented divergent alle-les at a polymorphic locus. Polymorphic loci can contain highly diverged alleles, making a single linear reference a poor representative of some sequenced samples. This is es-pecially problematic when mapping decisions must be made from short signal prefixes. We test whether Panomap can re-cover reads from divergent alleles when the pangenome ref-erence contains related allele groups but excludes the group that produced the reads. We evaluate this setting at HLA-DRB1, a highly polymorphic locus. We use HLA-DRB1 alleles from the IPD-IMGT/HLA database [38], which are organized into 13 groups by se-quence similarity. We use the GRCh38 HLA-DRB1 se-quence, which is a group 15 allele [39], as the fixed single-reference baseline. We then select three source allele groups for read simulation based on their average divergence from this baseline: group 15 (0.08%), group 12 (27.29%), and group 7 (41.41%). These groups test cases where the sim-ulated reads are close to, moderately diverged from, or far from the single-reference baseline. For each source allele group, we simulate 4,000 reads of ∼8 kb mean length from alleles in that group using Squigulator with its R9.4.1 profile. For each source allele group, we map the simulated reads against three references using Panomap. The first is the fixed GRCh38 HLA-DRB1 sequence ( N = 1 ), which is the same single-reference baseline for all three source groups. The second is a small pangenome graph that excludes the source group and contains four alleles from each of the re-maining 12 HLA-DRB1 groups ( N = 48 ). The third is a larger pangenome graph that also excludes the source group and contains all alleles from the remaining 12 groups (N = max, 584–628 depending on the source group). Both pangenome references are built with pggb. Because neither pangenome includes the source group used to simulate the reads, any mapped reads must be recovered through related allele groups represented in the graph. We report recall, the fraction of simulated reads that Panomap maps, across 
+
+c = 1 , 2, 4, 8 maximum signal chunks. As shown in Table 1, the benefit of the pangenome refer-ences depends on how far the read source group is from the GRCh38 baseline. For group 15 reads, the GRCh38 HLA-DRB1 sequence is itself a group 15 allele, so the fixed single-reference baseline already maps these reads well, with recall 0.936 at c = 1 and near 1.0 at c = 8 . The two pangenome ref-erences exclude group 15, so they can only map these reads through related allele groups represented in the graph; their recall is slightly lower at c = 1 (0.908–0.911) but remains close to the baseline. For group 12 reads, which are moderately diverged from GRCh38, the pangenome references improve recall most when the decision is made from few signal chunks. At 
+
+c = 1 , recall rises from 0.749 with GRCh38 to 0.902 with the 
+
+N = 48 pangenome and 0.899 with the N = max pangenome. As c increases, the GRCh38 baseline catches up, reaching 0.981 at c = 8 compared with 0.993 and 0.991 for the two pangenome references. For group 7 reads, which are farthest from GRCh38, the ben-efit is larger. At c = 1 , recall rises from 0.610 with GRCh38 to 0.891 with the N = 48 pangenome and 0.889 with the 
+
+N = max pangenome. The two pangenome references per-form similarly, showing that the smaller 48-allele collection already captures most of the benefit. As c increases, GRCh38 again catches up, but still trails the pangenome references by a few percent at c = 8 .These results show that pangenome diversity improves re-call when the fixed single-reference baseline is weakest: for source groups that are more diverged from GRCh38 and for decisions made from short signal prefixes. Panomap can therefore recover reads from polymorphic loci even when the allele group that produced the reads is not included in the pangenome reference. 
+
+Index size and per-read processing time. We next ex-amine the cost of using pangenome references. We mea-sure index size and per-read processing time for Panomap, RawHash2, and Sigmoni on the three real-read benchmarks from the first two experiments: SARS-CoV-2, S. cerevisiae ,and Zymo. Figure 3 shows how each tool’s index size grows with the pangenome collection. Index size is measured as the on-disk byte size of the files each tool loads during mapping or classification (measurement commands and the files required by each tool are provided in the supplementary material). Panomap’s index scales sublinearly on all three datasets: as the collection grows eightfold from N = 1 to N = 8 , the in-dex stays near 1 MB on SARS-CoV-2 and grows only 2.2 ×
+
+on S. cerevisiae and 3.4 × on Zymo. In contrast, RawHash2’s index grows near-linearly on all three datasets, reaching 3.17 GB on Zymo, a 7.3 × increase from N = 1 to N = 8 .This is because RawHash2 treats each reference sequence as a separate target and stores sequences shared across ref-erence sequences redundantly. Sigmoni’s index also scales sublinearly and is the smallest of the three on S. cerevisiae                                                                      
+
+> 6|bioR χiv Shih et al. |Panomap: Nanopore Signal to Pangenome Graph Mapping
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.10.737796 doi: bioRxiv preprint 1248124812481248
+> 0 B
+> 2 MB
+> 5 MB
+> 8 MB
+> 10 MB
+> 12 MB
+> 15 MB
+> 18 MB
+> Index size (bytes)
+> SARS-CoV-2
+> Panomap
+> (pggb) Panomap
+> (MC) RawHash2 Sigmoni
+> 1248124812481248
+> 0 B
+> 150 MB
+> 300 MB
+> 450 MB
+> 600 MB
+> 750 MB
+> 900 MB
+> 1.1 GB
+> 1.2 GB S. cerevisiae
+> Panomap
+> (pggb) Panomap
+> (MC) RawHash2 Sigmoni
+> 1248124812481248
+> 0 B
+> 400 MB
+> 800 MB
+> 1.2 GB
+> 1.6 GB
+> 2.0 GB
+> 2.4 GB
+> 2.8 GB
+> 3.2 GB Zymo mock community
+> (7 species)
+> Panomap
+> (pggb) Panomap
+> (MC) RawHash2 Sigmoni
+> Panomap seed index Panomap graph coordinate index Panomap graph metadata RawHash2 Sigmoni Fig. 3. Index size scaling across pangenome collection size Nfor Panomap, RawHash2, and Sigmoni. The Panomap breakdown separates the seed index, graph coordinate index, and other graph metadata.
+
+and Zymo, growing 1.65 × and 2.53 × from N = 1 to N = 8 
+
+(to 111 MB and 329 MB). On SARS-CoV-2, however, its in-dex is the largest of the three (17.4 MB), because Sigmoni’s binary classification mode also requires an off-target refer-ence, and the E. coli null dominates the small SARS-CoV-2 target collection. Panomap’s sublinear index size scaling comes from storing seeds for shared graph nodes once rather than redundantly per path. Its other components, the graph coordinate index and graph metadata, grow with the graph itself, so the to-tal index size follows the graph’s node count. This differs sharply across datasets: SARS-CoV-2’s graph stays under 2,000 nodes even at N = 8 , whereas Zymo’s reaches 5.7– 6.3 M nodes (Table S5). Sigmoni’s compact index comes with a separate cost: because its binary classification mode requires an off-target reference, the total index size also de-pends on that reference. In our SARS-CoV-2 experiment, the 
+
+E. coli off-target reference already dominates the index. If the off-target reads were human and hg38 were used as the off-target reference, Sigmoni’s index would expand to 14.5 GB. We measure per-read processing time as total wall-clock time divided by the number of reads, using 64 threads (Table S8). Panomap is competitive overall. It is fastest on SARS-CoV-2, staying below 0.25 ms per read for every tested combination of N and c, and on S. cerevisiae all three tools converge to 2–3 ms per read at N = 8 and c = 8 . On Zymo, however, Panomap is slowest when N = 8 and c = 8 , taking 4.7 ms per read compared with 2.5 ms for RawHash2 and 4.4 ms for Sig-moni. This slowdown reflects the cost of Panomap’s current mapping approach as the pangenome grows. In the current design, graph anchors are expanded onto paths and chained independently within each path, so chaining work grows with the number of paths represented in the graph. On S. cere-visiae reads at c = 8 , Panomap’s per-read time grows from 0.83 ms at N = 1 to 3.0 ms at N = 8 . Chaining directly on the graph could reduce this dependence on the number of paths, but would require robust graph-distance methods. Overall, Panomap keeps index growth sublinear by sharing seeds across graph nodes, while retaining competitive per-read time across the real-read benchmarks. Its main cost is increased read mapping time from per-path chaining, mak-ing chaining directly on graph anchors the clearest target for future optimization. 
+
+Discussion 
+
+Chaining on Pangenome Graphs in Signal Space. Col-inear chaining relies on evaluating distance between anchors on both the read and the reference. While this is straightfor-ward on a linear reference, graph references introduce am-biguity because multiple paths and cycles may connect the same pair of anchors. Base-space sequence-to-graph map-pers address this challenge using graph-level distance met-rics, including shortest-path (minigraph [23]), snarl-based (vg giraffe [21]), and topological (GraphAligner [22]) for-mulations. In practice, these metrics are often sufficient be-cause chaining primarily identifies candidate regions, while a downstream alignment stage, such as partial-order align-ment used in vg map [19, 40] or bit-parallel sequence-to-graph alignment [41] used in GraphAligner, recovers the ex-act read-to-graph correspondence. Signal-space mapping currently lacks an analogous correc-tion stage. Although sequence-to-graph alignment has ma-tured substantially, signal-to-graph alignment remains com-putationally challenging. Dynamic programming formula-tions for signal-to-graph alignment [42] can be derived by extending sequence-to-graph alignment algorithms to dy-namic time warping, but the accelerations that make practi-cal sequence-to-graph aligners fast, such as bit-parallel scor-ing over binary match/mismatch, do not transfer easily to the dynamic-time-warping setting where signal distances are continuous. Consequently, errors introduced during chain-ing are more difficult to recover downstream, placing greater importance on accurate graph distance estimates that reflect nucleotide distance along paths. Panomap addresses this challenge by chaining anchors within each path. Rather than approximating distances directly on the graph, Panomap projects graph anchors onto the paths that contain them and chains the projected anchors within each path’s coordinate system. This preserves path-specific nucleotide distances and also makes repeated traver-sals through cycles explicit. Across our evaluations, this strategy preserved accuracy as pangenome collections scaled when the single-reference baseline maps well and improved recall on absent target alleles in a polymorphic region. These results suggest that chaining with exact distances along paths is sufficient to extend pangenome graph mapping into signal       
+
+> Shih et al. |Panomap: Nanopore Signal to Pangenome Graph Mapping bioR χiv |7
+
+.CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.10.737796 doi: bioRxiv preprint space while retaining the benefits of pangenome representa-tion with variation graphs. Future work may move beyond per-path chaining through more accurate graph distance metrics, graph-aware chain-ing formulations, or practical signal-to-graph alignment al-gorithms. Progress in any of these directions could im-prove scalability and facilitate signal-space mapping on in-creasingly large pangenomes, including human-scale varia-tion graphs [43]. 
+
+Signal Representations and Early Decision Making. 
+
+Beyond graph-specific challenges, our experience develop-ing Panomap suggests that signal representation quality re-mains a dominant challenge across signal-space methods. Event segmentation, tokenization, and seed generation each introduce opportunities for divergence between reference-derived and read-derived representations, ultimately affect-ing the mapper’s ability to extract reliable matches from short signal prefixes. Event segmentation and tokenization are two major sources of this representation error. Many signal-space tools rely on the t-statistic detector introduced by Scrappie [35] to partition the continuous nanopore signals into discrete events. How-ever, segmentation quality can vary with detector parame-ters, sequencing chemistry, and signal characteristics. Over-segmentation may split one expected event into multiple de-tected events, while under-segmentation may merge distinct events together. Tokenization introduces an additional source of error, where similar events may be assigned different to-kens when they fall near quantization boundaries, or distinct events may collapse into the same token when the alphabet is too coarse. Both cases reduce the reliability of subse-quent exact seed matching. As a result, signal-space meth-ods often require denser seeding than their base-space coun-terparts, using shorter seeds or less aggressive seed subsam-pling. This increases seed frequency, index size, candidate anchor counts, and chaining cost. These representation errors affect both final mapping accu-racy and early decision making. Fewer reliable seeds pro-duce weaker chains and more ambiguous candidate map-pings. This is particularly important in adaptive sampling, where decisions must be made from short signal prefixes. Reads that cannot be confidently classified from the current signal chunks must continue sequencing so that Panomap can collect more signal and attempt another decision. Thus, al-though signal-space methods avoid the computational cost of basecalling, representation errors can leave their recall on the earliest chunks below that of base-space adaptive sampling such as [5], which, when a GPU basecaller is available, can already make reliable decisions from a short signal prefix. Signal-space methods remain useful as adaptive samplers in resource-constrained environments, and as pre-basecall fil-ters running alongside sequencing to identify confident cases early and reduce downstream basecalling load [25, 44]. Future improvements in event detection, tokenization, seed design, or learned signal representations could improve map-ping quality, reduce index and candidate-set sizes. By making decisions more reliable from shorter read prefixes, improved representations would make signal-space adap-tive sampling more competitive with base-space approaches while preserving its key advantage of avoiding basecalling for early decisions. 
+
+Conclusion 
+
+Panomap is the first signal-space mapper that operates on pangenome variation graphs. Panomap preserves mapping accuracy when a single reference already represents the sam-ple well, improves mapping when related pangenome diver-sity better represents a sample whose exact strain is absent, and improves recall at a polymorphic locus when the se-quenced allele is missing from the reference. By represent-ing shared sequences once while preserving the paths in the graph, Panomap brings population-aware reference represen-tation into signal-space mapping. More broadly, our results identify graph-aware chaining and robust signal representa-tion as key directions for making signal-space mapping more accurate, scalable, and robust to genetic diversity. 
+
+Data Availability 
+
+Panomap source code is available at https://github. com/cornell-brg/panomap . The datasets used in this study are publicly available from the accessions and sources cited in the Methods and Supplementary material. 
+
+Funding 
+
+This work was supported in part by NSF PPoSS Award #2118709. 
+
+AI Use Acknowledgement 
+
+The authors used Claude Code and ChatGPT as coding and editorial aids under author supervision. Full details are pro-vided in the Supplementary Information. 
+
+Conflict of Interest 
+
+H.G. has previously received travel and accommodation ex-penses from Oxford Nanopore Technologies (ONT) and has a paid consultant role with Swan Genomics PTY. 
+
+Bibliography                         
+
+> 1. Miten Jain, Hugh E Olsen, Benedict Paten, and Mark Akeson. The Oxford Nanopore Min-ION: delivery of nanopore sequencing to the genomics community. Genome Biology , 17(1): 239, 2016. 2. Can Firtina, Melina Soysal, Joël Lindegger, and Onur Mutlu. RawHash2: mapping raw nanopore signals using hash-based seeding and adaptive quantization. Bioinformatics , 40 (8):btae478, 2024. 3. Matthew Loose, Sunir Malla, and Michael Stout. Real-time selective sequencing using nanopore technology. Nature Methods , 13(9):751–754, 2016. 4. Sam Kovaka, Yunfan Fan, Bohan Ni, Winston Timp, and Michael C Schatz. Targeted nanopore sequencing by real-time mapping of raw electrical signal with UNCALLED. Nature Biotechnology , 39(4):431–441, 2021. 5. Alexander Payne, Nadine Holmes, Thomas Clarke, Rory Munro, Bisrat J Debebe, and Matthew Loose. Readfish enables targeted nanopore sequencing of gigabase-sized genomes. Nature Biotechnology , 39(4):442–450, 2021. 6. Jens-Uwe Ulrich, Ahmad Lutfi, Kilian Rutzen, and Bernhard Y Renard. ReadBouncer: precise and scalable adaptive sampling for nanopore sequencing. Bioinformatics , 38 (Supplement_1):i153–i160, 2022.
+> 8|bioR χiv Shih et al. |Panomap: Nanopore Signal to Pangenome Graph Mapping
+
+.CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.10.737796 doi: bioRxiv preprint 7. Samuel Martin, Darren Heavens, Yuxuan Lan, Samuel Horsfield, Matthew D Clark, and Richard M Leggett. Nanopore adaptive sampling: a tool for enrichment of low abundance species in metagenomic samples. Genome biology , 23(1):11, 2022. 8. Lukas Weilguny, Nicola De Maio, Rory Munro, Charlotte Manser, Ewan Birney, Matthew Loose, and Nick Goldman. Dynamic, adaptive sampling during nanopore sequencing using bayesian experimental design. Nature Biotechnology , 41(7):1018–1025, 2023. 9. Harrison S Edwards, Raga Krishnakumar, Anupama Sinha, Sara W Bird, Kamlesh D Patel, and Michael S Bartsch. Real-time selective sequencing with rubric: read until with basecall and reference-informed criteria. Scientific reports , 9(1):11475, 2019. 10. Haowen Zhang, Haoran Li, Chirag Jain, Haoyu Cheng, Kin Fai Au, Heng Li, and Srinivas Aluru. Real-time mapping of nanopore raw signals. Bioinformatics , 37(Supplement_1): i477–i483, 2021. 11. Can Firtina, Nika Mansouri Ghiasi, Joel Lindegger, Gagandeep Singh, Meryem Banu Cavlak, Haiyu Mao, and Onur Mutlu. RawHash: enabling fast and accurate real-time anal-ysis of raw nanopore signals for large genomes. Bioinformatics , 39(Supplement_1):i297– i307, 2023. 12. Jared T Simpson, Rachael E Workman, PC Zuzarte, Matei David, LJ Dursi, and Winston Timp. Detecting dna cytosine methylation using nanopore sequencing. Nature methods , 14 (4):407–410, 2017. 13. Marcus H. Stoiber, Joshua Quick, Rob Egan, Ji Eun Lee, Susan Celniker, Robert K. Neely, Nicholas Loman, Len A. Pennacchio, and James Brown. De novo identification of DNA mod-ifications enabled by genome-guided nanopore signal processing. bioRxiv , page 094672, 2017. doi: 10.1101/094672 .14. Hasindu Gamaarachchi, Chun Wai Lam, Gihan Jayatilaka, Hiruna Samarakoon, Jared T Simpson, Martin A Smith, and Sri Parameswaran. Gpu accelerated adaptive banded event alignment for rapid comparative nanopore signal analysis. BMC bioinformatics , 21(1):1–13, 2020. 15. Sam Kovaka, Paul W Hook, Katharine M Jenike, Vikram Shivakumar, Luke B Morina, Ro-ham Razaghi, Winston Timp, and Michael C Schatz. Uncalled4 improves nanopore DNA and RNA modification detection via fast and accurate signal alignment. Nature Methods , 22 (4):681–691, 2025. 16. Can Firtina, Maximilian Mordig, Harun Mustafa, Sayan Goswami, Nika Mansouri Ghiasi, Stefano Mercogliano, Furkan Eris, Joel Lindegger, André Kahles, and Onur Mutlu. Rawsam-ble: overlapping raw nanopore signals using a hash-based seeding mechanism. Bioinfor-matics , 42(3):btag087, 2026. 17. Tim Dunn, Harisankar Sadasivan, Jack Wadden, Kush Goliya, Kuan-Yu Chen, David Blaauw, Reetuparna Das, and Satish Narayanasamy. Squigglefilter: An accelerator for portable virus detection. In MICRO-54: 54th Annual IEEE/ACM International Symposium on Microarchitecture , pages 535–549, 2021. 18. Po Jui Shih, Hassaan Saadat, Sri Parameswaran, and Hasindu Gamaarachchi. Efficient real-time selective genome sequencing on resource-constrained devices. GigaScience , 12: giad046, 2023. 19. Erik Garrison, Jouni Sirén, Adam M Novak, Glenn Hickey, Jordan M Eizenga, Eric T Daw-son, William Jones, Shilpa Garg, Charles Markello, Michael F Lin, et al. Variation graph toolkit improves read mapping by representing genetic variation in the reference. Nature biotechnology , 36(9):875–879, 2018. 20. Jordan M Eizenga, Adam M Novak, Jonas A Sibbesen, Simon Heumos, Ali Ghaffaari, Glenn Hickey, Xian Chang, Josiah D Seaman, Robin Rounthwaite, Jana Ebler, et al. Pangenome graphs. Annual review of genomics and human genetics , 21(1):139–162, 2020. 21. Jouni Sirén, Jean Monlong, Xian Chang, Adam M Novak, Jordan M Eizenga, Charles Markello, Jonas A Sibbesen, Glenn Hickey, Pi-Chuan Chang, Andrew Carroll, et al. Pange-nomics enables genotyping of known structural variants in 5202 diverse genomes. Science ,374(6574):abg8871, 2021. 22. Mikko Rautiainen and Tobias Marschall. GraphAligner: rapid and versatile sequence-to-graph alignment. Genome Biology , 21(1):253, 2020. 23. Heng Li, Xiaowen Feng, and Chong Chu. The design and construction of reference pangenome graphs with minigraph. Genome Biology , 21(265), 2020. 24. Jun Ma, Manuel Cáceres, Leena Salmela, Veli Mäkinen, and Alexandru I Tomescu. Chain-ing for accurate alignment of erroneous long reads to acyclic variation graphs. Bioinformat-ics , 39(8):btad460, 2023. 25. Vikram S Shivakumar, Omar Y Ahmed, Sam Kovaka, Mohsen Zakeri, and Ben Langmead. Sigmoni: classification of nanopore signal with a compressed pangenome index. Bioinfor-matics , 40(Supplement_1):i287–i296, 2024. 26. Hasindu Gamaarachchi, Hiruna Samarakoon, Sasha P Jenner, James M Ferguson, Timo-thy G Amos, Jillian M Hammond, Hassaan Saadat, Martin A Smith, Sri Parameswaran, and Ira W Deveson. Fast nanopore sequencing data analysis with slow5. Nature biotechnology ,40(7):1026–1029, 2022. 27. Erik Garrison, Andrea Guarracino, Simon Heumos, Flavia Villani, Zhigui Bao, Lorenzo Tat-tini, Jörg Hagmann, Sebastian Vorbrugg, Santiago Marco-Sola, Christian Kubica, et al. Building pangenome graphs. Nature Methods , 21(11):2008–2012, 2024. 28. Glenn Hickey, Jean Monlong, Jana Ebler, Adam M Novak, Jordan M Eizenga, Yan Gao, To-bias Marschall, Heng Li, and Benedict Paten. Pangenome graph construction from genome alignments with Minigraph-Cactus. Nature Biotechnology , 42(4):663–673, 2024. 29. Andrea Guarracino, N. Moses Mwaniki, Santiago Marco-Sola, and Erik Garrison. wfmash: a pangenome-scale aligner, 2022. 30. Erik Garrison and Andrea Guarracino. Unbiased pangenome graphs. Bioinformatics , 39(1): btac743, 2023. doi: 10.1093/bioinformatics/btac743 .31. Guillaume Holley and Páll Melsted. Bifrost: highly parallel construction and indexing of colored and compacted de bruijn graphs. Genome biology , 21(1):249, 2020. 32. Heng Li. Minimap2: pairwise alignment for nucleotide sequences. Bioinformatics , 34(18): 3094–3100, 2018. 33. Andrea Guarracino, Simon Heumos, Sven Nahnsen, Pjotr Prins, and Erik Garrison. Odgi: understanding pangenome graphs. Bioinformatics , 38(13):3319–3326, 2022. 34. Simon Heumos, Andrea Guarracino, Jan-Niklas M Schmelzle, Jiajie Li, Zhiru Zhang, Jörg Hagmann, Sven Nahnsen, Pjotr Prins, and Erik Garrison. Pangenome graph layout by path-guided stochastic gradient descent. Bioinformatics , 40(7):btae363, 2024. 35. Oxford Nanopore Technologies. Scrappie: technology demonstrator for Oxford Nanopore research algorithms. https://github.com/nanoporetech/scrappie , 2018. Archived January 2022. 36. James M Ferguson, Hasindu Gamaarachchi, Thanh Nguyen, Alyne Gollon, Stephanie Tong, Chiara Aquilina-Reid, Rachel Bowen-James, and Ira W Deveson. InterARTIC: an interactive web application for whole-genome nanopore sequencing analysis of SARS-CoV-2 and other viruses. Bioinformatics , 38(5):1443–1446, 2022. 37. Hasindu Gamaarachchi, James M Ferguson, Hiruna Samarakoon, Kisaru Liyanage, and Ira W Deveson. Simulation of nanopore sequencing signal data with tunable parameters. 
+
+Genome Research , 34(5):778, 2024. 38. James Robinson, Dominic J Barker, Xenia Georgiou, Mike A Cooper, Paul Flicek, and Steven GE Marsh. IPD-IMGT/HLA database. Nucleic Acids Research , 48(D1):D948–D955, 2020. 39. Valerie A Schneider, Tina Graves-Lindsay, Kerstin Howe, Nathan Bouk, Hsiu-Chuan Chen, Paul A Kitts, Terence D Murphy, Kim D Pruitt, Françoise Thibaud-Nissen, Derek Albracht, et al. Evaluation of GRCh38 and de novo haploid genome assemblies demonstrates the enduring quality of the reference assembly. Genome Research , 27(5):849–864, 2017. 40. Christopher Lee, Catherine Grasso, and Mark F Sharlow. Multiple sequence alignment using partial order graphs. Bioinformatics , 18(3):452–464, 2002. 41. Mikko Rautiainen, Veli Mäkinen, and Tobias Marschall. Bit-parallel sequence-to-graph align-ment. Bioinformatics , 35(19):3599–3607, 2019. 42. Gonzalo Navarro. Improved approximate pattern matching on hypertext. Theoretical Com-puter Science , 237(1-2):455–463, 2000. 43. Wen-Wei Liao, Mobin Asri, Jana Ebler, Daniel Doerr, Marina Haukness, Glenn Hickey, Shuangjia Lu, Julian K Lucas, Jean Monlong, Haley J Abel, et al. A draft human pangenome reference. Nature , 617(7960):312–324, 2023. 44. Meryem Banu Cavlak, Gagandeep Singh, Mohammed Alser, Can Firtina, Joël Lindegger, Mohammad Sadrosadati, Nika Mansouri Ghiasi, Can Alkan, and Onur Mutlu. Targetcall: Eliminating the wasted computation in basecalling via pre-basecalling filtering. Frontiers in Genetics , 15:1429306, 2024. 
+
+Shih et al. | Panomap: Nanopore Signal to Pangenome Graph Mapping bioR χiv | 9
+
+.CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.10.737796 doi: bioRxiv preprint Supplementary Material 
+
+S1. Read datasets. The three real-read datasets used in the evaluation use R9.4.1 chemistry at 4 kHz. For the SARS-CoV-2 and S. cerevisiae datasets we take the first 40,000 reads from each source, converted from FAST5 to BLOW5 with 
+
+slow5tools f2s . The Zymo reads dataset is the bacterial portion of the set curated by the authors of Sigmoni with yeast reads excluded.  
+
+> Table 1. Datasets used in cross-tool evaluations.
+
+Dataset Chemistry Reads used Data source 
+
+SARS-CoV-2 R9.4.1 40,000 InterARTIC SARS-CoV-2 ( seq.bioinf.science/interartic-corona )
+
+S. cerevisiae R9.4.1 40,000 SRA SRR8648503 (BioProject PRJNA510813 )Zymo D6322 R9.4.1 9,856 subset of SRA SRX7711546 curated by the Sigmoni authors; yeast reads excluded 
+
+The binary classification task in the evaluation uses E. coli reads simulated using Squigulator (v0.5.0) with K-12 MG1655 (NCBI NC_000913.3 ). Command used to simulate reads is: 
+
+squigulator -x dna-r9-min --seed 42 \-r 8000 -n 40000 --sample-rate 4000 \ -o ecoli-sim-r9-4khz-40k-8kb.blow5 \-q ecoli-sim-r9-4khz-40k-8kb.fasta \-a ecoli-sim-r9-4khz-40k-8kb.paf \ecoli_MG1655.fa 
+
+For the HLA-DRB1 experiment, we simulate 4,000 reads from each of groups 15, 12, and 7 using: 
+
+squigulator -x dna-r9-min --seed 42 \-r 8000 -n 4000 --sample-rate 4000 \ -o <drb1-group>.blow5 \-q <drb1-group>.fa \-a <drb1-group>.paf \<drb1-group-alleles>.fa 
+
+The reported divergence for group 15 (0.08%), group 12 (27.29%), and group 7 (41.41%) is the average divergence of each group’s alleles from the GRCh38 DRB1 allele, DRB1*15:01:01:01 . We compute this by aligning each allele to the GRCh38 allele with minimap2 -x asm20 -c -secondary=no and averaging NM divided by aligned block length over the best primary alignments.       
+
+> 10 |bioR χiv Shih et al. |Panomap: Nanopore Signal to Pangenome Graph Mapping
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.10.737796 doi: bioRxiv preprint
+
+S2. Reference collections. For the binary classification (SARS-CoV-2 and S. cerevisiae and multi-class classification (Zymo) experiments that vary the reference collection size, we build each collection by taking the first N references listed for that organism in Tab. S2. Thus, N = 1 uses Ref 1, N = 2 uses Ref 1–Ref 2, N = 4 uses Ref 1–Ref 4, and N = 8 uses Ref 1–Ref 8. We use this construction for SARS-CoV-2, S. cerevisiae , and the Zymo species. The S. cerevisiae references come from the pangenome panel available under ENA BioProject PRJEB7245 . The other references are listed by accession in the table. 
+
+Table 2. Per-organism reference pool. Each cell shows the strain or lineage name on the top line and the corresponding accession on the bottom line. Reference collections of size N use the first N entries in each row. 
+
+Organism Ref 1 Ref 2 Ref 3 Ref 4 Ref 5 Ref 6 Ref 7 Ref 8 
+
+SARS-CoV-2 Wuhan-Hu-1 
+
+> NC_045512.2
+
+B.1.1.7 
+
+> OZ303776.1
+
+B.1.351 
+
+> MW598419.1
+
+P.1 
+
+> MZ264787.1
+
+B.1.617.2 
+
+> PX952986.1
+
+BA.1 
+
+> PX503961.1
+
+BA.5 
+
+> PX497191.1
+
+XBB.1.5 
+
+> PQ017954.1
+
+S. cerevisiae SGDref  
+
+> --
+
+S288C  
+
+> --
+
+DBVPG6044  
+
+> --
+
+DBVPG6765  
+
+> --
+
+SK1  
+
+> --
+
+UWOPS034614  
+
+> --
+
+Y12  
+
+> --
+
+YPS128 
+
+> --
+
+E. coli MG1655 
+
+> NC_000913.3
+
+Sakai 
+
+> NC_002695.2
+
+ATCC 25922 
+
+> CP009072.1
+
+CFT073 
+
+> NC_004431.1
+
+SE11 
+
+> NC_011415.1
+
+BL21(DE3) 
+
+> CP053602.1
+
+W
+
+> CP002967.1
+
+ED1a 
+
+> NC_011745.1
+
+B. subtilis 168 
+
+> NC_000964.3
+
+BSn5 
+
+> CP010053.1
+
+NCIB3610 
+
+> CP002468.1
+
+CF03 
+
+> NZ_CP110105.1
+
+HC-9 
+
+> NZ_CP149444.1
+
+LTH 7164 
+
+> NZ_CP160208.1
+
+PY79 
+
+> NZ_CP196824.1
+
+6051-HGW 
+
+> CP003329.1
+
+E. faecalis 62 
+
+> NC_017316.1
+
+DENG1 
+
+> NC_018221.1
+
+RF_1_1_25_1 
+
+> NZ_CP046247.1
+
+L13 
+
+> NZ_CP071172.1
+
+W5 
+
+> NZ_CP118755.1
+
+SVJ-EF01 
+
+> NZ_CP121233.1
+
+OG1RF 
+
+> CP002621.1
+
+V583 
+
+> NC_004668.1
+
+L. monocytogenes FSL R2-561 
+
+> NC_017547.1
+
+F2365 
+
+> NC_002973.6
+
+EGD-e 
+
+> NC_003210.1
+
+HCC23 
+
+> NC_011660.1
+
+J1-220 
+
+> NC_018587.1
+
+J1816 
+
+> NC_018584.1
+
+M7 
+
+> NC_018589.1
+
+N1-011A 
+
+> NC_021830.1
+
+P. aeruginosa DSM 50071 
+
+> CP004061.1
+
+LESB58 
+
+> NC_011770.1
+
+M18 
+
+> CP008857.1
+
+PAO1-UW 
+
+> NZ_CP079712.1
+
+2-216 
+
+> NZ_CP158049.1
+
+PB2 
+
+> NZ_CP172964.1
+
+M25569 
+
+> NZ_CP197382.1
+
+PAO1 
+
+> NC_002516.2
+
+S. enterica Choleraesuis 
+
+> NC_006905.1
+
+Enteritidis 
+
+> NC_011294.1
+
+Heidelberg 
+
+> NC_011083.1
+
+Corvallis 
+
+> NZ_CP175687.1
+
+Derby 
+
+> NZ_CP175995.1
+
+Paratyphi A 
+
+> NC_006511.1
+
+Newport 
+
+> NC_011080.1
+
+Typhimurium 
+
+> NC_003197.2
+
+S. aureus COL 
+
+> NC_002951.2
+
+JH9 
+
+> NC_009487.1
+
+MRSA252 
+
+> NC_002952.2
+
+11819-97 
+
+> NC_017351.1
+
+N315 
+
+> NC_002758.2
+
+Mu50 
+
+> NC_002745.2
+
+NCTC 8325 
+
+> NC_007795.1
+
+USA300 
+
+> NC_010079.1
+
+Shih et al. | Panomap: Nanopore Signal to Pangenome Graph Mapping bioR χiv | 11 
+
+.CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.10.737796 doi: bioRxiv preprint S3. Graph construction. Pangenome graphs are built with pggb (v0.7.2) and Minigraph-Cactus (v3.1.4). pggb command: 
+
+pggb -i <input>.fa.gz -n <N> -o <out-dir> -t 16 -p <P> -s <S> 
+
+Per-dataset settings:  
+
+> Table 3. pggb parameters used per dataset.
+
+Dataset N P (%) S (bp) 
+
+SARS-CoV-2 2, 4, 8 90 1000 
+
+S. cerevisiae 2, 4, 8 90 1000 Zymo species ∗ 2, 4, 8 90 5000 HLA-DRB1 48, max 90 1000  
+
+> ∗
+
+Per-species GFAs are merged into one multi-component GFA with concat_gfa_components.py , which shifts each species’ segment IDs by a per-species offset and concatenates the S, L, and P lines. Minigraph-Cactus command: 
+
+cactus-pangenome jobstore-<N> <input>.seqfile \ --outDir mc-build-<N> --outName <name>-mc-<N> \ --reference <ref> --gfa clip \ --mgCores 16 --maxCores 16 \ --workDir work-<N> --clean always \ --batchSystem single_machine 
+
+Per-dataset settings:  
+
+> Table 4. Minigraph-Cactus parameters used per dataset.
+
+Dataset N Reference 
+
+SARS-CoV-2 2, 4, 8 wuhan 
+
+S. cerevisiae 2, 4, 8 SGDref 
+
+Zymo species ∗ 2, 4, 8 first alphabetical strain per species  
+
+> ∗
+
+Per-species GFAs are merged into one multi-component GFA with concat_gfa_components.py (same as for pggb). For single haplotype references ( N = 1 ), no graph builder is run: the single reference FASTA is converted to GFA format with one segment ( S) line and one path ( P ) line per contig. This is done with fa2gfa.py .The resulting graph statistics (node, edge, and path counts as stored in the Panomap index) are listed in Tab. S5.       
+
+> 12 |bioR χiv Shih et al. |Panomap: Nanopore Signal to Pangenome Graph Mapping
+
+.CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.10.737796 doi: bioRxiv preprint Table 5. Pangenome graph statistics per (dataset, builder, N ). Node, edge, and path counts are reported as stored in the Panomap index (equal to 2× the GFA segment / link / path count due to the canonical forward / reverse-complement node-pair convention). 
+
+Dataset Builder N Nodes Edges Paths 
+
+SARS-CoV-2 pggb 1 2 0 2SARS-CoV-2 pggb 2 154 202 4SARS-CoV-2 pggb 4 454 604 8SARS-CoV-2 pggb 8 1,420 1,912 16 SARS-CoV-2 MC 1 2 0 2SARS-CoV-2 MC 2 194 242 4SARS-CoV-2 MC 4 488 642 8SARS-CoV-2 MC 8 1,420 1,912 16 
+
+S. cerevisiae pggb 1 34 0 34 
+
+S. cerevisiae pggb 2 4,372 6,004 68 
+
+S. cerevisiae pggb 4 699,852 942,296 136 
+
+S. cerevisiae pggb 8 1,279,144 1,732,748 272 
+
+S. cerevisiae MC 1 34 0 34 
+
+S. cerevisiae MC 2 27,934 29,568 72 
+
+S. cerevisiae MC 4 752,488 1,011,798 148 
+
+S. cerevisiae MC 8 1,288,810 1,740,706 296 Zymo pggb 1 14 0 14 Zymo pggb 2 1,949,234 2,603,208 28 Zymo pggb 4 4,099,566 5,500,282 56 Zymo pggb 8 5,679,886 7,635,388 112 Zymo MC 1 14 0 14 Zymo MC 2 2,128,924 2,835,456 34 Zymo MC 4 4,485,834 6,015,228 110 Zymo MC 8 6,279,702 8,440,784 180       
+
+> Shih et al. |Panomap: Nanopore Signal to Pangenome Graph Mapping bioR χiv |13
+
+.CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.10.737796 doi: bioRxiv preprint S4. Running the tools. All tools use 16 threads for indexing and 64 threads for mapping. Versions: panomap (commit 
+
+af79d3 ), RawHash2 v2.2, Sigmoni (commit c4f220b ) backed by SPUMONI v2.0.7. panomap index command: 
+
+panomap index <gfa> -m r9.4 -t 16 -o <out>.pirx 
+
+panomap map command: 
+
+panomap map --index <idx> --chainer path-chain <map-args> \ --max-chunks <c> -t 64 <reads>.blow5 -o <out>.gaf 
+
+Per-dataset <map-args> : 
+
+> Table 6. panomap per-dataset map arguments.
+
+Dataset Map arguments 
+
+SARS-CoV-2 -chain-bw 100 -chain-max-dist 500 -chain-min-score 10 -chain-pen-gap 1.2 -chain-pen-skip 0.3 -map-sc-min-anchors 2 -map-sc-ratio-lo 0.5 -map-sc-ratio-hi 1.7 
+
+S. cerevisiae -chain-pen-gap 1.4 -chain-pen-skip 0.1 
+
+Zymo -seed-freq-cap p0.97 -map-sc-min-anchors 2
+
+HLA-DRB1 (defaults) 
+
+RawHash2 index command: 
+
+rawhash2 -x <preset> -t 16 -p r9.4.model -d <out>.ind <ref>.fa 
+
+RawHash2 map command: 
+
+rawhash2 -x <preset> --max-chunks <c> -t 64 \ -o <out>.paf <idx> <reads>.blow5 
+
+Per-dataset <preset> : 
+
+> Table 7. RawHash2 per-dataset preset.
+
+Dataset Preset 
+
+SARS-CoV-2 viral 
+
+S. cerevisiae sensitive 
+
+Zymo fast 
+
+Sigmoni index command: 
+
+sigmoni-index --shred 100000 -p <pos.fa> -n <null.fa> \ --spumoni-path <spumoni> -o <out-dir> --ref-prefix <name> 
+
+Sigmoni map command: 
+
+sigmoni --thresh 1.0 --sp --complexity \ -i <reads>.blow5 -r <idx-prefix> -o <out-dir> \ --max-chunks <c> -t 64       
+
+> 14 |bioR χiv Shih et al. |Panomap: Nanopore Signal to Pangenome Graph Mapping
+
+.CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.10.737796 doi: bioRxiv preprint All Sigmoni runs use -thresh 1.0 and -shred 100000 .      
+
+> Shih et al. |Panomap: Nanopore Signal to Pangenome Graph Mapping bioR χiv |15
+
+.CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.10.737796 doi: bioRxiv preprint S5. Index size measurement. Index size was measured as the on-disk byte size of the files each tool loads during mapping or classification, using du -sb . For Panomap and RawHash2, this is the single serialized index file loaded at mapping time: .pirx for Panomap and .ind for RawHash2. For Sigmoni, we counted only the files loaded at clas-sification time: the r-index ( *.thrbv.spumoni ), the reference document array ( *.doc ), the empirical null database (*.pmlnulldb , present in binary mode only), and the document-to-class file lists ( filelist.txt for multi-class classifi-cation, or pos_filelist.txt and null_filelist.txt for binary classification). We excluded build-time artifacts that are not read during classification, including the binned reference and per-shred FASTA files, spumoni_null_reads.fa ,
+
+poremodel.bins , *.fdi , and the statistics log.       
+
+> 16 |bioR χiv Shih et al. |Panomap: Nanopore Signal to Pangenome Graph Mapping
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.10.737796 doi: bioRxiv preprint
+
+S6. Per-read processing time. Per-read processing time was computed as elapsed wall-clock time divided by the number of reads and converted to milliseconds. Elapsed wall-clock time was measured with GNU /usr/bin/time using %e . All tools were run with 64 threads on the same host used for the main experiments. Results are reported across pangenome collection size N and maximum signal chunks c.    
+
+> Table 8. Per-read processing time (ms) across datasets, tools, N, and c.
+
+Dataset Tool N c = 1 c = 2 c = 4 c = 8 
+
+SARS-CoV-2 Panomap (pggb) 1 0.23 0.23 0.23 0.23 2 0.23 0.23 0.23 0.23 4 0.23 0.23 0.24 0.24 8 0.23 0.23 0.24 0.24 Panomap (MC) 1 0.23 0.24 0.24 0.24 2 0.23 0.24 0.24 0.24 4 0.23 0.24 0.24 0.24 8 0.23 0.24 0.24 0.24 RawHash2 1 0.30 0.30 0.30 0.30 2 0.30 0.30 0.32 0.34 4 0.30 0.31 0.36 0.40 8 0.30 0.33 0.43 0.50 Sigmoni 1 0.59 0.76 1.06 1.55 2 0.60 0.75 1.03 1.53 4 0.60 0.75 1.06 1.52 8 0.61 0.75 1.05 1.49 
+
+S. cerevisiae 
+
+Panomap (pggb) 1 0.65 0.69 0.75 0.83 2 0.69 0.78 0.85 1.02 4 0.83 1.01 1.28 1.72 8 1.08 1.48 2.05 3.04 Panomap (MC) 1 0.65 0.69 0.75 0.84 2 0.70 0.78 0.86 1.04 4 0.84 1.02 1.27 1.71 8 1.04 1.42 1.94 2.85 RawHash2 1 0.71 0.72 0.77 0.79 2 0.73 0.76 0.83 0.90 4 0.80 0.84 1.08 1.29 8 0.92 1.06 1.71 2.51 Sigmoni 1 1.13 1.34 1.75 2.43 2 1.18 1.38 1.75 2.44 4 1.21 1.44 1.84 2.52 8 1.35 1.56 1.92 2.66 Zymo Panomap (pggb) 1 1.53 1.55 1.60 1.70 2 1.68 1.80 1.99 2.24 4 1.97 2.27 2.68 3.29 8 2.38 2.86 3.67 4.70 Panomap (MC) 1 1.51 1.55 1.62 1.71 2 1.65 1.80 2.02 2.27 4 1.88 2.29 2.64 3.29 8 2.50 2.93 3.72 4.85 RawHash2 1 1.80 1.78 1.78 1.79 2 1.99 1.83 1.85 1.87 4 1.97 1.88 1.90 1.94 8 2.34 2.00 2.34 2.46 Sigmoni 1 2.67 2.82 3.13 4.05 2 2.62 2.94 3.27 4.12 4 2.78 3.05 3.40 4.11 8 2.96 3.24 3.55 4.40       
+
+> Shih et al. |Panomap: Nanopore Signal to Pangenome Graph Mapping bioR χiv |17
+
+.CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 11, 2026. ;https://doi.org/10.64898/2026.07.10.737796 doi: bioRxiv preprint S7. AI Use Disclosure. The authors used Claude Code and ChatGPT in the following categories, under author guidance: • Text refinement. Prose drafts written by the human authors were edited and polished for clarity with AI suggestions. Suggested rewrites were reviewed, accepted, modified, or rejected by the authors. • Code assistance, Panomap software development. Claude Code was used heavily during the implementation of the Panomap mapper as a coding aid under author guidance. All algorithmic design, mapping semantics, data structures, and final correct-ness of the implementation are the responsibility of the authors. • Code assistance, figures. Figure-generation Python scripts were drafted and refined for layout, font sizing, color palette, and similar visual elements with AI assistance. All data, numerical results, and figure values were produced by the authors’ analysis pipelines. • Code assistance, analysis and experiments. Experiment runner scripts, data-parsing scripts, and TSV format conversions were drafted with AI assistance. All scripts were reviewed and verified by the authors before use; all reported numerical results were produced by these reviewed scripts. • Table formatting. LATEX table structure and layout (column alignment, multirow grouping, spacing) was refined with AI assistance.
