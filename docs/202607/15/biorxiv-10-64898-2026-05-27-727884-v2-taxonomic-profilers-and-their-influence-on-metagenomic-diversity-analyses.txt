@@ -1,0 +1,468 @@
+Title: Taxonomic profilers and their influence on metagenomic diversity analyses
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.05.27.727884v2.full.pdf
+
+Number of Pages: 35
+
+Markdown Content:
+1
+
+# Taxonomic profilers and their influence on 1
+
+# metagenomic diversity analyses 2
+
+Jonathan Rondeau-Leclaire 1* , F. Guillaume Blanchet 1,2,3 , Pierre-Étienne Jacques 1,4,5 , Isabelle 3Laforest-Lapointe 1,5 
+
+4
+
+5
+
+1Département de Biologie, Université de Sherbrooke, Sherbrooke, QC, Canada 6
+
+2Département de Mathématiques, Université de Sherbrooke, Sherbrooke, QC, Canada 7
+
+3Département des Sciences de la Santé Communautaire, Université de Sherbrooke, 8Sherbrooke, QC, Canada 9
+
+4Institut de Recherche sur le Cancer de l’Université de Sherbrooke (IRCUS), Sherbrooke, QC, 10 Canada 11 
+
+5Centre de Recherche du Centre Hospitalier Universitaire de Sherbrooke (CRCHUS), 12 Sherbrooke, QC, Canada 13 14 *Corresponding author: 15 Jonathan Rondeau-Leclaire 16 e-mail: jonathan.rondeau.leclaire@gmail.com 17 ORCID: 0000-0002-4433-3566 18 
+
+.CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint 2
+
+ABSTRACT 19 
+
+Estimating taxonomic profiles is a central task in microbiome research. Several bioinformatic 20 tools have been developed for this purpose, differing in algorithmic strategy, reference database 21 flexibility, sensitivity parameters, and the type of abundance they estimate. As a result, 22 taxonomic profiles carry an unwanted methodological signal whose driving characteristics 23 remains understudied. While benchmarks have evaluated the performance of some of these 24 tools, they rely on simulated data; little work has been done to compare them using real 25 metagenomes in the presence of noise and uncharacterised diversity. Overall, the impact of 26 taxonomic profiler choice and parameterisation on scientific conclusions remains poorly 27 understood. 28 First, we provide a much-needed characterisation of four taxonomic profilers to help 29 researchers better understand the available bioinformatic tools and inform their methodological 30 choices. Then, we leverage 1,211 shotgun metagenomes from eight datasets to compare these 31 taxonomic profilers across 13 methodological designs. Based on diversity indices, we found 32 substantial variability in estimated taxonomic composition depending on methodological 33 features such as reference database and algorithmic strategy. Alpha diversity analysis was 34 substantially sensitive totool choice (particularly among k-mer-based tools) and reference 35 database. Beta diversity showed sensitivity to both database and parameter choices, yet this 36 variability barely affected statistical inference. 37 Our findings highlight the sensitivity of taxonomic diversity analyses to taxonomic profiling 38 methodology and the importance for researchers to consider assessing the robustness of their 39 results to choice of tool, parameter, and reference database. Crucially, differences in sample 40 diversity across methodologies are symptomatic of differences in estimated taxonomic 41 composition, which can affect any analysis based on taxonomic abundances. Overall, this study 42 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+3underscores the importance of tool selection and parametrisation, and of conducting sensitivity 43 analyses to support robust and reliable scientific conclusions. 44 
+
+Keywords: metagenomics, shotgun sequencing, taxonomic profiling, microbiome 45 composition, alpha diversity, beta diversity, microbial ecology 46 
+
+AUTHOR SUMMARY 47 
+
+Microbiome research relies on bioinformatic tools to determine which microbes are present in 48 a sample and estimate their relative abundances, a process known as taxonomic profiling .49 Because this task requires comparing tens of millions of DNA sequences against thousands of 50 microbial genomes, a wide range of computational strategies have been developed to make 51 profiling accurate and efficient. As a result, many taxonomic profilers are now available, yet 52 do not provide the same results. Although previous studies have evaluated their precision and 53 sensitivity, less attention has been given to how the choice of profiler may influence the 54 scientific conclusions drawn from microbiome data. Here, we selected four widely used 55 taxonomic profilers to examine whether researchers would reach the same biological 56 conclusions when comparing microbiomes across groups of samples, such as healthy and 57 diseased individuals. We show that different profilers can lead to different biological 58 conclusions and identify key tool characteristics that contribute to these discrepancies. 59 Moreover, we provide a comparative overview of these four profilers, offering practical 60 guidance for researchers seeking to choose the most appropriate tool for their study. These 61 findings highlight the importance of software choice in microbiome research and support more 62 transparent and reproducible data analysis practices. 63 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+4
+
+INTRODUCTION 64 
+
+The last decade saw the rise of metagenomics as a central approach in microbiome research. 65 As sequencing costs decreased, the accessibility of metagenomics increased, with the total 66 number of samples deposited in the NCBI Sequence Read Archive nearly quadrupling between 67 2020 and 2023 [1]. To process this growing, massive body of data, bioinformatic tools are 68 being developed, published and updated regularly. As a result, researchers must make 69 methodological choices at nearly every step of data processing, with the potential of affecting 70 measurements and scientific conclusions. Here, we focus on algorithms designed to estimate 71 microbiome community composition from shotgun metagenomes, often referred to as 72 
+
+taxonomic profilers . Our aim is to help researchers understand the differences between popular 73 tools and evaluate how bioinformatic parameters can affect the estimation of taxonomic 74 composition diversity-based analyses. 75 Recent efforts from the field of metagenomics have provided recommendations for data 76 processing [2–5] and classification [6–11], machine learning [12,13], statistical analyses [14– 77 17], and general best practices [14,18–22]. Guidance based on systematic benchmarking have 78 also emerged to help researchers choose or refine their bioinformatic methodology [23–26]. 79 The Critical Assessment of Metagenome Interpretation (CAMI), a large scale effort to create a 80 publicly available benchmarking framework for metagenomics, has standardised the evaluation 81 of bioinformatic tools using simulated datasets [24,25]. CAMI, as well as other benchmarking 82 studies [10,27,28], offers critical insights into accuracy and performance and highlight the 83 context-dependency of what constitutes a “better tool”, underscoring that there is no one-size-84 fits-all methodology in metagenomics [29]. Overall, what constitutes the “right” tool depends 85 on multiple factors such as a sample’s origin, complexity, phylogenetic diversity, and 86 sequencing depth. Although many tools perform well in estimating taxonomic profiles, 87 choosing the right one and using it adequately remains a challenge for researchers. 88 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+5Benchmarking metagenome taxonomic profilers requires a known ground truth, often taking 89 the form of simulated metagenomes. With over 95% of prokaryotic species being genomically 90 uncharacterised[30], simulated metagenomes are not likely to well represent real microbiomes, 91 especially those of understudied environments or hosts. Moreover, benchmarking tools against 92 one another implicitly assumes that any two “good enough” tools should produce converging 93 outputs. Yet for taxonomic profilers, it is not well established whether all tools should yield 94 the same result, and therefore whether they are strictly comparable. Importantly, every method 95 has its own biases and limitations, and some authors have argued against methodological 96 standardisation [29,31], favouring instead more transparent reporting [32]. To better select and 97 justify taxonomic profiling methodology, researchers thus need a clear understanding of what 98 is estimated, the methodological limits, and the extent to which these tools can be used 99 interchangeably. In this paper, we qualitatively compare the characteristics of four taxonomic 100 profiling tools. Then, we quantitatively assess how user choices influence sample diversity 101 estimates and statistical comparisons using real metagenomes. 102 
+
+TAXONOMIC PROFILING TOOLS 103 
+
+Several taxonomic profilers for shotgun metagenomics have been published over the last 104 decade. These tools compare reads to a set of reference sequences, producing either taxonomic 105 or sequence relative abundances [33]. Tools that use a DNA-to-markers (D2M) approach align 106 metagenome reads to their own collection of genes and estimate relative taxonomic abundances 107 by normalising the number of aligned reads by gene length. Two popular tools based on that 108 approach are MetaPhlAn [34] (Metagenomic Phylogenetic Analysis) and mOTUs [35] (Marker 109 gene-based Operational Taxonomic Unit). Alternatively, Kraken2 [36] and Sourmash [37,38] 110 use a DNA-to-DNA (D2D) approach, meaning they rely on matching the k-mers of 111 metagenome reads to a collection of genomes [7], and thus estimate relative sequence 112 abundances. These are not normalised by genome length, as this information is unknown for 113 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+6incomplete metagenome-assembled genomes (MAGs) and becomes ambiguous at higher 114 taxonomic ranks (which Kraken assigns in its algorithm, as opposed to Sourmash). Therefore, 115 sequence abundances are biased by true genome length, as longer genomes will produce more 116 reads than shorter genomes [33]. Despite this, tools from both the D2M and D2D approaches 117 are widely used in microbiome research. 118 Importantly, it must be highlighted that distinct abundance types produce different taxonomic 119 profiles that are not equivalent and cannot be interconverted [39,40]. This recently exposed 120 nuance [33] between the D2M and D2D tools can lead to incorrect comparisons, as both 121 approaches cannot yield the same abundance profiles. However, the causes of this divergence 122 can go beyond the type of abundance estimated. These tools can also differ in their algorithmic 123 strategy, database flexibility, reference taxonomy, and strategy for detecting unknown species. 124 
+
+Table 1 summarises the characteristics of these tools. 125 
+
+Table 1. Characteristics of selected taxonomic profiling tools. 126 
+
+mOTUs4 MetaPhlAn Kraken2 Sourmash 
+
+Approach & abundance type 
+
+D2Ms, taxonomic abundances 
+
+D2D, sequence abundances 
+
+Reference database 
+
+10 universal marker genes 
+
+>5 million clade-specific marker genes 
+
+Genomes (including MAGs) 
+
+Reference database flexibility 
+
+Version + user-added genomes Version only Full (requires full 
+
+re-indexing) 
+
+Full (requires appending only) 
+
+Taxonomy NCBI 1
+
+Follows reference database (default: NCBI) 
+
+Follows reference database 
+
+Unknown species meta-mOTUs & ext-mOTUs 2 uSGBs User-added MAGs 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+7
+
+Sample identifiability metric 
+
+Estimated proportion of unknown taxa % classified reads % metagenome containment 
+
+Algorithmic strategy 
+
+Read alignments (BWA-MEM) 
+
+Read alignments (Bowtie2) 
+
+k-mer matching: Lowest common ancestor 
+
+k-mer matching: Minimum metagenome cover  
+
+> 1
+
+tool for mappings to GTDB provided 127  
+
+> 2
+
+mOTUs has an extension tool allowing users to find a label mOTUs in MAGs they provide 128 
+
+MAG: Metagenome-Assembled Genome; SGBs: Species-Level Genome Bins; uSGBs: unknown SGBs. 129 
+
+130 
+
+Unknown species detection strategy and database flexibility 131 
+
+The D2M tools evaluated here can detect many species lacking a reference genome or 132 taxonomy. Both MetaPhlAn and mOTUs include in their reference database genes from 133 uncharacterised species, extracted from public metagenomes. However, these tools employ 134 fundamentally different strategies to find unknown species. MetaPhlAn takes a “genome first” 135 approach, clustering over a million reference genomes and MAGs into known species-level 136 genome bins (kSGBs, containing at least one reference genome) and unknown SGBs (uSGB, 137 containing only MAGs). These SGBs are then used to identify over 5 million clade-specific 138 marker genes to create a reference database. MetaPhlAn aligns metagenomic reads to these 139 genes to determine sample taxonomic composition. Conversely, mOTUs takes a “marker first” 140 approach, mining publicly available genomes and metagenomes for 10 universal phylogenetic 141 marker genes. Markers found in reference genomes inherit their taxonomy directly and form 142 ref-mOTUs, while markers found in metagenome assemblies and MAGs are clustered into 143 species-level units (meta-mOTUs and ext-mOTUs, respectively) based on their similarity. 144 These new units are then taxonomically labelled at higher rank based on their similarity to the 145 closest known species, yielding a reference database of genes to which mOTUs aligns 146 metagenomic reads. 147 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+8In comparison, D2D tools such as Kraken and Sourmash do not have a built-in strategy for 148 unknown species detection. However, since their database can be any set of taxonomically 149 labelled genomes (often RefSeq or GTDB databases), users can assemble MAGs from the 150 metagenomes whose composition they wish to estimate and build a custom reference database 151 (or complement an existing one). This feature is especially useful for studying microbial 152 communities whose members are poorly represented in public databases. Sourmash can append 153 genomes to an existing index, whereas Kraken requires the entire database index to be rebuild, 154 a more resource-hungry process. Of note, as of version 4, mOTUs [41] can now find marker 155 genes in user-provided genomes, to add them to the reference database using an extension 156 program, though this feature is not evaluated here. 157 
+
+Algorithmic approaches to k-mer matching 158 
+
+The D2D tools evaluated here differ mainly in terms of algorithmic strategy. Both Kraken and 159 Sourmash rely on matching k-mers (each “word” of length k in a read) exactly between reads 160 and reference genomes. Essentially, reads are assigned to sequences with which they share the 161 most k-mers; however, each tool uses different heuristics to accomplish this task. 162 
+
+Briefly, Kraken2 classifies a read using the genome that has the highest number of exact k-mer 163 matches with that read. When a read’s k-mers matches two genomes equally well, Kraken2 164 assigns it the lowest taxonomic rank [42] these genomes have in common. Abundances are 165 based on the number of k-mers per taxonomic rank and are usually re-estimated using Bracken, 166 a tool that redistributes reads from higher taxonomic ranks down to the desired level (e.g., 167 Species) based on Bayes’ theorem. It is generally recommended to use Bracken when 168 estimating taxonomic compositions with Kraken, because it helps increase the taxonomic 169 classification rate at the species level. Because it classifies each read independently, Kraken2 170 defines the confidence required for a read to be labelled (the --confidence parameter). 171 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+9Importantly, even if a reference genome is only matched by one read from a metagenome, that 172 taxon will be reported as part of its composition (though at extremely low abundance). 173 Sourmash takes a different approach: it finds the smallest set of reference genomes that contain 174 all the identifiable k-mers of a metagenome [38]. To do this, it finds the genome covering the 175 largest amount of k-mers, removes these k-mers from the query (the metagenome), then repeats 176 this process iteratively. Sourmash estimates abundances based on the number of k-mers 177 uniquely matched to all detected genomes and, contrary to Kraken, will not report a taxon 178 matched by very few reads; its --threshold_bp parameter controls the minimum size for a k-179 mer set to be retained. Currently, there is no consensus on which parameter values are optimal 180 across analytical contexts when comparing Kraken and Sourmash, although great efforts were 181 made recently to benchmark Kraken’s --confidence parameter [39]. In both cases, default 182 settings may not be optimal and their modification requires careful consideration of the trade-183 offs between sensitivity and specificity [27], an assessment delegated to the user. 184 
+
+Reference database taxonomy 185 
+
+Two taxonomies dominate prokaryotic classification in metagenomics: NCBI and GTDB. 186 Whereas NCBI taxonomy integrates historical nomenclature alongside phylogenetic data, 187 GTDB is exclusively based on phylogenomic relationships and is designed to ensure 188 monophyly across clades. However, GTDB does not always follow the The International Code 189 
+
+of Nomenclature for Prokaryotes [43], which can be problematic in clinical or epidemiological 190 contexts, depending on research objectives. Consequently, a metagenome’s observed diversity 191 can easily be influenced by the taxonomy of the reference database. For example, if Shigella 192 
+
+taxa are present in the sample, the relative abundance of E. coli will appear higher with GTDB 193 than with NCBI as GTDB considers Shigella to be E. coli strains. 194 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+10 As they simply rely on a set of reference genomes, D2D tools allow the user to choose the 195 reference taxonomy by selecting a RefSeq database (NCBI taxonomy) or a GTDB database. 196 D2M tools, on the other hand, are restricted to databases specifically built by their authors, 197 which thus constrains the taxonomy. It is therefore likely that genus or species diversity 198 estimations will vary depending on which tool is used, and hypotheses based on diversity 199 indices may reveal different conclusions accordingly. Of note, mOTUs provides a mapping file 200 between NCBI and GTDB taxonomies, allowing the user to convert the output. 201 Overall, these differences in tool characteristics and algorithmic flexibility highlight the need 202 to assess the extent to which taxonomic profilers diverge in their estimation of a metagenome’s 203 taxonomic composition and identify which methodological features, beyond abundance type, 204 contribute to these divergences. This knowledge will help guide methodological choices 205 through a clearer understanding of the influence of tool characteristics on downstream analyses. 206 In this work, we first evaluate the sensitivity of intra-sample (alpha) and inter-sample (beta) 207 diversity indices across four taxonomic profilers and methodological choices using real 208 metagenomes. We then illustrate how such variability can influence the outcomes of hypothesis 209 testing, before discussing which tool characteristics likely drive this sensitivity and proposing 210 best practices to improve comparability, transparency and robustness in metagenomic research. 211 
+
+METHODS 212 
+
+We analysed eight datasets comprising a total of 1,211 metagenomes ( Table 2 ). Each contains 213 two discriminating groups (e.g., sick vs. healthy) as defined by the original study authors. 214 Sequences were quality-controlled and trimmed using Kneaddata [44] with parameters 215 
+
+SLIDINGWINDOW:4:20 and MINLEN:50 . Human-associated datasets were decontaminated 216 by removing human reads using the GRCh38 reference genome and Bowtie2 --very-sensitive-217 
+
+local mode. Environmental datasets were not decontaminated. 218 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+11 
+
+Table 2. Description of datasets used. 219 
+
+> 1
+
+Sequence counts based on post-QC paired reads. 220 
+
+NAFLD: Non-Alcoholic Fatty Liver Disease; RA: Rheumatoid Arthritis; PD: Parkinson’s disease; AD: Atopic 221 
+
+Dermatitis; MBP: Megabase pairs; NP: not published. 222 
+
+Taxonomic profiling tools 223 
+
+Four tools were compared: mOTUs v4.0.4 [41], MetaPhlAn v4.0.4 [34], Sourmash v4.8.11 224 [37,38,51] (the gather algorithm) and Kraken v2.1.2 [36]. A total of thirteen methodologies 225 were tested, each combining one of these tools with variations in reference databases or tool-226 specific parameters ( Table 3 ). Kraken was evaluated across a range of plausible values for the 227 
+
+--confidence parameter. 228 
+
+Table 3 . Taxonomic profiling methodologies evaluated in this study. 229 
+
+Id entifier Biome Samples Groups Bio Project 
+
+Accession 
+
+Mean ± sd MBP 1
+
+[range] 
+
+Ref. 
+
+Gut PD Human faeces 719 Parkinson’s diagnosis (Y/N) PRJNA834801 23.0 ±11.2 [2.1-168.8] [45] 
+
+Gut RA Human faeces 168 Rheumatoid arthritis diagnoses (Y/N) PRJNA356102 11.1 ± 8.3 [0.6, 65] [46] 
+
+Gut NAFLD 
+
+Human faeces 35 Gut NAFLD (Y/N) PRJNA328258 19.3 ± 4.2 [11.6-29.0] [47] 
+
+Gut COV Human gut 21 Diarrheal symptoms (Y/N) PRJEB112409 36.4 ± 11.2 [1.8- 52.7] NP 
+
+Saliva COV 
+
+Human saliva 26 Diarrheal symptoms (Y/N) PRJEB112409 10.3 ± 6.9 [1.7- 25.7] NP 
+
+Skin AD Human skin 70 Sex (F/M) PRJNA854811 2.9 ± 4.0 [0.1-22.4] [48] 
+
+Moss Boreal mosses 131 Gametophyte section (Green/Brown) PRJEB76464 9.9 ± 1.6 [7.0, 16.0] [49] 
+
+Bee Bee gut 40 Sampling month (May/March) PRJNA685398 0.34 ± 0.04 [0.25, 0.44] [50] 
+
+> 1
+
+Kraken2 was always used in combination with Bracken 2.8 52 for abundance re-estimation at the species level, with default parameters. 
+
+> 2
+
+Number of species includes only Bacteria and Archaea even when databases included other domains. 
+
+> 3
+
+RefSeq database for Sourmash was built using the same list of genomes as the Kraken RefSeq Standard 2024-
+
+12 -28 database, which were downloaded on 2025 -05 -28. 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+12 For Kraken, we used the publicly available GTDB rs220 species representative database and 230 the 2024-12-28 RefSeq Standard database (available at https://benlangmead.github.io/aws-231 indexes/k2). For Sourmash, the GTDB rs220 index published by authors was used (available 232 at https://sourmash.readthedocs.io/en/latest/databases-md/gtdb220.html), and a custom index 233 was built using the same RefSeq Standard accessions found in the Kraken database. Sourmash 234 databases were built with a k-mer size of 31 and a scaling factor of 1000. Furthermore, to 235 increase comparability across methodologies, only bacterial and archaeal taxa were kept, the 236 only domains represented in the GTDB database. 237 To control for uneven sequencing depth, abundance tables were rarefied to the smallest sample 238 size of each dataset using the rarefy_even_depth() function from the phyloseq [52] package, in 239 
+
+Tool Non -default 
+
+parameters 
+
+Reference 
+
+database 
+
+Database 
+
+release date 
+
+Species 2 per 
+
+database 
+
+ID in figures 
+
+MetaPhlAn4 - ChocoPhlAnSGB 2022-12 28,739 MPA 2022 
+
+MetaPhlAn4 - ChocoPhlAnSGB 2023-07 35,049 MPA 2023 
+
+MetaPhlAn4 - ChocoPhlAnSGB 2025-01 56,335 MPA 2025 
+
+mOTUs3 - Motus 3.0 2023-03-28 34,342 mOTUs 3 
+
+mOTUs4 - Motus 4.0 2024-08-09 124,296 mOTUs 4 
+
+Kraken2 1 --confidence 0.10 RefSeq Standard 3 2024-12-28 27,285 KB10 RefSeq 
+
+Kraken2 --confidence 0.45 RefSeq Standard 2024-12-28 27,285 KB45 RefSeq 
+
+Kraken2 --confidence 0.90 RefSeq Standard 2024-12-28 27,285 KB90 RefSeq 
+
+Kraken2 --confidence 0.10 GTDB rs220 reps 2024-04-24 113,104 KB10 GTDB 
+
+Kraken2 --confidence 0.45 GTDB rs220 reps 2024-04-24 113,104 KB45 GTDB 
+
+Kraken2 --confidence 0.90 GTDB rs220 reps 2024-04-24 113,104 KB90 GTDB 
+
+Sourmash - GTDB rs220 reps 2024-04-24 113,104 SM GTDB 
+
+Sourmash - RefSeq Standard 2024-12-28 27,285 SM RefSeq 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+13 line with recent recommendations [14]. The tables produced by the MetaPhlAn methodologies 240 were not rarefied, because they are already normalised as proportions (total sum scaling). 241 
+
+Alpha diversity 242 
+
+Four alpha diversity metrics were calculated: richness [53], Shannon entropy [54], and the 243 inverse of the Simpson index [55]. All three are widely used owing to their early adoption in 244 microbial ecology studies. In addition, the Tail statistic [56], developed specifically for 245 microbiome research was also used. Richness represents the number of detected species, which 246 can be highly sensitive to sequencing depth and taxonomic profiling tool parameters. In the 247 context of microbial compositions, the Shannon index quantifies the uncertainty in predicting 248 the taxon identity of a randomly drawn sequence, with higher values reflecting greater diversity. 249 The Simpson index is the probability that two randomly drawn sequences belong to the same 250 taxa, with lower values indicating greater diversity. For ease of interpretation, we use the 251 inverse Simpson index, representing the effective number of equally abundant taxa that would 252 produce the same diversity. Finally, the Tail statistic is the weighted standard deviation of taxon 253 ranks, with the distance of each rank measured to the most abundant taxon and weighted by its 254 relative abundance. This statistic was developed to better reflect low-abundance taxa in a 255 diversity index. 256 MetaPhlAn and mOTUs cannot interchange their reference database. Thus, diversity estimates 257 can be affected simply by the number of available taxa in each database, and the impact of tool 258 choice cannot be de-confounded from the impact of database choice within the D2M approach. 259 Kraken2 and Sourmash, on the other hand, can use the same reference database. Even then, 260 diversity estimates will be influenced by Kraken2's --confidence threshold or Sourmash's --261 
+
+threshold-bp , which have no single “optimal” value and directly affect the number of reported 262 species. Therefore, to account for the large differences in representative species across 263 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+14 reference databases and for the unmatched tool-specific detection sensitivity parameters in 264 Kraken and Sourmash, diversity values were centred and scaled within methodology across all 265 datasets, using the median and median absolute deviation (MAD) for robust scaling [57]. 266 For each pair of comparable tools (MetaPhlAn vs. mOTUs, and Kraken2 vs. Sourmash using 267 either GTDB or RefSeq as a reference database), the difference in scaled diversity was 268 computed for each sample. The variance of these distributions was used as a measure of 269 methodological agreement: a wider spread indicates that diversity estimates are more strongly 270 influenced by the choice of tool, even after removing approach-specific effects. Differences in 271 these variances were assessed statistically using the Pitman-Morgan test [58,59] for paired 272 samples using the PairedData package [60] (v1.1.1). 273 To assess the impact of methodology on scientific conclusions based on alpha diversity 274 comparison, for each index, a Mann-Whitney [61] test was performed for each methodology-275 dataset combination, evaluating the significance and effect size of differences in diversity 276 between two groups of samples as defined by the dataset metadata ( Table 3 ). Effect sizes are 277 expressed as rank-biserial correlations [62]. 278 
+
+Beta diversity 279 
+
+Beta diversity is used to evaluate whether microbiota compositions differ more between groups 280 of samples than within them. To that end, distance or dissimilarity indices can be used, which 281 quantify the compositional similarity between every pair of samples. Here, we focus on the 282 Bray-Curtis index because, in addition to being widely used, it accounts for relative abundances, 283 which is something taxonomic profilers try to estimate. Alternative indices have also been 284 developed to account for phylogenetic distances between taxa[63] or data compositionality 285 [64,65], but their comparison is beyond the scope of this paper. 286 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+15 For each methodology-dataset combination, a between-sample Bray-Curtis dissimilarity 287 matrix was computed. Ordinations were performed on each of these matrices using Principal 288 coordinates analysis (PCoA, sometimes also referred to as metric multidimensional scaling 289 [66]) using the cmdscale function from the stats packages in R. Separately for each dataset, 290 Procrustes correlations [67] were computed between the ordinations of each pair of 291 methodologies using the protest function of the vegan package [68] (v2.7-3). For each of these 292 methodology pairs, we report the median correlation ± MAD. Methodologies were clustered 293 hierarchically based on the median correlation, using the hclust function from the stats package 294 [69] (v4.5.2). Finally, the eigenvectors of each Procrustes matrix were extracted to visually 295 assess the clustering of methodologies for each dataset. 296 To assess the impact of methodology on scientific conclusions based on beta diversity 297 comparison, we performed a permutational analysis of variance [70] (PERMANOVA) using 298 the adonis2 function of the vegan package on Bray-Curtis dissimilarities for each dataset-299 methodology combination using the model Dissimilarity Matrix ~ Group . As for the Mann-300 Whitney test, P-values were not adjusted and are shown alongside the proportion of variance 301 explained, quantified by a coefficient of determination (R 2), which is the ratio of the between 302 groups and total sum of squares. 303 
+
+RESULTS 304 
+
+Alpha diversity indices across methodologies 305 Alpha diversity for any given sample varied greatly, even between tools of the same approach 306 or when controlling for reference database. With D2M tools, using the most recent databases, 307 mOTUs4 produced higher Shannon ( Figure 1A ), Inverse Simpson ( Figure S2A ), and Tail 308 (Figure S3A ) diversities than MetaPhlAn4 for 95.5%, 89.0%, and 95.0% of samples, 309 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+16 respectively. Conversely, 91.4% of samples had higher richness (Figure S4A ) with 310 MetaPhlAn4. 311 When comparing D2D tools using the same reference database, every sample exhibited higher 312 richness when taxonomic composition was estimated by Kraken at a confidence threshold of 313 0.45, compared to Sourmash (GTDB: 1167 ± 625.7 species, RefSeq: 192 ± 48.69 species; 314 
+
+Figure S4B,C ). Even at a stringent Kraken --confidence of 0.90, richness remained higher 315 when evaluated by Kraken for 79.2% (GTDB) and 91% (RefSeq) of samples. When comparing 316 reference databases using the same D2D tool, GTDB yielded substantially higher richness 317 (Kraken 1213 ± 642 for 95% of samples; Sourmash 200 ± 141.9 for 99.9% of samples), which 318 is expected, given that the GTDB 220 database contains over four times more species than the 319 RefSeq database ( Table 3 ) used in this study. 320 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+17 321 
+
+Figure 1. Changes in estimated Shannon diversity between pairs of methodologies having common characteristics over eight datasets. A-C) Lines connect a sample between methodologies. Half-violin plots show the density of samples. Out of all 1,211 samples used in this study, only those whose composition was successfully estimated by both tools in a pair are presented (n indicated in facet title). Kraken2’s confidence threshold was set to 0.45; D2M methods use the latest reference databases ( Table 3 ). D) Differences in Shannon diversity scaled by methodology. D2M: DNA-to-markers; D2D: DNA-to-DNA. 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+18 The differences between Kraken and Sourmash were much less consistent for indices based on 322 relative abundances (Shannon Figure 1B,C ; Inverse Simpson Figure S2B,C ; and Tail Figure 323 
+
+S3B,C ). At first glance, this suggested tool-specific biases in diversity estimation. However, 324 lowering Kraken’s --confidence parameter produces higher diversity values than Sourmash for 325 an increasing proportion of samples across all indices. In fact, even when using a Kraken 326 confidence level that generates a diversity distribution similar to Sourmash’s (--confidence 0.45 327 was a good approximation for Shannon), sample diversities still varied substantially in both 328 directions depending on the chosen tool ( Figure 1B,C ). 329 
+
+Sensitivity to approach and reference database 330 
+
+To assess the sensitivity of diversity indices to methodological choices while accounting for 331 tool-specific algorithmic sensitivity parameters or difference in reference databases, we 332 compared the distribution of same-sample differences in centred and scaled diversity 333 measurements between pairs of methodologies (see Methods ). Shannon and Inverse Simpson 334 indices showed the largest differences in variance of within-sample differences when 335 comparing D2M pairs to D2D pairs ( Figure 1D ; Figure S2 ; Paired Pitman-Morgan tests all 336 p<0.001 Table S1 ). Between D2D tools, three indices showed higher variance when using 337 RefSeq as a reference compared to GTDB (richness and Tail p<0.001; Simpson p=0.016) but 338 not Shannon (p=0.234). Based on variance, alpha diversity indices showed the lowest 339 sensitivity to choice of tool within the D2M approach, and the highest with tools of the D2D 340 approach used with the RefSeq reference database. 341 
+
+Beta diversity ordinations across methodologies 342 
+
+To assess how methodology influences beta diversity estimates, we compared the principal 343 coordinates of within-dataset Bray-Curtis dissimilarity matrices between all methodology pairs 344 using Procrustes correlations. A Procrustes analysis compares two ordination results by 345 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+19 matching the shape of both ordinations in multivariate space using rotation, reflection and 346 scaling, thus quantifying their correlation. 347 Methodologies using D2M tools or D2D tools with GTDB, with the exception of KB90 GTDB, 348 showed median correlations between 0.92 and 1.00 ( Figure 2A ) with very low median absolute 349 deviations, between 0.00 and 0.03 ( Figure S1 ). Reassuringly, Procrustes correlations between 350 D2M methodologies differing only by their database version were >0.98 (mOTUs 3 vs. 4 and 351 MetaPhlAn 2023 vs. 2025), indicating near-perfect ordination match. Correlations between 352 Sourmash and Kraken methodologies were highest when using GTDB (from 0.88 to 0.99), as 353 opposed to RefSeq (from 0.82 to 0.93). Across all methodologies, KB90 RefSeq disagreed the 354 
+
+Figure 2. (A) Median Procrustes correlations between pairs of methodologies across eight datasets. Procrustes were calculated on the first 3 axes of the principal coordinates of respective Bray-Curtis dissimilarity matrices. (B) First two principal coordinates (PCo) of the Gut RA dataset dissimilarity matrix clustered by RA status based on taxonomic profiles estimated using Kraken at 0.45 confidence with GTDB (top panel) or RefSeq (bottom panel). SM: Sourmash; KB: Kraken-Bracken; MPA: MetaPhlAn; RA: Rheumatoid arthritis. 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+20 most, with Procrustes correlations to all non-RefSeq methodologies ranging from 0.68 ± 0.07 355 (KB90 GTDB) to 0.75 ± 0.05 (KB10 GTDB). Figure 2B illustrates a PCoA displaying both 356 tighter clustering and greater variance explained by the first two axes when RefSeq is used than 357 when GTDB is used with Kraken on the Gut RA dataset. 358 To understand which characteristics of the evaluated methodologies may be driving similarity 359 in beta diversity estimates, we plotted the eigenvectors of each Procrustes correlation matrix 360 (Figure 3 ). Overall, methodologies varying only by their database version clustered tightly. 361 All D2M tools clustered on the first axis, except for the Moss dataset that had very poor 362 
+
+Figure 3. Ordination of Procrustes correlation matrices by dataset. 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+21 identifiability using these methods. Database version usually had more influence with mOTUs 363 than with MetaPhlAn, as evidenced by the larger distance between mOTUs3 and 4 on 364 eigenvector 2 for most datasets. D2D tools using RefSeq as a reference databases were the 365 clear outliers, consistently apart from all other methodologies, compared to GTDB and D2M 366 methodologies. One clear exception was Kraken GTDB 0.90, typically isolated from similar 367 methodologies on at least one eigenvector. 368 
+
+Methodology-dependence statistical test interpretation 369 
+
+Comparing Shannon diversity between groups using Wilcoxon rank-sum tests revealed 370 variable effect sizes and p-values across methodologies for most datasets ( Figure 4 ). Only the 371 Skin AD and Gut RA datasets showed consistent non-significant results across methodologies. 372 In the Gut COV dataset, difference between groups was only significant (p < 0.01) when using 373 D2M tools or Sourmash GTDB, and effect sizes (rank-biserial correlations) varied from 0.26 374 to 0.57. In the Gut PD dataset, which wielded higher statistical power with 720 samples, the 375 test was significant for 9 out of 13 methodologies, and the effect sizes ranged from 0.04 to 0.13. 376 With the Saliva COV dataset, only MetaPhlAn led to statistically significant differences 377 between groups (p<0.05), while effect sizes ranged from 0.08 to 0.46. With the Gut NAFLD 378 dataset, effect sizes varied widely across methodologies (0.006 to 0.39), but only Kraken 379 RefSeq 0.90 led to a significant difference between groups (p=0.022). The Moss dataset 380 showed consensus across methodologies, except for mOTUs4, but showed large variations in 381 effect size (0.364 to 0.749, all p<0.001). Similar patterns of discordance in effect sizes and p-382 values occurred using other diversity indices ( Figure S6 -Figure S8 ). Overall, alpha diversity 383 analysis can be driven by methodological choices, in terms of both significance and effect size. 384 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+22 To evaluate the sensitivity of beta diversity analysis to methodological choice, we carried out 385 a PERMANOVA on Bray-Curtis dissimilarities for each dataset-methodology combination 386 using the model Dissimilarity Matrix ~ Group (Figure 5 ). The most striking differences across 387 methodologies were the range of R 2 (explained variance) observed within individual datasets. 388 Despite these differences, most methodologies agreed whether the grouping variable was 389 significantly associated with inter-sample dissimilarities. The Gut COV dataset was the least 390 consistent across methodologies, with D2D tools using RefSeq all yielding non-significant 391 results ( p > 0.05) with lower R 2 compared to other methodologies. However, no consistent 392 
+
+Figure 4. Wilcoxon rank-sum tests comparing Shannon diversity distributions between two groups of samples. A) p-value and rank-biserial correlations by dataset-methodology combination. Empty squares indicate the methodology could not identify any metagenome. B) Distribution of Shannon indices between reported diarrhea groups using KB 0.45 (left panel) or MPA 2025 (right panel). SM: Sourmash; KB: Kraken-Bracken. 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+23 pattern of methodology effects was observed across datasets. In the case of the Gut NAFLD 393 dataset, all methodologies agreed on statistical significance (p < 0.001). Yet, using D2D tools 394 with RefSeq produced R 2 between 0.130 and 0.144, whereas D2M tools yielded much smaller 395 values, between 0.072 and 0.080. 396 Overall, methodological choices substantially influenced alpha and beta diversity indices, 397 though the impact on statistical tests using a two-group design was much more pronounced for 398 alpha diversity. 399 
+
+Figure 5. Results of PERMANOVA tests on multivariate regression of the Bray-Curtis dissimilarity matrix on a binary variable representing the predefined groups of samples within each dataset-methodology combination. SM: Sourmash; KB: Kraken-Bracken 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+24 
+
+DISCUSSION 400 
+
+In this work, we address a literature gap by describing four taxonomic profilers for shotgun 401 metagenomics and examining how their characteristics can co-vary with diversity assessment 402 of microbiomes. Applying these tools to 1,221 metagenomes spanning eight datasets, we show 403 how methodological choices affect alpha and beta diversity measurements and their 404 downstream statistical outcomes. We show that study conclusions can shift depending on 405 which taxonomic profiler is chosen and how it is applied, particularly for alpha diversity. 406 Unlike benchmark studies relying on simulated metagenomes, this work focusses on real 407 metagenomes, reflecting the full complexity of microbiomes rather than the current, incomplete 408 knowledge of them. By doing so, we complement the valuable benchmarking question “which 409 tool is the most performant?” with the question “how do methodological choices affect what 410 we conclude?”, providing a relatable angle to researchers hoping to apply these tools to real 411 data. While metagenomics continues to grow in popularity and accessibility, published 412 resources guiding researchers through the analytical landscape are increasingly needed, as is 413 awareness of the importance of methodological design and a better understanding of 414 bioinformatic tools. We hope this work equips researchers with the means to avoid inadequate 415 analyses, cherry-picking, poor reproducibility, and misleading conclusions. 416 When measuring alpha diversity, regardless of the reference database used, the choice of 417 taxonomic profiler introduces substantial variations in diversity estimation. When controlling 418 for reference database size and sensitivity parameter trade-offs, no tool consistently over- or 419 under-estimated diversity relative to others. Shannon and Inverse Simpson indices were more 420 sensitive to the choice of taxonomic profiler than to the choice of reference database, 421 particularly when comparing Kraken and Sourmash. In contrast, richness and Tail indices were 422 especially tool-sensitive when RefSeq was used as a reference. This suggests that alpha 423 diversity co-varies with the algorithmic strategy (choice of tool) and, when species count 424 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+25 carries relatively more weight (i.e., with richness and Tail), with the breadth of the reference 425 database (or, indirectly, sample identifiability). Importantly, reference databases cannot be 426 interchanged between D2M tools, preventing us from de-confounding their influence. It is 427 therefore possible that the strategy used for including unknown species (i.e., meta-OTUs for 428 mOTUs vs. SGBs for MetaPhlAn) is driving some of the observed variability. Interestingly, 429 tool sensitivity in D2M taxonomic profilers was significantly lower, despite the mOTUs4 430 reference database containing over two times as many species as MetaPhlAn’s 2025 database 431 version ( Table 3 ). 432 The alpha diversity indices themselves varied substantially between methodologies. The 433 outcomes of hypothesis testing based on these indices varied too, though much less with beta 434 diversity. More surprisingly, we found that even tools designed to estimate the same type of 435 relative abundance, using the same reference database, can produce diversity estimates 436 diverging sufficiently to lead to different statistical conclusions. However, variability in 437 measured diversity could reflect dataset characteristics such as biome of origin, phylogenetic 438 diversity, or even sequencing depth, though quantifying it would require a larger number of 439 independent datasets. We identify this as potential for future work. These patterns of sensitivity 440 to methodological choices underscore the need for exercising caution when comparing alpha 441 diversity across studies that use different methodologies. Without transparent reporting of 442 methodology parameters, comparability of scientific conclusions based on the analysis of alpha 443 diversity is limited. 444 Beta diversity told a different story: although the measured indices themselves were sensitive 445 to methodological choices ( Figure 3 ), this sensitivity rarely affected statistical outcomes with 446 the datasets used here ( Figure 5 ). For D2M methodologies, pairwise sample dissimilarities 447 were nearly insensitive to the choice of tool or database version, based on Procrustes analyses. 448 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+26 This suggests that these tools tend to produce similar amounts of inter-sample variability. D2D 449 methodologies were less stable, with ordinations driven by reference database identity, 450 sensitivity parameters, and possibly algorithmic strategy. Despite these approach-specific 451 observations, PERMANOVA significance and effect size remained stable across almost all 452 methodologies ( Figure 5 ). However, this apparent stability does not constitute evidence that 453 PERMANOVA outcomes are robust to methodology; only that observable changes in 454 ordination space do not necessarily result in methodology-dependent conclusions. Moreover, 455 the Kraken-Sourmash comparison suggests that more comprehensive databases, such as GTDB, 456 may improve the resolution of beta diversity analyses by capturing a broader range of 457 distinguishing features across microbial communities. However, the impact of database 458 completeness warrants more thorough investigation, particularly using unpublished 459 metagenomic datasets that reference databases will not have been trained on. 460 
+
+CONCLUSION 461 
+
+Taken together, these results underscore the substantial influence of methodological choices 462 on the assessment of microbial taxonomic community composition and diversity with short-463 read metagenomes. Consistent with previous findings [27,39,71], our results highlight that the 464 reference database is a major driver of this influence. Larger reference databases may reduce 465 sensitivity to the choice tool when the D2D approach is chosen, a promising trend given the 466 rapid expansion of available genomic resources [72]. Furthermore, novel tools such as Sylph 467 [73], which estimates both taxonomic and sequence abundances from a single, modifiable 468 database, may reveal additional sources of methodological variability worth characterising in 469 future work. 470 The increasing diversity of bioinformatic tools and the growing accessibility of running 471 multiple in silico experiments on the same samples raises the risk of inadvertent [74] or 472 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+27 deliberate cherry-picking [75]. In a field where outcomes are demonstrably sensitive to 473 methodological choices, transparent reporting and justification of methodological decisions are 474 essential for reproducibility and interpretability. In light of our results, we recommend that 475 researchers: (1) review the available tools and current benchmarks to choose appropriately 476 given their research objectives; (2) state and justify the choice of tool(s), parameters, and 477 reference database(s) in their methods section; (3) assess the robustness of their conclusions to 478 choice of reference database; and (4) exercise caution when interpreting and comparing 479 diversity across studies, knowing that the observed signals may be influenced by 480 methodological choices. 481 Future work incorporating more datasets and a broader range of methodologies could study 482 how methodological parameters interact with dataset characteristics such as biome of origin, 483 taxonomic diversity, and sequencing depth, enabling more targeted recommendations. 484 Valuable research directions include evaluating the sensitivity of complementary diversity 485 indices (e.g., Faith [76] for alpha diversity; UniFrac [63] and Aitchison distances [64] for beta 486 diversity) to methodological variation, investigating the impact of methodology on differential 487 abundance analyses, and assessing how incorporating MAGs from a study's own metagenomes 488 into the reference database affects conclusions. Ultimately, we hope this work empowers 489 researchers to make more informed, transparent, and reproducible choices in metagenomic 490 analyses, ensuring that biological interpretations are driven by data, not by tools. 491 
+
+ACKNOWLEDGEMENTS 492 
+
+JRL was supported by a Natural Sciences and Engineering Research Council of Canada 493 (NSERC) grant, a Fonds de Recherche du Québec – Nature et Technologies (FRQNT) grant, 494 and a Graduate Research Excellence Scholarship Program (Fondation Université de 495 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+28 Sherbrooke) scholarship. PÉJ holds a Fonds de Recherche du Québec – Santé (FRQS) Research 496 Scholar Career Award. ILL is supported by a Canadian Research Chair T2 (CRC-2023-00177). 497 We thank Jean-François Lucier (Département de Biologie, Faculté des Sciences, Université de 498 Sherbrooke) for his support with software implementation on high-performance computers. 499 We also thank Jean-Charles Pasquier and his team for the opportunity to work with the 500 PROVID datasets (herein Gut COV and Saliva COV), which had not been released. We thank 501 Sébastien Rodrigue (Département de Biologie, Faculté des Sciences, Université de Sherbrooke) 502 for his involvement and discussions contributing to this project. 503 
+
+FINANCIAL DISCLOSURE STATEMENT 504 
+
+JRL was supported by a Natural Sciences and Engineering Research Council of Canada 505 (NSERC) grant, a Fonds de Recherche du Québec – Nature et Technologies (FRQNT) grant, 506 and a Graduate Research Excellence Scholarship Program (Fondation Université de 507 Sherbrooke) scholarship. PÉJ holds a Fonds de Recherche du Québec – Santé (FRQS) Research 508 Scholar Career Award. ILL is supported by a Canadian Research Chair T2 (CRC-2023-00177). 509 The funders had no role in study design, data collection and analysis, decision to publish, or 510 preparation of the manuscript. 511 
+
+AUTHOR CONTRIBUTIONS 512 
+
+JRL and ILL conceived the study. JRL performed the bioinformatic evaluations and wrote all 513 the scripts. FGB, ILL and PÉJ contributed to the analyses. All authors revised and agreed with 514 the contents herein. 515 
+
+COMPETING INTERESTS 516 
+
+The authors declare no competing interests. 517 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+29 
+
+AVAILABILITY OF DATA AND MATERIALS 518 
+
+The datasets supporting the conclusions of this article are available under the following 519 BioProject accessions PRJNA834801 (Gut PD), PRJNA328258 (Gut NAFLD), 520 PRJNA854811 (Skin AD), PRJEB112409 (Saliva COV and Gut Cov), PRJNA356102 (Gut 521 RA), PRJEB76464 (Moss) and PRJNA685398 (Bee), at the European Nucleotide Archive ,522 https://www.ebi.ac.uk/ena. All code written for this study is available at the following Github 523 reposiory: https://github.com/jorondo1/MethodsComparison. 524 
+
+REFERENCES 525 
+
+1. Kim N, Ma J, Kim W, Kim J, Belenky P, Lee I. Genome-resolved metagenomics: a game 526 changer for microbiome medicine. Exp Mol Med. 2024;56: 1501–1512. 527 doi:10.1038/s12276-024-01262-7 528 2. Liu S, Rodriguez JS, Munteanu V, Ronkowski C, Sharma NK, Alser M, et al. Analysis of 529 metagenomic data. Nat Rev Methods Primer. 2025;5: 5. doi:10.1038/s43586-024-00376-530 6531 3. Nearing JT, Comeau AM, Langille MGI. Identifying biases and their potential solutions in 532 human microbiome studies. Microbiome. 2021;9: 113. doi:10.1186/s40168-021-01059-0 533 4. Chiarello M, McCauley M, Villéger S, Jackson CR. Ranking the biases: The choice of 534 OTUs vs. ASVs in 16S rRNA amplicon data analysis has stronger effects on diversity 535 measures than rarefaction and OTU identity threshold. Moreno-Hagelsieb G, editor. 536 PLOS ONE. 2022;17: e0264443. doi:10.1371/journal.pone.0264443 537 5. Pauvert C, Buée M, Laval V, Edel-Hermann V, Fauchery L, Gautier A, et al. 538 Bioinformatics matters: The accuracy of plant and soil fungal community data is highly 539 dependent on the metabarcoding pipeline. Fungal Ecol. 2019;41: 23–33. 540 doi:10.1016/j.funeco.2019.03.005 541 6. Edwin NR, Fitzpatrick AH, Brennan F, Abram F, O’Sullivan O. An in-depth evaluation of 542 metagenomic classifiers for soil microbiomes. Environ Microbiome. 2024;19: 19. 543 doi:10.1186/s40793-024-00561-w 544 7. Rozday TJ. Metagenomics distilled: new k-mer-based methods. Nat Rev Microbiol. 2025 545 [cited 26 May 2025]. Available: https://www.nature.com/articles/s41579-025-01192-9 546 8. Breitwieser FP, Lu J, Salzberg SL. A review of methods and databases for metagenomic 547 classification and assembly. Brief Bioinform. 2019;20: 1125–1136. 548 doi:10.1093/bib/bbx120 549 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+30 9. Tamames J, Cobo-Simón M, Puente-Sánchez F. Assessing the performance of different 550 approaches for functional and taxonomic annotation of metagenomes. BMC Genomics. 551 2019;20: 960. doi:10.1186/s12864-019-6289-6 552 10. Ye SH, Siddle KJ, Park DJ, Sabeti PC. Benchmarking Metagenomics Tools for Taxonomic 553 Classification. Cell. 2019;178: 779–794. doi:10.1016/j.cell.2019.07.010 554 11. Walsh AM, Crispie F, O’Sullivan O, Finnegan L, Claesson MJ, Cotter PD. Species 555 classifier choice is a key consideration when analysing low-complexity food microbiome 556 data. Microbiome. 2018;6: 50. doi:10.1186/s40168-018-0437-0 557 12. Karwowska Z, Aasmets O, Estonian Biobank research team, Metspalu M, Metspalu A, 558 Milani L, et al. Effects of data transformation and model selection on feature importance 559 in microbiome classification data. Microbiome. 2025;13: 2. doi:10.1186/s40168-024-560 01996-6 561 13. Song K, Wright FA, Zhou Y-H. Systematic Comparisons for Composition Profiles, 562 Taxonomic Levels, and Machine Learning Methods for Microbiome-Based Disease 563 Prediction. Front Mol Biosci. 2020;7: 610845. doi:10.3389/fmolb.2020.610845 564 14. Schloss PD. Rarefaction is currently the best approach to control for uneven sequencing 565 effort in amplicon sequence analyses. McMahon K, editor. mSphere. 2024;9: e00354-23. 566 doi:10.1128/msphere.00354-23 567 15. Willis AD. Rigorous Statistical Methods for Rigorous Microbiome Science. mSystems. 568 2019;4: e00117-19. doi:10.1128/mSystems.00117-19 569 16. Nearing JT, Douglas GM, Hayes MG, MacDonald J, Desai DK, Allward N, et al. 570 Microbiome differential abundance methods produce different results across 38 datasets. 571 Nat Commun. 2022;13: 342. doi:10.1038/s41467-022-28034-z 572 17. Cappellato M, Baruzzo G, Di Camillo B. Investigating differential abundance methods in 573 microbiome data: A benchmark study. Coelho LP, editor. PLOS Comput Biol. 2022;18: 574 e1010467. doi:10.1371/journal.pcbi.1010467 575 18. Knight R, Vrbanac A, Taylor BC, Aksenov A, Callewaert C, Debelius J, et al. Best 576 practices for analysing microbiomes. Nat Rev Microbiol. 2018;16: 410–422. 577 doi:10.1038/s41579-018-0029-9 578 19. Bharti R, Grimm DG. Current challenges and best-practice protocols for microbiome 579 analysis. Brief Bioinform. 2021;22: 178–193. doi:10.1093/bib/bbz155 580 20. Willis AD, Clausen DS. Planning and describing a microbiome data analysis. Nat 581 Microbiol. 2025;10: 604–607. doi:10.1038/s41564-025-01944-6 582 21. Quince C, Walker AW, Simpson JT, Loman NJ, Segata N. Shotgun metagenomics, from 583 sampling to analysis. Nat Biotechnol. 2017;35: 833–844. doi:10.1038/nbt.3935 584 22. Bindels LB, Watts JEM, Theis KR, Carrion VJ, Ossowicki A, Seifert J, et al. A blueprint 585 for contemporary studies of microbiomes. Microbiome. 2025;13: 95, s40168-025-02091– 586 0. doi:10.1186/s40168-025-02091-0 587 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+31 23. Avershina E, Qureshi AI, Winther-Larsen HC, Rounge TB. Challenges in capturing the 588 mycobiome from shotgun metagenome data: lack of software and databases. Microbiome. 589 2025;13: 66. doi:10.1186/s40168-025-02048-3 590 24. Meyer F, Fritz A, Deng Z-L, Koslicki D, Lesker TR, Gurevich A, et al. Critical Assessment 591 of Metagenome Interpretation: the second round of challenges. Nat Methods. 2022;19: 592 429–440. doi:10.1038/s41592-022-01431-4 593 25. Sczyrba A, Hofmann P, Belmann P, Koslicki D, Janssen S, Dröge J, et al. Critical 594 Assessment of Metagenome Interpretation—a benchmark of metagenomics software. Nat 595 Methods. 2017;14: 1063–1071. doi:10.1038/nmeth.4458 596 26. Miossec MJ, Valenzuela SL, Pérez-Losada M, Johnson WE, Crandall KA, Castro-Nallar 597 E. Evaluation of computational methods for human microbiome analysis using simulated 598 data. PeerJ. 2020;8: e9688. doi:10.7717/peerj.9688 599 27. Liu Y, Ghaffari MH, Ma T, Tu Y. Impact of database choice and confidence score on the 600 performance of taxonomic classification using Kraken2. aBIOTECH. 2024;5: 465–475. 601 28. McIntyre ABR, Ounit R, Afshinnekoo E, Prill RJ, Hénaff E, Alexander N, et al. 602 Comprehensive benchmarking and ensemble approaches for metagenomic classifiers. 603 Genome Biol. 2017;18: 182. doi:10.1186/s13059-017-1299-7 604 29. Walker AW, Hoyles L. Human microbiome myths and misconceptions. Nat Microbiol. 605 2023;8: 1392–1396. doi:10.1038/s41564-023-01426-7 606 30. Parks DH, Chaumeil P-A, Mussig AJ, Rinke C, Chuvochina M, Hugenholtz P. GTDB 607 release 10: a complete and systematic taxonomy for 715 230 bacterial and 17 245 archaeal 608 genomes. Nucleic Acids Res. 2025; gkaf1040. doi:10.1093/nar/gkaf1040 609 31. Munafò MR, Davey Smith G. Robust research needs many lines of evidence. Nature. 610 2018;553: 399–401. doi:10.1038/d41586-018-01023-3 611 32. Mirzayi C, Renson A, Genomic Standards Consortium, Massive Analysis and Quality 612 Control Society, Furlanello C, Sansone S-A, et al. Reporting guidelines for human 613 microbiome research: the STORMS checklist. Nat Med. 2021;27: 1885–1892. 614 doi:10.1038/s41591-021-01552-x 615 33. Sun Z, Huang S, Zhang M, Zhu Q, Haiminen N, Carrieri AP, et al. Challenges in 616 benchmarking metagenomic profilers. Nat Methods. 2021;18: 618–626. 617 doi:10.1038/s41592-021-01141-3 618 34. Blanco-Míguez A, Beghini F, Cumbo F, McIver LJ, Thompson KN, Zolfo M, et al. 619 Extending and improving metagenomic taxonomic profiling with uncharacterized species 620 using MetaPhlAn 4. Nat Biotechnol. 2023;41: 1633–1644. doi:10.1038/s41587-023-621 01688-w 622 35. Ruscheweyh H-J, Milanese A, Paoli L, Karcher N, Clayssen Q, Keller MI, et al. 623 Cultivation-independent genomes greatly expand taxonomic-profiling capabilities of 624 mOTUs across various environments. Microbiome. 2022;10: 212. doi:10.1186/s40168-625 022-01410-z 626 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+32 36. Wood DE, Lu J, Langmead B. Improved metagenomic analysis with Kraken 2. Genome 627 Biol. 2019;20: 257. doi:10.1186/s13059-019-1891-0 628 37. Pierce NT, Irber L, Reiter T, Brooks P, Brown CT. Large-scale sequence comparisons with 629 sourmash. F1000Research. 2019;8: 1006. doi:10.12688/f1000research.19675.1 630 38. Irber L, Brooks PT, Reiter T, Pierce-Ward NT, Hera MR, Koslicki D, et al. Lightweight 631 compositional analysis of metagenomes with FracMinHash and minimum metagenome 632 covers. Bioinformatics; 2022 Jan. Available: 633 http://biorxiv.org/lookup/doi/10.1101/2022.01.11.475838 634 39. Wright RJ, Comeau AM, Langille MGI. From defaults to databases: parameter and 635 database choice dramatically impact the performance of metagenomic taxonomic 636 classification tools. Microb Genomics. 2023;9. doi:10.1099/mgen.0.000949 637 40. Comin M, Di Camillo B, Pizzi C, Vandin F. Comparison of microbiome samples: methods 638 and computational challenges. Brief Bioinform. 2021;22: 88–95. 639 doi:10.1093/bib/bbaa121 640 41. Dmitrijeva M, Ruscheweyh H-J, Feer L, Li K, Miravet-Verde S, Sintsova A, et al. The 641 mOTUs online database provides web-accessible genomic context to taxonomic profiling 642 of microbial communities. Nucleic Acids Res. 2025;53: D797–D805. 643 doi:10.1093/nar/gkae1004 644 42. Wood DE, Salzberg SL. Kraken: ultrafast metagenomic sequence classification using exact 645 alignments. Genome Biol. 2014;15: R46. doi:10.1186/gb-2014-15-3-r46 646 43. Oren A, Arahal DR, Göker M, Moore ERB, Rossello-Mora R, Sutcliffe IC. International 647 Code of Nomenclature of Prokaryotes. Prokaryotic Code (2022 Revision). Int J Syst Evol 648 Microbiol. 2023;73. doi:10.1099/ijsem.0.005585 649 44. Beghini F, McIver LJ, Blanco-Míguez A, Dubois L, Asnicar F, Maharjan S, et al. 650 Integrating taxonomic, functional, and strain-level profiling of diverse microbial 651 communities with bioBakery 3. eLife. 2021;10: e65088. doi:10.7554/eLife.65088 652 45. Wallen ZD, Demirkan A, Twa G, Cohen G, Dean MN, Standaert DG, et al. Metagenomics 653 of Parkinson’s disease implicates the gut microbiome in multiple disease mechanisms. 654 Nat Commun. 2022;13: 6958. doi:10.1038/s41467-022-34667-x 655 46. Han M, Zhang N, Mao Y, Huang B, Ren M, Peng Z, et al. The Potential of Gut Microbiota 656 Metabolic Capability to Detect Drug Response in Rheumatoid Arthritis Patients. Front 657 Microbiol. 2022;13: 839015. doi:10.3389/fmicb.2022.839015 658 47. Testerman T, Li Z, Galuppo B, Graf J, Santoro N. Insights from shotgun metagenomics 659 into bacterial species and metabolic pathways associated with NAFLD in obese youth. 660 Hepatol Commun. 2022;6: 1962–1974. doi:10.1002/hep4.1944 661 48. Chaudhary PP, Myles IA, Zeldin J, Dabdoub S, Deopujari V, Baveja R, et al. Shotgun 662 metagenomic sequencing on skin microbiome indicates dysbiosis exists prior to the onset 663 of atopic dermatitis. Allergy. 2023;78: 2724–2731. doi:10.1111/all.15806 664 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+33 49. Ishak S, Rondeau-Leclaire J, Faticov M, Roy S, Laforest-Lapointe I. Boreal moss-microbe 665 interactions are revealed through metagenome assembly of novel bacterial species. Sci 666 Rep. 2024;14: 22168. doi:10.1038/s41598-024-73045-z 667 50. Papp M, Békési L, Farkas R, Makrai L, Judge MF, Maróti G, et al. Natural diversity of the 668 honey bee (Apis mellifera) gut bacteriome in various climatic and seasonal states. 669 Rueppell O, editor. PLOS ONE. 2022;17: e0273844. doi:10.1371/journal.pone.0273844 670 51. Irber L, Pierce-Ward NT, Abuelanin M, Alexander H, Anant A, Barve K, et al. sourmash 671 v4: A multitool to quickly search, compare,and analyze genomic and metagenomic data 672 sets. J Open Source Softw. 2024;9: 6830. doi:10.21105/joss.06830 673 52. McMurdie PJ, Holmes S. phyloseq: An R Package for Reproducible Interactive Analysis 674 and Graphics of Microbiome Census Data. Watson M, editor. PLoS ONE. 2013;8: e61217. 675 doi:10.1371/journal.pone.0061217 676 53. Jost L. Entropy and diversity. Oikos. 2006;113: 363–375. doi:10.1111/j.2006.0030-677 1299.14714.x 678 54. Shannon CE. A Mathematical Theory of Communication. Bell Syst Tech J. 1948;27: 379– 679 423. doi:10.1002/j.1538-7305.1948.tb01338.x 680 55. Simpson EH. Measurement of Diversity. Nature. 1949;163: 688–688. 681 doi:10.1038/163688a0 682 56. Li K, Bihan M, Yooseph S, Methé BA. Analyses of the Microbial Diversity across the 683 Human Microbiome. Xu P, editor. PLoS ONE. 2012;7: e32118. 684 doi:10.1371/journal.pone.0032118 685 57. Howell DC. Median Absolute Deviation. 1st ed. In: Everitt BS, Howell DC, editors. 686 Encyclopedia of Statistics in Behavioral Science. 1st ed. Wiley; 2005. pp. 1193–1193. 687 doi:10.1002/0470013192.bsa384 688 58. Morgan WA. A Test for the Significance of the Difference Between the Two Variances in 689 a Sample From a Normal Bivariate Population. Biometrika. 1939;31: 13. 690 doi:10.2307/2334972 691 59. Pitman EJG. A Note on Normal Correlation. Biometrika. 1939;31: 9. doi:10.2307/2334971 692 60. Stephane Champely. PairedData: Paired Data Analysis. 2011. p. 1.1.1. 693 doi:10.32614/CRAN.package.PairedData 694 61. Mann HB, Whitney DR. On a Test of Whether one of Two Random Variables is 695 Stochastically Larger than the Other. Ann Math Stat. 1947;18: 50–60. 696 doi:10.1214/aoms/1177730491 697 62. Cureton EE. Rank-Biserial Correlation. Psychometrika. 1956;21: 287–290. 698 doi:10.1007/BF02289138 699 63. Lozupone C, Knight R. UniFrac: a New Phylogenetic Method for Comparing Microbial 700 Communities. Appl Environ Microbiol. 2005;71: 8228–8235. 701 doi:10.1128/AEM.71.12.8228-8235.2005 702 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+34 64. Martino C, Morton JT, Marotz CA, Thompson LR, Tripathi A, Knight R, et al. A Novel 703 Sparse Compositional Technique Reveals Microbial Perturbations. Neufeld JD, editor. 704 mSystems. 2019;4: e00016-19. doi:10.1128/mSystems.00016-19 705 65. Fuschi A, Merlotti A, Remondini D. Microbiome data: tell me which metrics and I will tell 706 you which communities. ISME Commun. 2025; ycaf125. doi:10.1093/ismeco/ycaf125 707 66. Mardia KV. Some properties of clasical multi-dimesional scaling. Commun Stat - Theory 708 Methods. 1978;7: 1233–1241. doi:10.1080/03610927808827707 709 67. Jackson DA. PROTEST: A PROcrustean Randomization TEST of community 710 environment concordance. Écoscience. 1995;2: 297–303. 711 doi:10.1080/11956860.1995.11682297 712 68. Oksanen J, Simpson GL, Blanchet FG, Kindt R, Legendre P, Minchin PR, et al. vegan: 713 Community Ecology Package. 2001. p. 2.7–1. doi:10.32614/CRAN.package.vegan 714 69. R Core Team. R: A Language and Environment for Statistical Computing. Vienna, Austria: 715 R Foundation for Statistical Computing,; 2023. Available: https://www.R-project.org/ 716 70. Anderson MJ. Permutational Multivariate Analysis of Variance ( PERMANOVA ). 1st ed. 717 In: Kenett RS, Longford NT, Piegorsch WW, Ruggeri F, editors. Wiley StatsRef: 718 Statistics Reference Online. 1st ed. Wiley; 2017. pp. 1–15. Available: 719 https://onlinelibrary.wiley.com/doi/10.1002/9781118445112.stat07841 720 71. Smith RH, Glendinning L, Walker AW, Watson M. Investigating the impact of database 721 choice on the accuracy of metagenomic read classification for the rumen microbiome. 722 Anim Microbiome. 2022;4: 57. doi:10.1186/s42523-022-00207-7 723 72. Genome Taxonomy Database. R226 Statistics. In: R226 Statistics [Internet]. 16 Apr 2025 724 [cited 30 July 2025]. Available: https://gtdb.ecogenomic.org/stats/r226 725 73. Shaw J, Yu YW. Rapid species-level metagenome profiling and containment estimation 726 with sylph. Nat Biotechnol. 2025;43: 1348–1359. doi:10.1038/s41587-024-02412-y 727 74. Elston DM. Cherry picking, HARKing, and P-hacking. J Am Acad Dermatol. 2021;0. 728 doi:10.1016/j.jaad.2021.06.844 729 75. Andrade C. HARKing, Cherry-Picking, P-Hacking, Fishing Expeditions, and Data 730 Dredging and Mining as Questionable Research Practices. J Clin Psychiatry. 2021;82. 731 doi:10.4088/JCP.20f13804 732 76. Faith DP. Conservation evaluation and phylogenetic diversity. Biol Conserv. 1992;61: 1– 733 10. doi:10.1016/0006-3207(92)91201-3 734 735 
+
+> .CC-BY 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 14, 2026. ;https://doi.org/10.64898/2026.05.27.727884 doi: bioRxiv preprint
+
+35 
+
+SUPPORTING INFORMATION 736 
+
+Figure S1. Median absolute deviations in Procrustes correlations between pairs of 737 methodologies across eight datasets. 738 
+
+Figure S2. Distribution of Inverse Simpson index in samples across pairs of methodologies. 739 
+
+Figure S3. Distribution of the Tail statistic in samples across pairs of methodologies. 740 
+
+Figure S4. Distribution of richness in samples across pairs of methodologies. 741 
+
+Figure S5. Distribution of differences in scaled diversity indices between pairs of 742 methodologies. 743 
+
+Figure S6. Results of Wilcoxon tests comparing the distribution of richness between two 744 predefined groups of samples within each dataset-methodology combination. 745 
+
+Figure S7. Results of Wilcoxon tests comparing the distribution of the Inverse Simpson index 746 between two predefined groups of samples within each dataset-methodology. 747 
+
+Figure S8. Results of Wilcoxon tests comparing the distribution of the Tail index between two 748 predefined groups of samples within each dataset-methodology combination. 749 
+
+Table S1. Pitman-Morgan tests comparing the variances of the distribution of differences in 750 scaled diversity indices between pairs of methodologies. 751
