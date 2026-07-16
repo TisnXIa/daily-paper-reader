@@ -1,0 +1,281 @@
+Title: Screening of Biosecurity Features in Metagenomic Data with Evo 2 Probes
+
+URL Source: https://arxiv.org/pdf/2607.14070v1
+
+Published Time: Thu, 16 Jul 2026 01:32:27 GMT
+
+Number of Pages: 12
+
+Markdown Content:
+# Screening of Biosecurity Features in Metagenomic Data with Evo 2 Probes 
+
+Jeremy Guntoro * 1 2 Alexander Dack * 3 2 Dylan Danno 2 4 Michaela Janˇ coviˇ cov´ a 3 2 Kriˇ zan Jurinovi´ c 3 2 
+
+Vanessa Smilansky 2 4 
+
+# Abstract 
+
+Genomic foundation models such as Evo 2 learn rich sequence representations, but their value for biosecurity screening is largely unexplored. We ask how much biosecurity-relevant signal is linearly accessible in these representations by training minimal linear and attention probes on frozen Evo 2 layer-26 activations, without fine-tuning the underlying model. Across held-out metagenomic test sets, the probes detect antimicrobial resistance (AMR) with strong discrimination: a linear probe reaches a region-level ROC-AUC of 0.888 (mean-pool), rising to 0.977 with a single-head attention probe. The probes resolve finer-grained AMR drug-class subcategories and separate them from unrelated functional genes, providing additional evidence that the learned signal is not explained solely by generic functional-gene status. Bacterial virulence is also decodable, though more weakly (region-level ROC-AUC 0.833). The AMR probe also retains comparable ranking performance on simulated short reads without retraining, enabling evaluation before assembly in settings where assembly is computationally costly or unreliable, such as low-coverage or strain-heterogeneous communities. It achieves a read-level ROC-AUC of 0.898 (mean-pool), comparable to the mean-pooled full-region result. Within SynGenome, AMR-associated prompt labels are only weakly recoverable from Evo 1.5-generated sequences; these prompt-derived labels do not establish the function of the generated response sequences. A complementary sparse-autoencoder analysis recovers interpretable resistance-associated features but proves less consistent than the supervised probes. Together these results position lightweight embedding-based probes as a fast, inexpensive first-pass detection layer for metagenomic biosurveillance, and map both the strengths and the current limits of the approach. This work was conducted as part of the AIxBio Hackathon 2026 hosted by BlueDot Impact , Apart Research , and Cambridge Biosecurity Hub .
+
+# 1. Introduction 
+
+Advances in genomic foundation models have enabled rich embedding representations of biological sequences, yet their application to biosecurity-relevant tasks remains limited. In this work, we investigate the use of Evo 2-derived embed-dings combined with probing and sparse autoencoder (SAE) techniques for antimicrobial resistance (AMR) detection in metagenomic data. We demonstrate that embedding-based representations enable accurate identification of AMR sig-nals from both metagenome-assembled genome (MAG) de-rived sequences as well as simulated metagenomic reads across diverse, multi-organism datasets. For MAG-derived sequence regions, our approach captures not only the pres-ence of AMR genes but also finer-grained subcategories of resistance, as well as bacterial virulence factors, indicating 
+
+> *
+
+Equal contribution 1John Innes Centre 2AIxBio Hackathon contestant 3Department of Bioengineering, Imperial College London 4Independent Research Scientist. Correspondence to: Alexander Dack <ad1114@ic.ac.uk >, Jeremy Guntoro 
+
+<jeremy.guntoro@jic.ac.uk >.Preprint. 
+
+that these properties are encoded within the representation space. At the simulated read level, we show that embed-dings can recover AMR signals from fragmented and het-erogeneous sequencing data, highlighting their potential for real-time surveillance in complex environments. Our results suggest that genomic embeddings provide a scalable and generalizable framework for resistome profiling, and that interpretability methods such as probing and SAEs offer a path toward mechanistic insight into learned biological features. This work establishes a foundation for embedding-based biosecurity applications, including the detection of emerging or engineered resistance elements in metagenomic data. 
+
+# 2. Related work 
+
+2.1. Antimicrobial Resistance Detection from Metagenomic Sequencing 
+
+Antimicrobial resistance (AMR) detection from metage-nomic sequencing has traditionally relied on sequence ho-mology against curated databases such as CARD, ResFinder, and AMRFinderPlus, using alignment of reads or assem-1arXiv:2607.14070v1 [q-bio.GN] 15 Jul 2026 Screening of biosecurity features in metagenomic data with Evo 2 probes 
+
+bled contigs to reference resistance gene collections (Alcock et al., 2020; Florensa et al., 2022; Feldgarden et al., 2021). More recent approaches include genome-scale foundation models and deep learning methods for metagenomic se-quence representation and antimicrobial resistance predic-tion. METAGENE-1 is a 7B parameter autoregressive transformer trained on approximately 1.5 trillion base pairs of wastewater-derived metagenomic sequences, produc-ing general-purpose sequence representations evaluated on pathogen detection and other genomic classification and embedding-based benchmarks (Liu et al., 2025). In parallel, DeepARG applies deep neural networks trained on known antibiotic resistance gene families to classify metagenomic sequences, enabling prediction of resistance-associated la-bels directly from sequence data (Arango-Argoty et al., 2018). SecureBio’s Outward Assembly pipeline is used in wastewa-ter metagenomic sequencing workflows to iteratively extend contigs from short seed sequences flagged by upstream de-tection methods, enabling reconstruction of local genomic context around low-abundance genomic signals (Fields et al., 2025). This type of escalation-based reconstruction is com-plementary to embedding-based approaches and may pro-vide useful downstream context for interpreting signals iden-tified by representation learning methods such as those ex-plored in this work. 
+
+2.2. Genome Foundation Models 
+
+A range of genomic foundation models have been pro-posed for learning representations from DNA sequences, including DNABERT (Ji et al., 2021), the Nucleotide Trans-former (Dalla-Torre et al., 2025), HyenaDNA (Nguyen et al., 2023), METAGENE-1 (Liu et al., 2025), EVO (Nguyen et al., 2024), and Evo 2 (Brixi et al., 2026). Evo 2 is used in this work as it represents a recent large-scale, openly avail-able genome foundation model trained across the full tree of life, and provides accessible intermediate representations suitable for downstream analysis. 
+
+2.3. Interpreting Genome Foundation Models 
+
+Understanding what genomic foundation models encode is an active area of research. A standard approach is to treat hidden states as fixed embeddings and evaluate them using linear probes, a paradigm widely used across genomic and protein language models. These studies show that pretrained representations contain biologically meaningful signals that are often linearly accessible, particularly in intermediate layers. More expressive interpretability methods such as sparse autoencoders (SAEs) have also been applied to both pro-tein and genomic models, recovering structured biological features including regulatory elements, coding structure, and protein-level annotations, indicating that learned repre-sentations encode compositional biological structure across domains. Within this setting, Evo 2 has become a key reference model due to its scale and open availability. Prior work has shown that Evo 2 embeddings support strong downstream predic-tion via simple probes (e.g. EVEE for variant effect pre-diction (Pearce et al., 2026)) and that SAEs can recover interpretable biological features and enable feature-based analysis (e.g. Goodfire-style analyses (Gorton et al., 2025)), reinforcing that meaningful biological structure is present in its latent space. Our work builds on this line of research by applying linear probes to Evo 2 hidden representations for antimicrobial re-sistance prediction, extending prior probing and embedding-based studies from regulatory and variant-effect settings to AMR screening in metagenomic sequences. The most closely related recent work is by Tai (2026), which inves-tigates cross-species AMR prediction using Evo-based ge-nomic foundation model embeddings. They classify whole genomes by resistance phenotype and mitigate species-composition confounds through locality-preserving aggre-gation, whereas we detect resistance genes at the level of individual coding sequences and control the same confound directly through matched negatives. 
+
+# 3. Methods 
+
+3.1. Evo 2: A DNA Foundation Model 
+
+Our analysis focuses on Evo 2-7B-262k (Brixi et al., 2026), a 7-billion-parameter DNA foundation model that accepts as input a string of DNA and outputs next-token predictions. However, an alternative use case for such foundation mod-els is to treat the model not as a generator but as a feature extractor: rather than reading off the output distribution, we run a forward pass over an input sequence and retain the internal residual-stream activations at a chosen layer. For a sequence of n tokens, layer ℓ produces an activation matrix of shape n × d, where d = 4096 is the model’s hidden dimension, hence each row is a 4096 -dimensional embed-ding of one token in its sequence context. Specifically, we extract activations from layer-26 to train linear and attention probes (Section 3.3), as well as to map feature activations using the Goodfire Sparse Autoencoder (Brixi et al., 2026; Gorton et al., 2025) (Section 3.5). Layer-26 was initially selected as a target because existing work on the Goodfire Sparse Autoencoder has previously demonstrated activation of interpretable features in response to fundamental bio-logical elements, such as the presence of coding sequence (CDS) or promoter regions (Brixi et al., 2026; Gorton et al., 2025). We therefore hypothesised that this layer may also 2Screening of biosecurity features in metagenomic data with Evo 2 probes 
+
+encode biosafety-relevant features. Full implementation and infrastructure details are given in Appendix A. 
+
+3.2. Datasets 
+
+We utilize three datasets. The first is MGnify (Richardson et al., 2023), a database of metagenome-assembled genomes (MAGs), from which we extract coding sequences together with their flanking genomic context from the chicken gut (816 MAGs used) and human skin (255 MAGs used) cat-alogues, spread over 901 distinct species of bacteria. The second is the Virulence Factor Database (VFDB) (Liu et al., 2022), from which we extract virulence factor CDS over 34 species. Only CDS from species with a representative MAG from the MGnify dataset were used, as negative training ex-amples were drawn from MGnify. The third is SynGenome (Merchant et al., 2026), a database of Evo-1.5-generated sequences up to 5 kb in length, each containing a coding sequence. Each of these datasets contains sets of labels for each sequence. Our aim is to train probes that can iden-tify the presence or absence of specific labels based on the Evo 2 layer-26 embeddings of their underlying sequences. Specifically, we train probes to detect the following: bacte-rial antimicrobial resistance (AMR, also evaluated on simu-lated short reads), AMR resolved by individual drug class, bacterial virulence (BV), and recovery of AMR-associated prompt labels from SynGenome-generated sequences. Full details of these datasets, along with the labels they contain, may be found in Table 1. 
+
+3.3. Training Linear and Attention Probes 
+
+We trained minimal single-layer probes that accept as in-put the per-token (i.e., per-nucleotide position) layer-26 activations, where each nucleotide is represented by a 4096-dimensional vector, so a sequence of length n has input dimension n × 4096 . Each probe maps this variable-length activation sequence to a single per-region logit. We tested both linear and attention probes (Alain & Bengio, 2016; Kantamneni et al., 2025; McKenzie et al., 2025) for AMR, but only linear architectures for the remaining labels. Linear and attention probes both assign each nucleotide a scalar per-token logit zi via a learned linear map of its activation, and aggregate these into the per-region logit as a weighted sum s = Pni=1 αizi with P 
+
+> i
+
+αi = 1 . At in-ference they differ in how the weights αi are set, while their training supervision also differs as described below. The linear probe uses uniform weights, αi = 1 /n , so the region logit reduces to the mean of the per-token logits (mean-pooling), smean = 1
+
+> n
+
+P 
+
+> i
+
+zi. The attention probe in-stead uses input-dependent attention weights for αi, which are computed by softmax attention from a learned query, so that nucleotides that are more informative for classifica-tion receive larger weightings (see Appendix A for further details). The input to each probe is a genomic region encoded by Evo 2. What constitutes a region depends on the dataset and is summarised in Table 1: in some cases it is a coding se-quence on its own, and in others a coding sequence together with flanking genomic context. For the AMR data, for ex-ample, each region is a coding sequence extended by up to 2 kb of flanking sequence on either side, truncated where the contig is too short to accommodate the full flank. For VFDB the region is the coding sequence alone, and for Syn-Genome the region is a CDS-containing window. In every case the probe receives the per-token layer-26 activations of the region. Linear probes are trained with per-token supervi-sion, where only tokens inside the labelled CDS are marked positive. Attention probes, by contrast, are trained with a single label over the whole region, since their architecture pools across tokens into one region-level prediction. For probes, a common failure mode is that they learn to detect features distinct from the feature of interest (Kantam-neni et al., 2025; McKenzie et al., 2025), and hence care was taken to control for other features. For the binary AMR probe, each positively labelled region was paired 1:1 with a negative region drawn from the same MAG. For the bacte-rial virulence probe, each virulence-factor CDS was paired against a non-virulence-factor CDS from the same species from the MGnify database (see Table 1). These split units were chosen to prevent the same MAG from crossing the AMR splits and the same species from crossing the bacterial-virulence splits, thereby reducing contextual and taxonomic leakage. Regions are then matched in CDS length to within 
+
+±20% and in GC content to within ±0.05 absolute of the paired positive. Negative CDSs were additionally required not to overlap any AMR/STRESS/VIRULENCE hit, anti-SMASH biosynthetic gene cluster, CRISPR array, defence-system region, or mobilome element. The overwhelming majority of positives (99.6% for AMR, 94.7% for VFDB) were matched under these strict criteria. A fallback hierar-chy, given in Table A3 of Appendix A, was applied for the remaining data. Unpaired positives were discarded, leaving 2,229 AMR and 7,325 VFDB positive–negative pairs in the analyses. The per-drug-class AMR probes are trained differently, using other AMR drug classes as negatives, so this length/GC/MAG matching does not apply to their train-ing set. On the other hand, the per-drug-class probes are still evaluated against the matched-negative pool (NEG), to check that they activate in response to the correct features. This pool is matched at the population level rather than per positive: it comprises every matched negative CDS available in the held-out MAGs — the 336 negatives paired to AMR CDS together with the 78 drawn for the STRESS (47) and VIRULENCE (31) anchor regions - and is not re-matched to each drug class. All 414 negatives pass the same exclusion criteria, and the two subpools are indistinguishable in CDS 3Screening of biosecurity features in metagenomic data with Evo 2 probes    
+
+> Table 1. Datasets used to train and evaluate the probes. The first four rows define three detection tasks: binary AMR, bacterial virulence (whose positives and negatives are listed separately), and the SynGenome prompt-label task. BV negatives are drawn from the MGnify sets (matched by species). “Split unit” is the grouping kept intact across the split: no MAG or species is shared between train, val and test, so evaluation is always on unseen MAGs (for AMR) or species (for BV); SynGenome is split at the individual-record level (Section 3.3). The last two (MGnify STRESS and VIRULENCE) are used only as transfer-negative evaluation sets for the per-drug-class AMR probes (Table 3); no probe is trained on them, and their counts are the held-out test-split pools used in evaluation. The “Extent” column gives what each record spans: MGnify AMR is a CDS with ±2 kb genomic flank; VFDB is the CDS alone; SynGenome is a fixed ≤5 kb Evo 1.5-generated window with an embedded ORF but no CDS coordinates (so the whole window is labelled).
+
+Dataset Label / content Records (pos + neg) Split unit Extent MGnify MAG (AMR) AMR CDS 4,458 (2,229 + 2,229) MAG CDS ±2 kb flank VFDB BV positives BV CDS 7,325 positives only Species CDS only MGnify BV negatives non-BV CDS 7,325 negatives only Species CDS only SynGenome generated sequences AMR-associated prompt label 4,458 (2,229 + 2,229) Record ≤5 kb window MGnify MAG (STRESS) stress-response CDS 47 — eval-only MGnify MAG (VIRULENCE) bacterial virulence CDS 31 — eval-only length and GC content (median 981 bp and GC 0.47 for both), so the broader composition does not materially affect the contrast. For the SynGenome set, no matching process was attempted. The goal of training is to obtain a probe that will reliably fire only on embeddings of regions containing CDS that are associated with a specific label. Our primary measure of performance is therefore the ROC-AUC. For training we apply a binary cross-entropy loss and the Adam opti-miser (Kingma & Ba, 2015). Datasets are split into training, validation, and test sets. The best epoch is selected by maximising ROC-AUC on the validation set. All reported ROC-AUC values are evaluated on the held-out test set, which is disjoint from training and validation. The reported F1 values (Table 2) use an F1-maximising threshold selected on the validation split and then applied to the held-out test split. Per-probe dataset splits are given in Table A1, and full training details in Appendix A. 
+
+3.4. Simulating Metagenomic Read-level Data 
+
+To evaluate probe performance on realistic sequencing data, we simulated Illumina sequencing reads using the Python package InSilicoSeq (Gourl ´e et al., 2019) and evaluated the performance of the pre-trained linear probe on the re-sulting reads. InSilicoSeq generates realistic metagenomic sequencing data by modelling Illumina-specific sequencing characteristics, including substitution, insertion, and dele-tion errors, GC bias, and insert size distributions. We used the pre-built MiSeq error model, which produces paired-end reads with an average length of approximately 301 bp, closely matching the output of an Illumina MiSeq instru-ment. A balanced set of AMR-positive and AMR-negative coding sequences (CDSs) was constructed from multiple organisms to represent a heterogeneous metagenomic environment. Reads were then simulated directly from these CDS regions, allowing sequencing errors to be introduced according to the MiSeq error profile while preserving the underlying AMR labels. The resulting dataset comprised short, noisy sequencing reads originating from diverse organisms and was used to evaluate the robustness of the probe on realistic metagenomic sequencing data. A multi-organism evaluation set of 1,340 reads ( 2 reads × 335 CDS = 670 AMR-positive samples +2 reads × 335 CDS = 670 AMR-negative sam-ples; note 335 CDS were used as one CDS was missing from the set of simulated reads, and its matched counterpart was excluded to preserve the paired, balanced evaluation set) was assembled. Each read is embedded and scored with the same layer-26 pipeline and pooling rules as full regions (Sections 3.1 and 3.3); results appear in Section 4.1.1. Note reads are embedded without their genomic context, so read and full-region scores are not on a common scale. The read F1 threshold is therefore selected on one randomly sampled clean 301 bp segment per validation CDS, each scored by a fresh forward pass, and is then applied without further ad-justment to the InSilicoSeq-generated test reads. This adapts the operating threshold to sequence length while retaining a distribution shift in sequencing noise. 
+
+3.5. Sparse Autoencoder Feature Analysis 
+
+As an alternative to supervised probes, we also investigated sparse autoencoder (SAE)-based approaches for identifying genomes of biosecurity interest. This is motivated by prior work (Brixi et al., 2026), which demonstrated that SAE-derived features can capture generic genomic characteristics, including prophage regions in prokaryotic genomes. Our work builds upon the sparse autoencoder released by the Goodfire and Arc Institute Evo-2 research team, avail-able via Goodfire Evo-2 SAE. The model takes the 4096-4Screening of biosecurity features in metagenomic data with Evo 2 probes  
+
+> Table 2. Region-level probe performance across the datasets. For the AMR attention probe, ROC-AUC is computed over token logits attention-weighted and summed over the whole region, while for the linear probes, per-token logits are mean-pooled over each region and ROC-AUC is computed on the pooled score. F1 is calculated at each probe’s F1-maximising threshold, selected on the validation split and applied to the test split. For the short-read row the threshold is selected on 301 bp segments of the validation CDS, since region-level and read-level scores are not on a common scale.
+
+Dataset Probe ROC-AUC F1 AMR binary Linear 0.888 0.823 AMR binary Attention 0.977 0.923 AMR binary short read Linear 0.898 0.809 Bacterial virulence (BV) Linear 0.833 0.774 SynGenome prompt-label task Linear 0.599 0.663 dimensional activations from layer-26 of the Evo 2 7B model and maps them to a 32,768-dimensional sparse latent representation. To identify candidate latent dimensions associated with ge-nomic annotations of interest, we applied the SAE to the token-level layer-26 activations of each input sequence. For each sequence and each SAE feature, activations were aver-aged across all tokens in the input region, including flanking genomic context where present. We then compared these region-level mean activations between annotation groups within the binary-AMR dataset. This analysis highlights sparse dimensions that are consis-tently more strongly activated across feature-positive re-gions and may therefore encode feature-relevant genomic signal. For downstream analysis, we prioritised dimensions showing large and consistent separation between the two groups rather than applying a fixed numerical threshold. Be-cause feature selection and visualisation were performed on the same dataset, the resulting dimensions should be interpreted as descriptive candidate associations rather than independently validated features. 
+
+# 4. Results 
+
+4.1. Evo 2 probes 
+
+4.1.1. B ACTERIAL ANTIMICROBIAL RESISTANCE 
+
+(AMR) 
+
+Linear and attention probes. Both probes achieve high region-level ROC-AUC (Table 2). The attention probe, which is trained with a region-level objective and pools to-kens via learned attention into a single region logit, achieves a higher region-level ROC-AUC than the token-supervised linear probe. We set each probe’s decision threshold to its F1-maximising value on the validation split. Score distri-butions for positive and negative regions are shown in Fig-ure 1(a)–(d). In the example shown in Figure 1(e)–(f), both probes concentrate their contribution within the annotated CDS, the expected behaviour if the intended label is being detected. The attention probe also shows this CDS-specific response despite being trained on whole-region labels. 
+
+Per-drug-class AMR probes. We trained five separate linear probes, one for each of the five most common AMR drug classes (glycopeptide, macrolide, beta-lactam, amino-glycoside, and phenicol), in a one-vs-rest setting: for a given class, positives are in-CDS tokens of that class and negatives are in-CDS tokens of the other four AMR classes. Each probe is then evaluated on four streams on the held-out test split (Table 3; dataset splits in Table A2). The in-distribution stream is the one-vs-rest task above, measuring how well the probe separates its own class from other AMR classes. The three transfer streams instead evaluate the same trained probe against negatives it never saw in training, drawn from a different category: NEG (the matched negative pool from the binary AMR probe, extended with the negatives that the matching pipeline drew for the STRESS and VIRU-LENCE regions), STRESS, and VIRULENCE, measuring whether a class-specific probe also rejects unrelated func-tional genes. All classes achieve in-distribution AUC > 0.98, and transfer AUC generally remains high ( > 0.95), provid-ing further evidence that the signals are not explained solely by generic functional-gene status. The one exception is the beta-lactam probe, which scores lower against bacterial virulence (0.783); this weaker separation may reflect bio-logical overlap, dataset composition, or the limited size of the virulence transfer set. The STRESS and VIRULENCE transfer pools are small (47 and 31 records; Table A2), so these transfer AUCs, and the beta-lactam-versus-virulence value in particular, carry correspondingly wide uncertainty. 
+
+AMR probes on simulated reads. Applying the un-changed AMR binary-probe weights to simulated short reads (Section 3.4) retains comparable ranking performance without retraining (Table 2): the read-level ROC-AUC of 0.898 is comparable to the mean-pooled full-region result of 0.888. After length-matched threshold calibration on clean validation fragments, the probe achieves an F1 of 0.809 on noisy simulated test reads. Score distributions for positive 5Screening of biosecurity features in metagenomic data with Evo 2 probes −4 −2 0 2
+
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+
+(a)    
+
+> −4 −2 02
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+
+(b)    
+
+> −4 −2 02
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+
+(c)    
+
+> −4 −2 02
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+
+(d) 
+
+> −0.002
+> −0.001
+> 0.000
+> 0.001
+> 1/n ×
+> per-token logit
+
+(e)     
+
+> 01000 2000 3000 4000
+> −0.01
+> 0.00
+> 0.01
+> 0.02
+> 0.03
+> 0.04
+> attention weight ×
+> per-token logit
+
+(f) 
+
+mean-pool probe region logit 
+
+> probability density
+
+token position   
+
+> positive class negative class F1 threshold
+
+Figure 1. Mean-pooled distributions of per-region linear probe scores across datasets. The linear probe produces a score at each token (i.e., nucleotide position), which is then mean-pooled over annotated genomic regions (including flanking regions where present and coding sequences) to obtain a single score per region; these region-level scores are aggregated into distributions over positive and negative regions. (a) AMR probe applied to CDS-centred regions extracted from metagenome-assembled genomes (MAGs), using CDS-level antimicrobial-resistance (AMR) annotations. (b) AMR probe evaluated on simulated Illumina short reads generated with a MiSeq sequencing-error model. (c) VFDB bacterial virulence probe applied to coding sequence (CDS) regions only, without flanking context, using CDS-level bacterial virulence annotations. (d) SynGenome probe evaluated on AMR-associated versus non-AMR-associated prompt labels. Positive regions are shown in blue and negative regions in pink. Dashed lines mark the F1-maximising threshold, selected on the validation split; for (b), on 301 bp segments of the validation CDS. (e,f) Per-token probe contributions across an assembled DNA region from Onthenecus intestinigallinarum (locus MGYG000307601 01495 from the MGnify chicken gut MAG database), with the chloramphenicol-resistance coding sequence (CDS) shaded. (e) Linear probe contributions, computed as the per-token logit scaled by 1/n , where n is the length of the DNA region. (f) Attention-based probe contributions, computed as attention weights multiplied by the per-token logit. For this example, the contribution is concentrated within the annotated resistance gene in both cases, with the attention-based probe exhibiting sharper localisation and near-zero contribution outside the CDS. 
+
+6Screening of biosecurity features in metagenomic data with Evo 2 probes  
+
+> Table 3. Per-drug-class AMR probes (one-vs-rest within AMR). In-distribution ROC-AUC separates each class from the other AMR classes; the transfer columns instead use NEG, STRESS, and VIRULENCE negatives. NEG is the matched non-AMR negative set of the MGnify MAG AMR dataset (extended with the negatives that the matching pipeline drew for the STRESS and VIRULENCE regions), and STRESS and VIRULENCE are functional categories used as alternative transfer negatives.
+
+Drug class In-dist. vs. NEG vs. STRESS vs. VIRULENCE Glycopeptide 0.996 0.954 0.987 0.990 Macrolide 0.994 0.958 0.970 0.983 Beta-lactam 0.998 0.963 0.962 0.783 Aminoglycoside 0.989 0.967 0.979 0.972 Phenicol 0.992 0.976 0.958 0.986 and negative reads are shown in Figure 1(b). 4.1.2. B ACTERIAL VIRULENCE (BV) Bacterial virulence is decodable but harder than AMR (Ta-ble 2). Score distributions for positive and negative regions are shown in Figure 1(c). 4.1.3. S YN GENOME AMR-ASSOCIATED PROMPT LABELS 
+
+We test whether AMR-associated prompt labels are recov-erable from Evo 1.5-generated sequences within the Syn-Genome dataset (Merchant et al., 2026). A linear probe trained and tested entirely within the SynGenome distribu-tion reaches only mean-pool AUC 0.599 (Table 2). Even in-distribution, AMR-associated versus non-AMR-associated SynGenome prompt labels are weakly separable, with the positive and negative score distributions heavily overlap-ping (Figure 1(d)). Hence, under this protocol, the prompt-derived AMR labels are only weakly predictable from the generated response sequences. The validation-selected test F1 of 0.663 also does not exceed the 0.667 F1 obtained by predicting every example as positive on this balanced test set. 4.1.4. S PARSE AUTOENCODER FEATURES 
+
+We also examined whether individual features of the Good-fire layer-26 sparse autoencoder align with biosecurity-relevant annotations (Section 3.5). Using this approach, we identify several latent dimensions associated with an-timicrobial resistance (AMR)-related signals. For example, dimensions 10921 and 30695 show consistently elevated ac-tivation for sequences associated with macrolide resistance across both the AMR-binary and AMR-binary-short-read settings (Figure 2). On short-read DNA sequences, we observe a substantial reconstruction gap in the SAE. The L2 reconstruction error between input embeddings and reconstructed embeddings is approximately 25% of the error between the input em-beddings and a zero vector baseline. This indicates that while the SAE retains some signal, a non-trivial portion of the input representation is not preserved under the learned sparse encoding. Feature 10921 Feature 30695  
+
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> mean activation
+> AMR macrolide sequences
+> other sequences
+> Figure 2. Exploratory comparison of sparse autoencoder features associated with macrolide antibiotic resistance in the AMR-binary dataset. We use a pre-trained SAE from Goodfire (Brixi et al., 2026; Gorton et al., 2025). Two salient features (SAE latent di-mension) are plotted on the x-axis, with two bars per feature cor-responding to different subsets of genomic regions. The SAE is applied to token-level embeddings, and values are aggregated by taking the mean over tokens within sequence regions. The y-axis therefore represents the mean SAE feature activation over the rele-vant region. Blue bars correspond to coding regions annotated as macrolide-associated antimicrobial resistance (AMR) genes, while red bars correspond to AMR-associated coding regions not linked to macrolide resistance. This comparison highlights features that preferentially activate for macrolide-specific resistance signals ver-sus other AMR-related signals.
+
+# 5. Discussion 
+
+Our central result is that a minimal probe on Evo 2 layer-26 representations detects a broad range of biosecurity-relevant features with strong discrimination, spanning antimicrobial resistance, its finer-grained drug-class subcategories, and bacterial virulence, despite using only a single linear or 7Screening of biosecurity features in metagenomic data with Evo 2 probes 
+
+attention-pooling layer over frozen activations. That so much signal is linearly accessible at a single layer is encour-aging: it suggests Evo 2 encodes these functional properties in a form that is cheap to read out, without task-specific fine-tuning of the underlying model. Because each probe reads directly from frozen activations, probes for many dif-ferent properties can be trained and evaluated in parallel at relatively small additional cost. The open question is how this translates to a realistic metage-nomic setting, where sequences are fragmented into reads that are taxonomically heterogeneous and of variable qual-ity. It is especially encouraging that the probes, which were trained on long sequences, transfer well to our simulated short-read data. Read-length fragments are the regime most relevant to real metagenomic surveillance, and the probes retain strong performance on them despite being trained on longer assembled regions. That said, simulated reads are an optimistic proxy, so establishing the probe’s accuracy and sensitivity on genuine samples remains the necessary next step. Within SynGenome, the probe only weakly separates gen-erated windows grouped by AMR-associated versus non-AMR-associated prompt labels (Figure 1(d)). This is not a direct test of whether the generated sequences functionally confer AMR: the labels derive from the natural prompt con-text and do not establish that the generated response ORF has the corresponding function. The low separability could therefore reflect weak retention of prompt-associated signal, imperfect correspondence between prompt labels and gener-ated ORFs, limitations of the probe, or some combination of these factors. Wet-lab validation would be required to determine which generated sequences are genuinely func-tional. This caution is consistent with Ikonomova et al. (2025), who found that AI-generated sequences satisfying 
+
+in silico structural constraints did not reliably retain the in-tended biological function. Their results concern protein redesign with models outside the Evo 2 lineage and there-fore do not transfer directly to SynGenome. Conversely, King et al. (2025) showed that closely related Evo-family models can generate experimentally viable bacteriophage genomes, although only 16 of roughly 300 tested designs were viable and generation was tightly guided by a natural template. Thus, experimental activity cannot be inferred from a prompt-associated label alone. Overall, while SAE-based approaches showed some promis-ing signals, probe-based methods ultimately demonstrated more consistent performance within this work. This com-parison was not like-for-like, however: our probes were trained directly on the target data distributions, whereas the sparse autoencoder was pre-trained and applied out of distribution. Because SAEs are known to be sensitive to dis-tributional shift, weaker performance from an off-the-shelf SAE is expected. Even so, the SAE still appeared to encode AMR-relevant structure, with consistent activation patterns across datasets, suggesting that an SAE trained directly on this domain could perform considerably better. Establish-ing that fairly will require both a domain-trained SAE and larger, more diverse evaluation sets. Several directions follow directly from these results. The most important is evaluation against a lab-verified synthetic-genome dataset: pairing generated sequences with ex-perimental confirmation of function would link prompt-associated labels to verified properties of the generated se-quences and turn the present ambiguity into a quantitative benchmark. The same probing approach could also be ex-tended to monitoring engineered synthetic-biology parts (iGEM Foundation, 2026), where the ability to flag haz-ardous functional elements such as virulence factors, toxins, or deliberately introduced resistance determinants in assem-bled or fragmented constructs would have direct biosecurity value, for instance in screening synthetic-DNA orders or detecting engineered pathogens. Methodologically, the at-tention probe was applied only to the AMR binary task; all other results use linear probes alone. Since the attention probe outperformed the linear probe on AMR, extending it to the bacterial virulence, per-drug-class, and read-level tasks is likely to improve those results as well. The recon-struction degradation we observe on short-read sequences— consistent with a mismatch between the pre-trained SAE’s training distribution and our shorter reads—also motivates training a sparse autoencoder directly on short-read embed-dings, which could improve both reconstruction fidelity and interpretability in the metagenomic regime. Then, valida-tion on real metagenomic datasets, as opposed to MAG-derived or simulated reads, would test the probes under gen-uine deployment conditions and quantify the accuracy and sensitivity that our discussion of the metagenomic setting leaves open. Finally, the same approach extends naturally to metatranscriptomic cDNA sequencing, where reverse-transcribed reads would let biosecurity-relevant features be probed in RNA viruses as well as DNA organisms; a com-plementary priority is to characterise the computational cost of scaling Evo 2-embedding extraction to high-throughput metagenomic read volumes, since this will set the through-put achievable in a deployed first-pass screen. 
+
+# 6. Conclusion 
+
+We have shown that minimal probes on the intermediate representations of Evo 2 can detect a range of biosecurity-relevant signals, including antimicrobial resistance and its drug-class subcategories as well as bacterial virulence, di-rectly from genomic sequence and without fine-tuning the underlying model. These signals are largely linearly ac-cessible at a single layer. The region-supervised attention 8Screening of biosecurity features in metagenomic data with Evo 2 probes 
+
+probe achieved higher region-level discrimination than the token-supervised mean-pooled probe, although this com-parison does not isolate attention from the difference in training objective. The unchanged linear-probe weights re-tained comparable ranking performance on simulated short reads. Within SynGenome, AMR-associated prompt labels were only weakly recoverable from generated sequences; this result does not directly measure functional AMR in the generated ORFs. An exploratory sparse-autoencoder analy-sis identified candidate features associated with macrolide-labelled regions, although these associations were not inde-pendently validated and reconstruction degraded on short-read inputs. Taken together, these findings suggest that embedding-based probes could be a promising and inexpen-sive component of a metagenomic biosurveillance pipeline. 
+
+# Acknowledgements 
+
+The authors would like to acknowledge the use of AI-assisted tools during the preparation of this work. ChatGPT and Claude were used to support drafting, writing, and re-finement of the manuscript, while Claude Code was used to assist with code development and implementation. This work was conducted as part of the AIxBio Hackathon 2026, hosted by BlueDot Impact, Apart Research, and the Cambridge Biosecurity Hub. We thank the organizers for providing the environment and collaborative setting that enabled this project. 
+
+# CRediT Author Statement 
+
+Jeremy Guntoro: Software; Investigation; Writing – Origi-nal Draft; Writing – Review & Editing. 
+
+Alexander Dack: Conceptualization; Software; Investiga-tion; Writing – Original Draft; Writing – Review & Editing. 
+
+Dylan Danno: Software; Investigation; Writing – Original Draft. 
+
+Michaela Jan ˇcovi ˇcov ´a: Data Curation; Investigation; Visu-alization. 
+
+Kri ˇzan Jurinovi ´c: Data Curation; Investigation; Visualiza-tion. 
+
+Vanessa Smilansky: Data Curation; Investigation; Visual-ization. 
+
+# Code and Data Availability Statement 
+
+For biosecurity and dual-use risk mitigation reasons, the code and data associated with this work are not publicly released at this time, and the repository is kept private. How-ever, we are committed to responsible scientific transparency and reproducibility. Access to the codebase and relevant data can be provided upon reasonable request to appropriate individuals, subject to review to ensure compliance with biosecurity and ethical considerations. 
+
+# References 
+
+Alain, G. and Bengio, Y. Understanding intermediate layers using linear classifier probes, October 2016. Alcock, B. P., Raphenya, A. R., Lau, T. T. Y., Tsang, K. K., Bouchard, M., Edalatmand, A., Huynh, W., Nguyen, A.-L. V., Cheng, A. A., Liu, S., Min, S. Y., Mirosh-nichenko, A., Tran, H.-K., Werfalli, R. E., Nasir, J. A., Oloni, M., Speicher, D. J., Florescu, A., Singh, B., Faltyn, M., Hernandez-Koutoucheva, A., Sharma, A. N., Borde-leau, E., Pawlowski, A. C., Zubyk, H. L., Dooley, D., Griffiths, E., Maguire, F., Winsor, G. L., Beiko, R. G., Brinkman, F. S. L., Hsiao, W. W. L., Van Domselaar, G., and McArthur, A. G. CARD 2020: Antibiotic resistome surveillance with the comprehensive antibiotic resistance database. Nucleic Acids Research , 48(D1):D517–D525, January 2020. doi: 10.1093/nar/gkz935. Arango-Argoty, G., Garner, E., Pruden, A., Heath, L. S., Vikesland, P., and Zhang, L. DeepARG: A deep learning approach for predicting antibiotic resistance genes from metagenomic data. Microbiome , 6(1):23, December 2018. doi: 10.1186/s40168-018-0401-z. Brixi, G., Durrant, M. G., Ku, J., Naghipourfar, M., Poli, M., Sun, G., Brockman, G., Chang, D., Fanton, A., Gonzalez, G. A., et al. Genome modelling and design across all domains of life with Evo 2. Nature , 652:1349–1361, March 2026. doi: 10.1038/s41586-026-10176-5. Dalla-Torre, H., Gonzalez, L., Mendoza-Revilla, J., Lopez Carranza, N., Grzywaczewski, A. H., Oteri, F., Dallago, C., Trop, E., De Almeida, B. P., Sirelkhatim, H., Richard, G., Skwark, M., Beguir, K., Lopez, M., and Pierrot, T. Nucleotide transformer: Building and eval-uating robust foundation models for human genomics. 
+
+Nature Methods , 22(2):287–297, February 2025. doi: 10.1038/s41592-024-02523-z. Feldgarden, M., Brover, V., Gonzalez-Escalona, N., Frye, J. G., Haendiges, J., Haft, D. H., Hoffmann, M., Pettengill, J. B., Prasad, A. B., Tillman, G. E., Tyson, G. H., and Klimke, W. AMRFinderPlus and the reference gene catalog facilitate examination of the genomic links among antimicrobial resistance, stress response, and virulence. 
+
+Scientific Reports , 11(1):12728, June 2021. doi: 10.1038/ s41598-021-91456-0. Fields, E., Bhasin, H., Teo, R., McLaren, M., and Kauf-man, J. Outward assembly. SecureBio blog post, April 2025. URL https://securebio.org/blog/ 
+
+9Screening of biosecurity features in metagenomic data with Evo 2 probes 
+
+outward-assembly/ . Formerly published by the Nucleic Acid Observatory. Florensa, A. F., Kaas, R. S., Clausen, P. T. L. C., Aytan-Aktug, D., and Aarestrup, F. M. ResFinder: An open on-line resource for identification of antimicrobial resistance genes in next-generation sequencing data and prediction of phenotypes from genotypes. Microbial Genomics , 8 (1), January 2022. doi: 10.1099/mgen.0.000748. Gorton, L., Wang, N., Nguyen, N., Deng, M., Ho, E., Bal-sam, D., and McGrath, T. Interpreting Evo 2: Arc Insti-tute’s next-generation genomic foundation model. Good-fire and Arc Institute, February 2025. Gourl ´e, H., Karlsson-Lindsj ¨o, O., Hayer, J., and Bongcam-Rudloff, E. Simulating Illumina metagenomic data with InSilicoSeq. Bioinformatics , 35(3):521–522, February 2019. doi: 10.1093/bioinformatics/bty630. iGEM Foundation. Registry of standard biological parts. Online resource, 2026. URL https://registry. igem.org . Accessed 2026-07-15; FAIRsharing DOI: 10.25504/FAIRsharing.PeLjos. Ikonomova, S. P., Wittmann, B. J., Piorino, F., Ross, D. J., Schaffter, S. W., Vasilyeva, O., Horvitz, E., Diggans, J., Strychalski, E. A., Lin-Gibson, S., and Taghon, G. J. Experimental evaluation of AI-driven protein design risks using safe biological proxies. bioRxiv , 2025. doi: 10. 1101/2025.05.15.654077. Ji, Y., Zhou, Z., Liu, H., and Davuluri, R. V. DNABERT: Pre-trained bidirectional encoder representations from transformers model for DNA-language in genome. Bioin-formatics , 37(15):2112–2120, August 2021. doi: 10. 1093/bioinformatics/btab083. Kantamneni, S., Engels, J., Rajamanoharan, S., Tegmark, M., and Nanda, N. Are sparse autoencoders useful? a case study in sparse probing. In Proceedings of the 42nd International Conference on Machine Learning , 2025. doi: 10.48550/arXiv.2502.16681. King, S. H., Driscoll, C. L., Li, D. B., Merchant, A. T., Wilkinson, M. E., Hie, B. L., et al. Generative design of novel bacteriophages with genome language models. 
+
+bioRxiv , 2025. doi: 10.1101/2025.09.12.675911. Kingma, D. P. and Ba, J. Adam: A method for stochastic op-timization. In 3rd International Conference on Learning Representations , 2015. doi: 10.48550/arXiv.1412.6980. Liu, B., Zheng, D., Zhou, S., Chen, L., and Yang, J. VFDB 2022: A general classification scheme for bacterial vir-ulence factors. Nucleic Acids Research , 50(D1):D912– D917, 2022. doi: 10.1093/nar/gkab1107. Liu, O., Jaghouar, S., Hagemann, J., Wang, S., Wiemels, J., Kaufman, J., and Neiswanger, W. METAGENE-1: Metagenomic foundation model for pandemic monitoring, January 2025. McKenzie, A., Pawar, U., Blandfort, P., Bankes, W., Krueger, D., Lubana, E. S., and Krasheninnikov, D. De-tecting high-stakes interactions with activation probes. In Advances in Neural Information Processing Systems ,2025. doi: 10.48550/arXiv.2506.10805. Merchant, A. T., King, S. H., Nguyen, E., and Hie, B. L. Semantic design of functional de novo genes from a ge-nomic language model. Nature , 649:749–758, 2026. doi: 10.1038/s41586-025-09749-7. Nguyen, E., Poli, M., Faizi, M., Thomas, A., Birch-Sykes, C., Wornow, M., Patel, A., Rabideau, C., Mas-saroli, S., Bengio, Y., Ermon, S., Baccus, S. A., and R ´e, C. HyenaDNA: Long-range genomic sequence modeling at single nucleotide resolution. In Advances in Neural Information Processing Systems , 2023. doi: 10.48550/arXiv.2306.15794. Spotlight. Nguyen, E., Poli, M., Durrant, M. G., Kang, B., Katrekar, D., Li, D. B., Bartie, L. J., Thomas, A. W., King, S. H., Brixi, G., Sullivan, J., Ng, M. Y., Lewis, A., Lou, A., Ermon, S., Baccus, S. A., Hernandez-Boussard, T., R ´e, C., Hsu, P. D., and Hie, B. L. Sequence modeling and design from molecular to genome scale with Evo. Science , 386 (6723):eado9336, November 2024. doi: 10.1126/science. ado9336. Pearce, M. T., Dooms, T., Yamamoto, R., Meehl, J., Mol-nar, C., Bissell, M., Hazra, D., Fang, C., Nguyen, N., Anderson, M., Osborne, C., Duffy, P., Toomey, B., Klee, E., Myasoedova, E., Ryu, A. J., Ayanian, S., Korfiatis, P., Redlon, M., Jain, A., Balsam, D., and Wang, N. K. EVEE: Interpretable variant effect prediction from ge-nomic foundation model embeddings. bioRxiv , April 2026. doi: 10.64898/2026.04.10.717844. Richardson, L., Allen, B., Baldi, G., Beracochea, M., Bileschi, M. L., Burdett, T., Burgin, J., Caballero-P ´erez, J., Cochrane, G., Colwell, L. J., Curtis, T., Escobar-Zepeda, A., Gurbich, T. A., Kale, V., Korobeynikov, A., Raj, S., Rogers, A. B., Sakharova, E., Sanchez, S., Wilkinson, D. J., and Finn, R. D. MGnify: The mi-crobiome sequence data analysis resource in 2023. Nu-cleic Acids Research , 51(D1):D753–D759, 2023. doi: 10.1093/nar/gkac1080. Tai, H. Cross-species antimicrobial resistance prediction from genomic foundation models, March 2026. 10 Screening of biosecurity features in metagenomic data with Evo 2 probes 
+
+# A. Implementation details 
+
+Infrastructure. All activation extraction and probe training were run on Modal, a serverless cloud platform. Activation extraction was performed on NVIDIA H100 GPUs; probe training and evaluation were run on CPU. 
+
+Dataset splits. Table A1 gives the train/validation/test record counts for each probe. The AMR, VFDB, and SynGenome probes use 1:1 positive/negative balancing, so each count in Table A1 splits evenly into positive and negative records. The SynGenome task is split at the individual-record level and predicts AMR-associated prompt labels. The per-drug-class AMR split is shared across the five drug-class probes and is taken over AMR CDS from the five most common drug classes only (1,227 train / 275 val / 264 test); for each probe this pool is partitioned one-vs-rest into positives (that class) and negatives (the other four), as given in Table A2. The NEG, STRESS, and VIRULENCE transfer-negative pools are held separately and are used only at test time (Table 3). The SynGenome counts are for the balanced in-distribution set on which the prompt-label results are reported, which is distinct from the larger unbalanced SynGenome pool used only for out-of-distribution checks.    
+
+> Table A1. Per-probe train/validation/test record counts. The split is balanced 1:1, so each entry is (positive +negative). The short-read set is evaluation-only: the trained AMR binary probe is applied to simulated reads, so it has no training or validation split; its decision threshold is selected on 301 bp segments of the validation CDS. Per-drug-class AMR splits are given separately in Table A2.
+
+Probe Train Val Test AMR binary / attention 3,122 664 672 VFDB bacterial virulence 11,922 2,392 336 SynGenome prompt-label task 3,122 664 672 AMR short reads — — 1,340      
+
+> Table A2. Per-drug-class AMR dataset composition. The five probes are trained and evaluated one-vs-rest on AMR CDS from the five most common drug classes. For each class, positives are that class’s CDS and negatives are the other four classes’ CDS in the same split, so positives and negatives partition the same pool and each row sums to the column total (1,227 train / 275 val / 264 test). AMR CDS from the remaining, less common drug classes are not used by these probes. At test time each probe is additionally evaluated against three shared transfer-negative pools drawn from outside the AMR classes: NEG = 414 , STRESS = 47 , and VIRULENCE = 31 records. NEG, STRESS and VIRULENCE records are never used in training.
+
+Drug class Train (pos / neg) Val (pos / neg) Test (pos / neg) Glycopeptide 389 / 838 92 / 183 81 / 183 Macrolide 396 / 831 70 / 205 79 / 185 Beta-lactam 279 / 948 71 / 204 61 / 203 Aminoglycoside 83 / 1,144 27 / 248 21 / 243 Phenicol 80 / 1,147 15 / 260 22 / 242 Pool 1,227 275 264 
+
+Negative matching hierarchy. Matched negatives for the AMR and VFDB datasets were selected by the ordered fallback hierarchy in Table A3, taking the first tier that yields a candidate for each positive; a positive with no match at any tier is emitted unpaired. 
+
+Probe architectures. The linear probe is implemented as nn.Linear(4096, 1) . Per-token logits {zi}ni=1 are aggregated to a per-region score by mean-pooling smean = 1
+
+> n
+
+P 
+
+> i
+
+zi. The attention probe has three learned parameters: a query and a weight vector (each nn.Parameter of size 4096) and a scalar bias. The query pools the per-token activations into a single vector by softmax attention ( α = softmax( ⟨q, h i⟩/√d)); the weight and bias then map that pooled vector to a scalar logit. 
+
+Training configuration. Probes are trained with PyTorch’s BCEWithLogitsLoss , which applies the sigmoid and binary cross-entropy in a single numerically stable step directly on the per-token logits. For the AMR binary probe the 11 Screening of biosecurity features in metagenomic data with Evo 2 probes  
+
+> Table A3. Ordered negative-matching fallback hierarchy for the AMR and VFDB datasets. Tiers are tried in order; the first to yield a candidate is used. The AMR and VFDB columns give the number of positives matched (or unmatched) at each tier (of 2,230 and 7,370 respectively).
+
+Tier Mobilome Length GC AMR VFDB 1 excluded ±20% ±0.05 2,222 6,982 2 allowed ±20% ±0.05 2 118 3 allowed ±20% ±0.10 5 105 4 allowed ±50% ±0.10 0 120 none (unpaired) — — — 1 45 positive class is a minority ( ∼ 12% of tokens across positive and negative regions), so positive tokens are upweighted via 
+
+pos weight = 20 .0; the CDS-only datasets, which are balanced at the region level, use pos weight = 1 .0.All probes were trained with the Adam optimiser at lr = 10 −3 and seed 42 . The SynGenome prompt-label probe was trained on 2 epochs, while the per-drug-class AMR probe was trained on 5 epochs per class. All other probes were trained on 5 epochs. 12

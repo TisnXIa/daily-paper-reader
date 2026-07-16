@@ -1,0 +1,443 @@
+Title: 725538
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.07.15.738685v1.full.pdf
+
+Number of Pages: 28
+
+Markdown Content:
+# Phylogenize2: robust phylogenetic 
+
+# methods link genes to phenotypes across 
+
+# hos t-associated and environmental 
+
+# microbiomes 
+
+Kathryn Kananen 1,3 , Nghi Tran 1,3 , Patrick H. Bradley 1,2,3† 
+
+Affiliations: 1. Dept. of Microbiology, The Ohio State University, Columbus, OH 43210. 2. Infectious Diseases Institute, The Ohio State University, Columbus, OH 43210. 3. Center of Microbiome Science, The Ohio State University, Columbus, OH 43210.  
+
+> †
+
+To whom correspondence should be addressed. 
+
+# Abstract 
+
+In microbiome studies, associations between microbial functions and the environment are often confounded by phylogeny. While some methods explicitly account for this confounder, they require information about genome content, limiting their use in biomes where few genomes have been available. To make these methods more universally accessible, we have developed Phylogenize2, a redesigned phylogeny-aware tool for linking microbial gene families to abundance phenotypes. Phylogenize2 integrates large metagenome-assembled genome collections, including both biome-specific collections from MGnify and a broadly sampled general purpose database, GlobDB, to substantially expand species coverage, allowing its application in environments like the mouse gut and ocean. In addition, by default, Phylogenize2 uses a new robust phylogenetic testing framework that has been optimized for microbial abundance data, while also allowing the use of other comparative methods such as POMS. In an experimental mouse study, Phylogenize2 identifies that Muribaculaceae with higher abundance on a high-fat diet are enriched for proteins in the thioredoxin family, with likely roles in oxidative stress. When we apply Phylogenize2 to a polar ocean study, we find that a molybdenum-dependent PaoABC/YagTSR-like aldehyde oxidoreductase system differentiates mesopelagic from surface-dwelling Flavobacteriaceae , suggesting that aldehyde detoxification may be important for organisms that degrade marine snow. Together, these results show that Phylogenize2 expands phylogeny-aware microbiome analysis beyond the human gut and can provide insight into the genetic basis of microbiome-encoded traits in diverse environments. 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+# Importance 
+
+Microbiome studies often set out to identify which microbes are more or less abundant across environments, but these patterns can be difficult to interpret. Phylogenize2 is an open-source software package that allows researchers to ask whether individual microbial gene families are associated with the environment across independent branches of the microbial tree of life. By incorporating large collections of genomes from uncultivated microbes, as well as modern statistical methods designed for microbial abundance data, Phylogenize2 makes this approach practical for microbiomes beyond the human gut, including in model organisms like lab mice and free-living environments like the ocean. We also provide a pipeline that allows the use of new genome collections. In two case studies, we demonstrate that Phylogenize2 effectively prioritizes specific genes and pathways from metagenomic data, thereby leading researchers from changes in microbial abundance to more biologically interpretable explanations. 
+
+# Introduction 
+
+Microbial communities both reflect and shape their environments. The sequencing revolution has made these communities legible: we can read the genomes of new taxa without cultivation, and can quantify how these taxa change across conditions, like health versus disease, or a geochemical gradient. However, an observed change in microbial abundance does not necessarily suggest a specific hypothesis for why this change happens, especially in microbes whose physiology is less well understood. Microbial gene products, in contrast, have specific molecular functions, leading more naturally to testable hypotheses. These functions may not always be known — indeed, we still have much to learn about gene function in the microbiome 1–4 — but this also means that gene (or gene family) associations can point us to new biology and can help prioritize which parts of this functional space to characterize. Despite these advantages, however, moving to the gene family level presents an important challenge: distinguishing genes that are directly associated from “passenger” genes that are indirectly correlated. In particular, if a clade of microbes is on average correlated with the environment, genes shared by that clade will also be correlated, even if they explain little variation within that clade or across the rest of the tree. Phylogenetic comparative methods, like phylogenetic independent contrasts 5 and phylogenetic regression (or phylogenetic generalized least squares) 6, were developed to account for this type of confounding in ecological studies. Methods developed specifically for microbiome data, like Phylogenetic Organization of Metagenomic Signals (POMS) 7 and version 1 of phylogenize 8, have already shown promise for identifying microbial genes with more explanatory power than non-phylogenetic methods, which 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+have much higher false positive rates. For example, phylogenetic methods have been used to identify the Glutamate-Dependent Acid Resistance (GAD) system as among the most enriched gene families in gut microbes 9, and to link quinol oxidoreductases (which have a function in oxidative and nitrosative stress tolerance) to microbial abundance in obese individuals 7.However, in general, phylogenetic methods remain underutilized in the microbiome. One reason is statistical: metagenomic sequencing data pose unique challenges, and microbial differential abundances may not necessarily fit common models of trait evolution, motivating the development of revised methods specifically designed to be used on microbiomes (see Companion Article). Another major problem with using phylogenetic methods to map genes to microbial abundances is that they require information about which taxa encode particular gene families, meaning that they require (pan)genomes for each species. Until very recently, we have lacked genomes for the majority of microbes from many environments of interest, such as soil, the mouse gut, or even the human gut outside of certain well-studied groups 10 . Over the last several years, however, assembling genomes directly from mixed communities (yielding metagenome-assembled genomes, or MAGs) has become much more feasible. While completeness and contamination of MAGs still pose challenges for some analyses 11–13 ,MAG collections have nevertheless been transformational for microbial genomics, and extensive collections now exist for host-associated 14–16 and free-living 16 microbiomes. Here we present Phylogenize2, a tool that addresses the issues identified above. Phylogenize2 is a complete overhaul of the original phylogenize , including a new statistical test designed specifically for this application (see Companion); it is also capable of applying other phylogenetic methods, like POMS 7, on the same data. Phylogenize2 also expands the scope of phylogeny-aware microbiome analyses by incorporating large biome-specific collections of MAGs from the continually updated MGnify Genomes 16 resource, as well as a broader collection, GlobDB 17 , which spans the bacterial tree of life. This results in orders of magnitude more coverage of microbial species and pangenomes without requiring users to construct and annotate their own genome assemblies (although custom databases can also be added). We demonstrate that, using these collections, Phylogenize2 can be applied not only to, e.g., the human gut, but also to model organism gut microbiomes and free-living marine populations. Finally, Phylogenize2 is designed for practical use: installation is available through a Bioconda 18 recipe, and a Snakemake 19 workflow has been made available for users to generate their own custom databases. 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+# Results 
+
+## Integrating large -scale assembly collections enables “batteries -
+
+## included” analyses 
+
+Figure 1: Phylogenize2 incorporates MGnify databases that sample a much larger range of taxonomic diversity. A. Overlap between species in MGnify 16 databases specific to the human gut, mouse gut, or marine environments to MIDASv1 10 , the database used in version 1 of phylogenize 8. Sourmash 20 hashes were used to estimate ANI between pairs of genomes (see Methods). B. Log 10 unique species detected per sample in three different public metagenomic datasets (a human case-control study of liver cirrhosis, a controlled mouse study of high-fat diet, and an observational study of polar marine samples). Samples were quantified against either the MIDASv1 database (red, right) or the appropriate MGnify database (blue, left). MIDASv1 samples were quantified using v1.2 of the tool MIDAS 10 , while the MGnify samples were quantified using Kraken2 21 and Bracken 22 with the provided databases. C. Phylogenetic comparison of the MIDASv1 database with three MGnify collections. The tree is derived from GlobDB 17 . Genomes were matched to tree tips using Sourmash to estimate ANI (see Methods). Only tips matching at least one database were retained for visualization. 
+
+As noted, phylogenetic methods require estimates of microbial gene content per species. In version 1 of phylogenize , these estimates were derived from pangenomes in the MIDASv1 10 database, which mainly included isolate genomes from 5,926 species available through the PATRIC 23 (now BV-BRC) database in March 2015 10 . While these genomes were high-quality, coverage was poor for many communities of interest to microbial ecologists. For example, while over 60% of reads from American human gut microbiomes could be mapped to a genome in the database, this number was less than 5% even for the mouse gut microbiome, and even worse for soil and marine environments. 10 Fortunately, large-scale collections of metagenome-assembled genomes (MAGs) 14–16 have resulted in expanded databases with dramatically better coverage. Phylogenize2 builds on a collection of biome-specific databases from MGnify 16 , which includes catalogs for several body sites in both humans and model organisms, as well as environments like marine and soil. Many species have multiple genomes, allowing us to compute the frequency with which a gene family is observed in the pangenome, as 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+opposed to just presence or absence (as in version 1 of phylogenize ). This also helps guard against contamination of individual MAGs 11,24 . We also incorporated a large general database, GlobDB v226 17 , which contains representative genomes for 306,260 species drawn from 14 sources. In this collection, gene content is estimated from a single genome, which is less accurate; however, this database allows applications to environments not currently covered by MGnify. We harmonized these databases by mapping protein clusters from each database to a cascading set of common references. Initially, amino acid sequences were mapped against UniRef50 25 using MMSeqs2 26 ; sequences that did not match were next mapped against UHGP-50 14 , a human gut catalog, and then FESNov 4, a database of uncharacterized prokaryotic gene families that show evolutionary evidence of conservation. Finally, any remaining sequences were clustered de novo at a 50% amino acid identity level using MMSeqs2 26 (Supplemental Figure 1). Annotations for all of these sequences were generated via HMM searches against KEGG Orthology families 27 , using the heuristic algorithm from anvi’o 28 to improve sensitivity 29 .We compared the coverage of these new databases to the MIDASv1 database from the original version of phylogenize , focusing on the human gut, mouse gut, and marine databases as examples. First, we used Sourmash 20 to estimate pairwise average nucleotide identity (ANI) between genomes, using a species-level cutoff of ≥95.86% ANI (see Methods). Because MIDASv1 is not biome-specific, we did not expect most of its 5,926 species to be shared by any individual environment. Conversely, we found that most species in each biome-specific catalog had no match in MIDASv1. The MGnify catalogs we tested contained 6.5 times (human gut), 13 times (mouse gut), and 19 times (marine) as many species as MIDASv1 had in the same environment ( Figure 1A ). We next determined how this increase in database coverage might translate into quantification of species from a real metagenomic dataset. We selected three test datasets — human gut cirrhosis metagenomes 30 , mouse gut metagenomes from a high-fat diet study 31 , and polar marine metagenomes 32 — and classified them against the MIDASv1 and the MGnify databases. In all three cases, we observed substantial improvement, with 2.1 , 12.2 , and 18.5 times as many species quantified in the human cirrhosis, mouse microbiome, and Tara Oceans dataset, respectively ( Figure 1B ). Finally, we assessed how this increased diversity was distributed across the bacterial tree of life. To do so, we again used Sourmash to map species from the MGnify databases and from MIDASv1 to GlobDB. This analysis showed that the species unique to the new databases were not simply close neighbors of species already covered by MIDASv1 but included entire clades that were previously underrepresented or absent (Figure 1C ). This was especially true for the marine collection but was still the case for both mouse and even human gut. Several collections also included archaea, which 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+were not included in MIDASv1 (Supplemental Figure 2: Phylogenetic comparison of the MIDASv1 database with three MGnify collections across archaea (phylogenetic tree from GlobDB).). 
+
+## Overview of Phylogenize2 pipeline 
+
+Figure 2: Overview of Phylogenize2 . Left: the user provides a count matrix of taxa that have been quantified against one of the databases in Phylogenize2 (MGnify biome databases or GlobDB), along with a metadata table showing which samples belong to each environment. Top right: Phylogenize2 provides the databases necessary to perform the phylogenetic associations. First, the MGnify biome DBs are harmonized by matching protein sequence centroids against a common, cascading set of references, de novo clustering any unmatched sequences. Proteins are annotated against KEGG Orthologs using anvi’o. For each species, we quantify the frequency of detecting each protein family across individual genomes, yielding a continuous matrix with values between zero (absent) and one (core). We also provide ultrametric species trees. Bottom right: At runtime, Phylogenize2 estimates abundance changes between environments from the user’s count and metadata tables, performs adaptive shrinkage on the results, and then performs robust permutration tests to explain this phenotype in terms of protein families using the tree. Finally, p-values from these tests are adjusted for multiple testing and a report is generated. 
+
+An overview of Phylogenize2 can be found in Figure 2 . Phylogenize2 only requires the user to provide species abundances (which can be computed using the Kraken2 21 /Bracken 22 databases provided by MGnify 16 or the Sylph 33 database provided by GlobDB 17 ), as well as sample metadata that show, e.g., which samples belong to which group. Phylogenize2 provides the other needed components for phylogenetic regression, namely 1) a database of pangenome content across species, and 2) a set of pre-computed phylogenetic trees. Phylogenize2 then computes differential abundances (currently, this can be done automatically via ANCOM-BC2 34 or MaAsLin2 35 , or users may pre-compute them using any other method that returns both an effect size and a standard error) and performs adaptive shrinkage with ashr 36 . Finally, Phylogenize2 applies the “robust permutration” test (see Companion) with the aim of linking gene families from the database to differential abundance phenotypes. Phylogenize2 automatically generates a report including visualizations of the association scores, significantly associated genes, and their enrichment for KEGG metabolic pathways. 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+To illustrate how Phylogenize2 can be productively applied to other environments, we applied Phylogenize2 in case studies from two environments that were poorly covered by the first version, the mouse gut (comparing a high-fat or standard diet) 31 and the polar marine environment (comparing the surface and mesopelagic zone) 32 . We also applied Phylogenize2 to a dataset that looked at the human gut in cirrhosis vs. normal liver function 30 , the results of which are described in a companion paper (see Companion). By default, Phylogenize2 uses robust permutration but also allows the user to apply other methods including POMS and an uncorrected linear model, allowing a direct comparison. On these datasets, the robust permutration method of Phylogenize2 is more sensitive than POMS while remaining much more specific than the linear model in the cirrhotic and marine datasets; interestingly, however, Phylogenize2 actually identifies more significant hits than the linear model on the mouse data ( Table 1 ). 
+
+Table 1: Number of significant positive and negative associations found by Phylogenize2, POMS, and a linear model. 
+
+Dataset and Taxon Direction of 
+
+Association Phylogenize2 POMS Linear model 
+
+Cirrhosis 
+
+(Lachnospiraceae) 
+
+Positive 242 35 9391 
+
+Negative 124 0 4913 
+
+Marine 
+
+(Flavobacteriaceae) 
+
+Positive 771 1 5528 
+
+Negative 37 9 9 4602 
+
+Mouse 
+
+(Muribaculaceae) 
+
+Positive 52 0 21 
+
+Negative 27 0 3
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+Figure 3: Identification of different thioredoxins linked to Muribaculaceae abundance in mouse models of high-fat diet (HFD). A) Differential abundance phenotype (blue to red) plotted against the genotype (white to black) for three significant hits from Phylogenize2 on the Muribaculaceae tree. B) Multiple alignment results highlighting conserved sites and canonical active sites of three target hits and other thioredoxin superfamily members in E. coli .Grx1: Glutaredoxin_1, Bcp: Peroxiredoxin, AhpC: Alkyl hydroperoxide reductase subunit C, TrxA: Thioredoxin_1, TrxC: Thioredoxin_2. C) Hypothetical reaction mechanism of the canonical thioredoxin 1/2 (TrxA/C) (MGYG000367305_00167 hit) localized in cytoplasm, along with other thioredoxin-containing partners, TrxB: Thioredoxin reductase, Bcp: Peroxiredoxin, showing detoxification of peroxide and electrons being passed to maintain all members in a reduced, active form. D) InterPro domains of MGYG000359602 and MGYG000391083 showing localization and tethering at the membrane to perform the roles shown in panel C. Ig-like: Immunoglobulin-like, DUF4369: domain of unknown function 4369. Panels C and D were created using FigureLabs (FigureLabsAI, https://www.figurelabs.ai). 
+
+## Case study: In mice, thioredoxins may protect Muribaculaceae against 
+
+## host -derived peroxides released on a high -fat diet 
+
+Phylogenize2 was applied to mouse gut microbiome samples from a high-fat diet (HFD) experimental study 37 using the MGnify mouse gut database. We focused on the 
+
+Muribaculaceae family, which is known to confer beneficial effects on host health yet which remains less well studied than its closest relatives, the Bacteroidaceae .Consistent with previous reports showing that Muribaculaceae have reduced abundance in mouse models of HFD 38 , our analysis revealed a predominantly decreasing trend in Muribaculaceae taxonomic abundance ( Figure 3A ). Using Phylogenize2, we identified 52 gene families that were significantly positively associated (q < 0.05) (Supplemental Table 1). POMS did not recover any associations, and interestingly, the linear model returned only 21 associations, 9 of which overlapped with Phylogenize2’s. 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+Among the top significant hits, three gene families were identified as being positively associated with HFD conditions and appeared to all contain thioredoxin domains: these were UniRef50_A0A4Z0V8U3 (MGYG000391083_00436 in the original MGnify database), UniRef50_A0A2M8N864 (MGYG000367305_00167), and UniRef50_A0A7J0ABB5 (MGYG000359602_00086). These proteins were nominally significant (uncorrected p < 0.05) using the linear model, but only one was significant after correction (UniRef50_A0A7J0ABB5). Thioredoxins typically play roles in the oxidative stress response; notably, high-fat diets have also been found to increase oxidative stress in the gut, driven by enhanced fatty acid oxidation, impaired epithelial mitochondrial function, and the release of oxygen and reactive oxygen species (ROS) into the normally anaerobic gut 39–41 .As some of these UniRef50 sequences appeared to be fragments, we used the full-length sequences from the original MGnify database (MGYG IDs) to construct alignments with thioredoxin superfamily members. This demonstrated that the targets shared the highest similarity with thioredoxin 1 and thioredoxin 2 (TrxA and TrxC), particularly within the canonical WCxxC active-site motif, compared with other members of this family potentially involved in H 2O2 detoxification ( Figure 3B ). Although all three targets were identified as part of the thioredoxin superfamily, InterPro 42 functional domain analysis and BLAST 43 annotation of their genomic neighborhoods suggested distinct subcellular localization patterns and functional roles. MGYG000359602_00086 and MGYG000391083_00436 were predicted to be exported to the outer membrane through two different secretion mechanisms, whereas MGYG000367305 was predicted to remain cytoplasmic. Unlike the membrane-associated targets, MGYG000367305_00167 had no signal peptide sequence, and its neighborhood contained genes annotated as having functions in DNA repair (Supplemental Table 8). This protein therefore likely functions as a canonical thioredoxin that may be induced to prevent DNA damage by peroxides. Specifically, the MGYG000367305_00167 could maintain the peroxiredoxin Bcp 44 in its reduced, active state through electron transfer from these targets, enabling the conversion of H 2O2 into water ( Figure 3C )45 .In contrast, the genome neighborhoods of MGYG000359602_00086 and MGYG000391083_00436 suggest a role in nutrient uptake, especially iron. Specifically, MGYG000359602_00086 was identified as a likely T9SS-secreted surface protein containing a thioredoxin domain and an Ig-like fold, attached to the outer membrane through the T9SS C-terminal domain (CTD) anchored mechanism ( Figure 3D , left). Based on its domain similarity to the hemin-binding protein HBP35 from Porphyromonas gingivalis, which is also secreted via the T9SS 46 and contains a thioredoxin 47 domain and an Ig-like fold, as well as similarities in the genome neighborhood (Supplemental 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+Table 6), we hypothesized that this protein may both protect surface-exposed proteins from oxidative damage while facilitating the transport of potentially reactive iron. Similarly, MGYG000391083_00436 was also predicted to encode an outer membrane lipoprotein, but one exported through the Sec secretion pathway ( Figure 3D , right). We also found TonB-dependent transporters in the genomic neighborhood of MGYG000391083_00436 (Supplemental Table 6), suggesting that this protein also plays a role in substrate transport. Furthermore, a recent study of three diverse Bacteroidota under iron deprivation ( B. thetaiotaomicron, P. intermedia, and P. gingivalis ) showed that thioredoxin proteins and TonB-dependent transporters were upregulated in 2/3 and a protein with a DUF4369 domain was upregulated in 3/3. 48 
+
+Together, the identification of multiple thioredoxin-associated mechanisms by Phylogenize2 suggests that oxidative stress is elevated under high-fat diet conditions, driving Muribaculaceae to employ diverse strategies for ROS detoxification. These results also point to a potential specific role in iron acquisition, which may be connected to ROS exposure because iron in the presence of either oxygen or peroxide can drive the toxic radical-generating Fenton and Haber-Weiss reactions 49 .
+
+## Case study: In the polar ocean, molybdenum -dependent aldehyde 
+
+## oxidoreductases diCerentiate mesopelagic from surface 
+
+## Flavobacteriaceae 
+
+Figure 4. Identification of a molybdenum-dependent PaoABC/YagTSR-like system in polar marine mesopelagic Flavobacteriaceae . A. Mean latitude and longitude coordinates of Tara Oceans samples in polar surface water and mesopelagic collection sites. B. Phenotype (red: higher in mesopelagic; blue: higher in surface) 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+plotted against presence (black) or absence (white) of the protein family MGYG000448108_02082. C. Multiple sequence alignment of experimentally validated members of related molybdenum-flavin enzyme families, including the aldehyde oxidoreductase FAD subunit PaoABC, 4-hydroxybenzoyl-CoA reductase B subunit HbrC, quinoline 2-oxidoreductase C subunit QorC, carbon monoxide dehydrogenase CODH, xanthine oxidase B subunit XO, aldehyde oxidase AOX1, and xanthine dehydrogenase XDH. Abbreviations indicate source organisms: Sb, Shigella boydii; Kp, Klebsiella pneumoniae; Sp, Sodalis praecaptivus; Br, Bradyrhizobium retamae; Af, Asanoa ferruginea; Ta, Thauera aromatica; Mm, Magnetospirillum magneticum; Rp, Rhodopseudomonas palustris; Pp, Pseudomonas putida; Hp, Hydrogenophaga pseudoflava; Bt, Bos taurus; Hs, Homo sapiens; Ec, Escherichia coli; and Lp, Leeuwenhoekiella polynyae. The alignment also includes the L. polynyae sequence with the highest sequence identity to the YagTSR proteins, significantly enriched YagTSR proteins, and the MGYG000448108_02082 PaoABC-like protein. Sites conserved in canonical PaoABC proteins are highlighted, including four conserved cysteine residues in the iron– sulfur-binding subunit that are retained in both YagTSR and MGYG000448108_02082. D. Hypothetical function of MGYG000448108_02082 in polar marine mesopelagic Flavobacteriaceae using marine snow PUAs and formaldehyde for particle degradation and detoxification. The PaoABC complex is represented as a cytoplasmic molybdenum-dependent aldehyde-oxidizing system whose precise subcellular location remains unresolved. Figure 4D was created using BioRender (https://biorender.com/d0ko35h). 
+
+To demonstrate Phylogenize2’s applicability to free-living environments, we applied it to data collected from a survey of polar marine microbiomes from the Tara Oceans project. Because metabolic lifestyle is heavily structured by depth (because of factors like oxygen, light availability, and which nutrients are available), we contrasted bacterial communities at the surface with those in the deeper mesopelagic zone. Here, we focused on the Flavobacteriaceae , an abundant Gram-negative taxon in the Bacteroidota. In the mesopelagic zone (ENVO:00000213), both non-sinking and fast-sinking marine particles are sites of particulate organic carbon transformation 50 . Prior reports have shown that Flavobacteria are significantly enriched in abundance on bulk particle samples compared to small-size-fraction seawater samples in the North Pacific Subtropical Gyre 51 . In the upper mesopelagic zone in the Porcupine Abyssal Plain, the 
+
+Flavobacteriaceae family was shown to be the second most relatively abundant family on fast-sinking particles at 70 meters 50 . Furthermore, these taxa are consistent with reported early particle colonizers that occupy a complex-polysaccharide-degrading role potentially breaking particles into dissolved organic matter 52,53 . As particles are degraded, other cellular debris and dissolved metabolites can be released from organic matter, providing new substrates for metabolism. We found that when comparing the polar marine mesopelagic and polar surface water zones ( Figure 4A ), mesopelagic Flavobacteriaceae were enriched for a protein (MGYG000448108_02082) annotated as a subunit of xanthine dehydrogenase (XDH) (Figure 4B ). However, we noted that in addition to XDH, this family includes related proteins such as carbon monoxide dehydrogenases and aldehyde oxidoreductases, which can be difficult to distinguish 54 . We therefore generated alignments of MGYG000448108_02082 with experimentally verified sequences from different proteins in the family (Supplemental File 2). This revealed substantial protein identity (max of 53.38%, min of 47.72%) across five sequences from the PaoABC complex, which is a periplasmic aldehyde oxidoreductase ( Figure 4C ; Supplemental File 2). In particular, we saw that MGYG000448108_02082 contained an additional [4Fe–4S] cluster binding 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+motif with four conserved cysteines in the FAD-binding subunit, which is characteristic of the aldehyde oxidoreductase PaoABC complex 54 . Interestingly, MGYG000448108_02082 appears to be a potential fusion of these subunits; XDH can also exist as multiple ORFs or as a fusion. In addition, proteins annotated as YagR (K11177), YagS (K11178), and YagT (K13483) were significantly associated with mesopelagic Flavobacteriaceae; these also aligned to PaoABC with a high degree of homology (~60%), as expected since these are the original names of the periplasmic aldehyde oxidase complex in E. coli 55 . Finally, we also saw a significant association with MobA (K03752), which is involved in the synthesis of molybdenum cofactor (MoCo); notably, PaoABC is a MoCo-dependent enzyme. Together, these results indicate that polar mesopelagic Flavobacteriaceae are enriched for a molybdenum-dependent PaoABC/YagTSR-like system, which is likely involved in the oxidation of aldehyde substrates rather than carbon monoxide or purines 54 . (Note that while key residues were the most similar to PaoABC, one difference is that we did not find evidence of a Tat signal peptide, so the subcellular localization of this complex may not be periplasmic in Flavobacteriaceae .) One functional explanation is that this system is linked to the degradation of organic matter particles 56 . Particles in “marine snow,” organic matter that descends from the surface to the pelagic ocean, are known hot spots of microbial activity and remineralization. Diatoms, in particular, are known to be major components of marine particles degraded by Flavobacteria 52 , and are enriched in polar marine environments 57 .In response to stress or predation, many diatoms also produce potentially toxic polyunsaturated aldehydes (PUAs) such as heptadienal, which could affect particle-attached bacterial metabolism 56 . Therefore, we would expect these particles to potentially contain phytoplankton-derived reactive aldehyde compounds ( Figure 4D ). In addition, algal-polysaccharide metabolism by marine Flavobacteria can itself generate toxic aldehyde byproducts such as formaldehyde, as shown during porphyran utilization in Zobellia galactanivorans , where formaldehyde detoxification is coupled to algal-polysaccharide degradation 58 . While the precise substrate of this enzyme remains to be determined, this supports the broader idea that the capacity to detoxify aldehydes and/or use them for redox chemistry may be beneficial during degradation of organic matter in the mesopelagic zone ( Figure 4D ). When we compared against the linear model, we found that it did also call the aldehyde oxidoreductase proteins significant, but not MobA, the molybdenum cofactor biosynthetic protein; furthermore, that model yielded over 5.5K total positive associations, consistent with the high false-positive rate that has been demonstrated for uncorrected linear associations 8,9 . Conversely, POMS only found one association at q < 0.05, which did not overlap with Phylogenize2. This association would therefore have been difficult to discover using previous methods. 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+# Conclusions 
+
+Phylogenize2 represents several advances in applying phylogenetic models to microbiome data. First, Phylogenize2 implements state-of-the-art phylogenetic comparative methods that are designed for the microbiome, including robust permutration, which we showed to be more sensitive and specific on metagenomic abundance data than competing methods (see Companion). Next, integrating biome-specific collections that include metagenome-assembled genomes (MAGs) makes Phylogenize2 much more generally applicable than the first version of Phylogenize. Indeed, on mouse and marine data, we found that these new collections allowed us to quantify an order of magnitude more species; since each species is a single observation in phylogenetic regression, this is a major improvement in the signal we can extract from these data. Phylogenize2 can therefore be used across diverse hosts as well as in free-living environments, where much of the diversity remains uncultured. Finally, Phylogenize2 is available as a recipe in Bioconda, making it much easier to install. We demonstrate that in real-world datasets, Phylogenize2 can be used to generate new molecular hypotheses about how microbial genes are linked to community-level phenotypes. For instance, when we applied Phylogenize2 to a study of high-fat diet in the mouse gut, we found that thioredoxin proteins, both cytosolic and at the cell surface, were strongly associated with Muribaculaceae abundance. Interestingly, we also saw that protein families involved in oxidative stress resistance were associated with 
+
+Lachnospiraceae abundance in cirrhosis (see Companion). This is consistent with experimental results showing that one of the major underlying variables determining the mammalian gut microbiome composition is inflammation, a complex environmental change in which the epithelial barrier function is worsened, oxygen tension increases, and reactive oxygen and nitrogen species are formed 59,60 . We note that when applied to a large human case-control study of obesity, POMS also identified an enzyme family linked to oxidative stress tolerance (cytochrome bd oxidase) 7.Meta-analyses have been conducted to identify whether reproducible microbiome signatures exist, either disease-specific or pan-diagnostic 61–65 . Because individual studies are drawn from populations that can have different gut community composition at baseline (for example, because of geography 62 ), methods that work at the gene level should show improved agreement across studies. However, previous meta-analyses have not used phylogenetic correction, and indeed, a meta-analysis of gut metagenomes found that the genes most strongly associated with disease were primarily markers for a small number of strains or species 65 . It is therefore interesting that we see some signs that phylogenetic methods may help us converge on a common latent environmental variable in the gut, i.e., inflammation. An important future direction will therefore be to test whether cross-disease gene associations identified using 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+phylogenetic methods will primarily reflect this common influence of inflammation, or whether we can also identify microbial genes linked to more specific disease processes. In addition, we showed that Phylogenize2 can be productively applied in free-living environments. In the polar ocean, our results indicated that a PaoABC/YagTSR like oxidoreductase system differentiated mesopelagic from surface Flavobacteriaceae . This association suggests that aldehyde oxidation may be an important trait for Flavobacteriaceae inhabiting deeper particle-associated environments where the degradation of phytoplankton derived organic matter can release reactive aldehydes and other reduced carbon compounds. Although the precise substrate and subcellular localization of the system remain unresolved, this illustrates how Phylogenize2 can help prioritize candidate metabolic mechanisms for microbial adaptations in complex environmental microbiomes. Users of Phylogenize2 should still be aware of certain remaining limitations. Although MAG collections greatly expand environments that can be utilized by Phylogenize2, MAGs vary in completeness and contamination, which can introduce errors into estimates of gene content 11,13,66–68 . In within-species analyses, even low levels of MAG-derived pangenome contamination can cause disproportionate numbers of false positives 11 . We expect that across-species analyses, like Phylogenize2, should be more robust, as the same contaminants would have to be introduced into multiple species to bias the results. Our database pipeline also helps mitigate these issues by estimating gene-family detection rates across all genomes for a species; many contaminants are only seen in a single MAG 24 . Species represented by only a few genomes, however, remain more vulnerable to errors, and low-abundance or difficult-to-assemble taxa may still be underrepresented in the current genome collections. Analyses that use GlobDB may also be more susceptible than those that use the MGnify collections, since in GlobDB each species is represented by a single genome. Other important caveats arise from the way protein families are defined. In both MGnify and GlobDB, protein families are constructed using the MMseqs2 linear clustering algorithm (“linclust”), which has been shown to overpartition protein families 69,70 ,potentially leading to a failure to detect genes in certain taxa that are actually conserved. True all-against-all alignments yield protein families with more accurate phylogenetic profiles, which have successfully been used to identify human gut colonization factors 71 ; even with improvements to compute time, however, this approach remains prohibitive to apply at the scale of multiple biomes. New, scalable tools for protein family inference are therefore needed. Finally, as we observed with both case studies, existing protein family annotations can be inadequate (failing to differentiate the thioredoxin-containing proteins) or misleading (annotating a likely aldehyde oxidoreductase as a xanthine dehydrogenase). Here, we 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+used manual analyses of genome neighborhoods and protein sequences to zero in on function; large-scale function prediction tools that incorporate these data sources, such as FUGAsseM 1, are likely to improve annotation quality and save researchers time. As MAG recovery, genome curation, and genome annotation continue to improve, the Phylogenize2 databases can be updated to reduce these sources of uncertainty and expand phylogeny-aware functional analysis to additional microbial environments. 
+
+# Methods 
+
+## Metagenomic data 
+
+Metagenomic datasets representing the mouse gut under a normal or high-fat diet (PRJEB52043) 31 and the polar ocean at varying depths (PRJEB9740) were downloaded from the European Nucleotide Archive 72,73 and processed as described in the companion article (see Companion). 
+
+## Database processing 
+
+Phylogenize2 utilizes GlobDB v226 and 17 MGnify databases. For each database, processing and annotation were run via a Snakemake workflow (Supplemental Figure 1). All processed and annotated databases are listed in Supplemental Table 4. The workflow has been made available on GitHub for use with MGnify databases, GlobDB, or any database that follows MGnify’s internal naming conventions. We started with protein sequences that had been clustered at the 50% amino acid identity level with the MMseqs2 “linclust” linear-time clustering algorithm 26 . We then used MMSeqs2 v17.b804f to search each protein cluster’s centroid against UniRef50, UHGP, and FESNov. For GlobDB, singleton protein clusters (i.e., with only one member) were added back, as these were removed by default. MMseqs2 was run iteratively, raising the sensitivity from 3 to 7 to optimize clusters mapped versus runtime (Supplemental Figure 3). For all databases, any clusters that were not mapped to one of the three reference databases were clustered together using MMseqs2’s “linclust.” All protein clusters for each database were then annotated using anvi’o. For the MGnify pangenomes, a modified anvi’o fork (commit 0933fd1) was used, which allowed for amino acids to be annotated directly without starting from nucleotide sequences. The KEGG KOfam database was downloaded on 2025-02-04. For GlobDB, pre-existing KO annotations from anvi’o were used. The phylum-level trees from each database were made ultrametric by calculating relative evolutionary divergence 74 as implemented in the R package “castor” 75 , and were otherwise unmodified. Protein family detection rates were calculated for each MGnify database, yielding a matrix with values ranging from 0 (not detected) to 1 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+(always detected). For a given 50% ID protein cluster and a given species, the detection rate was defined as the number of genomes encoding proteins assigned to that cluster divided by the total number of genomes for that species. Since GlobDB was dereplicated at the species level, a binary matrix (0: absent, 1: present) was generated instead for that database. 
+
+## Database comparisons 
+
+Sourmash 20 v4.9.4 was used to estimate average nucleotide identity (ANI) between pairs of genomes. First, to determine an appropriate estimated ANI threshold to distinguish taxa at the species, genus, and family levels, we compared the MGnify mouse gut, marine, and human gut databases to themselves. For this comparison, the marine and mouse gut databases were subsampled by taking the top 50 most complete genomes per representative species. The human gut database was subsampled by taking the top 10 most complete genomes per representative species. Next, k-mer hash databases were generated, using a k-mer length of 31 as recommended. We found that 90% of genomes from the same species were above an ANI cutoff of 95.86% (Supplemental Figure 4; Supplemental Table 5). Next, k-mer hash databases (again using 31-mers) were generated for each species representative in MIDASv1, GlobDB v226, and the MGnify genome collections. Each database was compared to MIDASv1 (Figure 1A ) and GlobDB ( Figure 1B ), counting the best ANI score above 95.86% as a match. For each of our three example datasets (cirrhosis, high-fat diet, and polar marine metagenomes), we also computed the number of unique species that could be quantified in each sample, either using Kraken2 and Bracken and the appropriate MGnify database, or using MIDASv1 as in version 1 of phylogenize (Figure 1C ). 
+
+## Case studies 
+
+Prioritizing and visualizing gene hits 
+
+For the mouse and marine datasets, we examined all significant (q < 0.05) positive associations and prioritized the 50 with the broadest phylogenetic distribution (Supplemental Table 6: Faith's phylogenetic diversity (PD) of top mouse Muribaculaceae hits., Supplemental Table 7: Faith's phylogenetic diversity (PD) of top marine Flavobacteriaceae hits.). We quantified this using Faith’s phylogenetic diversity 76 
+
+(“picante” 77 R package) applied to the taxa where the gene was present or absent (whichever was rarer). In addition to the KEGG Orthology annotations above, more functional annotations were retrieved by searching for the cluster representative identifier in UniProtKB and UniParc. For clusters of interest that were annotated as “unknown” or “uncharacterized,” the corresponding FASTA sequences were extracted and queried against the NCBI nr 78 database using BLASTP 43 , with the top five relevant matches retained. To visualize the relationship between gene presence-absence 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+patterns and the trends in phenotype (i.e., log differential abundance), both were displayed as heatmaps around the phylogenetic tree using the ggtree 79 and ggtreeExtra 80 R packages. 
+
+Mouse gut in high -fat diet: thioredoxins 
+
+We retrieved the amino acid sequences from the mouse gut MGnify database 16 of the three Muribaculaceae thioredoxin-containing proteins that were significantly associated with high-fat diets. Sequences were submitted to InterPro 42 to predict domain architecture and potential localization. Protein localizations were further investigated using DeepTMHMM 81 to predict if each protein was secreted (MGYG000391083_00436 and MGYG000359602_00086), membrane-associated, or intracellular (MGYG000367305_00167). Because these hits could be confidently assigned to the thioredoxin family but not to a specific homolog, we performed multiple sequence alignments against representative members of the thioredoxin family with diverse roles in redox homeostasis, including thioredoxin, thioredoxin reductase, alkyl hydroperoxide reductase subunit C, glutaredoxin, and peroxiredoxin. Alignments were examined for a conserved CxxC active-site motif shown to be critical for thioredoxin family proteins 82 .After confirming that all hits were thioredoxin homologs, with the highest degree of conservation with TrxA and TrxB, we examined the genomic neighborhood of each hit by retrieving flanking sequences from the MGnify genome where the protein family centroid was encoded. We combined any existing annotations with BLAST searches of neighboring genes (against UniProt 83 and NCBI BLAST 43 ), with particular attention to those located on the same strand. 
+
+Marine mesopelagic layer: xanthine/CO/aldehyde dehydrogenases 
+
+To gain more insight into the likely function of the putative xanthine/carbon monoxide dehydrogenase subunit and YagTSRs that Phylogenize2 identified, we aligned them using MAFFT v7.526 84 against 14 previously experimentally verified sequences in the same superfamily, comprising xanthine dehydrogenases, carbon monoxide dehydrogenases, and aldehyde oxidases, and visualized the results using ggmsa v1.6.0 85 in R. Previously, PaoABC proteins were shown to have a 4Fe–4S cluster not found in CO or xanthine oxidoreductases; we therefore visualized the 4Fe–4S cluster-binding motif, showing that it was present in both the YagTSR complex and the MGYG000448108_02082 protein that Phylogenize2 identified. The full alignment, showing that MGYG000448108_02082 aligns to the entire YagTSR complex as opposed to a single subunit, can be found in Supplemental Figure 5. 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+# Availability 
+
+Phylogenize2 is available through GitHub (https://github.com/pbradleylab/phylogenize) and Bioconda. The Phylogenize2 database processing pipeline is available at https://github.com/pbradleylab/phylogenize-db-prep. Processed Phylogenize2 databases can be downloaded from the Phylogenize community page on Zenodo (https://zenodo.org/communities/bradley_phylogenize/records?q=&l=list&p=1&s=10&sor t=newest). Scripts for figure generation are available at https://github.com/pbradleylab/phylogenize_v2_2025_paper. The modified version of anvi’o for protein annotation that we used is available at https://github.com/Kekananen/anvio. 
+
+# Acknowledgements 
+
+We wish to acknowledge other members of the Bradley lab for helpful discussions. Funding for this study was provided by The Ohio State University (startup funds to P.H.B.) and by the National Institutes of Health (grant R35GM151155 to PHB). The Ohio Supercomputer Center provided high-performance compute resources. 
+
+# References 
+
+1. Zhang, Y. et al. Predicting functions of uncharacterized gene products from microbial communities. Nat. Biotechnol. 1–16 (2025) doi:10.1038/s41587-025-02813-7. 2. Vanni, C. et al. Unifying the known and unknown microbial coding sequence space. 
+
+eLife 11 , e67667 (2022). 3. Thomas, A. M. & Segata, N. Multiple levels of the unknown in microbiome research. 
+
+BMC Biol. 17 , 48 (2019). 4. Rodríguez del Río, Á. et al. Functional and evolutionary significance of unknown genes from uncultivated taxa. Nature 626 , 377–384 (2024). 5. Felsenstein, J. Phylogenies and the comparative method. Am. Nat. 
+
+http://www.journals.uchicago.edu/doi/abs/10.1086/284325 (1985). 6. Grafen, A. The phylogenetic regression. Philos. Trans. R. Soc. Lond. B. Biol. Sci. 
+
+326 , 119–157 (1989). 7. Douglas, G. M., Hayes, M. G., Langille, M. G. I. & Borenstein, E. Integrating phylogenetic and functional data in microbiome studies. Bioinformatics 38 , 5055– 5063 (2022). 8. Bradley, P. H. & Pollard, K. S. phylogenize: correcting for phylogeny reveals genes associated with microbial distributions. Bioinformatics 36 , 1289–1290 (2020). 9. Bradley, P. H., Nayfach, S. & Pollard, K. S. Phylogeny-corrected identification of microbial gene families relevant to human gut colonization. PLOS Comput. Biol. 14 ,e1006242 (2018). 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+10. Nayfach, S., Rodriguez-Mueller, B., Garud, N. & Pollard, K. S. An integrated metagenomics pipeline for strain profiling reveals novel patterns of bacterial transmission and biogeography. Genome Res. 26 , 1612–1625 (2016). 11. Majernik, S. N., Beaver, L. & Bradley, P. H. Small amounts of misassembly can have disproportionate effects on pangenome-based metagenomic analyses. mSphere 10 ,e00857-24 (2025). 12. Trigodet, F., Sachdeva, R., Banfield, J. F. & Eren, A. M. Troubleshooting common errors in assemblies of long-read metagenomes. Nat. Biotechnol. 1–10 (2026) doi:10.1038/s41587-025-02971-8. 13. Chen, L.-X., Anantharaman, K., Shaiber, A., Eren, A. M. & Banfield, J. F. Accurate and complete genomes from metagenomes. Genome Res. 30 , 315–333 (2020). 14. Almeida, A. et al. A unified catalog of 204,938 reference genomes from the human gut microbiome. Nat. Biotechnol. 39 , 105–114 (2021). 15. Beresford-Jones, B. S. et al. The Mouse Gastrointestinal Bacteria Catalogue enables translation between the mouse and human gut microbiotas via functional mapping. Cell Host Microbe 30 , 124-138.e8 (2022). 16. Gurbich, T. A. et al. MGnify Genomes: A Resource for Biome-specific Microbial Genome Catalogues. J. Mol. Biol. 435 , 168016 (2023). 17. Speth, D. R. et al. GlobDB: A comprehensive species-dereplicated microbial genome resource. Preprint at https://doi.org/10.48550/arXiv.2506.11896 (2025). 18. Grüning, B. et al. Bioconda: sustainable and comprehensive software distribution for the life sciences. Nat. Methods 15 , 475–476 (2018). 19. Köster, J. & Rahmann, S. Snakemake—a scalable bioinformatics workflow engine. 
+
+Bioinformatics 28 , 2520–2522 (2012). 20. Irber, L. et al. sourmash v4: A multitool to quickly search, compare, and analyze genomic and metagenomic data sets. J. Open Source Softw. 9, 6830 (2024). 21. Wood, D. E., Lu, J. & Langmead, B. Improved metagenomic analysis with Kraken 2. 
+
+Genome Biol. 20 , 257 (2019). 22. Lu, J., Breitwieser, F. P., Thielen, P. & Salzberg, S. L. Bracken: estimating species abundance in metagenomics data. PeerJ Comput. Sci. 3, e104 (2017). 23. Gillespie, J. J. et al. PATRIC: the Comprehensive Bacterial Bioinformatics Resource with a Focus on Human Pathogenic Species ▿. Infect. Immun. 79 , 4286–4298 (2011). 24. Smith, B. J. et al. Accurate estimation of intraspecific microbial gene content variation in metagenomic data with MIDAS v3 and StrainPGC. Genome Res. 35 ,1247–1260 (2025). 25. The UniProt Consortium. UniProt: the universal protein knowledgebase in 2021. 
+
+Nucleic Acids Res. 49 , D480–D489 (2021). 26. Steinegger, M. & Söding, J. MMseqs2 enables sensitive protein sequence searching for the analysis of massive data sets. Nat. Biotechnol. 35 , 1026–1028 (2017). 27. Kanehisa, M., Sato, Y. & Morishima, K. KEGG as a reference resource for gene and protein annotation. Nucleic Acids Res. 44 , D457–D462 (2016). 28. Eren, A. M. et al. Community-led, integrated, reproducible multi-omics with anvi’o. 
+
+Nat. Microbiol. 6, 3–6 (2021). 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+29. Kananen, K. et al. Adaptive adjustment of profile HMM significance thresholds improves functional and metabolic insights into microbial genomes. Bioinforma. Adv. 
+
+5, vbaf039 (2025). 30. Qin, N. et al. Alterations of the human gut microbiome in liver cirrhosis. Nature 513 ,59–64 (2014). 31. Manghi, P. et al. MetaPhlAn 4 profiling of unknown species-level genome bins improves the characterization of diet-associated microbiome changes in mice. Cell Rep. 42 , 112464 (2023). 32. Royo-Llonch, M. et al. Compendium of 530 metagenome-assembled bacterial and archaeal genomes from the polar Arctic Ocean. Nat. Microbiol. 6, 1561–1574 (2021). 33. Rapid species-level metagenome profiling and containment estimation with sylph | Nature Biotechnology. https://www-nature-com.proxy.lib.ohio-state.edu/articles/s41587-024-02412-y. 34. Lin, H. & Peddada, S. D. Multigroup analysis of compositions of microbiomes with covariate adjustments and repeated measures. Nat. Methods 21 , 83–91 (2024). 35. Mallick, H. et al. Multivariable association discovery in population-scale meta-omics studies. PLOS Comput. Biol. 17 , e1009442 (2021). 36. Stephens, M. False discovery rates: a new deal. Biostatistics 18 , 275–294 (2017). 37. Blanco-Míguez, A. et al. Extending and improving metagenomic taxonomic profiling with uncharacterized species using MetaPhlAn 4. Nat. Biotechnol. 41 , 1633–1644 (2023). 38. Zhu, Y. et al. Exploration of the Muribaculaceae Family in the Gut Microbiota: Diversity, Metabolism, and Function. Nutrients 16 , 2660 (2024). 39. Du, Z. et al. The relationship between a high-fat diet, gut microbiome, and systemic chronic inflammation: insights from integrated multiomics analysis. Am. J. Clin. Nutr. 
+
+121 , 643–653 (2025). 40. Lee, J.-Y. et al. High-Fat Diet and Antibiotics Cooperatively Impair Mitochondrial Bioenergetics to Trigger Dysbiosis that Exacerbates Pre-inflammatory Bowel Disease. Cell Host Microbe 28 , 273-284.e6 (2020). 41. Yoo, W. et al. High-fat diet-induced colonocyte dysfunction escalates microbiota-derived trimethylamine N-oxide. Science 373 , 813–818 (2021). 42. Paysan-Lafosse, T. et al. InterPro in 2022. Nucleic Acids Res. 51 , D418–D427 (2023). 43. Altschul, S. F., Gish, W. & Miller, W. BLAST: Basic Local Alignment Search Tool. https://linkinghub.elsevier.com/retrieve/pii/S0022-2836(05)80360-2 (1990). 44. Reeves, S. A., Parsonage, D., Nelson, K. J. & Poole, L. B. Kinetic and Thermodynamic Features Reveal That E. coli BCP Is an Unusually Versatile Peroxiredoxin. Biochemistry 50 , 8970–8981 (2011). 45. Rocha, E. R., Tzianabos, A. O. & Smith, C. J. Thioredoxin Reductase Is Essential for Thiol/Disulfide Redox Control and Oxidative Stress Survival of the Anaerobe 
+
+Bacteroides fragilis . J. Bacteriol. 189 , 8015–8023 (2007). 46. Fuchsbauer, O., Lunar Silva, I., Cascales, E., Roussel, A. & Leone, P. Structural and functional analyses of the Porphyromonas gingivalis type IX secretion system PorN protein. J. Biol. Chem. 298 , 101618 (2022). 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+47. Shoji, M. et al. Characterization of hemin-binding protein 35 (HBP35) in Porphyromonas gingivalis: its cellular distribution, thioredoxin activity and role in heme utilization. (2010). 48. Lewis, J. P. & Gui, Q. Iron Deficiency Modulates Metabolic Landscape of Bacteroidetes Promoting Its Resilience during Inflammation. Microbiol. Spectr. 11 ,e04733-22 (2023). 49. Nutritional iron turned inside out: intestinal stress from a gut microbial perspective | FEMS Microbiology Reviews | Oxford Academic. https://academic-oup-com.proxy.lib.ohio-state.edu/femsre/article/38/6/1202/552682. 50. Baumas, C. M. et al. Mesopelagic microbial carbon production correlates with diversity across different marine particle fractions. ISME J. 15 , 1695–1708 (2021). 51. Farnelid, H. et al. Diverse diazotrophs are present on sinking particles in the North Pacific Subtropical Gyre. ISME J. 13 , 170–182 (2018). 52. Abell, G. C. J. & Bowman, J. P. Colonization and community dynamics of class Flavobacteria on diatom detritus in experimental mesocosms based on Southern Ocean seawater. FEMS Microbiol. Ecol. 53 , 379–391 (2005). 53. Enke, T. N. et al. Modular Assembly of polysaccharide-degrading marine microbial communities. Curr. Biol. 29 , (2019). 54. Correia, M. A. et al. The Escherichia coli periplasmic aldehyde oxidoreductase is an exceptional member of the xanthine oxidase family of molybdoenzymes. ACS Chem. Biol. 11 , 2923–2935 (2016). 55. Neumann, M. et al. A periplasmic aldehyde oxidoreductase represents the first molybdopterin cytosine dinucleotide cofactor containing molybdo-flavoenzyme from Escherichia coli. FEBS J. 276 , 2762–2774 (2009). 56. Wu, Z., Li, Q. P., Ge, Z., Huang, B. & Dong, C. Impacts of biogenic polyunsaturated aldehydes on metabolism and community composition of particle-attached bacteria in coastal hypoxia. Biogeosciences 18 , 1049–1065 (2021). 57. Pierella Karlusich, J. J. et al. Patterns and drivers of diatom diversity and abundance in the global ocean. Nat. Commun. 16 , 3452 (2025). 58. Brott, S. et al. Connecting algal polysaccharide degradation to formaldehyde detoxification. ChemBioChem 23 , (2022). 59. Lee, J.-Y., Tsolis, R. M. & Bäumler, A. J. The microbiome and gut homeostasis. 
+
+Science 377 , eabp9960 (2022). 60. Winter, S. E., Lopez, C. A. & Bäumler, A. J. The dynamics of gut-associated microbial communities during inflammation. EMBO Rep. 14 , 319–327 (2013). 61. Pasolli, E., Truong, D. T., Malik, F., Waldron, L. & Segata, N. Machine Learning Meta-analysis of Large Metagenomic Datasets: Tools and Biological Insights. PLoS Comput. Biol. 12 , (2016). 62. Armour, C. R., Nayfach, S., Pollard, K. S. & Sharpton, T. J. A Metagenomic Meta-analysis Reveals Functional Signatures of Health and Disease in the Human Gut Microbiome. mSystems 4, (2019). 63. Duvallet, C., Gibbons, S. M., Gurry, T., Irizarry, R. A. & Alm, E. J. Meta-analysis of gut microbiome studies identifies disease-specific and shared responses. Nat. Commun. 8, 1784 (2017). 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+64. Manghi, P. et al. Meta-analysis of 22,710 human microbiome metagenomes defines an oral-to-gut microbial enrichment score and associations with host health and disease. Nat. Commun. 17 , 196 (2025). 65. Tierney, B. T., Tan, Y., Kostic, A. D. & Patel, C. J. Gene-level metagenomic architectures across diseases yield high-resolution microbiome diagnostic indicators. Nat. Commun. 12 , 2907 (2021). 66. Orakov, A. et al. GUNC: detection of chimerism and contamination in prokaryotic genomes. Genome Biol. 22 , 178 (2021). 67. Parks, D. H., Imelfort, M., Skennerton, C. T., Hugenholtz, P. & Tyson, G. W. CheckM: assessing the quality of microbial genomes recovered from isolates, single cells, and metagenomes. Genome Res. 25 , 1043–1055 (2015). 68. Vollmers, J., Wiegand, S., Lenk, F. & Kaster, A.-K. How clear is our current view on microbial dark matter? (Re-)assessing public MAG & SAG datasets with MDMcleaner. Nucleic Acids Res. 50 , e76 (2022). 69. Wright, E. Accurately clustering biological sequences in linear time by relatedness sorting. Nat. Commun. 15 , 3047 (2024). 70. Nguyen, R., Sokhansanj, B. A., Polikar, R. & Rosen, G. L. Complet+: a computationally scalable method to improve completeness of large-scale protein sequence clustering. PeerJ 11 , e14779 (2023). 71. Liu, M. et al. Conserved genetic basis for microbial colonization of the gut. Cell 188 ,2505-2520.e22 (2025). 72. Leinonen, R. et al. The European Nucleotide Archive. Nucleic Acids Res. 39 , D28– D31 (2011). 73. Cantelli, G. et al. The European Bioinformatics Institute (EMBL-EBI) in 2021. Nucleic Acids Res. 50 , D11–D19 (2022). 74. Parks, D. H. et al. Recovery of nearly 8,000 metagenome-assembled genomes substantially expands the tree of life. Nat. Microbiol. 2, 1533–1542 (2017). 75. Louca, S. & Doebeli, M. Efficient comparative phylogenetics on large trees. 
+
+Bioinformatics 34 , 1053–1055 (2018). 76. Faith, D. P. Conservation evaluation and phylogenetic diversity. Biol. Conserv. 61 , 1– 10 (1992). 77. Kembel, S. W. et al. Picante: R tools for integrating phylogenies and ecology. 
+
+Bioinformatics 26 , 1463–1464 (2010). 78. Sayers, E. W. et al. Database resources of the National Center for Biotechnology Information in 2025. Nucleic Acids Res. 53 , D20–D29 (2025). 79. Yu, G., Smith, D., Zhu, H., Guan, Y. & Lam, T. T.-Y. ggtree: an R package for visualization and annotation of phylogenetic trees with their covariates and other associated data. Methods Ecol. Evol. 8, 28–36 (2017). 80. Xu, S. et al. ggtreeExtra: Compact Visualization of Richly Annotated Phylogenetic Data. Mol. Biol. Evol. 38 , 4039–4042 (2021). 81. Hallgren, J. et al. DeepTMHMM predicts alpha and beta transmembrane proteins using deep neural networks. 2022.04.08.487609 Preprint at https://doi.org/10.1101/2022.04.08.487609 (2022). 82. Yang, B., Lin, Y., Huang, Y., Shen, Y.-Q. & Chen, Q. Thioredoxin (Trx): A redox target and modulator of cellular senescence and aging-related diseases. Redox Biol. 70 ,103032 (2024). 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+83. Ahmad, S. et al. The UniProt website API: facilitating programmatic access to protein knowledge. Nucleic Acids Res. 53 , W547–W553 (2025). 84. Katoh, K. & Standley, D. M. MAFFT multiple sequence alignment software version 7: Improvements in performance and usability. Mol. Biol. Evol. 30 , 772–780 (2013). 85. Zhou, L. et al. ggmsa: a visual exploration tool for multiple sequence alignment and associated data. Brief. Bioinform. 23 , bbac222 (2022). 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint
+
+Supplemental Material 
+
+Supplemental Figure 1: Snakemake workflow graph detailing the steps in Phylogenize2 database preparation, showing the “marine” MGnify database as an example. Supplemental Figure 2: Phylogenetic comparison of the MIDASv1 database with three MGnify collections across archaea (phylogenetic tree from GlobDB). Supplemental Figure 3: Runtime and number of MMSeqs2 matches between GlobDB protein clusters and the UniRef50, FESNov, and UHGP databases, showing a plateau in sensitivity. Supplemental Figure 4: Violin plots showing the distribution of Sourmash scores for members of the same species, genus, and family. Supplemental Figure 5: Full length multiple sequence alignment of the polar marine Flavobacteriaceae hit MGYG000448108_02082 against experimentally validated sequences from the same protein family. Supplemental File 1: Multiple sequence alignment file of the experimentally validated protein family sequences for the closest BLAST match and Phylogenize2 hits in the mouse high-fat diet study. Supplemental File 2: Multiple sequence alignment file of the experimentally validated protein family sequences for the polar mesopelagic Flavobacteriaceae ’s Phylogenize2 hits, and closest BLAST match. Supplemental Table 1: Positive gene associations with murine gut Muribaculaceae on high-fat diet that were significant (q<0.05) via Phylogenize2, the uncorrected linear model, and/or POMS. Supplemental Table 2: Positive gene associations with polar mesopelagic Flavobacteriaceae that were significant (q<0.05) via Phylogenize2, the uncorrected linear model, and/or POMS. Supplemental Table 3: BLAST results containing sequence similarity between Phylogenize2 hits and the experimentally validated proteins from the xanthine/CO/aldehyde oxidoreductase family. Supplemental Table 4: All pre-made databases currently available for Phylogenize2. Supplemental Table 5: Sourmash thresholds used for Supplemental Figure 4. Supplemental Table 6: Faith's phylogenetic diversity (PD) of top mouse Muribaculaceae hits. Supplemental Table 7: Faith's phylogenetic diversity (PD) of top marine Flavobacteriaceae hits. Supplemental Table 8: Genome neighborhood analysis for thioredoxin proteins identified as significant on a high-fat diet. 
+
+> .CC-BY 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 16, 2026. ;https://doi.org/10.64898/2026.07.15.738685 doi: bioRxiv preprint taxa
+
+samples 
+
+## metadata 
+
+case s1 s2 sn ... s1s2sncase control id t 1t 2t3t m
+
+## counts 
+
+0 2150 215 3 72 7 0018 402 28 ... ... ... ... ... ... ... ... ... env ... ... 
+
+Quantify 
+
+(Kraken2+ 
+
+Bracken 
+
+against MGnify 
+
+biome DB) 
+
+## Phylogenize2 DBs 
+
+0 1 0 00.1 1 0.9 0.8 1 0.2 1 0... ... ... 1 1 0.1 0.8 ... ... ... ... ... ... ... ... ... taxa prot. families t 1t 2t3t m0.4 0.8 1–3 0.2 0.2 0.8 ... ... ... ... ... eff ect 
+
+size std 
+
+err 0.6 
+
+abundance 
+
+changes 
+
+t 1t2t3t m00 0.5 –3 0.1 0 1.0 ... ... ... ... ... eff ect 
+
+size std 
+
+err 0.3 
+
+phenotype 
+
+(ashr) Di ff erential 
+
+abundance 
+
+t 1t 2t 3t m(ANCOMBC2, 
+
+MaAsLin2) 
+
+samples 
+
+(QC'ed) 
+
+Shrinkage 
+
+protein family matrix species tree 
+
+Multiple hypothesis 
+
+correction 
+
+signi fi cant hits User provides Phylogenize2 MGnify biome DBs 
+
+> precomputed at runtime
+
+protein family matrix species tree 
+
+Divide by desired 
+
+taxonomic level Robust permutration test  
+
+> clustered protein
+> sequences
+
+UniRef50 FESNov UHGP-50 
+
+de novo 
+
+Match 
+
+centroids 
+
+(MMseqs2) protein families Representative  
+
+> proteins
+> Genomes per
+> species
+> pangenome
+> Genomes per
+> family
+
+Harmonize and annotate protein families Get per-species detection 
+
+rates of protein families samples     
+
+> KO1 ProtA
+> KO2 ProtB
+> KO 3Prot C
+> KOm Protm ...
+
+Annotate 
+
+(anvi'o) Species   
+
+> represented per
+> protein sequence
+> Species
+> cluster
+> N=12 N=47 N=37
+
+=Per-species 
+
+> rate
+
+÷Generate continuous 
+
+protein family matrix 
+
+Match species to proteins in cluster T9SS CTD Por secretion tail Ig-like 
+
+Trx DUF4369 SH 
+
+Trx 
+
+SH SH SH choice-of-anchor J lipoprotein domain 
+
+Extracellular MGYG000359602_00086 MGYG000391083_00436 Outer membrane 
+
+e-x 
+
+> SH
+
+H2O
+
+> SH
+
+TrxB 
+
+> SS
+
+TrxA/C  
+
+> SH SH SS
+
+Bcp TrxB TrxA/C Bcp SH SH SS H2 O2
+
+MGYG000359602_00086 MGYG000391083_00436 MGYG000367305_00167 TrxA TrxC 
+
+S F V P K RG V V V E E A T GM WCG Y C PD FWA S - - - - - - - - - - - WCG P C RD FWA T - - - - - - - - - - - WCG P C MD FWA E - - - - - - - - - - - WCG P C KD FWA P - - - - - - - - - - - WCG P C R
+
+Grx1 Bcp AhpC 
+
+I F GR S - - - - - - - - - - - G C PY CVF Y P K A - - - - - - - - - - - MT PG C TF Y P A D - - - - - - - - - - - F T F V C P-+
+
+# A BC DHydrogen Peroxide (H 2O2)High-Fat Diet Fatty Acid Uptake  
+
+> ↑Beta-Oxidation Gut Epithelial Cells NADPH
+
+phenotype 
+
+-1.5 -1.0 -0.5 0.0 0.5 1.0 1.5 genotype 
+
+0.00 0.25 0.50 0.75 1.00 MGYG000391083_00436 MGYG000359602_00086 MGYG000367305_00167 Thioredoxins MGYG000448108 YagTSR 
+
+> Lp Lp Lp
+
+genotype 
+
+0.00 0.25 0.50 0.75 1.00 
+
+phenotype 
+
+-2 -1 012
+
+MGYG000448108_02082 
+
+Tara Oceans Polar Marine Sample Location ACBDXanthine/CO dehydrogenase
