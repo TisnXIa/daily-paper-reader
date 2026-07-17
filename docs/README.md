@@ -6,38 +6,32 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-16
-- 运行时间：2026-07-16 21:12:42 UTC
+- 最新运行日期：2026-07-17
+- 运行时间：2026-07-17 20:59:02 UTC
 - 运行状态：成功
-- 本次总论文数：6
-- 精读区：4
-- 速读区：2
+- 本次总论文数：4
+- 精读区：1
+- 速读区：3
 
 ### 今日简报（AI）
-今日研读6篇微生物组文献，精读原核生物分类与宏基因组分析方法。推荐关注16S rRNA及FastANI等工具的分类精度，以及新型系统发育方法的应用。建议后续关注MiGenPro和Microbe-DIA等微生物表型预测与质谱分析流程。
-- 详情：[/202607/16/README](/202607/16/README)
+今日精读高分论文《Rarefaction is better than robust Aitchison PCA》发现稀有化在控制测序不均匀性上表现更优，同时速读三篇涉及指纹框架、宏基因组AMR检测及真菌富集方法。建议优先关注稀有化方法在微生物组分析中的实际应用。
+- 详情：[/202607/17/README](/202607/17/README)
 
 ### 精读区论文标签
-1. [Taxonomic Resolution of 16S rRNA, FastANI, Mash, and FastAAI across 30,495 Prokaryotic Type-Strain Genomes](/202607/16/biorxiv-10-64898-2026-07-15-738563-v1-taxonomic-resolution-of-16s-rrna-fastani-mash-and-fastaai-across-30495-prokaryotic-type-strain-genomes)  
+1. [Rarefaction is better than robust Aitchison PCA and other compositional data analysis methods at controlling for uneven sequencing effort](/202607/17/biorxiv-10-64898-2026-01-06-697977-v3-rarefaction-is-better-than-robust-aitchison-pca-and-other-compositional-data-analysis-methods-at-controlling-for-uneven-sequencing-effort)  
    标签：评分：9.0/10、query:microbiome
-   evidence：对16S rRNA等四种方法进行系统比较
-2. [A robust, sensitive phylogenetic method enables gene-level metagenomic analyses](/202607/16/biorxiv-10-64898-2026-07-15-738679-v1-a-robust-sensitive-phylogenetic-method-enables-gene-level-metagenomic-analyses)  
-   标签：评分：9.0/10、query:microbiome
-   evidence：用于宏基因组差异丰度检验的系统发育方法
-3. [Screening of Biosecurity Features in Metagenomic Data with Evo 2 Probes](/202607/16/2607.14070v1-screening-of-biosecurity-features-in-metagenomic-data-with-evo-2-probes)  
-   标签：评分：8.0/10、query:microbiome
-   evidence：使用Evo 2探针在宏基因组数据中筛选生物安全特征（AMR），与宏基因组序列功能注释相关
-4. [Phylogenize2: robust phylogenetic methods link genes to phenotypes across host-associated and environmental microbiomes](/202607/16/biorxiv-10-64898-2026-07-15-738685-v1-phylogenize2-robust-phylogenetic-methods-link-genes-to-phenotypes-across-host-associated-and-environmental-microbiomes)  
-   标签：评分：8.0/10、query:microbiome
-   evidence：稳健的系统发育方法，连接微生物组中基因与表型，是微生物组分析工具
+   evidence：比较稀薄化与成分数据分析方法的统计表现
 
 ### 速读区论文标签
-1. [MiGenPro: A linked data workflow for phenotype-genotype prediction of microbial traits using machine learning.](/202607/16/biorxiv-10-1101-2025-08-21-671437-v3-migenpro-a-linked-data-workflow-for-phenotype-genotype-prediction-of-microbial-traits-using-machine-learning)  
+1. [A Deterministic Binary Fingerprinting Framework with Zero-Trained Feature Extraction for Sparse Count Matrices](/202607/17/2607.14596v1-a-deterministic-binary-fingerprinting-framework-with-zero-trained-feature-extraction-for-sparse-count-matrices)  
    标签：评分：7.0/10、query:microbiome
-   evidence：基于注释基因组的微生物性状预测工作流
-2. [Data Independent Acquisition Pipeline for Microbiome Samples (Microbe-DIA)](/202607/16/biorxiv-10-64898-2026-07-13-738261-v2-data-independent-acquisition-pipeline-for-microbiome-samples-microbe-dia)  
+   evidence：适用于宏基因组k-mer谱的确定性二进制指纹方法
+2. [Optimizing a Culture-Enriched Hybrid Metagenomics Pipeline to Assess the AMR Footprint of Livestock Manure in Anaerobic Digestate](/202607/17/biorxiv-10-64898-2026-04-24-720626-v2-optimizing-a-culture-enriched-hybrid-metagenomics-pipeline-to-assess-the-amr-footprint-of-livestock-manure-in-anaerobic-digestate)  
    标签：评分：7.0/10、query:microbiome
-   evidence：为微生物组样本优化的数据非依赖采集蛋白质组学分析流程
+   evidence：优化培养富集混合宏基因组流程检测抗性基因
+3. [Fungal microbial enrichment method enables fungal metagenomics directly from human clinical samples](/202607/17/biorxiv-10-64898-2026-07-16-738568-v1-fungal-microbial-enrichment-method-enables-fungal-metagenomics-directly-from-human-clinical-samples)  
+   标签：评分：7.0/10、query:microbiome
+   evidence：从临床样本进行真菌宏基因组测序的方法
 
 
 <div class="dpr-home-promo-card">

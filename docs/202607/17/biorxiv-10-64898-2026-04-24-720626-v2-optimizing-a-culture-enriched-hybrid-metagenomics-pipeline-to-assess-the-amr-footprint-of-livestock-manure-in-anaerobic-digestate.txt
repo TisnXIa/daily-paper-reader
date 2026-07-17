@@ -1,0 +1,2272 @@
+Title: 84489428
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.04.24.720626v2.full.pdf
+
+Number of Pages: 41
+
+Markdown Content:
+Title: Optimizing a Culture-Enriched Hybrid Metagenomics Pipeline to 1
+
+Assess the AMR Footprint of Livestock Manure in Anaerobic Digestate 2
+
+3
+
+Nahidur Rahman 1# , A S M Zisanur Rahman 1# , David B. Levin 2, Tim A. McAllister 1,3 , Nazim 4
+
+Cicek 2, and Hooman Derakhshani 1* 
+
+5
+
+6
+
+> 1
+
+Department of Animal Science, University of Manitoba, Winnipeg, MB, Canada 7
+
+> 2
+
+Department of Biosystems Engineering, University of Manitoba, Winnipeg, MB, Canada 8 
+
+> 3
+
+Lethbridge Research Centre, Agriculture and Agri-Food Canada, Lethbridge, AB, Canada 9
+
+10 
+
+*Corresponding author: Hooman.Derakhshani@umanitoba.ca 11 
+
+> #
+
+Nahidur Rahman and A. S. M. Zisanur Rahman contributed equally to this work 12 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+ABSTRACT 13 
+
+The role of environmental samples from livestock production systems, including manure and 14 
+
+anaerobic digestate, as reservoirs of antimicrobial resistance genes (ARGs) is likely 15 
+
+underestimated because conventional metagenomic approaches can overlook low-abundance 16 
+
+ARGs and often lack the resolution needed to reliably associate these genes with their microbial 17 
+
+hosts and linked mobile genetic elements (MGEs). Here, we evaluated whether culture-enriched 18 
+
+metagenomics (CEMG), with and without antibiotic selection, enhances ARG detection in 19 
+
+anaerobic digestate and improves the resolution of ARG-MGE-host associations using hybrid 20 
+
+short- and long-read metagenomic assembly. Culture enrichment substantially increased ARG 21 
+
+recovery, mean ARG abundance rose from 15.4 counts per million (CPM) in culture-independent 22 
+
+direct metagenomes from fresh digestate (FD) to 124 CPM in CEMG without antibiotics and 23 
+
+160.0 CPM in antibiotic-selective CEMG, corresponding to an approximately 10.4-fold increase 24 
+
+over FD. In FD, only 9 unique ARGs were detected, whereas enrichment recovered 112, 25 
+
+including ARGs of clinical importance such as glycopeptide resistance, β-lactamase genes of the 26 
+
+CTX-M, OXA, and TEM families, and the cfr 23S rRNA methyltransferase conferring cross-27 
+
+resistance to multiple antibiotic classes. Oxygen availability was the strongest factor structuring 28 
+
+enriched community compositions and ARG profiles, with aerobic and anaerobic communities 29 
+
+forming distinct clusters. Antibiotic selection induced targeted, class-specific shifts in ARG 30 
+
+profiles, with ARGs associated with tetracycline resistance consistently enriched across 31 
+
+treatments. Hybrid metagenomic assembly resolved the genomic context of 784 ARGs, of which 32 
+
+59.3% were co-localized with at least one class of mobile genetic element (MGE), 33 
+
+predominantly plasmids, insertion sequences, and integrative and conjugative/mobilizable 34 
+
+elements (ICEs/IMEs). Biocide and metal resistance genes frequently co-occurred with ARGs on 35 
+
+the same contigs, highlighting the potential for co-selection. Together, these findings demonstrate 36 
+
+that antibiotic-selective culture enrichment enhances resistome surveillance by improving 37 
+
+detection of low-abundance ARGs, while hybrid assembly provides critical genomic context for 38 
+
+assessing their mobility and host associations. 39 
+
+IMPORTANCE 40 
+
+Livestock manure and its byproducts, such as anaerobic digestate, are recognized as important 41 
+
+environmental reservoirs of antimicrobial resistance genes and resistant bacteria, yet current 42 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+metagenomic approaches may underestimate this risk by failing to detect low abundance but 43 
+
+clinically relevant ARGs. Here, we show that integrating culture enrichment with hybrid 44 
+
+metagenomics improves ARG recovery and reveals ARG co-localization with mobile genetic 45 
+
+elements and putative bacterial hosts. This approach captures a cultivable and condition-46 
+
+responsive fraction of the resistome that is not readily accessible through direct metagenomic 47 
+
+sequencing alone, providing a more informative framework for environmental AMR 48 
+
+surveillance. 49 
+
+INTRODUCTION 50 
+
+Antimicrobials are increasingly recognized as emerging environmental contaminants in diverse 51 
+
+ecosystems, including soil and aquatic environments, because of their role in driving the 52 
+
+emergence and dissemination of antimicrobial resistance (AMR) (1). A substantial proportion of 53 
+
+these contaminants originates from human and veterinary antimicrobial use (2). On average, over 54 
+
+100 mg of antimicrobials were used globally to produce each kilogram of animal biomass in 55 
+
+2016 (3). Notably, some of the antimicrobial classes used in animals, including macrolides, 56 
+
+fluoroquinolones, and cephalosporins, are designated as critically important for treating 57 
+
+infectious diseases in humans (4). Antimicrobial use in food-producing animals selects for 58 
+
+resistant bacteria and antimicrobial resistance genes (ARGs) within the gastrointestinal tract. 59 
+
+Because many antimicrobials are only partially metabolized or absorbed in the gut, a substantial 60 
+
+proportion is excreted in urine and feces alongside resistant bacteria and ARGs. Consequently, 61 
+
+manure serves as a reservoir of resistant bacteria, ARGs, and antimicrobial residues that can 62 
+
+further select and co-select for AMR in environmental microbial communities (5). Digestate, the 63 
+
+byproduct of anaerobic digestion of manure, is widely used as a fertilizer in integrated livestock 64 
+
+and cropping systems. Although anaerobic digestion reduces pathogen abundance and the overall 65 
+
+load of antimicrobial resistance genes, the resulting digestate may still retain residual resistance 66 
+
+genes and associated elements that can be disseminated into the environment following land 67 
+
+application (5, 6). Characterizing the resistome of these reservoirs requires sensitive, high 68 
+
+throughput approaches capable of detecting diverse resistance determinants. Direct culture-69 
+
+independent metagenomics, which enables sequencing of environmental DNA without the need 70 
+
+for cultivation (7), has become a widely adopted strategy, providing broader and more 71 
+
+comprehensive ARG profiling in complex environmental samples than targeted approaches such 72 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+as high-throughput quantitative PCR (8–11). It also enables the simultaneous characterization of 73 
+
+microbial diversity, resistome profiles, and mobile genetic elements (MGEs) such as plasmids, 74 
+
+transposons, and phages (12). 75 
+
+Despite this practical advantage, direct metagenomics has important limitations for resistome 76 
+
+surveillance. Its effectiveness is constrained by the sequencing platform, community complexity, 77 
+
+and reference-database quality, and it frequently fails to detect underrepresented or low-78 
+
+abundance microbial taxa (13, 14), yielding incomplete representations of ARGs and MGEs in 79 
+
+complex environments such as wastewater, manure, and digestate (15, 16). This blind spot is 80 
+
+consequential because low-abundance microbial taxa can act as reservoirs of clinically relevant 81 
+
+ARGs (17), which can be mobilized and transferred to abundant or potentially pathogenic 82 
+
+community members through horizontal gene transfer (18). Moreover, these ARG-carrying taxa 83 
+
+may expand when conditions change, for example, following land application of manure or 84 
+
+digestate. Methods that systematically under-detect rare populations therefore risk 85 
+
+underestimating both the diversity and the dissemination potential of the resistome. Recovering 86 
+
+this rare fraction by direct metagenomics typically demands ultra-high sequencing depth at 87 
+
+substantial cost (19). Hybridization-based bait capture can enrich low-abundance ARGs, but it 88 
+
+introduces selection biases and depends on careful probe design and accurate on- and off-target 89 
+
+discrimination. In addition, when combined with short-read sequencing, it still limits recovery of 90 
+
+the genomic context needed to resolve ARG-MGE associations (20). 91 
+
+Selective culture enrichment integrated with direct metagenomics provides a complementary 92 
+
+strategy that extends the scope of resistome characterization. Rather than replacing direct 93 
+
+metagenomics, this approach targets the cultivable fraction of the resistome, enhancing the 94 
+
+detection and recovery of rare, resistant populations that may be underrepresented or overlooked 95 
+
+in culture-independent analyses. This strategy has enhanced resistome characterization across 96 
+
+environments ranging from the human gut (17) and cystic fibrosis sputum (9) to drinking water 97 
+
+(21), wastewater (19) and ocean sediments (22). By favoring the growth of targeted groups such 98 
+
+as antimicrobial-resistant bacteria (19) and capturing previously uncultured or poorly 99 
+
+characterized microbes (22, 23), enrichment increases the sensitivity of downstream analyses 100 
+
+(14), a particular advantage in AMR research, where ARGs constitute less than 1% of bacterial 101 
+
+DNA (10) and only about 0.05% of metagenomic reads (24). 102 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+Improved ARG detection alone, however, does not resolve the critical question of which 103 
+
+organisms carry these determinants. Illumina short-read sequencing has limited ability to link 104 
+
+ARGs to their microbial hosts and can be affected by PCR amplification bias (25). Moreover, 105 
+
+short-read assembly into contigs can further compromise ARG recovery, as assemblies often 106 
+
+fragment across repetitive and conserved regions flanking ARGs (18) and fail to resolve the 107 
+
+complex, mosaic architectures of MGEs (26, 27), the very genetic structures that determine the 108 
+
+potential for ARG mobility and dissemination (18). Third-generation long-read platforms, such 109 
+
+as Oxford Nanopore and PacBio, generate reads spanning tens of thousands of bases that can 110 
+
+cover full-length ARGs and their flanking regions, aiding host inference and MGE resolution 111 
+
+(25). Although their per-base accuracy has improved substantially with recent chemistries, 112 
+
+combining long-read and short-read data remains advantageous, as the high base-level accuracy 113 
+
+and depth of short reads complement the contiguity of long reads (26). Integrating this hybrid 114 
+
+sequencing strategy with culture enrichment can further enhance host identification and resolve 115 
+
+the genomic context of ARGs, particularly those embedded within or associated with MGEs. 116 
+
+Digestate is an anoxic environment dominated by obligate and facultative anaerobes (28, 29), so 117 
+
+recovering its cultivable resistome requires anaerobic cultivation, while parallel aerobic 118 
+
+enrichment makes it possible to assess how oxygen availability shapes which resistance 119 
+
+determinants are recovered. Building on this rationale, our study had two objectives: (i) to 120 
+
+compare direct culture-independent metagenomics and culture-enriched metagenomics (CEMG) 121 
+
+for their ability to characterize the resistome and microbial community structure of anaerobic 122 
+
+digestate, while optimizing enrichment conditions across oxygen regimes, antimicrobial classes, 123 
+
+and concentrations to enhance ARG recovery; and (ii) to integrate hybrid short- and long-read 124 
+
+assembly into this workflow to resolve the genomic context of ARGs, including their 125 
+
+associations with MGEs and bacterial hosts. 126 
+
+RESULTS 127 
+
+Across 81 samples comprising fresh digestate collected at three time points (FD, n = 3), non-128 
+
+selective culture-enriched metagenomes (CEMG-NoAB, n = 6), and antibiotic-selective culture-129 
+
+enriched metagenomes (CEMG-AB, n = 72) (Table S1), Illumina sequencing yielded 130 
+
+approximately 1.94 billion reads (968 million read pairs). FD libraries yielded an average of 63.8 131 
+
+± 2.4 million reads per sample, whereas CEMG-NoAB and CEMG-AB yielded 19.2 ± 9.3 and 132 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+22.6 ± 7.5 million reads per sample, respectively (mean ± SD; Table S2). Culture-enriched 133 
+
+libraries were sequenced to lower depth than direct metagenomes. We analyzed these data using 134 
+
+two complementary approaches: read-based mapping to reference databases, to profile microbial 135 
+
+community and ARG composition, and hybrid short- and long-read assembly, to resolve the 136 
+
+genomic context of ARGs and their associations with MGEs and microbial hosts. 137 
+
+The impact of culture enrichment on microbial diversity of digestate 138 
+
+To provide biological context for the downstream resistome analyses, we first assessed how 139 
+
+culture enrichment altered the taxonomic composition of the FD microbial community. At the 140 
+
+genus level, the three FD replicates - collected from the same digester at different time points -141 
+
+clustered tightly, reflecting a stable, homogeneous baseline community (Fig. 1A). Culture-142 
+
+enriched communities (CEMG-NoAB and CEMG-AB) diverged markedly from FD 143 
+
+(PERMANOVA, R 2 = 0.068, p = 0.001). 144 
+
+Oxygen exposure was the strongest driver of enriched-community composition, with aerobic and 145 
+
+anaerobic communities showing clear clustering patterns in principal coordinates analysis 146 
+
+(PERMANOVA, R 2 = 0.240, p = 0.001; Fig. 1A). Aerobic communities exhibited a trend toward 147 
+
+lower within-group dispersion compared with anaerobic communities, although this difference 148 
+
+was not statistically significant (PERMDISP, p = 0.069; mean distance to centroid: aerobic = 149 
+
+0.40, anaerobic = 0.48; Fig. S1A). This pattern was consistent with aerobic enrichment 150 
+
+converging toward a narrow, Alcaligenes -dominated community profile across antibiotic 151 
+
+treatments, whereas anaerobic communities displayed greater compositional variability among 152 
+
+enrichment conditions (Fig. S1B). Aerobic communities were consistently dominated by 153 
+
+Alcaligenes (~50.2%), with contributions from an unclassified member of Alcaligenaceae 154 
+
+(GGB43090; ~12.3%), Virgibacillus (~6%), Halopseudomonas (~4%), Vibrio (~4%), and 155 
+
+Proteus (~3%). Anaerobic communities were enriched in Proteus (~25%), Streptococcus 156 
+
+(~13%), Vagococcus (~11%), and Fermentimonas (~10.5%) (Fig. S1B). 157 
+
+FD displayed a distinct taxonomic profile dominated by unclassified genome-based genus-158 
+
+level bins (GGBs) affiliated primarily with the phyla Bacteroidota (~41%) and 159 
+
+Mycoplasmatota (~26%) (Fig. 1B). Within culture-enriched groups, community composition 160 
+
+was broadly consistent between CEMG-NoAB and CEMG-AB under the same oxygen 161 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+regime, with aerobic communities dominated by Alcaligenes and anaerobic communities 162 
+
+showing Proteus -, Streptococcus -, and Fermentimonas -dominated profiles. 163 
+
+Individual antibiotics produced minor differences in dominant taxonomic abundances, with the 164 
+
+same primary genera consistently observed under each oxygen condition (Fig. 1C). Community 165 
+
+diversity (Shannon index) did not differ significantly among the six antibiotic treatments under 166 
+
+either anaerobic (Kruskal-Wallis, p = 0.11) or aerobic ( p = 0.93) enrichment conditions (Fig. 1D) 167 
+
+or across antibiotic concentration under anaerobic conditions (Fig. S1C). However, both enriched 168 
+
+groups showed significantly lower Shannon diversity than FD (mean: FD = 3.02, CEMG-NoAB 169 
+
+= 1.63, CEMG-AB = 1.68; Kruskal-Wallis, p = 0.014), with post-hoc Dunn tests (Benjamini-170 
+
+Hochberg correction) confirming that FD differed significantly from both CEMG-NoAB ( p =171 
+
+0.020) and CEMG-AB ( p = 0.011), while CEMG-NoAB and CEMG-AB did not differ from 172 
+
+each other ( p = 0.93; Fig. 1D). Among the antibiotic concentrations evaluated for dose-response 173 
+
+enrichment, only vancomycin exhibited a significant concentration-dependent effect, with the 174 
+
+number of recovered genera declining progressively as antibiotic concentration increased (linear 175 
+
+fit, p = 0.003, R 2 = 0.74; model selection described in Methods; Table S4). Overall, the lowest 176 
+
+tested concentration (1X) preserved number of unique genera detected per sample across 177 
+
+antibiotics, with ceftiofur as the sole exception, where richness peaked at 10X before declining. 178 
+
+CEMG-AB expanded detectable species-level diversity. A total of 145 species were identified 179 
+
+exclusively in CEMG-AB samples and were absent from the direct metagenomics of FD as well 180 
+
+as CEMG-NoAB. Among these, 91 species were detected in at least two independent CEMG-AB 181 
+
+samples, providing a conservative estimate of taxa specifically enriched by antibiotic selection 182 
+
+while minimizing potential single-sample artifacts (Table S5). This fraction included clinically 183 
+
+and environmentally relevant species such as Enterococcus dispar , Enterobacter hormaechei ,184 
+
+Citrobacter amalonaticus , Acinetobacter towneri , Enterococcus casseliflavus , Enterococcus 185 
+
+faecalis , and Achromobacter insolitus , among others. 186 
+
+CEMG-derived changes in resistome composition and diversity 187 
+
+Direct alignment of quality-controlled Illumina reads to the CARD database revealed a markedly 188 
+
+higher ARG abundance in CEMG-AB relative to FD (Table S6). Mean ARG abundance 189 
+
+increased from 15.4 CPM (median 14.1) in FD to 160.0 CPM (median 139.0) in CEMG-AB, 190 
+
+corresponding to a 10.4-fold increase despite lower sequencing depth in enriched libraries. 191 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+CEMG-NoAB also showed substantially higher ARG abundance (mean 124 CPM) relative to 192 
+
+FD, suggesting that CEMG, even in the absence of antibiotic selection, can recover a cultivable 193 
+
+resistome that is poorly represented in direct metagenomics (Table S6). 194 
+
+Presence-absence analysis further demonstrated the enhanced ARG detection capacity of CEMG. 195 
+
+Across all samples, 116 unique high-confidence ARGs were identified based on stringent criteria 196 
+
+(>98% nucleotide identity and ≥90% coverage against the CARD database). Of these, only 9 197 
+
+ARGs were detected in direct metagenomics of FD, including 5 that were shared with CEMG 198 
+
+(Fig. 2). In contrast, CEMG recovered 112 ARGs, accounting for approximately 96.6% of all 199 
+
+detected ARGs. Notably, several clinically relevant ARG families were detected exclusively in 200 
+
+enriched samples. These included members of the VanH, VanS, VanT, VanXY , and Van ligase 201 
+
+gene families, which are suggestive of glycopeptide resistance potential; β-lactamase genes of 202 
+
+the CTX-M, OXA, and TEM families, variants of which can confer extended-spectrum β-203 
+
+lactamase (ESBL) activity; the multi-class rRNA methyltransferase gene cfr , which can confer 204 
+
+resistance to phenicols, lincosamides, oxazolidinones, pleuromutilins, and streptogramin; Isa-205 
+
+type ABC-F proteins, which can mediate pleuromutilin, lincosamide, and streptogramin 206 
+
+resistance; and multiple aminoglycoside-modifying enzyme genes ( ant (3’), ant (4’), ant (9), 207 
+
+aac (6’), aph (2’)). 208 
+
+The richness of ARGs associated with clinically important drug classes was significantly lower 209 
+
+in FD than in anaerobic CEMG-AB (Fig. 3A). Strong shifts in dominant ARG drug class profiles 210 
+
+were observed among FD, CEMG-NoAB, and CEMG-AB (Fig. 3B). The FD resistome was 211 
+
+dominated by ARGs associated with macrolide-lincosamide-streptogramin (MLS) resistance, 212 
+
+collectively accounting for 92.9% of total ARG-mapping reads, with genes associated with 213 
+
+lincosamide resistance (44.1%), macrolide-streptogramin resistance (39.6%), and the combined 214 
+
+MLS class (9.2%) together comprising the near-entirety of the FD ARG complement. This 215 
+
+composition was consistent with the high relative abundance of mel and erm (47) genes in FD 216 
+
+(Fig. 3C). In contrast, CEMG samples displayed a broader ARG drug-class profile. Under 217 
+
+anaerobic CEMG-NoAB conditions, ARGs associated with tetracycline resistance were most 218 
+
+prominent (39.4%), followed by ARGs associated with macrolide-streptogramin (8.1%), 219 
+
+phenicol (7.9%), lincosamide (6.8%), and oxazolidinone-phenicol (6.5%) resistance (Fig. 3B). 220 
+
+Under aerobic CEMG-NoAB conditions, ARGs associated with penicillin resistance were most 221 
+
+abundant (26.2%), followed by macrolide-streptogramin (24.6%), MLS (11.2%), and 222 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+aminoglycoside (10.6%) resistance classes (Fig. 3B). CEMG-AB was dominated by ARGs 223 
+
+associated with tetracycline resistance under both aerobic (24.6%) and anaerobic (39.8%) 224 
+
+conditions (Fig. 3B). Under aerobic CEMG-AB, aminoglycoside (15.3%) and penicillin (14.4%) 225 
+
+resistance ARGs were the next most abundant classes. Under anaerobic CEMG-AB, 226 
+
+oxazolidinone-phenicol (8.9%) and macrolide-streptogramin (7.8%) ARGs were the next most 227 
+
+prominent, alongside a substantial unclassified fraction (Others: 16.9%) (Fig. 3B). This 228 
+
+compositional shift was accompanied by increased abundances of multiple ARGs including 229 
+
+tet (J), tet (H), mel , ant (4’)-Ib, cplR , and rphB , under both oxygen conditions (Fig. 3C). 230 
+
+Across different antibiotic-enrichment treatments, ARG profiles were dominated by a small set 231 
+
+of recurrent drug class categories, though the relative dominance of specific classes varied with 232 
+
+both oxygen condition and antibiotic treatment (Fig. 3D). Under anaerobic conditions, ARGs 233 
+
+associated with tetracycline resistance were the most abundant class across all six antibiotic 234 
+
+treatments, ranging from 16.3% (ceftiofur) to 58.4% (vancomycin) of total ARG-mapping reads. 235 
+
+Under aerobic conditions, tetracycline resistance ARGs were similarly dominant for ampicillin 236 
+
+(40.9%), tetracycline (41.1%), and vancomycin (44.7%) enrichments, but were markedly less 237 
+
+prominent under ceftiofur (4.1%) and lincomycin (3.3%) enrichments, where penicillin (31.3% 238 
+
+and 20.4%, respectively) and aminoglycoside (19.9% and 40.2%, respectively) resistance ARGs 239 
+
+instead predominated. Despite this treatment-specific variation, ARGs associated with 240 
+
+tetracycline resistance were the most consistently enriched class overall, ranking as the dominant 241 
+
+class across all six anaerobic and three of six aerobic antibiotic treatments (AMP: 40.9%, TET: 242 
+
+41.1%, VAN: 44.7%) (Fig. 3D). 243 
+
+Ordination of ARG profiles demonstrated clear compositional differences between aerobic and 244 
+
+anaerobic enrichment conditions (Fig. S3A), indicating that oxygen availability strongly shaped 245 
+
+resistome composition during culture enrichment. In contrast, ARG profiles among the six 246 
+
+antibiotic enrichment treatments did not cluster separately (Fig. S3B), reflecting broadly similar 247 
+
+resistome structures across antibiotics. Nevertheless, pairwise PERMANOVA revealed selective 248 
+
+compositional differences between specific antibiotic treatments, particularly tetracycline versus 249 
+
+vancomycin ( p = 0.049) and ceftiofur relative to vancomycin ( p = 0.005) and tetracycline ( p =250 
+
+0.014). 251 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+Consistent with the taxonomic diversity patterns observed under different antibiotic 252 
+
+concentrations, only vancomycin showed a significant dose-dependent association with ARG 253 
+
+richness, displaying a negative linear trend (slope = −0.076, p = 0.034; R 2 = 0.50). Ampicillin, 254 
+
+ceftiofur, tetracycline, erythromycin, and lincomycin did not exhibit significant dose-dependent 255 
+
+trends (all p > 0.1; Fig. S4). 256 
+
+Overall, ARGs conferring tetracycline resistance showed the highest increase in abundance (~14-257 
+
+fold) relative to FD, with lincomycin enrichment conditions selecting most strongly for 258 
+
+communities enriched in tetracycline resistance ARGs (Fig. 4). Similarly, ARGs associated with 259 
+
+cephalosporin resistance increased approximately 13-fold relative to FD, with vancomycin and 260 
+
+lincomycin enrichment showing the strongest selective effect. Vancomycin enrichment was also 261 
+
+associated with the largest increases in aminoglycoside and β-lactam resistance ARGs. ARGs 262 
+
+associated with phenicol resistance increased approximately 6-fold following enrichment, with 263 
+
+ampicillin and lincomycin conditions contributing most to this increase. Glycopeptide resistance 264 
+
+ARGs increased approximately 5.5-fold, while fluoroquinolone and diaminopyrimidine 265 
+
+resistance ARGs each increased approximately 5-fold relative to FD. 266 
+
+CEMG enhances detection of ARGs associated with diverse predicted resistance 267 
+
+mechanisms 268 
+
+The FD ARG profile was dominated by antibiotic inactivation (46.15%) and target protection 269 
+
+(39.56%), driven primarily by lincosamide nucleotidyltransferases (LNU; 44.14%) and msr -type 270 
+
+ABC-F ribosomal protection proteins (39.56%), respectively (Fig. S5A & S5B). Culture 271 
+
+enrichment revealed a pronounced oxygen-dependent restructuring of these profiles. Under 272 
+
+anaerobic conditions, both CEMG-NoAB and CEMG-AB showed enrichment of efflux- and 273 
+
+target protection-dominated ARG profiles, with MFS efflux pumps as the leading gene family 274 
+
+(31.67% and 40.37%, respectively) and efflux accounting for 44.06% and 45.84% of total 275 
+
+resistance mechanisms (Fig. S5A & S5B). In contrast, aerobic enrichment favored antibiotic 276 
+
+inactivation as the dominant mechanism (CEMG-NoAB: 48.79%; CEMG-AB: 38.99%), with 277 
+
+ant (4’) aminoglycoside nucleotidyltransferases (10.58% and 12.43%) and erm 23S rRNA 278 
+
+methyltransferases (11.24% and 7.50%), and cfr 23S rRNA methyltransferases (10.16% and 279 
+
+7.14%) - both erm and cfr conferring resistance through ribosomal target alteration - among the 280 
+
+most abundant gene families alongside MFS efflux pumps (Fig. S5A & S5B). 281 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+ARG-MGE linkage and co-selection of ARGs and heavy metal resistance gene 282 
+
+While reference-based analysis captured broad shifts in resistome composition following culture 283 
+
+enrichment, it provided limited insight into microbial host associations and genomic context of 284 
+
+ARGs, particularly linkages to MGEs. Hybrid assembly of short- and long-read data helped 285 
+
+resolve these associations. Overall, hybrid assembly identified a total of 784 ARGs across 651 286 
+
+unique contigs, representing 100 unique ARGs. Of these, 59.3% (465/784) were co-localized 287 
+
+with at least one MGE class across 353 ARG-MGE bearing contigs (Table S7). Plasmids were 288 
+
+the most prevalent MGEs, identified on 230 contigs (65.2%), followed by insertion sequences 289 
+
+(116 contigs, 32.9%), ICEs and IMEs (77 contigs, 21.8%), integrase/resolvase signatures (59 290 
+
+contigs, 16.7%), and phage or viral sequences (15 contigs, 4.2%) (Fig. 5A). Co-occurrence of 291 
+
+multiple MGE classes on single contigs was frequently observed. Seventy contigs carried both 292 
+
+insertion sequence (IS) elements and plasmid signatures, while 20 contigs exhibited triple co-293 
+
+occurrence of IS elements, integrase/resolvase genes, and plasmid classifications. These 294 
+
+composite genetic architectures suggest mosaic MGE structures and indicate layered potential 295 
+
+for horizontal transfer of ARGs within these genomic contexts (Fig. 5B). Plasmids accounted for 296 
+
+the highest total ARG-MGE associations, spanning 65 unique ARGs across all major drug 297 
+
+classes, while insertion sequences flanked 29 unique ARGs within 2 kb, with aminoglycoside, 298 
+
+phenicol, lincosamide, and β-lactam resistance genes most frequently represented. ICEs and 299 
+
+IMEs were associated with 20 unique ARGs, with tetracycline resistance genes ( tet (M), tet (W), 300 
+
+tet (Q), tet (36)) and MLS resistance genes ( erm (F), erm (47)) showing the highest representation 301 
+
+in this context. 302 
+
+Plasmid-associated ARG-bearing contigs were the most abundant across all enrichment 303 
+
+conditions, accounting for 39-67% of ARG-MGE associations within each group (Fig. 5C). 304 
+
+ICE/IME-associated contigs were absent from aerobic CEMG-NoAB but represented 14.8-305 
+
+19.1% of associations under anaerobic CEMG-AB, suggesting that microbial hosts carrying 306 
+
+conjugative transfer potential are selectively enriched under antibiotic enrichment and anaerobic 307 
+
+conditions (Fig. 5C). 308 
+
+Co-localization analysis of ARG-MGE-bearing contigs further revealed the presence of biocide 309 
+
+and metal resistance genes, with profiles varying markedly by oxygen condition (Fig. S6A). FD 310 
+
+samples were dominated by sodium (44.4%), arsenic (33.3%), and zinc (22.2%) resistance, 311 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+corresponding to the genes pcm , arsM , and troB , respectively (Fig. S6B). Under anaerobic 312 
+
+enrichment, both CEMG-NoAB and CEMG-AB displayed diverse biocide and metal resistance 313 
+
+profiles spanning zinc (21.4% and 17.1%), arsenic (13.4% and 12.3%), triton (12.6% and 9.2%), 314 
+
+cadmium (7.2% and 9.5%), tetraphenylphosphonium, spermidine, sodium, and acriflavine, with 315 
+
+a substantial “Other” fraction (21.2% and 23.3%) reflecting additional resistance classes beyond 316 
+
+the top ten (Fig. S6A). In contrast, aerobic enrichment produced a markedly more restricted 317 
+
+profile. Aerobic CEMG-NoAB was composed exclusively of cetrimide and triclosan resistance 318 
+
+(each 50%), while aerobic CEMG-AB was similarly dominated by cetrimide (50.1%) and 319 
+
+triclosan (34.7%), with an additional contribution from tetraphenylphosphonium resistance 320 
+
+(15.3%). At the gene level, aerobic enrichment was characterized by norA and smeT in CEMG-321 
+
+NoAB, and norA , smeT , qacF , and lmrS in CEMG-AB, reflecting a shift toward biocide efflux-322 
+
+associated genes under aerobic conditions (Fig. S6B). 323 
+
+ARG-MGE-host linkage 324 
+
+Taxonomic classification of ARG-bearing contigs using Kraken2 yielded classifications for 569 325 
+
+of the 651 ARG-bearing contigs identified in the hybrid assemblies. Among them, the majority 326 
+
+were affiliated with Bacillota (304 contigs; 53.4%), followed by Pseudomonadota (168; 29.5%), 327 
+
+Bacteroidota (48; 8.4%), and Actinomycetota (25; 4.4%), with the remaining 24 contigs (4.2%) 328 
+
+assigned to other phyla (Fig. S7A). The overall abundance of ARG-MGE-associated contigs was 329 
+
+higher in both CEMG-NoAB ( p < 0.05) and CEMG-AB ( p < 0.01) compared to FD (Fig. S7B). 330 
+
+The four-level linkage diagram linking drug class, ARG gene, bacterial genus, MGE class 331 
+
+revealed distinct host associations and mobilization contexts across drug classes (Fig. 6, Table 332 
+
+S8). Aminoglycoside resistance genes - including aac(6’)-I , aac(6’)-lid , aadA1 , aph(3”)-Ib , and 333 
+
+aph(6)-Id - represented the largest resistance drug class block and were distributed across 334 
+
+Acinetobacter , Enterococcus , Escherichia , and Hafnia , with plasmid co-localization 335 
+
+predominating. Tetracycline resistance genes displayed the broadest host associations, spanning 336 
+
+Streptococcus , Proteus , Enterococcus , Citrobacter , and Oscillibacter , and were linked to a 337 
+
+diverse array of MGE contexts including ICE/IME, IS elements, and plasmids. Key genes in this 338 
+
+class included tet (M), tet (W), tet (H), tet (J), tet (L), and tetB (P). MLS resistance genes - primarily 339 
+
+erm (F), erm (47), erm (D), and mef (En2) - were predominantly associated with Streptococcus ,340 
+
+Peptostreptococcus , and Vagococcus , and were frequently co-localized with ICE/IME and IS 341 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+elements, suggesting integrative mobility as a key dissemination route for this class. 342 
+
+Lincosamide resistance gene ( lnu (C)) was distributed across Streptococcus , Jeotgalibaca , and 343 
+
+Oscillibacter , primarily in plasmid and IS element contexts. β-lactam resistance genes ( blaCMY ,344 
+
+blaCMY-181 , blaACC-1a , blaBCL ) were concentrated in Escherichia , Citrobacter , Comamonas ,345 
+
+and Acinetobacter , and were almost exclusively plasmid-associated, often alongside IS elements. 346 
+
+Oxazolidinone/phenicol resistance (poxtA2 ) was detected in Enterococcus , Bacillus , and 347 
+
+Streptococcus , with co-localization spanning IS elements, plasmids, and ICE/IME contexts. 348 
+
+Sulfonamide ( sul2 ), trimethoprim, and efflux ( mdtM ) resistance genes were largely confined to 349 
+
+Escherichia and Citrobacter and were predominantly plasmid-associated. 350 
+
+Discussion 351 
+
+Our results suggest that culture-enriched metagenomics not only improves the detectability of 352 
+
+ARGs but also actively reshapes the observed resistome by selectively amplifying specific 353 
+
+microbial populations, consistent with previous reports (9, 30). Unenriched digestate samples 354 
+
+showed a comparatively homogeneous community structure, substantial representation of poorly 355 
+
+resolved taxa affiliated with phyla characteristic of stable anaerobic digestion communities (28, 356 
+
+29). By contrast, enrichment reduced the dominance of this baseline community and favored 357 
+
+bacterial groups better adapted to laboratory cultivation. This pattern reinforces an important 358 
+
+conceptual distinction: direct metagenomics is better suited to describing the in-situ community 359 
+
+within the digester (31), whereas culture enrichment preferentially captures the cultivable 360 
+
+fraction that may be more relevant to post-digestion survival, dissemination, and hazard 361 
+
+assessment. 362 
+
+The enrichment-driven expansion of species-level diversity, particularly the recovery of many 363 
+
+species uniquely detected in antibiotic-supplemented cultures, is especially noteworthy from a 364 
+
+surveillance perspective. Previous studies have also reported increased detection of clinically 365 
+
+relevant ARGs and taxa following selective enrichment (19). The appearance of taxa such as E. 366 
+
+dispar, E. casseliflavus, E. hormaechei, C. amalonaticus, and A. insolitus following antibiotic 367 
+
+enrichment, organisms with recognized clinical and environmental relevance (32–35), suggests 368 
+
+that these populations persist in digestate at low abundance or in a suppressed state, becoming 369 
+
+detectable only under selective antibiotic cultivation. From a One Health perspective, this 370 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+supports the idea that direct shotgun sequencing alone can underestimate the diversity of viable, 371 
+
+resistant, and potentially transmissible bacteria present in environmental samples like digestate. 372 
+
+This enrichment-driven shift was also reflected in a 10-fold increase in overall ARG abundance, 373 
+
+consistent with observations from wastewater systems (19). Importantly, this shift was not 374 
+
+limited to a greater ARG burden but also involved a broadening of the ARG drug-class profile. 375 
+
+Fresh digestate was dominated by ARGs associated with MLS resistance, whereas enriched 376 
+
+communities displayed a broader profile across tetracycline, β-lactam, aminoglycoside, phenicol, 377 
+
+rifamycin, glycopeptide, and other resistance classes. Although a broad range of ARG classes 378 
+
+have been reported in manure and digestate (31, 36), the strong dominance of MLS resistance in 379 
+
+our unenriched digestate likely obscured less abundant resistance determinants that became more 380 
+
+detectable following culture enrichment. Notably, several clinically important ARG families 381 
+
+were recovered exclusively in enriched samples, including genes associated with glycopeptide 382 
+
+resistance, β-lactamase genes of the CTX-M, OXA, and TEM families, some variants of which 383 
+
+are known to confer extended-spectrum β-lactamase activity, though variant-level confirmation 384 
+
+was not performed in the current study. The cfr 23S rRNA methyltransferase is particularly 385 
+
+notable given its cross-class activity spanning phenicols, lincosamides, oxazolidinones, 386 
+
+pleuromutilins, and streptogramin, meaning a single gene simultaneously undermines multiple 387 
+
+antibiotic classes used in both human and veterinary medicine. These findings align with a 388 
+
+growing body of evidence that the cultivable, low-abundance fraction of environmental 389 
+
+resistomes carries disproportionate clinical relevance relative to its abundance (37–39). 390 
+
+The strong representation of tetracycline resistance following multiple enrichment treatments is 391 
+
+also of importance. Tetracycline resistance genes are widely distributed in livestock-associated 392 
+
+bacteria and are often associated with MGEs, which may facilitate persistence even in the 393 
+
+absence of tetracycline (39–41). The fact that tetracycline resistance increased across several 394 
+
+antibiotic enrichments, rather than just with tetracycline, likely reflects co-selection and co-395 
+
+maintenance of multidrug resistance determinants in the same bacterial population or linked 396 
+
+mobile elements (42). A similar interpretation may explain the increases in cephalosporin, 397 
+
+aminoglycoside, phenicol, glycopeptide, and diaminopyrimidine resistance observed under non-398 
+
+cognate antibiotic treatments. 399 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+The generally weak effect of increasing antibiotic concentration on community diversity and 400 
+
+ARG richness suggests that, once resistant populations are selected, further concentration 401 
+
+increases do not broaden recovery and may instead narrow the cultured community. This 402 
+
+supports the use of the size-adjusted lowest MIC for broad AMR surveillance, as higher 403 
+
+concentrations may reduce the ecological representativeness of enriched communities. 404 
+
+The predominance of plasmid- and ICE/IME-associated ARGs across all major drug classes has 405 
+
+direct implications for post-digestion dissemination risk. MGEs are the primary vehicle for 406 
+
+cross-species ARG transfer, so, even if anaerobic digestion reduces the abundance of resistant 407 
+
+organisms, the persistence of ARGs on conjugative and replicative elements sustains horizontal 408 
+
+transfer potential upon land application of digestate - independent of the organisms that 409 
+
+originally carried them (43). The co-localization of ARGs with biocide and metal resistance 410 
+
+genes on the same contigs further supports co-selection as a plausible mechanism maintaining 411 
+
+AMR in post-digestion environments. The high relative abundance of zinc and arsenic resistance 412 
+
+genes is consistent with the widespread use of zinc-based compounds as feed additives in food 413 
+
+animal production (44), and with previous reports of zinc co-selecting for antibiotic resistance 414 
+
+through shared genetic linkage on MGEs (45). Because antibiotic and heavy metal resistance 415 
+
+determinants are frequently co-located on the same mobile element, metal selection pressure in 416 
+
+manure-amended soils may indirectly sustain antibiotic resistance gene pools long after 417 
+
+antimicrobial use ceases. 418 
+
+A key strength of this study is the ability to link ARGs and their MGE contexts to putative 419 
+
+bacterial hosts at the contig level, a resolution that read-based approaches cannot provide. 420 
+
+Particularly significant is the broad host distribution of tetracycline resistance ARGs across 421 
+
+phylogenetically diverse genera - spanning both Gram-positive commensals such as 422 
+
+Streptococcus and Vagococcus and Gram-negative opportunists such as Proteus , Citrobacter , and 423 
+
+Escherichia - which, combined with frequent ICE/IME co-localization, suggests that conjugative 424 
+
+dissemination of tetracycline resistance is not confined to a single host lineage but is distributed 425 
+
+across the enriched community. This observation reinforces the broader point that culture 426 
+
+enrichment can surface clinically relevant ARG-MGE-host combinations that remain invisible in 427 
+
+bulk metagenomic profiles, and that the cultivable fraction recovered under selective conditions 428 
+
+may disproportionately represent the transmissible, high-risk segment of the environmental 429 
+
+resistome. 430 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+The distribution of ARG-MGE-host combinations also differed markedly between aerobic and 431 
+
+anaerobic enrichments, indicating that oxygen availability is a primary determinant of which 432 
+
+resistance determinants are recovered. Previous studies have also shown that oxygen exposure 433 
+
+can restructure microbial communities and alter ARG profiles (46). This suggests that, in 434 
+
+digestate-derived enrichment systems, redox conditions may act as a first-order ecological 435 
+
+determinant that governs which bacterial groups proliferate and, consequently, which resistance 436 
+
+mechanisms are detectable. Aerobic enrichment favored communities dominated by Alcaligenes 437 
+
+and related taxa, whereas anaerobic enrichment selected for Proteus , Streptococcus , Vagococcus ,438 
+
+and Fermentimonas . These shifts likely reflect major physiological differences in respiratory 439 
+
+capacity, substrate use, and competitive fitness under oxic versus anoxic conditions (47), with 440 
+
+corresponding changes in the resistome driven by shifts in host community structure. 441 
+
+Incorporating both aerobic and anaerobic enrichment conditions may therefore improve AMR 442 
+
+surveillance, as some ARGs and their associated hosts may remain at low abundance under 443 
+
+anaerobic conditions but become more detectable under aerobic conditions, enabling 444 
+
+identification of clinically relevant taxa that may proliferate following land application of 445 
+
+manure or digestate. 446 
+
+While these findings provide important insights into the structure and mobilization potential of 447 
+
+the resistome, several limitations should be considered when interpreting the results. Firstly, not 448 
+
+all microorganisms present in digestate can grow under the culture conditions used in this study 449 
+
+(48–50). Consequently, taxa that are unculturable under these conditions would remain 450 
+
+undetected regardless of their abundance in the source material. Secondly, the use of a single 451 
+
+culture medium likely constrained the diversity of organisms recovered, whereas employing a 452 
+
+broader range of selective and non-selective media could capture a wider spectrum of microbial 453 
+
+diversity (49). Thirdly, the observation that a substantial fraction of ARG instances lacked 454 
+
+detectable MGE associations raises an important interpretive caution: the absence of detectable 455 
+
+linkage in assembly-based analyses does not confirm chromosomal localization, as contig 456 
+
+fragmentation and database gaps can obscure genuine mobile contexts. This is particularly 457 
+
+relevant for glycopeptide resistance ARGs, which were absent from MGE-associated contigs 458 
+
+despite being detected at the read level, leaving their genomic context unresolved (51). Finally, 459 
+
+although the present workflow identifies ARG-MGE-host linkages and co-occurrence patterns 460 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+consistent with mobilization potential, it does not directly quantify HGT frequency or confirm 461 
+
+the expression of resistance phenotypes. 462 
+
+Conclusions 463 
+
+Overall, this study demonstrates that culture-enriched metagenomics can substantially enhance 464 
+
+AMR surveillance resolution in livestock digestate. By selectively amplifying viable microbial 465 
+
+populations, CEMG enabled the recovery of low-abundance ARG-carrying taxa, expanded the 466 
+
+detectable diversity of ARGs, and facilitated the identification of ARG-MGE-host co-localization 467 
+
+patterns and ARG-metal co-selection signals that were largely obscured in direct metagenomic 468 
+
+profiles. These findings indicate that assessments based solely on bulk community metagenomes 469 
+
+may underestimate the diversity and mobilization potential of ARGs present in digestate. 470 
+
+Integrating enrichment-based approaches with direct metagenomic analyses may therefore 471 
+
+provide a more comprehensive framework for evaluating the environmental dissemination risk of 472 
+
+AMR associated with livestock-derived anaerobic digestate. 473 
+
+Methods 474 
+
+Sample collection 475 
+
+Digestate was obtained directly from a continuously stirred (120 rpm), mesophilic (35°C) 476 
+
+anaerobic digester (CSTR; New Brunswick Scientific BioFlo 110). The digester was operated in 477 
+
+our laboratory for more than six years as a 14 L fed-batch system, with a working volume of 8 L 478 
+
+and a solids retention time of 30 days. During the study period, the digester was in a stable 479 
+
+operational state, with an average methane yield of 119.816 mL g -1 volatile solids (VS) Day -1 and 480 
+
+a pH of 7.43. The reactor was fed with manure collected from a family-owned commercial dairy 481 
+
+farm (Rosser Holsteins Dairy Farm, Rosser, Manitoba) with approximately 600 cows. It was fed 482 
+
+approximately three times per week (e.g., Monday, Wednesday, and Friday), with 0.622 L of 483 
+
+digestate removed and replaced with an equal volume of fresh manure, maintaining an 8 L 484 
+
+working volume and a 30-day hydraulic retention time. 485 
+
+The collected digestate was divided into three aliquots for: (i) anaerobic culture enrichment 486 
+
+within an anaerobic chamber, (ii) aerobic culture enrichment, and (iii) direct shotgun 487 
+
+metagenomic sequencing (FD). Aliquots designated for anaerobic culture were immediately 488 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+transferred in 50 ml Falcon tubes into an anaerobic chamber. Sampling was repeated monthly 489 
+
+from mid-November to mid-January to obtain three biological replicates from the same digester. 490 
+
+Anaerobic chamber conditions 491 
+
+All anaerobic procedures were performed in an anaerobic chamber (Bactron Anaerobic Chamber, 492 
+
+Model: BACTRON600), maintained at 37°C using a built-in incubator. The chamber atmosphere 493 
+
+was composed of 5% CO 2, 5% H 2, and 90% N 2, supporting obligate anaerobe conditions. 494 
+
+Anaerobiosis was regularly verified using anaerobic indicators (Oxoid Ltd., Hants, UK). All 495 
+
+media and equipment were transferred into the chamber one day prior to sample collection. 496 
+
+Culture media preparation and antimicrobial supplementation 497 
+
+Brain Heart Infusion (BHI) agar (Difco TM , Sparks, MD, USA) was used as the general 498 
+
+enrichment medium in this study, supplemented with 1 mg/L Vitamin K, 10 mg/L Hemin and 0.5 499 
+
+g/L L-cysteine to promote the growth of obligate anaerobes. To enrich antimicrobial-resistant 500 
+
+communities, six antimicrobials representing major antibiotic classes were incorporated 501 
+
+individually into separate BHI agar plates, with each plate containing only one antimicrobial at a 502 
+
+given concentration. Five classes were selected on the basis of their documented use in livestock 503 
+
+production and prior detection of associated ARGs in dairy manure and anaerobic digestate 504 
+
+processed in the same laboratory digester system (31): ampicillin ( β-lactam; 0.4 μg/100 ml), 505 
+
+tetracycline (tetracycline; 1.6 μg/100 ml), lincomycin (lincosamide; 1.6 μg/100 ml), 506 
+
+erythromycin (macrolide; 0.8 μg/100 ml), and ceftiofur (third-generation cephalosporin; 0.05 507 
+
+μg/100 ml). Vancomycin (glycopeptide; 12.5 μg/100 ml) was additionally included given its 508 
+
+critical importance as a last-resort antibiotic in human medicine and prior evidence of 509 
+
+glycopeptide resistance genes in digestate from the same digester (31). Antibiotic concentrations 510 
+
+were determined using size-adjusted lowest minimum inhibitory concentrations (MICs) 511 
+
+following Bengtsson-Palme et al. (2016) (52). These values represent the estimated upper limit 512 
+
+of the minimal selective concentration (MSC), defined as the lowest antibiotic concentration at 513 
+
+which resistant bacteria gain a selective advantage over susceptible populations in environmental 514 
+
+samples (52). 515 
+
+Inoculation and incubation 516 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+Within the anaerobic chamber, digestate samples were diluted to 10-fold (10 -1 ) in sterile BHI 517 
+
+broth (Difco TM , Sparks, MD, USA) supplemented with 0.05% L-cysteine. A 200 μL aliquot of 518 
+
+the diluted sample was spread onto each prepared agar plate using sterile glass beads. Anaerobic 519 
+
+plates were incubated for 5 days at 37°C within the chamber. Simultaneously, an equivalent set 520 
+
+of plates was inoculated aerobically in a biosafety cabinet (Thermo Electron Corp.) and 521 
+
+incubated for four days at 37°C. In total, seven treatment groups were prepared under both 522 
+
+anaerobic and aerobic conditions, comprising one non-antibiotic enrichment group (CEMG-523 
+
+NoAB) and six antibiotic-supplemented enrichment groups (collectively referred to as CEMG-524 
+
+AB). Within CEMG-AB, each antimicrobial was applied at three concentrations (1X size-525 
+
+adjusted lowest MIC, 10X size-adjusted lowest MIC, and 100X size-adjusted lowest MIC) to 526 
+
+assess dose-dependent effects on anaerobic communities; this dose-response design was 527 
+
+restricted to anaerobic enrichment. Following incubation, visible colonies were scraped and 528 
+
+pooled by treatment group using 2 mL sterile BHI broth per plate. Colonies from the anaerobic 529 
+
+plates with different antibiotic concentrations were pooled separately to retain dose-dependent 530 
+
+resolution. All pooled samples were subsequently used for DNA extraction and downstream 531 
+
+molecular analyses. 532 
+
+DNA extraction and sequencing 533 
+
+DNA was extracted from fresh digestate (FD) and CEMG samples using an EZNA Soil DNA kit 534 
+
+(Omega Bio-Tek, Inc.) as per the manufacturer’s protocol. A total of 250 μL of fresh digestate or 535 
+
+scraped colony biomass resuspended in BHI broth was used as input for each extraction. 536 
+
+Illumina sequencing libraries were prepared using the SparQ DNA Frag & Library Prep kit with 537 
+
+UMI (Unique Molecular Identifier) indexing (Quantabio, Beverly, MA, USA). Libraries were 538 
+
+pooled at equimolar concentrations and size-selected using SparQ PureMag beads (dual-size 539 
+
+selection). Sequencing was performed on an Illumina NovaSeq 6000 generating (2 × 150 bp) 540 
+
+paired end reads. 541 
+
+For long-read sequencing, DNA was cleaned using the ProNex® Size-Selective Purification 542 
+
+System (NG2001; Promega, Madison, WI, USA) with protocol 6A at a 1x (v/v) bead ratio to 543 
+
+remove contaminants and low-molecular-weight dsDNA, with a minimum input of 200 ng 544 
+
+gDNA per sample (53). Nanopore libraries were prepared using the Rapid Barcoding Kit 96 V14 545 
+
+(SQK-RBK114.96; Oxford Nanopore Technologies, Oxford, UK) and loaded onto a546 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+PromethION R10.4.1 flow cell (FLO-PRO114M) following the manufacturer’s flow cell priming 547 
+
+and loading protocol. Base-calling was performed using Dorado (v1.3.2, HAC v4.3.0 model). 548 
+
+Initial processing of the Illumina and Nanopore reads 549 
+
+Raw Illumina paired-end reads were adapter-trimmed and quality-filtered using fastp v1.0.1 (54) 550 
+
+with TruSeq adapter sequences specified explicitly (Read 1: 551 
+
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA; Read 2: 552 
+
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT), polyG tail trimming enabled, and 553 
+
+default quality filtering parameters applied. Sequencing quality metrics were assessed using 554 
+
+MultiQC v1.30 (55). 555 
+
+Host and plant-derived sequence removal was performed separately for Illumina and Nanopore 556 
+
+reads using Minimap2 (v2.30-r1287) (56) against the same six reference genomes: Zea mays 557 
+
+(NCBI accession no. GCF_902167145.1), Triticum aestivum (NCBI accession 558 
+
+GCF_018294505.1), Medicago sativa (NCBI accession GCA_051527215.1), Hordeum vulgare 559 
+
+(NCBI accession GCF_904849725.1), Brassica napus (NCBI accession GCF_020379485.1), and 560 
+
+Bos taurus (NCBI accession GCF_002263795.3). For Illumina reads, host removal was applied 561 
+
+sequentially, mapping paired-end reads against each reference genome in turn using the short-562 
+
+read preset (-x sr, --secondary=no); reads with a mapping quality score ≥ 30 to primary 563 
+
+alignments were identified as host-derived and removed using filterbyname.sh (BBMap suite), 564 
+
+with unmapped reads from each step carried forward as input to the next. For Nanopore reads, all 565 
+
+six reference genomes were concatenated into a single combined reference, indexed once with 566 
+
+Minimap2, and reads were aligned using the ONT-specific preset (-x map-ont); only reads that 567 
+
+failed to map to the combined reference (SAM flag -f 4) were retained. No additional quality 568 
+
+trimming was applied to Nanopore reads prior to host removal, as base-calling and adapter 569 
+
+trimming were performed upstream by the PromethION basecaller during signal processing. 570 
+
+Host-decontaminated reads from both platforms were used for all subsequent analyses. 571 
+
+Read-based analysis 572 
+
+Quality-controlled paired-end Illumina reads were profiled for ARGs using the Resistance Gene 573 
+
+Identifier (RGI v6.0.5) with the BWT workflow, aligning reads against the Comprehensive 574 
+
+Antibiotic Resistance Database (CARD v4.1.1) using KMA (v1.6.6) as the aligner, including 575 
+
+wildcard variants (57). Only hits with ≥90% read coverage and ≥98% nucleotide identity of the 576 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+reference sequence were retained. ARG abundance was quantified as counts per million total 577 
+
+sequencing reads (CPM), calculated as: 578 
+
+> ᠩᡂᠹ 㐄 䙦              
+
+) X 10 6
+
+579 
+
+For taxonomic profiling, reads were classified at the species level using MetaPhlAn v4.2.2 (58) 580 
+
+with the CHOCOPhlAnSGB vJan25 marker gene database, with read alignment performed 581 
+
+internally using Bowtie2 (v2.5.4) (59) to determine shifts in microbial communities between 582 
+
+fresh digestate and enriched samples. 583 
+
+Hybrid metagenome assembly 584 
+
+Hybrid metagenome assemblies were generated by combining quality-controlled Illumina 585 
+
+paired-end reads with Nanopore long reads using SPAdes (v4.2.0) in metagenomic mode (60). 586 
+
+Illumina reads were grouped by antimicrobial type, with all three concentration levels co-587 
+
+assembled within each antimicrobial-defined group to maximize contig length and ARG-MGE 588 
+
+resolution. Nanopore long reads were incorporated during assembly using the --nanopore option. 589 
+
+Default k-mer settings were applied, and assemblies were performed using the SPAdes internal 590 
+
+error-correction and iterative assembly pipeline. Contig-level taxonomic classification of hybrid-591 
+
+assembled contigs was performed using Kraken2 (v2.17.1) (61) against the PlusPFP database 592 
+
+(20250402); only contigs ≥1 kb that received a taxonomic classification were retained for 593 
+
+downstream ARG-MGE-host linkage analyses. MetaPhlAn was used for read-based community 594 
+
+profiling given its clade-specific marker gene approach and high species-level accuracy in 595 
+
+complex environmental samples, while Kraken2 was applied separately for contig-level 596 
+
+taxonomic classification to support ARG-MGE-host linkage analyses. 597 
+
+Functional annotation and construction of ARG-MGE co-localization 598 
+
+ARGs were identified from assembled contigs using two complementary tools. RGI (v6.0.5) (57) 599 
+
+was run in contig mode (--input_type contig) against a local CARD database (v4.1.1) using 600 
+
+BLAST as the alignment algorithm, with loose, Strict, and Perfect hit categories all reported (--601 
+
+include_loose). AMRFinderPlus (v4.2.5) (62) was run in nucleotide mode (-n) against the NCBI 602 
+
+Reference Gene Catalog with the extended --plus database enabled, applying minimum 603 
+
+nucleotide identity and coverage thresholds of 90% and 70%, respectively. ARG calls detected 604 
+
+by both tools on the same contig were retained for all downstream analyses. 605 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+Protein-coding genes were predicted on ARG-bearing contigs using Prodigal (v2.6.3) in 606 
+
+metagenomic mode (-p meta) (63) to provide a consistent coordinate space for MGE annotation. 607 
+
+MGEs were then annotated using a multi-tool pipeline. Plasmids were identified using geNomad 608 
+
+(v1.12.0) (64) in end-to-end mode against the geNomad database, and by MOB-suite mob_recon 609 
+
+(v3.1.9) (65) against the mob_suite reference database. A contig was classified as plasmid-610 
+
+associated if identified by either tool, with geNomad and MOB-suite serving as complementary 611 
+
+callers to maximise detection sensitivity. Where a contig was classified as both a plasmid and a 612 
+
+phage/virus, the plasmid classification took precedence over conjugative element classification 613 
+
+to avoid double-counting. Phage and viral sequences were detected using geNomad and 614 
+
+VirSorter2 (v2.2.4; executed in a pinned environment: Python 3.8, scikit-learn 0.22.1) (66) and 615 
+
+quality-assessed with CheckV (v1.1.1) against checkv-db-v1.5 (67). Insertion sequences were 616 
+
+identified using ISEScan (v1.7.3) (68) with default parameters. Site-specific recombinases 617 
+
+(integrases and resolvases) were detected by scanning Prodigal (v2.6.3) (63)-predicted proteins 618 
+
+against Pfam profiles PF00589 (phage integrase), PF00239 (resolvase), PF07508 (recombinase), 619 
+
+and PF03432 (relaxase) using HMMER hmmsearch (v3.3.2) (69) at e-value < 1 × 10 -5 .620 
+
+Conjugative element classification was performed using a 129-profile HMM library combining 621 
+
+the four above-mentioned Pfam profiles with 125 CONJScan T4SS profiles (CONJScan models 622 
+
+v2.1.0; relaxase MOB families, type IV coupling protein, and mating-pair-formation 623 
+
+components) (70), with signature-gene hits scored against ARG-flanking windows of ±2 kb for 624 
+
+insertion sequences and recombinases, and ±25 kb for conjugative elements (ICEs and IMEs), 625 
+
+following the approach described in Rahman et al . (2025) (71). Plasmid and phage 626 
+
+classifications were assigned at the contig level. In cases where multiple MGE types were 627 
+
+detected on the same contig, plasmid and phage calls took precedence over conjugative element 628 
+
+classification. Biocide and metal resistance genes were identified on ARG-bearing contigs using 629 
+
+Abricate (v1.0.4) (72) with the BacMet2 experimentally confirmed resistance gene database 630 
+
+(built 2026-Apr-3; 746 protein sequences), applying minimum nucleotide identity and coverage 631 
+
+thresholds of 90% and 90%, respectively. 632 
+
+To quantify the short-read abundance of ARG-associated genomic regions across enrichment 633 
+
+conditions, assembled contigs were classified into co-localization categories - defined here as the 634 
+
+presence of ARGs, MGEs, and/or biocide and metal resistance genes on the same contig based 635 
+
+on genomic coordinates - using a custom Python script: ARG-only, MGE-only, BacMet-only, 636 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+ARG-MGE co-localized, ARG-BacMet co-localized, MGE-BacMet co-localized, and ARG-637 
+
+MGE-BacMet co-localized contigs. Each category was extracted as a separate FASTA reference 638 
+
+set. Quality-controlled host-filtered Illumina reads were mapped to these mapping reference sets 639 
+
+using BWA-MEM (v0.7.18) (73) at a minimum nucleotide identity of 95%. Alignments were 640 
+
+sorted and indexed using Samtools (v1.21) (74), and per-contig coverage was assessed using 641 
+
+‘samtools coverage’. Contigs were retained if they met minimum thresholds of ≥80% breadth of 642 
+
+coverage, ≥80% query coverage, and ≥2x mean depth. Read counts for contigs passing these 643 
+
+filters were summed and normalized to CPM (as defined in the Read-based analysis section) to 644 
+
+enable cross-sample comparisons across enrichment conditions. 645 
+
+Statistical analysis 646 
+
+All statistical analyses were performed in RStudio (version: 2025.09.0; R 4.5.2) using the vegan 647 
+
+(2.7-1) (75), rstatix (0.7.2) (76), lme4 (1.1.37) (77), and emmeans (1.11.1) (78) packages. Bray-648 
+
+Curtis dissimilarity matrices were computed from genus-level relative abundance profiles and 649 
+
+ARG compositional profiles using the vegdist function and visualized by principal coordinates 650 
+
+analysis (PCoA). Differences in microbial community composition and resistome structure 651 
+
+across treatment groups were tested using permutational multivariate analysis of variance 652 
+
+(PERMANOVA; adonis2, 999 permutations), with effect sizes reported as R 2 and significance 653 
+
+determined at p < 0.05. Pairwise PERMANOVA between antibiotic treatment groups was 654 
+
+performed using the same settings with Benjamini-Hochberg p-value adjustment. Homogeneity 655 
+
+of multivariate dispersion was assessed using betadisper followed by permutation testing 656 
+
+(permutest, 999 permutations) to confirm that observed compositional differences reflected true 657 
+
+centroid separation rather than unequal within-group variability. 658 
+
+Alpha diversity was quantified using the Shannon index (vegan::diversity) and compared across 659 
+
+enrichment groups, antibiotic treatments, and dose levels using the Kruskal-Wallis test, with 660 
+
+pairwise post-hoc comparisons performed using the Dunn test with Benjamini-Hochberg false 661 
+
+discovery rate correction (rstatix::dunn_test). ARG richness differences between FD and 662 
+
+enriched groups were assessed using the Wilcoxon rank-sum test. Differences in ARG-MGE co-663 
+
+localization frequencies across enrichment conditions were assessed using a linear mixed-effects 664 
+
+model, with pairwise group comparisons performed using estimated marginal means (emmeans 665 
+
+package) and p-values adjusted using the Benjamini-Hochberg procedure. Dose-response 666 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+relationships between antibiotic concentration and community diversity or ARG richness were 667 
+
+evaluated by fitting linear and quadratic regression models, with model selection based on the 668 
+
+Akaike Information Criterion (AIC); the linear model was preferred where it yielded a lower or 669 
+
+comparable AIC relative to the quadratic alternative. ARG abundance was quantified as counts 670 
+
+per million total sequencing reads (CPM), calculated as mentioned in the previous section. Fold 671 
+
+changes in ARG abundance between groups were calculated as ratios of group mean CPM 672 
+
+values. Resistance mechanism and drug class profiles were summarized as descriptive 673 
+
+compositional proportions (percentage of total ARG-mapping reads within each group) without 674 
+
+inferential testing. Statistical significance was determined at p < 0.05 for all tests. 675 
+
+Declarations 676 
+
+Ethics approval and consent to participate 677 
+
+Not applicable. 678 
+
+Competing interest 679 
+
+The authors declare no competing interests. 680 
+
+Data availability 681 
+
+Raw metagenome sequences described in this study have been deposited in the NCBI Sequence 682 
+
+Read Archive under BioProject accession: PRJNA1454115. Large supplementary data tables are 683 
+
+deposited to Figshare: Table S1: https://doi.org/10.6084/m9.figshare.32942219, 684 
+
+Table S3: https://doi.org/10.6084/m9.figshare.32942243, 685 
+
+Table S4: https://doi.org/10.6084/m9.figshare.32942258, 686 
+
+Table S5: https://doi.org/10.6084/m9.figshare.32942270, 687 
+
+Table S7: https://doi.org/10.6084/m9.figshare.32942300. 688 
+
+Supplementary Tables S2, and S6 are provided in the supplementary file accompanying this 689 
+
+manuscript. 690 
+
+Code availability 691 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+All custom scripts, pipelines and workflows used in the analyses are included in the GitHub 692 
+
+repositories: MAGnet (https://github.com/zisanurrahman/MAGnet) and 693 
+
+CEMG_analysis_pipeline (https://github.com/zisanurrahman/CEMG_analysis_pipeline). 694 
+
+Analyses were performed using RStudio (version: 2025.09.0; R 4.5.2) or Python (version 3.12). 695 
+
+Competing Interests 696 
+
+The authors declare no competing financial interests. 697 
+
+Funding 698 
+
+This work was supported by Natural Sciences and Engineering Research Council of Canada 699 
+
+(NSERC RGPIN-2023-04359) and Sustainable Canadian Agricultural Partnership (SCAP 700 
+
+T01052) awarded to HD and NC. NR was supported by a University of Manitoba Graduate 701 
+
+Fellowship. 702 
+
+Author contributions 703 
+
+HD and NC conceptualized the study. HD, NR and ASMZR designed the computational 704 
+
+framework and performed bioinformatics analyses. NR and ASMZR generated the figures and 705 
+
+visualizations and drafted the manuscript. NR conducted the molecular microbiology work, 706 
+
+including culture enrichment, DNA extraction and library preparation. HD supervised the 707 
+
+project, provided guidance on both experimental and computational framework design, data 708 
+
+interpretation, manuscript revision, and secured funding. All authors reviewed, edited, and 709 
+
+approved the final manuscript. 710 
+
+Acknowledgements 711 
+
+The authors thank Rosser Holsteins Dairy Farm, Rosser, Manitoba for providing manure for this 712 
+
+study, and the Department of Biosystems Engineering, University of Manitoba, for providing 713 
+
+access to the anaerobic digester facility. 714 
+
+715 
+
+Figure Legends: 716 
+
+Figure 1. Taxonomic restructuring of digestate microbial communities following culture 717 
+
+enrichment. (A) Principal coordinates analysis (PCoA) of Bray-Curtis dissimilarity at the genus 718 
+
+level. Points are coloured by oxygen condition (aerobic, teal; anaerobic, blue; FD, orange) and 719 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+shaped by sample group (filled circle: CEMG-AB; open circle: CEMG-NoAB; triangle: fresh 720 
+
+digestate). PERMANOVA results are annotated within the panel. (B) Mean relative abundance 721 
+
+of the top ten genera across FD, aerobic (CEMG-NoAB and CEMG-AB), and anaerobic 722 
+
+(CEMG-NoAB and CEMG-AB) communities; remaining genera are grouped as “Others”. GGB 723 
+
+entries denote unclassified genome-based genus-level bins. (C) Mean relative abundance of the 724 
+
+top genera across the six antibiotic enrichment treatments (ampicillin, ceftiofur, erythromycin, 725 
+
+lincomycin, tetracycline, vancomycin), stratified by oxygen condition (aerobic, upper panels; 726 
+
+anaerobic, lower panels). (D) Shannon diversity index across FD, CEMG-NoAB, and CEMG-727 
+
+AB, stratified by oxygen condition and antibiotic treatment. Data points represent individual 728 
+
+samples; boxplots summarize within-group distributions. Differences were assessed using the 729 
+
+Kruskal-Wallis test, followed by Dunn’s post hoc test with Benjamini-Hochberg correction for 730 
+
+multiple comparisons. 731 
+
+732 
+
+Figure 2. Network representation of antimicrobial resistance genes (ARGs) detected across 733 
+
+treatment groups. ARGs are visualized as a hierarchical network read from center outward: the 734 
+
+root node (diamond) connects to resistance drug classes (squares), which link to ARG gene 735 
+
+families (triangles), which in turn connect to individual ARG genes (circles) in the outer ring. 736 
+
+Node colors indicate group-specific occurrence based on presence-absence across samples: 737 
+
+orange = FD only; purple = shared between FD and CEMG; teal = CEMG only. Node sizes 738 
+
+reflect mean ARG abundance (log 10 counts per million reads; CPM). The inset bar plot 739 
+
+summarizes the number of ARGs in each occurrence category (FD only, shared, CEMG only) as 740 
+
+a proportion of all detected ARGs. 741 
+
+742 
+
+Figure 3. ARG diversity and drug-class composition across enrichment conditions and 743 
+
+antibiotic treatments. (A) ARG drug class richness under aerobic and anaerobic conditions 744 
+
+across FD, CEMG-NoAB, and CEMG-AB. Data points represent individual samples; boxplots 745 
+
+summarize within-group distributions. Pairwise group differences were assessed using the 746 
+
+Wilcoxon rank-sum test; significance levels are indicated as ns (not significant) and p < 0.05 (*). 747 
+
+(B) Mean relative abundance of the top 10 ARG drug classes across FD, CEMG-NoAB, and 748 
+
+CEMG-AB, expressed as a percentage of total ARG-mapping reads within each group; 749 
+
+remaining classes are grouped as “Others”. Drug class labels follow CARD annotations. ARGs 750 
+
+assigned to multiple drug classes by CARD were retained according to their individual resistance 751 
+
+classifications and were not collapsed into a single category. (C) Mean relative abundance of the 752 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+top 10 ARG genes across FD, CEMG-NoAB, and CEMG-AB, expressed as a percentage of total 753 
+
+ARG-mapping reads within each group; remaining genes are grouped as “Others”. (D) Mean 754 
+
+relative abundance of ARG drug classes across antibiotic enrichment treatments (AMP = 755 
+
+Ampicillin; CEF = Ceftiofur; ERY = Erythromycin; LIN = Lincomycin; TET = Tetracycline; 756 
+
+VAN = Vancomycin), expressed as a percentage of total ARG-mapping reads within each 757 
+
+treatment group, shown separately for anaerobic (upper) and aerobic (lower) conditions. 758 
+
+759 
+
+Figure 4. Fold change in ARG abundance across drug classes for individual antibiotic 760 
+
+enrichment treatments relative to FD. Fold change was calculated as the ratio of mean CPM in 761 
+
+each enriched group to mean CPM in FD for each drug class, pooled across both aerobic and 762 
+
+anaerobic oxygen conditions and all three antibiotic concentration levels (1X, 10X, and 100X 763 
+
+size-adjusted MIC). Blue circles represent the mean fold change across all antibiotic enrichment 764 
+
+treatments combined; grey circles represent fold change for each individual antibiotic treatment 765 
+
+(Amp = Ampicillin; Cef = Ceftiofur; Ery = Erythromycin; Lin = Lincomycin; Tet = Tetracycline; 766 
+
+Van = Vancomycin). 767 
+
+768 
+
+Figure 5. Diversity and composition of MGEs across assembled contigs and enrichment 769 
+
+conditions. (A) Total number of unique ARG-bearing contigs associated with each MGE class. 770 
+
+Bars represent the overall count summed across all replicates and sample groups; dots indicate 771 
+
+per-replicate counts. MGE classes are ordered from most to least prevalent. (B) UpSet plot 772 
+
+showing the number of ARG instances (y-axis, bars) distributed across combinations of MGE 773 
+
+route classes (x-axis, filled dots and connecting lines), stratified by drug class (bar fill). Only 774 
+
+intersections containing at least one ARG instance are shown. Set sizes (bottom left) indicate the 775 
+
+total number of ARG instances associated with each MGE route class regardless of co-776 
+
+occurrence. (C) Relative abundance (%) of MGE classes among ARG-bearing contigs within 777 
+
+each enrichment group, faceted by oxygen condition with CEMG-NoAB and CEMG-AB shown 778 
+
+as separate bars within each facet. Each bar is normalized to 100% of MGE-associated contigs 779 
+
+within that group. 780 
+
+781 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+Figure 6. Co-occurrence patterns of ARGs, host genera, and MGEs. Sankey diagram 782 
+
+showing co-occurrence patterns among resistance drug classes (left), ARG genes, bacterial 783 
+
+genera, and MGE classes (right), based on contig-level co-localization. Flow width is 784 
+
+proportional to the number of ARG-bearing contigs sharing each drug class-gene-genus-MGE 785 
+
+combination. 786 
+
+787 
+
+788 
+
+References 789 
+
+1. Sassi A, Basher NS, Kirat H, Meradji S, Ibrahim NA, Idres T, Touati A. 2025. The Role of 790 
+
+the Environment (Water, Air, Soil) in the Emergence and Dissemination of Antimicrobial 791 
+
+Resistance: A One Health Perspective. Antibiotics 14:764. 792 
+
+2. Klein EY, Van Boeckel TP, Martinez EM, Pant S, Gandra S, Levin SA, Goossens H, 793 
+
+Laxminarayan R. 2018. Global increase and geographic convergence in antibiotic consumption 794 
+
+between 2000 and 2015. Proc Natl Acad Sci 115:E3463–E3470. 795 
+
+3. Vishnuraj MR, Kandeepan G, Rao KH, Chand S, Kumbhar V. 2016. Occurrence, public 796 
+
+health hazards and detection methods of antibiotic residues in foods of animal origin: A 797 
+
+comprehensive review. Cogent Food Agric 2:1235458. 798 
+
+4. Caneschi A, Bardhi A, Barbarossa A, Zaghini A. 2023. The Use of Antibiotics and 799 
+
+Antimicrobial Resistance in Veterinary Medicine, a Complex Phenomenon: A Narrative Review. 800 
+
+Antibiotics 12:487. 801 
+
+5. Rasschaert G, Elst DV, Colson L, Herman L, Ferreira HC de C, Dewulf J, Decrop J, 802 
+
+Meirlaen J, Heyndrickx M, Daeseleire AE. 2020. Antibiotic Residues and Antibiotic-Resistant 803 
+
+Bacteria in Pig Slurry used to Fertilize Agricultural Fields. Antibiotics 9:34. 804 
+
+6. Flores-Orozco D, Patidar R, Levin D, Kumar A, Sparling R, Cicek N. 2023. Metagenomic 805 
+
+analyses reveal that mesophilic anaerobic digestion substantially reduces the abundance of 806 
+
+antibiotic resistance genes and mobile genetic elements in dairy manures. Environ Technol Innov 807 
+
+30:103128. 808 
+
+7. Bharti R, Grimm DG. 2021. Current challenges and best-practice protocols for microbiome 809 
+
+analysis. Brief Bioinform 22:178–193. 810 
+
+8. Knight ME, Webster G, Perry WB, Baldwin A, Rushton L, Pass DA, Cross G, Durance I, 811 
+
+Muziasari W, Kille P, Farkas K, Weightman AJ, Jones DL. 2024. National-scale antimicrobial 812 
+
+resistance surveillance in wastewater: A comparative analysis of HT qPCR and metagenomic 813 
+
+approaches. Water Res 262:121989. 814 
+
+9. Whelan FJ, Waddell B, Syed SA, Shekarriz S, Rabin HR, Parkins MD, Surette MG. 2020. 815 
+
+Culture-enriched metagenomic sequencing enables in-depth profiling of the cystic fibrosis lung 816 
+
+microbiota. Nat Microbiol 5:379–390. 817 
+
+10. Mao Y, Shisler JL, Nguyen TH. 2025. Enhanced detection for antibiotic resistance genes in 818 
+
+wastewater samples using a CRISPR-enriched metagenomic method. Water Res 274:123056. 819 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+11. Crossette E, Gumm J, Langenfeld K, Raskin L, Duhaime M, Wigginton K. 2021. 820 
+
+Metagenomic Quantification of Genes with Internal Standards. mBio 12:e03173-20. 821 
+
+12. Naidoo Y, Pierneef RE, Cowan DA, Valverde A. 2024. Characterization of the soil resistome 822 
+
+and mobilome in Namib Desert soils. Int Microbiol 27:967–975. 823 
+
+13. Quince C, Walker AW, Simpson JT, Loman NJ, Segata N. 2017. Shotgun metagenomics, 824 
+
+from sampling to analysis. Nat Microbiol 35:833–844. 825 
+
+14. Li S, Lian W-H, Han J-R, Ali M, Lin Z-L, Liu Y-H, Li L, Zhang D-Y, Jiang X-Z, Li W-J, 826 
+
+Dong L. 2023. Capturing the microbial dark matter in desert soils using culturomics-based 827 
+
+metagenomics and high-resolution analysis. npj Biofilms Microbi 9:1–14. 828 
+
+15. Sun L, Pope PB, Eijsink VGH, Schnürer A. 2015. Characterization of microbial community 829 
+
+structure during continuous anaerobic digestion of straw and cow manure. Microb Biotechnol 830 
+
+8:815–827. 831 
+
+16. Zhang Z, Zhang G, Ju F. 2022. Using Culture-Enriched Phenotypic Metagenomics for 832 
+
+Targeted High-Throughput Monitoring of the Clinically Important Fraction of the β-Lactam 833 
+
+Resistome. Environ Sci Technol 56:11429–11439. 834 
+
+17. Raymond F, Boissinot M, Ouameur AA, Déraspe M, Plante P-L, Kpanou SR, Bérubé È, 835 
+
+Huletsky A, Roy PH, Ouellette M, Bergeron MG, Corbeil J. 2019. Culture-enriched human gut 836 
+
+microbiomes reveal core and accessory resistance genes. Microbiome 7:56. 837 
+
+18. Klümper U, Fang P, Li B, Xia Y, Frigon D, Hamilton KA, Quon H, Berendonk TU, de la 838 
+
+Cruz Barron M. 2025. Towards the integration of antibiotic resistance gene mobility into 839 
+
+environmental surveillance and risk assessment. npj Antimicrob Resist 3:81. 840 
+
+19. Acosta N, Lee J, Bautista MA, Bhatnagar S, Li C, Waddell BJ, Au E, Pradhan P, Clark RG, 841 
+
+Meddings J, Achari G, Pitout JD, Conly J, Frankowski K, Hubert CRJ, Parkins MD. 2025. 842 
+
+Metagenomic analysis after selective culture enrichment of hospital and community wastewater 843 
+
+enhances antimicrobial resistance gene detection. mBio 16:e01672-25. 844 
+
+20. Bravo JE, Newsom KJ, Noyes N, Boucher C. 2025. Methods, applications, and 845 
+
+computational challenges in bait capture enrichment. Cell Rep Methods 5:100988. 846 
+
+21. Fu S, Zhang Y, Wang R, Qiu Z, Song W, Yang Q, Shen L. 2023. A novel culture-enriched 847 
+
+metagenomic sequencing strategy effectively guarantee the microbial safety of drinking water by 848 
+
+uncovering the low abundance pathogens. J Environ Manag 345:118737. 849 
+
+22. Wang H, Wang M, Fan S, Lu J, Lan Y, Li M, Li J, Liu R, Sun J, Fang J, Qian P-Y, Zhang Y-850 
+
+Z, Zhang W. 2021. Culture Enrichment Combined With Long-Read Sequencing Facilitates 851 
+
+Genomic Understanding of Hadal Sediment Microbes. Front Mar Sci 8:754332. 852 
+
+23. Gich F, Janys MA, König M, Overmann J. 2012. Enrichment of previously uncultured 853 
+
+bacteria from natural complex communities by adhesion to solid surfaces. Environ Microbiol 854 
+
+14:2984–2997. 855 
+
+24. Munk P, Brinch C, Møller FD, Petersen TN, Hendriksen RS, Seyfarth AM, Kjeldgaard JS, 856 
+
+Svendsen CA, van Bunnik B, Berglund F, Larsson DGJ, Koopmans M, Woolhouse M, Aarestrup 857 
+
+FM. 2022. Genomic analysis of sewage from 101 countries reveals global landscape of 858 
+
+antimicrobial resistance. Nat Commun 13:7251. 859 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+25. Chen X, Yin X, Xu X, Zhang T. 2025. Species-resolved profiling of antibiotic resistance 860 
+
+genes in complex metagenomes through long-read overlapping with Argo. Nat Commun 861 
+
+16:1744. 862 
+
+26. Lou EG, Fu Y, Wang Q, Treangen TJ, Stadler LB. 2024. Sensitivity and consistency of long-863 
+
+and short-read metagenomics and epicPCR for the detection of antibiotic resistance genes and 864 
+
+their bacterial hosts in wastewater. J Hazard Mater 469:133939. 865 
+
+27. Juraschek K, Borowiak M, Tausch SH, Malorny B, Käsbohrer A, Otani S, Schwarz S, 866 
+
+Meemken D, Deneke C, Hammerl JA. 2021. Outcome of Different Sequencing and Assembly 867 
+
+Approaches on the Detection of Plasmids and Localization of Antimicrobial Resistance Genes in 868 
+
+Commensal Escherichia coli . Microorganisms 9:598. 869 
+
+28. Pampillón-González L, Ortiz-Cornejo NL, Luna-Guido M, Dendooven L, Navarro-Noya YE. 870 
+
+2017. Archaeal and Bacterial Community Structure in an Anaerobic Digestion Reactor (Lagoon 871 
+
+Type) Used for Biogas Production at a Pig Farm. J Mol Microbiol Biotechnol 27:306–317. 872 
+
+29. Flores-Orozco D, Levin D, Kumar A, Sparling R, Derakhshani H, Cicek N. 2024. 873 
+
+Metagenomic comparison of effects of mesophilic and thermophilic manure anaerobic digestion 874 
+
+on antimicrobial resistance genes and mobile genetic elements. Environ Adv 15:100472. 875 
+
+30. Nowrotek M, Jałowiecki Ł, Harnisz M, Płaza GA. 2019. Culturomics and metagenomics: In 876 
+
+understanding of environmental resistome. Front Environ Sci 13:40. 877 
+
+31. Flores-Orozco D, Patidar R, Levin D, Sparling R, Kumar A, Cicek N. 2020. Effect of 878 
+
+Mesophilic Anaerobic Digestion on the Resistome Profile of Dairy Manure. Biores Technol 879 
+
+315:123889. 880 
+
+32. Swenson CE, Sadikot RT. 2015. Achromobacter respiratory infections. Ann Am Thorac Soc 881 
+
+12:252–258. 882 
+
+33. Faccone D, Albornoz E, Tijet N, Biondi E, Gomez S, Pasterán F, Vazquez M, Melano RG, 883 
+
+Corso A. 2019. Characterization of a multidrug resistant Citrobacter amalonaticus clinical 884 
+
+isolate harboring blaNDM-1 and mcr-1.5 genes. Infect Genet Evol 67:51–54. 885 
+
+34. Davin-Regli A, Lavigne J-P, Pagès J-M. 2019. Enterobacter spp.: Update on Taxonomy, 886 
+
+Clinical Aspects, and Emerging Antimicrobial Resistance. Clin Microbiol Rev 32:e00002-19. 887 
+
+35. Mullally CA, Fahriani M, Mowlaboccus S, Coombs GW. 2024. Non-faecium non-faecalis 888 
+
+enterococci: a review of clinical manifestations, virulence factors, and antimicrobial resistance. 889 
+
+Clinic Microbiol Rev 37:e00121-23. 890 
+
+36. Shi Z, Zhao R, Wan J, Li B, Shen Y, Zhang S, Luo G. 2021. Metagenomic analysis reveals 891 
+
+the fate of antibiotic resistance genes in two-stage and one-stage anaerobic digestion of waste 892 
+
+activated sludge. J Hazard Mater 406:124595. 893 
+
+37. Xu X, Lin D, Yan G, Ye X, Wu S, Guo Y, Zhu D, Hu F, Zhang Y, Wang F, Jacoby GA, Wang 894 
+
+M. 2010. vanM, a New Glycopeptide Resistance Gene Cluster Found in Enterococcus faecium .895 
+
+Antimicrob Agents Chemother 54:4643–4647. 896 
+
+38. Morales G, Picazo JJ, Baos E, Candel FJ, Arribi A, Peláez B, Andrade R, de la Torre M-A, 897 
+
+Fereres J, Sánchez-García M. 2010. Resistance to linezolid is mediated by the cfr gene in the 898 
+
+first report of an outbreak of linezolid-resistant Staphylococcus aureus . Clin Infect Dis 50:821– 899 
+
+825. 900 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+39. Peng S, Wang Y, Zhou B, Lin X. 2015. Long-term application of fresh and composted 901 
+
+manure increases tetracycline resistance in the arable soil of eastern China. Sci Total Environ 902 
+
+506–507:279–286. 903 
+
+40. Yoshizawa N, Usui M, Fukuda A, Asai T, Higuchi H, Okamoto E, Seki K, Takada H, Tamura 904 
+
+Y. 2020. Manure Compost Is a Potential Source of Tetracycline-Resistant Escherichia coli and 905 
+
+Tetracycline Resistance Genes in Japanese Farms. Antibiotics 9(2):76. 906 
+
+41. Agga GE, Couch M, Parekh RR, Mahmoudi F, Appala K, Kasumba J, Loughrin JH, Conte 907 
+
+ED. 2022. Lagoon, Anaerobic Digestion, and Composting of Animal Manure Treatments Impact 908 
+
+on Tetracycline Resistance Genes. Antibiotics 11(3):391. 909 
+
+42. Murray LM, Hayes A, Snape J, Kasprzyk-Hordern B, Gaze WH, Murray AK. 2024. Co-910 
+
+selection for antibiotic resistance by environmental contaminants. npj Antimicrob Resist 2:9. 911 
+
+43. Juhas M, van der Meer JR, Gaillard M, Harding RM, Hood DW, Crook DW. 2009. Genomic 912 
+
+islands: tools of bacterial horizontal gene transfer and evolution. FEMS Microbiol Rev 33:376– 913 
+
+393. 914 
+
+44. Zhang R, Wang X, Gu J, Zhang Y. 2017. Influence of zinc on biogas production and 915 
+
+antibiotic resistance gene profiles during anaerobic digestion of swine manure. Biores Technol 916 
+
+244:63–70. 917 
+
+45. Gillieatt BF, Coleman NV. 2024. Unravelling the mechanisms of antibiotic and heavy metal 918 
+
+resistance co-selection in environmental bacteria. FEMS Microbiol Rev 48:fuae017. 919 
+
+46. Luo L, Zhang C, Zhang Z, Peng J, Han Y, Wang P, Kong X, Rizwan HM, Zhang D, Su P, Liu 920 
+
+Y. 2020. Differences in Tetracycline Antibiotic Resistance Genes and Microbial Community 921 
+
+Structure During Aerobic Composting and Anaerobic Digestion. Front Microbiol 11:583995. 922 
+
+47. Pan X, Luo L, Wang H, Chen X, Zhang Y, Dai Y, Luo F. 2025. Developments in Microbial 923 
+
+Communities and Interaction Networks in Sludge Treatment Ecosystems During the Transition 924 
+
+from Anaerobic to Aerobic Conditions. Microorganisms 13:2178. 925 
+
+48. Tegtmeier D, Hurka S, Mihajlovic S, Bodenschatz M, Schlimbach S, Vilcinskas A. 2021. 926 
+
+Culture-Independent and Culture-Dependent Characterization of the Black Soldier Fly Gut 927 
+
+Microbiome Reveals a Large Proportion of Culturable Bacteria with Potential for Industrial 928 
+
+Applications. Microorganisms 9(8):1642. 929 
+
+49. Lagier J-C, Dubourg G, Million M, Cadoret F, Bilen M, Fenollar F, Levasseur A, Rolain J-M, 930 
+
+Fournier P-E, Raoult D. 2018. Culturing the human microbiota and culturomics’. Nat Rev 931 
+
+Microbiol 16:540–550. 932 
+
+50. Liu S, Moon CD, Zheng N, Huws S, Zhao S, Wang J. 2022. Opportunities and challenges of 933 
+
+using metagenomic data to bring uncultured microbes into cultivation. Microbiome 10:76. 934 
+
+51. Breitwieser FP, Lu J, Salzberg SL. 2019. A review of methods and databases for 935 
+
+metagenomic classification and assembly. Brief Bioinform 20:1125–1136. 936 
+
+52. Bengtsson-Palme J, Larsson DGJ. 2016. Concentrations of antibiotics predicted to select for 937 
+
+resistant bacteria: Proposed limits for environmental regulation. Environ Int 86:140–149. 938 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+53. ProNex® Size-Selective Purification System | NGS Library | Promega. 939 
+
+https://www.promega.ca/products/sequencing/ngs-library-prep/pronex-size-selective-940 
+
+purification-system/. Retrieved 26 September 2025. 941 
+
+54. Chen S, Zhou Y, Chen Y, Gu J. 2018. fastp: an ultra-fast all-in-one FASTQ preprocessor. 942 
+
+Bioinform 34:i884–i890. 943 
+
+55. Ewels P, Magnusson M, Lundin S, Käller M. 2016. MultiQC: summarize analysis results for 944 
+
+multiple tools and samples in a single report. Bioinform 32:3047–3048. 945 
+
+56. Li H. 2018. Minimap2: pairwise alignment for nucleotide sequences. Bioinform 34:3094– 946 
+
+3100. 947 
+
+57. Clausen PTLC, Aarestrup FM, Lund O. 2018. Rapid and precise alignment of raw reads 948 
+
+against redundant databases with KMA. Bioinform 19:307. 949 
+
+58. Blanco-Míguez A, Beghini F, Cumbo F, McIver LJ, Thompson KN, Zolfo M, Manghi P, 950 
+
+Dubois L, Huang KD, Thomas AM, Nickols WA, Piccinno G, Piperni E, Pun čochá ř M, Valles-951 
+
+Colomer M, Tett A, Giordano F, Davies R, Wolf J, Berry SE, Spector TD, Franzosa EA, Pasolli 952 
+
+E, Asnicar F, Huttenhower C, Segata N. 2023. Extending and improving metagenomic taxonomic 953 
+
+profiling with uncharacterized species using MetaPhlAn 4. Nat Biotechnol 41:1633–1644. 954 
+
+59. Langmead B, Salzberg SL. 2012. Fast gapped-read alignment with Bowtie 2. Nat Methods 955 
+
+9:357–359. 956 
+
+60. Nurk S, Meleshko D, Korobeynikov A, Pevzner PA. 2017. metaSPAdes: a new versatile 957 
+
+metagenomic assembler. Genome Res 27:824–834. 958 
+
+61. Wood DE, Lu J, Langmead B. 2019. Improved metagenomic analysis with Kraken 2. 959 
+
+Genome Biol 20:257. 960 
+
+62. Feldgarden M, Brover V, Gonzalez-Escalona N, Frye JG, Haendiges J, Haft DH, Hoffmann 961 
+
+M, Pettengill JB, Prasad AB, Tillman GE, Tyson GH, Klimke W. 2021. AMRFinderPlus and the 962 
+
+Reference Gene Catalog facilitate examination of the genomic links among antimicrobial 963 
+
+resistance, stress response, and virulence. Sci Rep 11:12728. 964 
+
+63. Hyatt D, Chen G-L, Locascio PF, Land ML, Larimer FW, Hauser LJ. 2010. Prodigal: 965 
+
+prokaryotic gene recognition and translation initiation site identification. Bioinform 11:119. 966 
+
+64. Camargo AP, Roux S, Schulz F, Babinski M, Xu Y, Hu B, Chain PSG, Nayfach S, Kyrpides 967 
+
+NC. 2024. Identification of mobile genetic elements with geNomad. Nat Biotechnol 42:1303– 968 
+
+1312. 969 
+
+65. Robertson J, Bessonov K, Schonfeld J, Nash JHE. 2020. Universal whole-sequence-based 970 
+
+plasmid typing and its utility to prediction of host range and epidemiological surveillance. 971 
+
+Microb Genom 6:mgen000435. 972 
+
+66. Guo J, Bolduc B, Zayed AA, Varsani A, Dominguez-Huerta G, Delmont TO, Pratama AA, 973 
+
+Gazitúa MC, Vik D, Sullivan MB, Roux S. 2021. VirSorter2: a multi-classifier, expert-guided 974 
+
+approach to detect diverse DNA and RNA viruses. Microbiome 9:37. 975 
+
+67. Nayfach S, Camargo AP, Schulz F, Eloe-Fadrosh E, Roux S, Kyrpides NC. 2021. CheckV 976 
+
+assesses the quality and completeness of metagenome-assembled viral genomes. Nat Biotechnol 977 
+
+39:578–585. 978 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+68. Xie Z, Tang H. 2017. ISEScan: automated identification of insertion sequence elements in 979 
+
+prokaryotic genomes. Bioinform 33:3340–3347. 980 
+
+69. Eddy SR. 2011. Accelerated Profile HMM Searches. PLOS Comput Biol 7:e1002195. 981 
+
+70. Cury J, Touchon M, Rocha EPC. 2017. Integrative and conjugative elements and their hosts: 982 
+
+composition, distribution and organization. Nucleic Acids Res 45:8943–8956. 983 
+
+71. Rahman N, McCullough T, Orozco DF, Walkowiak S, Farzan A, Shekarriz S, Surette MG, 984 
+
+Cicek N, Derakhshani H. 2025. Genomic characterization of antimicrobial resistance and mobile 985 
+
+genetic elements in swine gut bacteria isolated from a Canadian research farm. anim microbiome 986 
+
+7:66. 987 
+
+72. Pal C, Bengtsson-Palme J, Rensing C, Kristiansson E, Larsson DGJ. 2014. BacMet: 988 
+
+antibacterial biocide and metal resistance genes database. Nucleic Acids Res 42:D737–D743. 989 
+
+73. Jung Y, Han D. 2022. BWA-MEME: BWA-MEM emulated with a machine learning 990 
+
+approach. Bioinform 38:2404–2413. 991 
+
+74. Danecek P, Bonfield JK, Liddle J, Marshall J, Ohan V, Pollard MO, Whitwham A, Keane T, 992 
+
+McCarthy SA, Davies RM, Li H. 2021. Twelve years of SAMtools and BCFtools. Gigasci 993 
+
+10:giab008. 994 
+
+75. Oksanen J, Simpson GL, Blanchet FG, Kindt R, Legendre P, Minchin PR, O’Hara RB, 995 
+
+Solymos P, Stevens MHH, Szoecs E, Wagner H, Barbour M, Bedward M, Bengtsson H, Bolker 996 
+
+B, Borcard D, Borman T, Carvalho G, Chirico M, Caceres MD, Durand S, Evangelista HBA, 997 
+
+FitzJohn R, Friendly M, Furneaux B, Hannigan G, Heida I, Hill MO, Lahti L, Martino C, 998 
+
+McGlinn D, Ouellette M-H, Cunha ER, Smith T, Stier A, Braak CJFT, Weedon J. 2026. vegan: 999 
+
+Community Ecology Package (2.7-5). 1000 
+
+76. Kassambara A. 2026. rstatix: Pipe-Friendly Framework for Basic Statistical Tests (1.0.0). 1001 
+
+77. Bates D, Maechler M, Bolker [cre B, aut, Walker S, Ly A, Jagan M, Christensen RHB, 1002 
+
+Singmann H, Dai B, Scheipl F, Grothendieck G, Green P, Fox J, Bauer A, simulate.formula) 1003 
+
+PNK (shared copyright on, Tanaka E, Boylan RD, Bengtsson H. 2026. lme4: Linear Mixed-1004 
+
+Effects Models using “Eigen” and S4 (2.0-6). 1005 
+
+78. Lenth RV, Piaskowski J, Banfai B, Bolker B, Buerkner P, Giné-Vázquez I, Hervé M, Jung M, 1006 
+
+Love J, Miguez F, Riebl H, Singmann H, Derumigny A, Schmidt P. 2026. emmeans: Estimated 1007 
+
+Marginal Means, aka Least-Squares Means (2.0.4). 1008 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+Title: Optimizing a Culture -Enriched Hybrid Metagenomics Pipeline to Assess 
+
+the AMR Footprint of Livestock Manure in Anaerobic Digestate 
+
+Nahidur Rahman 1# , A S M Zisanur Rahman 1# , David B. Levin 2, Tim A. McAllister 1,3 , Nazim Cicek 2,
+
+and Hooman Derakhshani 1* 
+
+> 1
+
+Department of Animal Science, University of Manitoba, Winnipeg, MB, Canada 
+
+> 2
+
+Department of Biosystems Engineering, University of Manitoba, Winnipeg, MB, Canada 
+
+> 3
+
+Lethbridge Research Centre, Agriculture and Agri -Food Canada, Lethbridge, AB, Canada 
+
+Fig 1 
+
+Figure 1. Taxonomic restructuring of digestate microbial communities following culture 
+
+enrichment. (A) Principal coordinates analysis (PCoA) of Bray -Curtis dissimilarity at the genus 
+
+level. Points are coloured by oxygen condition (aerobic, teal; anaerobic, blue; FD, orange) and 
+
+shaped by sample group (filled circle: CEMG -AB; open circle: CEMG -NoAB; triangl e: fresh 
+
+digestate). PERMANOVA results are annotated within the panel. (B) Mean relative abundance of 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+the top ten genera across FD, aerobic (CEMG -NoAB and CEMG -AB), and anaerobic (CEMG -
+
+NoAB and CEMG -AB) communities; remaining genera are grouped as “Others”. GGB entries 
+
+denote unclassified genome -based genus -level bins. (C) Mean relative abundance of the top genera 
+
+across the six antibiotic enrichment treatments (ampicillin, ceftiofur, erythromycin, lincomycin, 
+
+tetracycline, vancomycin), stratified by oxygen condition (aerobic, upper panels; anaerobic, lower 
+
+panels). (D) Shannon diversity index across FD, CEMG -NoAB, and CEMG -AB, stratified by 
+
+oxygen condition and antibiotic treatment. Data points represent individual samples; boxplots 
+
+summarize within -group distributions. Differences were assessed using the Kruskal -Wallis test, 
+
+followed by Dunn’s post hoc test with Benjamini -Hochberg correction for multiple comparisons. 
+
+Fig 2 
+
+Figure 2. Network representation of antimicrobial resistance genes (ARGs) detected across 
+
+treatment groups. ARGs are visualized as a hierarchical network read from center outward: the 
+
+root node (diamond) connects to resistance drug classes (squares), which link to ARG gene 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+families (triangles), which in turn connect to individual ARG genes (circles) in the outer ring. Node 
+
+colors indicate group -specific occurrence based on presence -absence across samples: orange = FD 
+
+only; purple = shared between FD and CEMG; teal = CEMG onl y. Node sizes reflect mean ARG 
+
+abundance (log 10 counts per million reads; CPM). The inset bar plot summarizes the number of 
+
+ARGs in each occurrence category (FD only, shared, CEMG only) as a proportion of all detected 
+
+ARGs. 
+
+Fig 3 
+
+Figure 3. ARG diversity and drug -class composition across enrichment conditions and 
+
+antibiotic treatments. (A) ARG drug class richness under aerobic and anaerobic conditions across 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+FD, CEMG -NoAB, and CEMG -AB. Data points represent individual samples; boxplots 
+
+summarize within -group distributions. Pairwise group differences were assessed using the 
+
+Wilcoxon rank -sum test; significance levels are indicated as ns (not significant) and p < 0.05 (*). 
+
+(B) Mean relative abundance of the top 10 ARG drug classes across FD, CEMG -NoAB, and 
+
+CEMG -AB, expressed as a percentage of total ARG -mapping reads within each group; remaining 
+
+classes are grouped as “Others”. Drug class labels follow CARD annotations . ARGs assigned to 
+
+multiple drug classes by CARD were retained according to their individual resistance 
+
+classifications and were not collapsed into a single category . (C) Mean relative abundance of the 
+
+top 10 ARG genes across FD, CEMG -NoAB, and CEMG -AB, expressed as a percentage of total 
+
+ARG -mapping reads within each group; remaining genes are grouped as “Others”. (D) Mean 
+
+relative abundance of ARG drug classes across antibiotic enrichment treatments (AMP = 
+
+Ampicillin; CEF = Ceftiofur; ERY = Erythromycin; LIN = Lincomycin; TET = Tetracycline; VAN 
+
+= Vancomycin), expressed as a percentage of total ARG -mapping reads withi n each treatment 
+
+group, shown separately for anaerobic (upper) and aerobic (lower) conditions. 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+Fig 4
+
+Figure 4. Fold change in ARG abundance across drug classes for individual antibiotic 
+
+enrichment treatments relative to FD. Fold change was calculated as the ratio of mean CPM in 
+
+each enriched group to mean CPM in FD for each drug class, pooled across both aerobic and 
+
+anaerobic oxygen conditions and all three antibiotic concentration levels (1 X, 10 X, and 100 X size -
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+adjusted MIC ). Blue circles represent the mean fold change across all antibiotic enrichment 
+
+treatments combined; grey circles represent fold change for each individual antibiotic treatment 
+
+(A mp = Ampicillin; C ef = Ceftiofur; E ry = Erythromycin; L in = Lincomycin; T et = Tetracycline; 
+
+Van = Vancomycin). 
+
+Fig 5 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+Figure 5. Diversity and composition of MGEs across assembled contigs and enrichment 
+
+conditions. (A) Total number of unique ARG -bearing contigs associated with each MGE class. 
+
+Bars represent the overall count summed across all replicates and sample groups; dots indicate 
+
+per -replicate counts. MGE classes are ordered from most to least prevalent. (B) UpSet plot 
+
+showing the number of ARG instances (y -axis, bars) distributed across combinations of MGE 
+
+route classes (x -axis, filled dots and connecting lines), stratified by drug class (bar fill). Only 
+
+intersections containing at least one ARG instance are shown . Set sizes (bottom left) indicate the 
+
+total number of ARG instances associated with each MGE route class regardless of co -occurrence. 
+
+(C) Relative abundance (%) of MGE classes among ARG -bearing contigs within each enrichment 
+
+group, faceted by oxygen condition with CEMG -NoAB and CEMG -AB shown as separate bars 
+
+within each facet. Each bar is normalized to 100% of MGE -associated contigs within t hat group. 
+
+Fig 6 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.04.24.720626 doi: bioRxiv preprint
+
+Figure 6. Co -occurrence patterns of ARGs, host genera, and MGEs. Sankey diagram showing 
+
+co -occurrence patterns among resistance drug classes (left), ARG genes, bacterial genera, and 
+
+MGE classes (right), based on contig -level co -localization. Flow width is proportional to the 
+
+number of ARG -bearing contigs sharing each d rug class -gene -genus -MGE combination.

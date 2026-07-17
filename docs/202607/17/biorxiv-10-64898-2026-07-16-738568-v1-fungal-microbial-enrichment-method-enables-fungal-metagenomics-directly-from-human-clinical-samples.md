@@ -1,0 +1,24 @@
+---
+title: Fungal microbial enrichment method enables fungal metagenomics directly from human clinical samples
+title_zh: 真菌微生物富集方法实现了从人类临床样本直接进行真菌宏基因组学分析
+authors: "Porter, M. K., Akana, R. T., Romano, A. E., Pei, X., Kamel, B., Haridas, S. F., LaButti, K., Grigoriev, I. V., Wu-Woods, N. J., Garner, O., Underhill, D., Ismagilov, R. F."
+date: 2026-07-17
+pdf: "https://www.biorxiv.org/content/10.64898/2026.07.16.738568v1.full.pdf"
+tags: ["query:microbiome"]
+score: 7.0
+evidence: 从临床样本进行真菌宏基因组测序的方法
+tldr: 真菌在健康和疾病中扮演重要角色，但现有方法无法直接从临床样本进行基因组分析。本研究将微生物富集方法扩展到真菌（fMEM），在支气管肺泡灌洗样本中去除人类DNA超1000倍，保留真菌DNA在10倍以内，使低至10皮克真菌DNA的样本也能进行鸟枪测序。fMEM成功恢复多个近乎完整的真菌宏基因组组装基因组，发现现有参考基因组中缺失的临床相关基因。该方法兼容长读长测序，为人类真菌组研究提供新工具，有望推动临床诊断和复杂疾病研究。
+source: biorxiv
+selection_source: fresh_fetch
+figures_json: "[{\"url\": \"assets/figures/biorxiv/biorxiv-10-64898-2026-07-16-738568-v1/fig-001.webp\", \"caption\": \"\", \"page\": 0, \"index\": 1, \"width\": 1307, \"height\": 1224, \"label\": \"Figure\"}, {\"url\": \"assets/figures/biorxiv/biorxiv-10-64898-2026-07-16-738568-v1/fig-002.webp\", \"caption\": \"\", \"page\": 0, \"index\": 2, \"width\": 1178, \"height\": 1280, \"label\": \"Figure\"}, {\"url\": \"assets/figures/biorxiv/biorxiv-10-64898-2026-07-16-738568-v1/fig-003.webp\", \"caption\": \"\", \"page\": 0, \"index\": 3, \"width\": 1710, \"height\": 951, \"label\": \"Figure\"}, {\"url\": \"assets/figures/biorxiv/biorxiv-10-64898-2026-07-16-738568-v1/fig-004.webp\", \"caption\": \"\", \"page\": 0, \"index\": 4, \"width\": 1942, \"height\": 774, \"label\": \"Figure\"}, {\"url\": \"assets/figures/biorxiv/biorxiv-10-64898-2026-07-16-738568-v1/fig-005.webp\", \"caption\": \"\", \"page\": 0, \"index\": 5, \"width\": 1937, \"height\": 1022, \"label\": \"Figure\"}, {\"url\": \"assets/figures/biorxiv/biorxiv-10-64898-2026-07-16-738568-v1/fig-006.webp\", \"caption\": \"\", \"page\": 0, \"index\": 6, \"width\": 1658, \"height\": 975, \"label\": \"Figure\"}]"
+motivation: 现有方法无法从低真菌丰度的临床样本直接进行基因组级表征，需要一种有效富集真菌DNA的方法。
+method: 扩展微生物富集方法至真菌（fMEM），通过去除人类DNA并保留真菌DNA，实现临床样本的直接宏基因组测序。
+result: "fMEM使人类DNA减少超1000倍，从BAL样本中恢复三个真菌MAG（两个>90%完整度），并发现临床相关基因和新基因组内容。"
+conclusion: fMEM兼容短读长和长读长测序，为人类真菌组研究提供高效方法，有助于揭示真菌在疾病中的作用。
+---
+
+## 摘要
+真菌在健康和疾病中发挥重要作用，但当前的方法如培养、PCR和扩增子测序无法直接从临床样本提供基因组水平的表征。尽管宏基因组测序可以克服这些限制，但在真菌DNA相对于人DNA丰度较低的临床样本中仍不实用。在此，我们扩展了一种最近描述的微生物富集方法（MEM）到真菌（真菌微生物富集方法；fMEM），并在支气管肺泡灌洗液（BAL）样本中测试该方法，以证明直接来自样本的真菌宏基因组分析和宏基因组组装基因组（MAG）恢复。在BAL样本中，fMEM将人DNA消耗超过1000倍，同时将真菌DNA保持在10倍以内，使得从真菌生物量低至每200微升BAL中10皮克真菌DNA的样本进行鸟枪法测序成为可能。fMEM使得从四个测序BAL样本中的三个中从头恢复真菌MAG成为可能，包括两个接近完整的MAG（>90% BUSCO完整性）和一个82.1%完整的MAG，且BUSCO估计的污染率低（≤1.5%）。通过fMEM恢复的真菌MAG还解析了潜在临床相关基因，这些基因不能仅从分类学完全预测，并揭示了当前可用同种参考基因组中不存在的基因组内容。fMEM与全基因组扩增（包括长读长测序流程）兼容。来自fMEM处理样本的长读长为真菌组装提供了高覆盖度（>10X）。fMEM与长读长测序的兼容性使得能够恢复仅用短读长难以组装的基因。fMEM可能为人类相关真菌的作用提供新的见解，影响公共卫生、临床管理以及涉及疑似真菌作用的复杂疾病的研究。
+
+## Abstract
+Fungi play important roles in health and disease, but current methods such as culture, PCR, and amplicon sequencing cannot provide genome-level characterization directly from clinical samples. Although metagenomic sequencing could overcome these limitations, it remains impractical in clinical samples where fungal DNA is present at low abundance relative to human DNA. Here, we extend a recently described microbial enrichment method (MEM) to fungi (fungal Microbial Enrichment Method; fMEM) and test the method in bronchoalveolar lavage (BAL) samples to demonstrate direct-from-sample fungal metagenomic analysis and metagenome-assembled genome (MAG) recovery. In BAL samples, fMEM depleted human DNA by more than 1000-fold while preserving fungal DNA within 10-fold, enabling shotgun sequencing from samples with fungal biomass as low as 10 picograms fungal DNA per 200 microliters BAL. fMEM enabled de novo recovery of fungal MAGs from three of four sequenced BAL samples, including two near-complete MAGs (>90% BUSCO completeness) and one 82.1% complete MAG, with low BUSCO-estimated contamination ([&le;]1.5%). Fungal MAGs recovered by fMEM also resolved potentially clinically-relevant genes, not fully predictable from taxonomy alone and revealed genomic content absent from currently-available same-species reference genomes. fMEM is compatible with a whole-genome amplification (including long-read sequencing workflows). Long reads from fMEM-processed samples provided high coverage (>10X) over fungal assemblies. fMEM compatibility with long-read sequencing enables recovery of genes that would be difficult to assemble with short reads alone. fMEM may enable new insights into the role of human-associated fungi, impacting public health, clinical management, and research into complex diseases with suspected fungal roles.
