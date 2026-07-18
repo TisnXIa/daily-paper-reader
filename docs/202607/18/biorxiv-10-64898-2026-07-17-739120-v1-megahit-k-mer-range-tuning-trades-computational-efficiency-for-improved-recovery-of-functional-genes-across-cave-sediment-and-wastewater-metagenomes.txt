@@ -1,0 +1,1399 @@
+Title: MEGAHIT k-mer range tuning trades computational efficiency for improved recovery of functional genes across cave sediment and wastewater metagenomes
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.07.17.739120v1.full.pdf
+
+Number of Pages: 20
+
+Markdown Content:
+# MEGAHIT k-mer range tuning trades 1
+
+# computational efficiency for improved 2
+
+# recovery of functional genes across cave 3
+
+# sediment and wastewater metagenomes 4
+
+## Alina C ˘ arunta 1, Horia Leonard Banciu 2,3 , and Alexandru Eugeniu 5
+
+## Mizeranschi 4,5 6
+
+> 1
+
+Faculty of Computer Science, West University of Timis ¸ oara, Timis ¸ oara, Romania 7
+
+> 2
+
+Department of Molecular Biology and Biotechnology, Babes ¸ -Bolyai University, 8
+
+Cluj-Napoca, Romania. 9
+
+> 3
+
+Centre for Systems Biology, Biodiversity and Bioresources, Babes ¸ -Bolyai University, 10 
+
+Cluj-Napoca, Romania. 11 
+
+> 4
+
+Institute for Advanced Environmental Research, West University of Timis ¸ oara, 12 
+
+Timis ¸ oara, Romania. 13 
+
+> 5
+
+Research and Development Station for Bovine – Arad, Arad, Romania. 14 
+
+Corresponding author: 15 
+
+Alexandru Eugeniu Mizeranschi 16 
+
+Email address: alex.mizeranschi@e-uvt.ro 17 
+
+## ABSTRACT 18 
+
+Shotgun metagenomics is a powerful approach for profiling complex microbial ecosystems and discovering functional genes, including antimicrobial resistance genes (ARGs) and biosynthetic gene clusters (BGCs). De novo assembly with tools such as MEGAHIT commonly uses multiple k-mer lengths, but the effect of reduced k-mer sets on functional gene recovery has received limited attention. Here, we quantify the trade-off between assembly speed and functional-gene recovery using 17 cave sediment metagenomes and 10 wastewater metagenomes assembled under 19 MEGAHIT k-mer scenarios. In cave metagenomes, finer-grained k-mer ranges recovered more BGCs and, in several pairwise comparisons, more ARGs, but required longer runtimes. In wastewater metagenomes, finer-grained settings most clearly affected ARG recovery, whereas BGC counts did not differ significantly after Friedman testing. These results indicate that reduced k-mer sets can lower computational cost but may miss biologically relevant functional signal, depending on the dataset and downstream target. The study provides a quantitative basis for selecting MEGAHIT k-mer parameters according to whether computational efficiency or functional gene discovery is the primary aim. 
+
+> 19 20 21 22 23 24 25 26 27 28 29 30 31
+
+## INTRODUCTION 32 
+
+Metagenomics (Oulas et al., 2015; P ´erez-Cobas et al., 2020) is a field of study that allows researchers to 33 
+
+explore the vast microbial diversity present in diverse environments, including surface and subsurface 34 
+
+soil and water habitats, man-made environments or human-associated microbiomes (Guo et al., 2015; 35 
+
+Che et al., 2019; Turrini et al., 2020; Chiciudean et al., 2022; Vojvoda Zeljko et al., 2024; Gorecki et al., 36 
+
+2024). By analyzing DNA sequences directly extracted from these complex samples, metagenomics 37 
+
+enables the identification and characterization of novel microbial species and their functional potential. 38 
+
+Metagenomic assembly is a powerful method for exploring whole microbial communities, including 39 
+
+species which cannot be cultivated in a laboratory. Specialized data analysis tools and pipelines enable 40 
+
+the prospecting of microbial species for possibly novel functional genes and study their encoded products 41 
+
+and associated metabolic traits. Such novel genes of interest include antimicrobial resistance genes 42 
+
+(ARGs) (Tenover, 2006) and biosynthetic gene clusters (BGCs) (Cimermancic et al., 2014), with a broad 43 
+
+impact on understanding microbial interactions, dispersal and occurrence of antimicrobial resistance, or 44 
+
+(which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.07.17.739120 doi: bioRxiv preprint prospective biotechnological applications. 45 
+
+ARGs confer resistance to various antimicrobials upon their host microorganisms (Aminov and 46 
+
+Mackie, 2007). BGCs, also known as metabolic gene clusters, consist of sets of non-homologous genes, 47 
+
+which are involved in metabolic pathways (Lebedeva et al., 2021). BGCs are predicted to play key roles 48 
+
+in defense mechanisms against antimicrobials. Another role of BGCs is the production of secondary 49 
+
+metabolites involved in microbial competition (Rutledge and Challis, 2015). Consequently, the screening 50 
+
+of ARGs and BGCs across diverse microbial communities is considered a promising approach to facilitate 51 
+
+discoveries with potential implications for innovative industrial bioprocesses (Zada et al., 2022). 52 
+
+In recent years, several pipelines were developed for metagenomic assembly, binning and functional 53 
+
+annotation using domain-specific languages such as Nextflow (Di Tommaso et al., 2017), which was used 54 
+
+to build the nf-core family of data analysis pipelines (Ewels et al., 2020). In the field of metagenomics, 55 
+
+relevant examples of pipelines include nf-core/mag (Krakau et al., 2022) for assembly and binning, and 56 
+
+nf-core/funcscan (Yates et al., 2024) for functional annotation, including gene annotation and the discovery 57 
+
+of ARGs and BGCs. These pipelines automate the specialized workflows from raw sequenced reads to 58 
+
+assembled and annotated (meta)genomes. Once configured, they reproducibly generate assembly and 59 
+
+annotation outputs from any input data, greatly simplifying re-analysis. 60 
+
+A crucial step in any metagenomics pipeline is the metagenome assembly of raw sequenced reads 61 
+
+into contiguous sequences or contigs. Numerous tools and approaches have been proposed for this and 62 
+
+several studies evaluated the performance of these tools (Van der Walt et al., 2017; Vollmers et al., 2017; 63 
+
+Sczyrba et al., 2017; Ayling et al., 2020; Yang et al., 2021). Software packages such as metaSPAdes (Nurk 64 
+
+et al., 2017) and MEGAHIT (Li et al., 2015) are usually recommended, the former generally having 65 
+
+better accuracy, while the latter offers better efficiency (considerably smaller runtimes and memory 66 
+
+requirements), without bringing a significant drop in accuracy. 67 
+
+For example, Ayling et al. (2020) proposed new approaches for metagenome assembly with short reads, 68 
+
+by describing the existing approaches for metagenome assemblers, including tools like MEGAHIT and 69 
+
+metaSPAdes. Van der Walt et al. (2017) compared the performance of various metagenome assemblers on 70 
+
+complex metagenomes. The authors provided a workflow that aims to guide researchers on selecting the 71 
+
+best metagenome assembler for their metagenomic project, taking into account several aspects, including 72 
+
+available computational resources. Among their recommendations, the MEGAHIT software package 73 
+
+was highlighted due to several advantages over competing tools. Similar to Van der Walt et al. (2017), 74 
+
+Vollmers et al. (2017) compared and evaluated the performance of several metagenome assembly tools, 75 
+
+including MEGAHIT, on metagenomic samples, from the perspective of a microbiologist. Sczyrba et al. 76 
+
+(2017) performed a critical evaluation of the metagenome interpretation for several metagenomic software 77 
+
+tools, including MEGAHIT. Finally, Yang et al. (2021) surveyed several computational tools, including 78 
+
+MEGAHIT, used to generate metagenome-assembled genomes (MAGs) from metagenomic sequencing 79 
+
+data, and provided guidelines for selecting the appropriate tool for MAG generation. 80 
+
+Several advantages of MEGAHIT were repeatedly highlighted in the previously mentioned studies: 81 
+
+it requires less time and less memory compared to SPAdes for assembling complex datasets; it is an 82 
+
+open-source tool; it offers a relatively high flexibility; it provides the highest assembly cost-efficiency 83 
+
+trade-off; it has high sensitivity, i.e., a generally higher probability to include low-abundant community 84 
+
+members in the assemblies; and it is very well documented. 85 
+
+A common strength of both metaSPAdes and MEGAHIT is that they rely on a multiple k-mer-based 86 
+
+approach. Assemblers that use multiple k-mer sizes generally have a better performance compared to 87 
+
+those assemblers using a single k-mer size (Ayling et al., 2020). For example, setting values for the k-mer 88 
+
+size range in the MEGAHIT assembler is possible via parameters k-min , k-max and k-step , where k-min is 89 
+
+the minimum k-mer size, k-max is the maximum k-mer length and k-step is an incremental step. These 3 90 
+
+parameters can effectively specify a range of k-mer sizes, for which MEGAHIT creates a set of succinct 91 
+
+de Bruijn graphs which are then integrated to form the final assembly. For example, Vollmers et al. (2017) 92 
+
+have used a k-mer range defined by k-min =21, k-max =101 and k-step of 10, which yields the following 93 
+
+set of k-mer sizes: 21, 31, 41, 51, 61, 71, 81, 91 and 101. If the desired k-mer range cannot be represented 94 
+
+by such an arithmetic progression, it can be explicitly defined using the k-list parameter. 95 
+
+In the context of metagenome assemblers that employ multiple k-mer sizes, the relationship between 96 
+
+the k-mer sizes and the quality of resulting assemblies has generally been unexplored. An exception is 97 
+
+the work of Qayyum et al. (2025), who compared three scenarios related to k-mer sizes in MEGAHIT 98 
+
+and found that a reduced set of k-mer sizes produced similar quality metrics as those from larger (more 99 
+
+> 2/20
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.07.17.739120 doi: bioRxiv preprint
+
+fine-grained) sets of k-mers, while bringing about a considerable reduction in assembly time. However, 100 
+
+in this study, the impact of the k-mer size settings on the number of identified ARGs and BGCs was 101 
+
+unexplored. 102 
+
+Another previous study from C ˘arunta et al. (2024) tackled the three previously mentioned assembly 103 
+
+parameters on several quality metrics, including the number of ARGs and BGCs, using multiple assembly 104 
+
+scenarios (based on different k-mer size ranges) and 7 samples extracted from Movile Cave in Romania. 105 
+
+Their findings refuted those of Qayyum et al. (2025) regarding the use of the reduced set of k-mer sizes 106 
+
+when the target is the identification of ARGs and BGCs. According to the results of C ˘arunta et al. (2024), 107 
+
+the use of the reduced set of k-mer sizes led to the discovery of fewer ARGs and BGCs compared to the 108 
+
+case when using a larger set of k-mer sizes. 109 
+
+The objective of the current study is to extend the results of C ˘arunta et al. by targeting the limitations 110 
+
+identified within the previously mentioned study (C ˘arunta et al., 2024). Specifically, we include additional 111 
+
+sediment samples extracted from three new cave sites, and expand the set of assembly scenarios to be 112 
+
+compared, including new scenarios with low and high values for the k-step parameter. In this study, we 113 
+
+devised a comprehensive set of scenarios related to the three parameters k-min , k-max and k-step and 114 
+
+compared the resulting assemblies on various metrics related to assembly quality, as well as the number of 115 
+
+identified ARGs and BGCs and their lengths expressed in base pair counts. We also focused on comparing 116 
+
+only the pairs of scenarios in which the value of a single assembly parameter ( k-min , k-max or k-step )117 
+
+varied, making it easier to interpret their effects. In addition to the cave samples, a second dataset for 118 
+
+wastewater metagenomes (Fierer et al., 2022) was also used to test the generalisability of our results on an 119 
+
+independent dataset. 120 
+
+## METHODS 121 
+
+The data on which this study was conceived originated from 17 cave samples as follows: 5 sediment 122 
+
+samples from Clo s¸ ani Cave, 4 sediment samples from Ferice Cave, one sediment sample from Bears’ Cave, 123 
+
+and 7 sediment samples collected from Movile Cave in Romania, as previously described (Chiciudean 124 
+
+et al., 2022). These samples were sequenced and paired-end reads were generated using PE150 on the 125 
+
+Illumina NovaSeq 6000 platform. The raw sequenced reads that were generated from these samples were 126 
+
+uploaded to the NCBI SRA database under the project accession number PRJNA777757. The per-sample 127 
+
+accession IDs are listed in Table S1. A second dataset for wastewater metagenomes from a wastewater 128 
+
+system on a university campus was also included (Fierer et al., 2022). Specifically, this dataset was 129 
+
+originally published under NCBI project accession number PRJNA875025 and contains 188 wastewater 130 
+
+samples collected from 17 locations on the University of Colorado campus. A subset of 10 wastewater 131 
+
+samples was randomly selected for this study. The individual accession IDs, sample IDs, read-pair counts 132 
+
+and base counts for these 10 samples are provided in Table S2. 133 
+
+The nf-core/mag pipeline v. 3.0.2 (Krakau et al., 2022) was used for metagenome assembly and 134 
+
+binning. Pipeline executions were set up for each of the assembly scenarios depicted in Table 1. These 135 
+
+assembly scenarios are represented as tuples of values for each of the three k-mer parameters (i.e., k-136 
+
+min , k-max , k-step ), taking into consideration the general constraints imposed by MEGAHIT for these 137 
+
+parameters, as follows. The parameter k-min must be an odd integer ≥ 15. The parameter k-max must be 138 
+
+an odd integer ≤ 127, but greater than or equal to k-min . The parameter k-step must be an even integer 139 
+
+≥ 2 and ≤ 28, such that all k-mer sizes are odd, within a valid range from 15 to 127. MEGAHIT v. 140 
+
+1.2.9 (Li et al., 2015) was used for the metagenome assembly and quality metrics were collected from its 141 
+
+logs. In order to increase specificity, mercy k-mers were excluded and only contigs of a minimum length 142 
+
+of 2000 bp were retained. The values for the k-mer length parameters ( k-min , k-max and k-step ) were 143 
+
+configured as depicted in Table 1. 144 
+
+In contrast to the previous study by C ˘arunta et al. (2024), we excluded the comparison of the resulting 145 
+
+assemblies on metrics related to the number of metagenomic bins (e.g., filt bins , unfilt bins ). These 146 
+
+quality metrics related to metagenomic bins were excluded here because they did not have any relationship 147 
+
+with the identification of ARGs and BGCs, these functional genes being searched within all contigs of 148 
+
+samples and thus were not affected by the binning process. Another reason for excluding these metrics is 149 
+
+the fact that in the previous study they did not have an overall significant effect on the three assembly 150 
+
+parameters (C ˘arunta et al., 2024). This exclusion of quality metrics thus reduced the complexity of the 151 
+
+analyses performed within this study. Note that the terms ”quality metric” and ”variable of interest” are 152 
+
+used interchangeably within this study. 153 
+
+3/20 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.07.17.739120 doi: bioRxiv preprint
+
+The sample-specific assemblies created with MEGAHIT were given as input to nf-core/funcscan (Yates 154 
+
+et al., 2024). The version v. 2.1.0 of the pipeline was used for this study. A single analysis encompassing 155 
+
+the assemblies created from all the scenarios was set up, enabling the identification of ARGs using 156 
+
+AMRFinderPlus v. 3.12.8 (Feldgarden et al., 2021) and the identification of BGCs using GECCO v. 157 
+
+0.9.10 (Carroll et al., 2021). 158 
+
+Spearman’s rank correlations between various variables (from Table 2) were calculated to study 159 
+
+the strength and type of their association (positive vs. negative correlation). Furthermore, Friedman’s 160 
+
+test followed by Conover’s all-pairs comparisons test for unreplicated blocked data were applied to 161 
+
+identify significant differences between the different scenarios, considering 11 dependent variables that 162 
+
+were collected within this study (Table 2). Statistical analyses were performed in the R programming 163 
+
+language v. 4.4.3 (R Core Team, 2024) using the friedman.test function from the stats package and 164 
+
+the frdAllPairsConoverTest function from the PMCMRplus package v. 1.9.12 (Pohlert, 2023), with 165 
+
+Bonferroni correction of p-values for multiple comparisons. The results were considered statistically 166 
+
+significant at a p-value threshold of 0.05. Hierarchical clustering using Euclidean distance was performed 167 
+
+on Conover’s test statistics with the hclust function from the stats package with the ward.D2 method, in 168 
+
+order to underline similarity patterns within the scenario pairs and variables, respectively. 169 
+
+All analyses were performed on a virtual computing cluster built on top of OpenStack using HTCondor 170 
+
+v. 8.8.15 (Bockelman et al., 2021), with NFS storage and 8 execution nodes, each with 64 AMD EPYC 171 
+
+7702 2.0 GHz vCPUs and 256 GB of memory. In order to ensure an adequate comparison of runtimes 172 
+
+across the different scenarios, dedicated access to the cluster was ensured and each MEGAHIT process 173 
+
+was allowed to use the full amount of vCPUs and memory available on a single cluster node. 174 
+
+## RESULTS 175 
+
+A total of 19 assembly scenarios were analyzed in this study and the corresponding values for the 176 
+
+parameters k-min , k-max and k-step in MEGAHIT are presented in Table 1. The different settings for these 177 
+
+scenarios were chosen as variations from the one employed by Vollmers et al. (2017) (i.e., k-min =21, 178 
+
+k-max =101 and k-step =10). These scenarios were tested on both previously mentioned datasets. From 179 
+
+the scenario-specific results of the nf-core/mag and nf-core/funcscan pipelines, the following quality 180 
+
+metrics were collected and analyzed: megahit s , contigs , rRNA genes , L50 , max contig , N50 , total bp ,181 
+
+ARG , ARG len , BGC and BGC len . Specifically, information related to the first seven variables ( megahit s ,182 
+
+contigs , rRNA genes , L50 , max contig , N50 and total bp ) was provided by MEGAHIT. For the last 183 
+
+four variables, namely ARG , ARG len , BGC and BGC len , data were collected from the results of the 184 
+
+nf-core/funcscan pipeline. These metrics are defined in Table 2. 185 
+
+Results on cave metagenome samples 186 
+
+Figure 1 depicts Spearman’s rank correlations between the different variables of interest. While roughly 187 
+
+half of the correlations were mild (with values between -0.4 and 0.4), several pairs of variables with a 188 
+
+strong positive correlation (values above 0.9) were encountered in Figure 1. For example, the assembly 189 
+
+length ( total bp ) and the contig count ( contigs ) were highly correlated ( rS ≈ 0.98 ) and both were strongly 190 
+
+correlated with the BGC count ( rS ≈ 0.90 and rS ≈ 0.82 , respectively), indicating that larger assemblies 191 
+
+typically yielded more predicted BGCs (Figure 1). 192 
+
+We performed statistical analyses using Friedman’s test based on the results of the two previously-193 
+
+mentioned pipelines (i.e., nf-core/mag and nf-core/funcscan ) (see Table 3), in order to identify statistically 194 
+
+significant differences for the eleven variables across the different pairs of scenarios. We applied 195 
+
+Friedman’s test using samples as blocks and scenarios as groups. The variable ARG len was removed from 196 
+
+further analysis because its corresponding p-value did not pass the significance threshold in Friedman’s 197 
+
+test. 198 
+
+Next, we applied Conover’s all-pairs comparisons test for unreplicated blocked data on the remaining 199 
+
+ten variables (Table S7). Similar to Friedman’s test, we set up samples as blocks and scenarios as groups, 200 
+
+with the Bonferroni correction being used for the p-value adjustment. The tests generated p-values for 201 
+
+171 possible pairwise scenario comparisons, but only 39 such comparisons were considered for further 202 
+
+analysis, where only one of the three k-mer length parameters was allowed to vary between the compared 203 
+
+scenarios, while the other 2 parameters were kept constant. The selected 39 comparative scenarios are 204 
+
+listed in Tables S3, S4 and S5. The rest of 132 pairwise scenario comparisons (where two or more k-mer 205 
+
+4/20 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.07.17.739120 doi: bioRxiv preprint
+
+scenario k-min k-max k-step k21 121 04 21 121 04 k21 121 10 21 121 10 k21 121 20 21 121 20 k21 111 10 21 111 10 k21 101 04 21 101 04 k21 101 10 21 101 10 k21 101 20 21 101 20 k31 121 10 31 121 10 k31 111 04 31 111 04 k31 111 10 31 111 10 k31 111 20 31 111 20 k31 101 10 31 101 10 k41 121 04 41 121 04 k41 121 10 41 121 10 k41 121 20 41 121 20 k41 111 10 41 111 10 k41 101 04 41 101 04 k41 101 10 41 101 10 k41 101 20 41 101 20 
+
+Table 1. Scenarios for assembly generation in MEGAHIT length parameters were simultaneously distinct between the two compared scenarios) were discarded 206 
+
+because they were difficult to interpret in the study’s context, focusing on specific k-mer parameter effects. 207 
+
+The results of Conover’s all-pairs comparisons test for unreplicated blocked data are summarized 208 
+
+in Fig. 2 in the form of a heatmap. The corresponding values of Conover’s significant statistics for all 209 
+
+ten variables can be found in Table S7. Of the ten variables that were analyzed, max contig showed 210 
+
+significant differences only in six of the total of thirty-nine pairs of scenarios. Similarly, BGC len showed 211 
+
+significant pairwise differences in five of the thirty-nine scenario pairs, while BGC showed significant 212 
+
+pairwise differences in thirty-two of the thirty-nine scenario pairs. The contigs and total bp variables 213 
+
+had significantly different rank sum values in thirty-three and thirty-four of the thirty-nine scenario pairs, 214 
+
+respectively. The variable megahit s was significantly different in all but five of the thirty-nine scenario 215 
+
+pairs, just as the variable total bp . Furthermore, the other variables ( rRNA genes , N50 , L50 and ARG )216 
+
+showed significant differences in various numbers of scenario pairs, namely: twenty-two, twenty, nineteen 217 
+
+and fourteen pairs, respectively. Thus, these gene-related metrics showed more moderate changes across 218 
+
+k-mer settings than assembly size or runtime. 219 
+
+Regarding the hierarchical clustering of the pairwise scenario comparisons depicted on rows in Fig. 2, 220 
+
+four main clusters were noticeable. These clusters of scenario pairs are presented in Table 4, where each 221 
+
+column contains a list of scenario pairs that belong to a certain cluster. Specifically, cluster 1 contains 222 
+
+pairwise scenarios with varying k-max , Cluster 2 consists of pairwise scenarios with different k-step 223 
+
+values, Cluster 3 is composed of pairwise scenarios with different k-min , while cluster 4 consists of pairs 224 
+
+where either k-min or k-step varied. 225 
+
+A similar situation to pairwise scenario clustering was encountered with the clustering of columns 226 
+
+containing variables of interest, where two main clusters were detected. The first cluster was composed of 227 
+
+variables N50 , max contig , BGC len , rRNA genes and ARG . Meanwhile, the second cluster consisted of 228 
+
+the variables megahit s , contigs , L50 , total bp and BGC .229 
+
+In order to ease the identification of significant differences in Fig. 2, the p-values for pairwise 230 
+
+comparisons that were greater than 0.05 have been omitted from the figure. The p-values for pairwise 231 
+
+comparisons that were less than or equal to 0.05 are marked with asterisks. 232 
+
+The impact of different settings for the k-step parameter (values 4, 10, 20) on several quality metrics is 233 
+
+presented in Fig. 3. Within this figure, each panel shows the k-step trade-off regarding a specific variable 234 
+
+of interest, namely (a) N50 lengths, (b) assembly runtimes in seconds for MEGAHIT, (c) BGC counts and 235 
+
+5/20 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.07.17.739120 doi: bioRxiv preprint
+
+Metric Definition Target megahit s the assembly runtime in MEGAHIT, expressed in seconds ↘
+
+contigs the number of contigs in the corresponding assembly ↗
+
+rRNA genes the number of identified rRNA genes ↗
+
+L50 the minimum number of contigs, ordered by decreasing length, needed to cover 50% of the total assembly length ↘
+
+max contig the length of the largest contig ↗
+
+N50 the contig length for which contigs of that length or longer account for at least 50% of the total assembly length ↗
+
+total bp the total assembly size in bp ↗
+
+ARG the number of identified ARGs ↗
+
+ARG len the mean of gene lengths per sample per scenario ↗
+
+BGC the number of identified BGCs ↗
+
+BGC len the mean of the BGC lengths per sample per scenario ↗
+
+Table 2. Definitions for quality metrics used in this study. Up arrow symbol ( ↗) means larger values are better than smaller values for the corresponding quality metric, while using the down arrow symbol ( ↘)means the opposite. Variable p value Friedman megahit s <0.001 contigs <0.001 rRNA genes <0.001 L50 <0.001 max contig <0.001 N50 <0.001 total bp <0.001 ARG <0.001 ARG len 0.487 BGC <0.001 BGC len <0.001 
+
+Table 3. P-values for assembly quality metrics computed using Friedman’s test for the cave dataset. The values were rounded to 3 decimals. (d) ARG counts, based on their mean value grouped by k-step . Similarly, the impact of different settings 236 
+
+for the k-min parameter (values 21, 31, 41) on the same quality metrics was shown in Fig. 4. Further, the 237 
+
+impact of different settings for the k-max parameter (values 101, 111, 121) on each of the four quality 238 
+
+metrics (i.e., N50 , megahit s , BGC and ARG ) is presented in Fig. 5. 239 
+
+Results on wastewater metagenome samples 240 
+
+Similar to the previous experiment on the cave dataset, the same steps were performed using wastewater 241 
+
+metagenome data. Figure 6 depicts Spearman’s rank correlations between the different variables of 242 
+
+interest. Similar to Figure 1, a pair of variables ( total bp and contigs ) with a strong positive correlation 243 
+
+(rS ≈ 0.91 ) was encountered in Figure 6, but with a mild correlation to the BGC count in the case of both 244 
+
+variables. However, fewer pairs of variables with corresponding rank correlation coefficients > 0.70 and 245 
+
+pairs with negative correlations were detected. 246 
+
+After Friedman’s test (results shown in Table 5), the variables ARG len and BGC were removed from 247 
+
+further analysis because their corresponding p-value did not pass the significance threshold. 248 
+
+The results of Conover’s all-pairs comparisons test for unreplicated blocked data are summarized in 249 
+
+Fig. 7 in the form of a heatmap. For identifying significant differences easier, the p-values for pairwise 250 
+
+scenario comparisons that were greater than 0.05 have been omitted from the figure. The p-values for 251 
+
+pairwise comparisons that were less than or equal to 0.05 are marked with asterisks. The corresponding 252 
+
+6/20                                                        
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.07.17.739120 doi: bioRxiv preprint megahit_s 0.58 0.37 0.65 −0.10 −0.28 0.51 0.13 −0.22 0.37 −0.36
+> contigs 0.44 0.96 0.06 −0.03 0.98 0.26 −0.36 0.82 −0.27
+> rRNA_genes 0.37 0.41 −0.11 0.44 0.13 −0.07 0.30 −0.21
+> L50 −0.05 −0.20 0.90 0.17 −0.36 0.71 −0.41
+> max_contig 0.08 0.06 0.10 −0.05 −0.03 −0.02
+> N50 0.13 0.29 0.18 0.35 0.84
+> total_bp 0.31 −0.34 0.90 −0.11
+> ARG 0.37 0.46 0.41
+> ARG_len −0.14 0.33
+> BGC 0.16
+> BGC_len
+> Spearman's rank correlations between variables of interest
+
+Figure 1. Spearman’s rank correlations between variables using the cave dataset. Variables are on the main diagonal; variable correlation coefficients for the whole dataset are on the upper-right panel; confidence ellipses and smoothed red lines, based on the corresponding correlation coefficient, indicating the overall 2D shape for each pair of two variables are shown on the lower-left panel. Blue color indicates positive correlation and red color indicates negative correlation, whereas the color intensity signifies the strength of the correlation. values of Conover’s significant statistics for all nine variables can be found in Table S8. Among the nine 253 
+
+variables that were analyzed, megahit s and total bp showed significant differences in all 39 pairs of 254 
+
+scenarios. Similarly, contigs showed significant pairwise differences in 30 of the 39 scenario pairs, while 255 
+
+N50 showed significant pairwise differences in 25 of the 39 scenario pairs. The L50 and rRNA genes 256 
+
+variables had significantly different rank sum values in 12 and 7 of the 39 scenario pairs, respectively. The 257 
+
+variable ARG showed significant pairwise differences in 16 of the 39 scenario pairs. However, max contig 258 
+
+and BGC len did not show any significant difference in the pairs of scenarios involved. 259 
+
+Regarding the hierarchical clustering of the pairwise scenario comparisons given as rows in Fig. 7, 260 
+
+three main clusters were noticeable. These clusters of scenario pairs are presented in Table 6, where each 261 
+
+column contains a list of scenario pairs that belong to a specific cluster. Specifically, cluster 1 contains 11 262 
+
+pairwise scenarios with varying k-max , cluster 2 consists of 13 pairwise scenarios with different values of 263 
+
+k-min , and cluster 3 is composed of 15 pairwise scenarios with different k-step .264 
+
+An additional grouping of the variables of interest (columns of Fig. 7) similar to the pairwise scenario 265 
+
+clustering was provided and three main clusters were detected as follows. The first cluster was composed 266 
+
+of one variable (i.e., megahit s ). The second cluster consisted of the variables rRNA genes , max contig ,267 
+
+BGC len , L50 and ARG . The third cluster contained the variables total bp , contigs and N50 .268 
+
+The impact of different settings for the k-step parameter (values 4, 10, 20) on several quality metrics is 269 
+
+presented in Fig. 8. Within this figure, each panel shows the k-step trade-off regarding a specific variable 270 
+
+of interest, namely (a) N50 lengths, (b) assembly runtimes in seconds for MEGAHIT and (c) ARG counts, 271 
+
+based on their mean value grouped by k-step . Similarly, the impact of different settings for the k-min 272 
+
+parameter (values 21, 31, 41) on the same quality metrics was shown in Fig. 9. Further, the impact of 273 
+
+different settings for the k-max parameter (values 101, 111, 121) on each of the three quality metrics 274 
+
+(i.e., N50 , megahit s and ARG ) is presented in Fig. 10. Compared to the previous analysis on cave data, 275 
+
+the BGC variable was not included in these figures because Friedman’s test did not find any significant 276 
+
+differences for this variable. 277 
+
+7/20 
+
+(which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.07.17.739120 doi: bioRxiv preprint * * * * * * * * ** * * * * * * ** * * * * * * * ** * * ** * * ** * * * * ** * * * * ** * * * * ** * * * ** * * * ** * * * * ** * * * * * * ** * * * * * * ** * * * * ** * * * * * * * ** * * * * * * **** * *** ** * * * ** * * * ** * * * * ** * * * * * ** * ** * * * * ** * * * * ** * * * ** * * * * ** * * * * ** * * * * * * ** * * * * ** * * * ** * * * * * ** * * * * ** * * * * ** * * * ** * * * * *
+
+k31_101_10__k31_121_10 k21_101_10__k21_121_10 k41_101_10__k41_121_10 k21_111_10__k21_121_10 k31_111_10__k31_121_10 k31_101_10__k31_111_10 k41_101_10__k41_111_10 k21_101_10__k21_111_10 k41_111_10__k41_121_10 k21_101_04__k21_121_04 k21_101_20__k21_121_20 k21_101_04__k21_101_20 k21_121_04__k21_121_20 k41_101_04__k41_101_20 k31_111_04__k31_111_20 k41_121_04__k41_121_20 k21_111_10__k31_111_10 k21_121_10__k31_121_10 k21_121_20__k41_121_20 k21_101_10__k31_101_10 k21_101_20__k41_101_20 k21_101_10__k41_101_10 k21_111_10__k41_111_10 k21_121_10__k41_121_10 k21_121_04__k21_121_10 k41_101_10__k41_101_20 k21_101_04__k41_101_04 k21_121_04__k41_121_04 k31_101_10__k41_101_10 k31_111_10__k41_111_10 k31_121_10__k41_121_10 k31_111_04__k31_111_10 k41_101_04__k41_101_10 k41_121_04__k41_121_10 k21_121_10__k21_121_20 k21_101_04__k21_101_10 k31_111_10__k31_111_20 k21_101_10__k21_101_20 k41_121_10__k41_121_20 
+
+> N50 max_contig BGC_len rRNA_genes ARG megahit_s contigs L50 total_bp BGC
+> Test statistic
+> −20 020 40
+
+Figure 2. Heatmap showing test statistics from Conover’s all-pairs comparisons test for unreplicated blocked data, assessing differences across ten variables and thirty-nine pairwise scenario comparisons for the cave dataset. For example, scenario pair k21 101 04 k21 101 10 can be translated as a comparison between scenario k21 101 04 vs. scenario k21 101 10 when only parameter k-step varies. Red shades indicate that the first scenario in a pair had a higher rank sum (positive test statistic), while blue shades indicate the opposite (negative test statistic). Comparisons with p-values ≤ 0.05 are marked with asterisks. Rows (scenario pairs) and columns (variables) are hierarchically clustered using Euclidean distance to highlight patterns in statistical differences. 
+
+## DISCUSSION 278 
+
+In this study, we investigated the role of the k-mer size ranges in MEGAHIT on metagenomic assembly 279 
+
+in the context of microbial community-wide identification of ARGs and BGCs from cave and wastewater 280 
+
+microbiomes. We observed that different k-mer settings were associated with differences in the corre-281 
+
+sponding values for variables of interest from one scenario to another. Only pairs of scenarios with a 282 
+
+single difference at the level of k-min , k-max or k-step were considered for further analysis. 283 
+
+Analysis of cave dataset 284 
+
+For the cave metagenome samples specifically, we observed that the pairs of scenarios that were compared 285 
+
+revealed different patterns in terms of test statistic values and p-values computed via Conover’s all-pairs 286 
+
+comparisons test for unreplicated blocked data (see Fig. 2 and Table S7). Scenarios with smaller k-287 
+
+step had increased runtimes compared to scenarios with larger values for this parameter (and a smaller 288 
+
+corresponding number of k-mer sizes in their range). 289 
+
+This trade-off between different values for the k-step parameter is also observable in Fig. 3, where the 290 
+
+selection of the k-step value had an impact on various assembly metrics such as N50 lengths, assembly 291 
+
+runtime in seconds, BGC counts or ARG counts. More specifically, as k-step increased, the runtime also 292 
+
+decreased significantly, but this efficiency gain implied a trade-off of reduced BGC and ARG recovery, 293 
+
+8/20 
+
+(which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.07.17.739120 doi: bioRxiv preprint Cluster 1 Cluster 2 Cluster 3 Cluster 4 (k-max) (k-step) (k-min) (k-min | k-step) k31 101 10 k31 121 10 k21 101 04 k21 101 20 k21 111 10 k31 111 10 k21 101 10 k41 101 10 k21 101 10 k21 121 10 k21 121 04 k21 121 20 k21 121 10 k31 121 10 k21 111 10 k41 111 10 k41 101 10 k41 121 10 k41 101 04 k41 101 20 k21 121 20 k41 121 20 k21 121 10 k41 121 10 k21 111 10 k21 121 10 k31 111 04 k31 111 20 k21 101 10 k31 101 10 k21 121 04 k21 121 10 k31 111 10 k31 121 10 k41 121 04 k41 121 20 k21 101 20 k41 101 20 k41 101 10 k41 101 20 k31 101 10 k31 111 10 k21 101 04 k41 101 04 k41 101 10 k41 111 10 k21 121 04 k41 121 04 k21 101 10 k21 111 10 k31 101 10 k41 101 10 k41 111 10 k41 121 10 k31 111 10 k41 111 10 k21 101 04 k21 121 04 k31 121 10 k41 121 10 k21 101 20 k21 121 20 k31 111 04 k31 111 10 k41 101 04 k41 101 10 k41 121 04 k41 121 10 k21 121 10 k21 121 20 k21 101 04 k21 101 10 k31 111 10 k31 111 20 k21 101 10 k21 101 20 k41 121 10 k41 121 20 
+
+Table 4. List of scenario pairs clustered using Euclidean distance for the cave dataset. Each column contains scenario pairs that belong to a specific cluster and only one k-mer parameter varies within each pair. while N50 showed a similar but less impactful change. In contrast, when k-max increased, the values 294 
+
+for BGC counts, ARG counts and N50 increased, with a trade-off of longer assembly runtimes (Fig. 5). 295 
+
+Similarly, the effect of different settings for the k-min parameter on these four metrics is shown in Fig. 4. 296 
+
+Notably, for fourteen out of fifteen pairs of scenarios (with the exception of k41 101 10 k41 101 20) 297 
+
+with varying k-step , the scenarios with smaller k-step also showed an increased number of assembled 298 
+
+contigs and identified BGCs, while in terms of N50 , which is a way of expressing the level of fragmentation 299 
+
+of an assembly, only three pairs showed a significant difference. 300 
+
+For pairs of scenarios with different values for either k-min or k-max , the results were mixed. Based 301 
+
+on the hierarchical clustering of pairwise scenarios in Fig. 2, most pairs belonging to the first cluster had 302 
+
+significant differences detected in the second scenario from pairwise comparison, where only the value of 303 
+
+the parameter k-max varied. Scenarios with larger k-max but the same k-min and k-step also had an in-304 
+
+creased assembly runtime, except for five pairs (i.e., k21 111 10 k21 121 10, k31 111 10 k31 121 10, 305 
+
+k21 101 10 k21 111 10, k41 111 10 k41 121 10 and k21 101 04 k21 121 04), which did not show 306 
+
+significant differences in terms of runtime ( megahit s ). Furthermore, when only k-max varied for eleven 307 
+
+pairs of scenarios (listed in Table S4), the larger value of this parameter was associated with a significantly 308 
+
+increased N50 for all pairs except k21 111 10 k21 121 10 and the number of assembled contigs for 309 
+
+all pairs except k31 111 10 k31 121 10, in addition to an increased assembly runtime for six of these 310 
+
+scenario pairs. This suggests that it may be possible, in principle, to further optimize these assembly 311 
+
+quality metrics by further increasing the k-max . However, in particular, the current version of MEGAHIT 312 
+
+imposes an upper bound of 127 for the k-max parameter. 313 
+
+Within the second cluster of scenario pairs characterized by different values for k-step , four pairs of 314 
+
+scenarios showed significant differences for the first scenario in terms of rRNA genes , ARG , megahit s , con-315 
+
+tigs , L50 , total bp and BGC (i.e., k21 101 04 k21 101 20, k21 121 04 k21 121 20, k31 111 04 k31 111 20 316 
+
+and k41 121 04 k41 121 20). An exception (i.e., k41 101 04 k41 101 20) did not show significant 317 
+
+differences in terms of the number of identified ARGs, but showed significant differences in terms of 318 
+
+rRNA genes , megahit s , contigs , L50 , total bp and BGC . For the other variables of interest, the results 319 
+
+were mixed for this cluster. 320 
+
+Conversely, when only k-min varied for thirteen pairs of scenarios (listed in Table S3), an observed 321 
+
+difference was in terms of assembly runtime for the first scenario for all pairs, suggesting that starting the 322 
+
+k-mer range from a lower value did not bring a significant change in terms of the variables of interest. 323 
+
+9/20   
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.07.17.739120 doi: bioRxiv preprint 02000 4000
+> 410 20
+> kstep
+> N50
+
+a  
+
+> 050000 100000 150000
+> 410 20
+> kstep
+> megahit_s
+
+b  
+
+> 0200 400
+> 410 20
+> kstep
+> BGC
+
+c  
+
+> 020 40
+> 410 20
+> kstep
+> ARG
+
+dFigure 3. The k-step trade-off using the cave dataset where the x-axis contains values for the k-step 
+
+parameter (i.e., 4, 10 and 20). Values from the y-axis from each panel correspond to the mean of a particular variable of interest grouped by the values of the k-step parameter. a Comparison between the mean of N50 lengths by different k-step settings (left-top corner). b Comparison between the mean of assembly runtimes in seconds using MEGAHIT by different k-step settings (right-top corner). c
+
+Comparison between the mean of BGC counts by different k-step settings (left-bottom corner). d
+
+Comparison between the mean of ARG counts by different k-step settings (right-bottom corner). Similar to the scenario pairs with different values for k-step , these scenario pairs were split between the 324 
+
+third and the fourth cluster, respectively. 325 
+
+Specifically, the third cluster of pairs of scenarios was characterized by different values of k-min 326 
+
+for the scenarios in each pair (Table 4). All pairs showed an increased assembly runtime associated 327 
+
+with the first scenario from pairwise comparisons. However, the variables rRNA genes and total bp had 328 
+
+significant differences for the pair of scenarios k21 121 20 k41 121 20, namely for the second and 329 
+
+first scenarios, respectively. Furthermore, the pair of scenarios k21 101 20 k41 101 20 also showed 330 
+
+significant differences in terms of BGC len for the first scenario of the pair. However, none of these pairs 331 
+
+indicated significant differences in terms of the number of ARGs and BGCs (Fig. 2). 332 
+
+Compared to the previous clusters of pairwise scenario comparisons, the fourth cluster consisted of 333 
+
+pairs with different k-step and pairs with different k-min . Most of these scenario pairs showed significant 334 
+
+differences in terms of megahit s , contigs , L50 , total bp and BGC , while larger values for these variables 335 
+
+were associated with reduced values for k-min or k-step . These scenario pairs can be grouped into 4 pairs 336 
+
+with different k-min and 9 pairs with different k-step , based on the k-mer parameter that varies. However, 337 
+
+there were no significant differences for the variable L50 using a reduced k-min in the case of four pairs 338 
+
+of scenarios (i.e., k21 101 10 k41 101 10, k21 111 10 k41 111 10, k21 101 04 k41 101 04 and 339 
+
+k21 121 04 k41 121 04), while one pair (i.e., k41 101 10 k41 101 20) showed significant differences 340 
+
+in terms of megahit s , contigs and L50 within the first scenario with a reduced k-step . Meanwhile, the 341 
+
+10/20   
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.07.17.739120 doi: bioRxiv preprint 02000 4000
+> 21 31 41
+> kmin
+> N50
+
+a  
+
+> 030000 60000 90000
+> 21 31 41
+> kmin
+> megahit_s
+
+b  
+
+> 0200 400
+> 21 31 41
+> kmin
+> BGC
+
+c  
+
+> 010 20 30 40 50
+> 21 31 41
+> kmin
+> ARG
+
+dFigure 4. The impact of various settings for the k-min parameter on various metrics using the cave dataset. Each panel contains values for the k-min parameter on x-axis and the mean of a particular variable of interest grouped by the values of the k-min parameter on y-axis. a Comparison between the mean of N50 lengths by different k-min settings (left-top corner). b Comparison between the mean of assembly runtimes by different k-min settings (right-top corner). c Comparison between the mean of BGC counts by different k-min settings (left-bottom corner). d Comparison between the mean of ARG counts by different k-min settings (right-bottom corner). results for the other variables of interest ( N50 , max contig , BGC len , rRNA genes and ARG ) among these 342 
+
+scenario pairs were inconsistent. 343 
+
+Additionally, a summary of the significant effects on assembly and gene discovery metrics by applying 344 
+
+different settings for k-mer parameters, grouped by clusters, was provided in Table S9. When k-max 345 
+
+increased, significant differences were detected for scenarios with a larger value for this parameter in 346 
+
+terms of assembly metrics (e.g., N50 , megahit s , contigs ) and gene discovery metrics ( BGC - 10 pairs and 347 
+
+ARG - 5 pairs). When k-step increased, the corresponding scenarios showed significant differences in 348 
+
+terms of N50 (3 pairs), while scenarios with a smaller k-step value yielded more ARG counts (8 pairs), 349 
+
+longer assembly runtimes (all 15 pairs), more contigs within assemblies (all 15 pairs) and more BGCs 350 
+
+detected (14 pairs). When k-min increased, scenarios with a larger k-min value showed an increased value 351 
+
+for variables max contig (1 pair), rRNA genes (1 pair), while scenarios with a smaller k-min value showed 352 
+
+an increased value for variables N50 (7 pairs), ARG (1 pair), megahit s (all 13 pairs), contigs (8 pairs) and 353 
+
+BGC (8 pairs). 354 
+
+Some scenarios that we envisaged, namely those with a k-step of 20 (the largest k-step value considered 355 
+
+here), are comparable to the reduced set of k-mers from the work of Qayyum et al. (2025). In their study, 356 
+
+the authors concluded that the reduced set of k-mers achieved similar results (in terms of various 357 
+
+assembly quality metrics) to the results of scenarios with larger sets of k-mers (with reduced k-step ), 358 
+
+while significantly reducing the runtime of MEGAHIT. The previously mentioned k-mer scenarios were 359 
+
+11/20   
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.07.17.739120 doi: bioRxiv preprint 02000 4000
+> 101 111 121
+> kmax
+> N50
+
+a  
+
+> 025000 50000 75000
+> 101 111 121
+> kmax
+> megahit_s
+
+b  
+
+> 0200 400
+> 101 111 121
+> kmax
+> BGC
+
+c  
+
+> 010 20 30 40 50
+> 101 111 121
+> kmax
+> ARG
+
+dFigure 5. The impact of various settings for the k-max parameter on various metrics using the cave dataset. Each panel contains values for the k-max parameter on x-axis and the mean of a particular variable of interest grouped by the values of the k-max parameter on y-axis. a Comparison between the mean of N50 lengths by different k-max settings (left-top corner). b Comparison between the mean of assembly runtimes by different k-max settings (right-top corner). c Comparison between the mean of BGC counts by different k-max settings (left-bottom corner). d Comparison between the mean of ARG counts by different k-max settings (right-bottom corner). involved in several pairwise comparisons in our study (see Table S6). Among these, all pairs of scenarios 360 
+
+showed significant differences in terms of the number of contigs from the resulting assemblies. In addition, 361 
+
+all pairs of scenarios (except k41 101 10 k41 101 20) also showed a significantly reduced value for 362 
+
+BGC in the scenario with a larger k-step .363 
+
+Furthermore, an increased k-step for scenarios also led to a significant reduced value for ARG counts 364 
+
+in the case of eight out of fifteen scenario pairs with varying k-step values (Fig. 2). Besides these, among 365 
+
+the fifteen pairwise comparisons with varying k-step value, there were pairs that showed significant 366 
+
+differences in terms of at least one of the other variables of interest such as N50 (3 pairs), max contig (2 367 
+
+pairs), BGC len (2 pairs), rRNA genes (10 pairs), L50 (all 15 pairs) or total bp (14 pairs) (Fig. 2). This 368 
+
+suggests that when ARGs and BGCs are also of interest, in addition to assembly quality, more care should 369 
+
+be taken to identify suitable k-mer ranges for MEGAHIT, in order to optimize the identification of these 370 
+
+elements. 371 
+
+Analysis of wastewater dataset 372 
+
+Compared to the previous experiment using cave data (Fig. 2), we observed a similar trend regarding 373 
+
+the effect of the k-mer parameter settings on the nine variables of interest (Fig. 7). Additionally, the 374 
+
+information about the significant effect of the k-mer parameter settings from Fig. 7 is presented in 375 
+
+Table S10. Here, the variable BGC was removed from the Conover’s test as a consequence of its lack 376 
+
+12/20                                                        
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.07.17.739120 doi: bioRxiv preprint megahit_s 0.22 0.23 0.08 0.12 0.28 0.24 0.31 0.03 0.20 0.06
+> contigs 0.06 0.73 −0.01 0.25 0.91 0.35 0.12 0.33 0.23
+> rRNA_genes −0.07 0.44 0.14 0.15 −0.13 −0.49 0.03 0.34
+> L50 −0.44 −0.36 0.42 0.35 0.13 0.32 0.22
+> max_contig 0.50 0.23 −0.22 −0.35 −0.15 0.01
+> N50 0.57 −0.04 0.11 −0.07 −0.06
+> total_bp 0.20 0.06 0.21 0.20
+> ARG 0.12 0.74 0.22
+> ARG_len 0.04 −0.32
+> BGC 0.50
+> BGC_len
+> Spearman's rank correlations between variables of interest
+
+Figure 6. Spearman’s rank correlations between variables using the wastewater dataset. Variables are on the main diagonal; variable correlation coefficients for the whole dataset are on the upper-right panel; confidence ellipses and smoothed red lines, based on the corresponding correlation coefficient, indicating the overall 2D shape for each pair of two variables are shown on the lower-left panel. Blue color indicates positive correlation and red color indicates negative correlation, whereas the color intensity signifies the strength of the correlation. of statistically significant results after Friedman’s test, as previously mentioned. These scenario pair 377 
+
+comparisons uncovered different patterns in terms of test statistic values as well as p-values computed 378 
+
+via Conover’s all-pairs comparisons test (Fig. 7). Specifically, scenarios with smaller k-step also had an 379 
+
+increased runtime compared to the scenarios with larger values for this parameter. Beside this, increasing 380 
+
+the k-step parameter also led to fewer discoverable ARGs (6 scenario pairs), a smaller number of contigs 381 
+
+(13 scenario pairs), a smaller value for total bp (15 scenario pairs), fewer rRNA genes (1 scenario pair), 382 
+
+a smaller value for L50 (9 scenario pairs) and a smaller value for N50 (5 scenario pairs). However, 383 
+
+variables max contig and BGC len were not significantly affected by increasing the k-step parameter. All 384 
+
+these pairwise scenario comparisons were mentioned in the third column of Table 6 and in Table S5, 385 
+
+respectively. This trade-off between different values for the k-step parameter in terms of N50 , megahit s 386 
+
+and ARG is also observable in Fig. 8. 387 
+
+When comparing scenarios with different k-max , scenarios with larger k-max showed an increased 388 
+
+assembly runtime (11 scenario pairs), more ARG counts (3 scenario pairs), more rRNA genes (6 scenario 389 
+
+pairs), a larger value for L50 (1 pair), a larger value for total bp (11 scenario pairs), a larger number of 390 
+
+contigs (4 scenario pairs), a larger value for N50 (9 scenario pairs). Additionally, increasing k-max did not 391 
+
+show any significant differences for max contig and BGC len . All scenario pairs with different k-max 392 
+
+were enumerated in the first column of Table 6 and in Table S4. The impact of the selection for k-max on 393 
+
+N50 , assembly runtime and ARG counts is shown in Fig. 10. 394 
+
+In terms of varying k-min , scenarios with smaller k-min showed an increased assembly runtime (13 395 
+
+scenario pairs), more ARGs (7 scenario pairs), a larger value for L50 (2 scenario pairs), a larger value 396 
+
+for total bp (13 scenario pairs), a larger number of contigs (13 scenario pairs), a larger value for N50 397 
+
+(13 scenario pairs). However, no significant differences were detected for rRNA genes , max contig and 398 
+
+BGC len when increasing the k-min parameter. All scenario pairs with different k-min were mentioned in 399 
+
+the second column of Table 6 and in Table S3. The effect of different settings for the k-min parameter on 400 
+
+three quality metrics ( N50 , megahit s , ARG ) is presented in Fig. 9. 401 
+
+Among these 39 scenario pairs, there were 10 pairs with different k-step , containing one scenario with 402 
+
+the largest value for this parameter (i.e., 20) (Table S6). These scenario pairs were used to test whether 403 
+
+a reduced set of k-mer sizes proposed by Qayyum et al. (2025) could have an impact on the variables, 404 
+
+13/20 
+
+(which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.07.17.739120 doi: bioRxiv preprint Variable p value Friedman megahit s <0.001 contigs <0.001 rRNA genes <0.001 L50 <0.001 max contig <0.001 N50 <0.001 total bp <0.001 ARG <0.001 ARG len 0.429 BGC 0.164 BGC len 0.003 
+
+Table 5. P-values for assembly quality metrics computed using Friedman’s test for the wastewater dataset. The values were rounded to 3 decimals. Cluster 1 Cluster 2 Cluster 3 (k-max) (k-min) (k-step) k31 111 10 k31 121 10 k21 111 10 k31 111 10 k41 101 04 k41 101 20 k31 101 10 k31 111 10 k21 121 10 k31 121 10 k21 121 04 k21 121 20 k41 101 10 k41 111 10 k21 101 10 k31 101 10 k41 121 04 k41 121 20 k41 111 10 k41 121 10 k31 121 10 k41 121 10 k21 101 04 k21 101 20 k21 101 04 k21 121 04 k31 101 10 k41 101 10 k31 111 04 k31 111 20 k21 101 10 k21 111 10 k31 111 10 k41 111 10 k21 121 04 k21 121 10 k21 111 10 k21 121 10 k21 121 10 k41 121 10 k41 101 10 k41 101 20 k31 101 10 k31 121 10 k21 101 10 k41 101 10 k41 101 04 k41 101 10 k41 101 10 k41 121 10 k21 111 10 k41 111 10 k31 111 04 k31 111 10 k21 101 10 k21 121 10 k21 101 04 k41 101 04 k41 121 04 k41 121 10 k21 101 20 k21 121 20 k21 121 20 k41 121 20 k21 101 04 k21 101 10 k21 101 20 k41 101 20 k41 121 10 k41 121 20 k21 121 04 k41 121 04 k21 121 10 k21 121 20 k21 101 10 k21 101 20 k31 111 10 k31 111 20 
+
+Table 6. List of scenario pairs clustered using Euclidean distance for the wastewater dataset. Each column contains scenario pairs that belong to a specific cluster and only one k-mer parameter varies within each pair. including the number of ARG and BGC counts. Within these pairs, the scenario with an increased k-step 405 
+
+showed a reduced assembly runtime (i.e., megahit s ), but also a reduced number of contigs ( contigs ) for 406 
+
+all pairs except k41 101 10 k41 101 20. Here, the scenario pair k21 121 04 k21 121 20 had a smaller 407 
+
+value for rRNA genes for the scenario with an increased k-step .408 
+
+Furthermore, increasing the k-step parameter had no impact on variables max contig and BGC len .409 
+
+Regarding the degree of assembly contiguity represented by N50 , using the reduced set of k-mer 410 
+
+sizes was associated with higher N50 values for only 3 scenario pairs (i.e., k21 121 04 k21 121 20, 411 
+
+k21 101 04 k21 101 20 and k21 121 10 k21 121 20). In terms of L50 , the scenario with a smaller 412 
+
+k-step value had a larger corresponding value for this variable in the case of 8 scenario pairs (i.e., 413 
+
+k41 101 04 k41 101 20, k21 121 04 k21 121 20, k41 121 04 k41 121 20, k21 101 04 k21 101 20, 414 
+
+k31 111 04 k31 111 20, k41 121 10 k41 121 20, k21 101 10 k21 101 20 and k31 111 10 k31 111 20). 415 
+
+In addition to these, a significant effect of the k-step parameter on variable total bp was detected within 416 
+
+the scenario with a smaller value for this parameter in all 10 scenario pairs. In terms of ARG counts, 417 
+
+increasing the k-step parameter led to the detection of fewer ARGs, while the scenario with a smaller 418 
+
+k-step had a significant impact on variable ARG in 6 scenario pairs (i.e., k21 121 04 k21 121 20, 419 
+
+14/20                                                                                                                                  
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.07.17.739120 doi: bioRxiv preprint ************************************************************************************************************************************************************************
+> k31_111_10__k31_121_10 k31_101_10__k31_111_10 k41_101_10__k41_111_10 k41_111_10__k41_121_10 k21_101_04__k21_121_04 k21_101_10__k21_111_10 k21_111_10__k21_121_10 k31_101_10__k31_121_10 k41_101_10__k41_121_10 k21_101_10__k21_121_10 k21_101_20__k21_121_20 k21_111_10__k31_111_10 k21_121_10__k31_121_10 k21_101_10__k31_101_10 k31_121_10__k41_121_10 k31_101_10__k41_101_10 k31_111_10__k41_111_10 k21_121_10__k41_121_10 k21_101_10__k41_101_10 k21_111_10__k41_111_10 k21_101_04__k41_101_04 k21_121_20__k41_121_20 k21_101_20__k41_101_20 k21_121_04__k41_121_04 k41_101_04__k41_101_20 k21_121_04__k21_121_20 k41_121_04__k41_121_20 k21_101_04__k21_101_20 k31_111_04__k31_111_20 k21_121_04__k21_121_10 k41_101_10__k41_101_20 k41_101_04__k41_101_10 k31_111_04__k31_111_10 k41_121_04__k41_121_10 k21_101_04__k21_101_10 k41_121_10__k41_121_20 k21_121_10__k21_121_20 k21_101_10__k21_101_20 k31_111_10__k31_111_20
+> megahit_s rRNA_genes max_contig BGC_len L50 ARG total_bp contigs N50
+> Test statistic
+> −20 020 40 60 80
+
+Figure 7. Heatmap showing test statistics from Conover’s all-pairs comparisons test for unreplicated blocked data, assessing differences across nine variables and thirty-nine pairwise scenario comparisons for the wastewater dataset. Red shades indicate that the first scenario in a pair had a higher rank sum (positive test statistic), while blue shades indicate the opposite (negative test statistic). Comparisons with p-values ≤ 0.05 are marked with asterisks. Rows (scenario pairs) and columns (variables) are hierarchically clustered using Euclidean distance to highlight patterns in statistical differences. k21 101 04 k21 101 20, k31 111 04 k31 111 20, k21 121 10 k21 121 20, k21 101 10 k21 101 20 420 
+
+and k31 111 10 k31 111 20). The other scenario pairs with varying k-step , which included a scenario 421 
+
+with k-step =20, did not show significant differences in terms of ARG counts. 422 
+
+Comparative analysis between caves and wastewater dataset results 423 
+
+In this study, two different environments, namely karstic caves and a wastewater system, were studied 424 
+
+to identify functional genes (ARGs and BGCs). In terms of samples, 17 sediment samples collected 425 
+
+from 4 sites (Clo s¸ ani Cave, Ferice Cave, Bears’ Cave and Movile Cave from Romania) were used for the 426 
+
+first analysis, while 10 wastewater samples from a campus wastewater system were used in the second 427 
+
+analysis. The same experimental setup was applied for both datasets in terms of k-mer length parameter 428 
+
+settings (for assembly scenarios), bioinformatics tools, pipelines and evaluation metrics. 429 
+
+The two datasets showed the same main trade-off: coarser k-mer ranges had reduced runtime, whereas 430 
+
+finer-grained settings preserved more biological signal. In cave samples, this pattern was strongest for 431 
+
+BGC recovery and was also visible for ARG counts. In wastewater samples, the clearest gene-level effect 432 
+
+was on ARG recovery, while BGC did not remain significant after the overall Friedman test. Across both 433 
+
+datasets, increasing k-max generally increased N50 and runtime. By contrast, the effect of k-min was less 434 
+
+uniform across datasets and should be interpreted more cautiously than the k-step and k-max effects. 435 
+
+Another difference between these two datasets is given by the way these 39 scenario pairs were 436 
+
+classified based on Euclidean distance using the Conover’s test. Specifically, the scenario pairs were 437 
+
+15/20 
+
+(which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.07.17.739120 doi: bioRxiv preprint 01000 2000 3000 4000   
+
+> 410 20
+> kstep
+> N50
+
+a  
+
+> 0500 1000 1500
+> 410 20
+> kstep
+> megahit_s
+
+b  
+
+> 010 20 30 40
+> 410 20
+> kstep
+> ARG
+
+cFigure 8. The k-step trade-off using the wastewater dataset where the x-axis contains values for the 
+
+k-step parameter (i.e., 4, 10, 20). Values from the y-axis from each panel correspond to the mean of a particular variable of interest grouped by the values of the k-step parameter. a Comparison between the mean of N50 lengths by different k-step settings (left-top corner). b Comparison between the mean of assembly runtimes in seconds using MEGAHIT by different k-step settings (right-top corner). c
+
+Comparison between the mean of ARG counts by different k-step settings (left-bottom corner). grouped into 4 clusters for the first experiment (cave data) and 3 clusters for the second experiment 438 
+
+(wastewater data). The quality metrics were also classified based on Euclidean distance (2 clusters for the 439 
+
+first experiment and 3 clusters for the second experiment). 440 
+
+Possible limitations of these experiments include the relatively limited number of samples per dataset, 441 
+
+which may reduce precision. In addition, because total assembly length and contig count were strongly 442 
+
+correlated with BGC count in the cave dataset, higher BGC recovery may be interpreted as an increased 443 
+
+predicted signal after assembly, not as an independent estimate of true environmental BGC abundance. 444 
+
+Using two distinct environments strengthens the evidence that the runtime/ARG trade-off was not restricted 445 
+
+to a single dataset type. However, the BGC result should be interpreted more cautiously: it was clear in the 446 
+
+cave dataset, but BGC did not remain significant after Friedman’s test in the wastewater dataset, possibly 447 
+
+related to the lower sequencing depth of the wastewater subset, although differences in environment, 448 
+
+community composition and sample selection may also have contributed. This caveat is consistent with 449 
+
+the reported sequencing depth in the supplementary tables: the wastewater subset had about 0.67 Gb per 450 
+
+sample on average, whereas the cave subset had about 60.6 Gb per sample on average, as shown in Tables 451 
+
+S1 and S2. Additional datasets from other environments will be needed before extending these findings to 452 
+
+higher-complexity metagenomes. 453 
+
+Another limitation of this kind of study, in general, is that dedicated access to computing resources 454 
+
+needs to be ensured in order to provide a fair comparison of runtimes across different scenarios. However, 455 
+
+this limitation is common for this type of study, when runtime is being taken into account. 456 
+
+16/20   
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.07.17.739120 doi: bioRxiv preprint 01000 2000 3000 4000
+> 21 31 41
+> kmin
+> N50
+
+a  
+
+> 0250 500 750 1000
+> 21 31 41
+> kmin
+> megahit_s
+
+b  
+
+> 010 20 30 40
+> 21 31 41
+> kmin
+> ARG
+
+cFigure 9. The impact of various settings for the k-min parameter on various metrics using the wastewater dataset. Each panel contains values for the k-min parameter on x-axis and the mean of a particular variable of interest grouped by the values of the k-min parameter on y-axis. a Comparison between the mean of N50 lengths by different k-min settings (left-top corner). b Comparison between the mean of assembly runtimes by different k-min settings (right-top corner). c Comparison between the mean of ARG counts by different k-min settings (left-bottom corner). 
+
+## CONCLUSIONS 457 
+
+This study revealed that the selection of k-mer parameters in MEGAHIT is a critical decision that 458 
+
+introduces a trade-off between computational cost and functional gene discovery. Additionally, the 459 
+
+functional gene discovery also depends on the input data (sequenced reads) for the assembly tool. Based 460 
+
+on our findings, we offer the following recommendations: (1) When aiming to maximize the discovery of 461 
+
+ARGs and BGCs, researchers should consider using fine-grained k-mer sets (i.e., k-step ≤ 4 with k-max 462 
+
+close to its upper limit) in similar discovery-oriented analyses, accepting longer assembly times as the cost 463 
+
+of a more complete assembly and maximizing the recovery of functional elements. (2) If computational 464 
+
+resources are limited and ARG or BGC discovery is not the primary aim, coarser k-mer ranges can be 465 
+
+used, but with the caveat that some ARGs and BGCs may be missed. 466 
+
+Future work would be required in order to replicate these results on a variety of metagenomic datasets 467 
+
+from diverse environments, including a wider range of sample types. In addition, future studies could 468 
+
+envisage the implementation of optimization algorithms in order to maximize or minimize the values of 469 
+
+the desired quality metrics relative to the 3 parameters that control the k-mer range in MEGAHIT. 470 
+
+## AUTHOR CONTRIBUTIONS 471 
+
+• Alina C ˘arunta conceived and designed the experiments, performed the experiments, analyzed the 472 
+
+data, prepared figures and/or tables, authored and reviewed the drafts of the article, and approved 473 
+
+17/20   
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.07.17.739120 doi: bioRxiv preprint 01000 2000 3000 4000
+> 101 111 121
+> kmax
+> N50
+
+a  
+
+> 0250 500 750
+> 101 111 121
+> kmax
+> megahit_s
+
+b  
+
+> 010 20 30 40
+> 101 111 121
+> kmax
+> ARG
+
+cFigure 10. The impact of various settings for the k-max parameter on various metrics using the wastewater dataset. Each panel contains values for the k-max parameter on x-axis and the mean of a particular variable of interest grouped by the values of the k-max parameter on y-axis. a Comparison between the mean of N50 lengths by different k-max settings (left-top corner). b Comparison between the mean of assembly runtimes by different k-max settings (right-top corner). c Comparison between the mean of ARG counts by different k-max settings (left-bottom corner). the final draft. 474 
+
+• Horia Leonard Banciu provided the raw sequenced reads from the cave samples, conceived and 475 
+
+designed the experiments, authored and reviewed the drafts of the article, and approved the final 476 
+
+draft. 477 
+
+• Alexandru Eugeniu Mizeranschi conceived and designed the experiments, analyzed the data, 478 
+
+prepared figures and/or tables, authored and reviewed the drafts of the article, and approved the 479 
+
+final draft. 480 
+
+## REFERENCES 481 
+
+Aminov, R. I. and Mackie, R. I. (2007). Evolution and ecology of antibiotic resistance genes. FEMS 482 
+
+Microbiology Letters , 271(2):147–161. 483 
+
+Ayling, M., Clark, M. D., and Leggett, R. M. (2020). New approaches for metagenome assembly with 484 
+
+short reads. Briefings in Bioinformatics , 21(2):584–594. 485 
+
+Bockelman, B., Livny, M., Lin, B., and Prelz, F. (2021). Principles, technologies, and time: The 486 
+
+translational journey of the HTCondor-CE. Journal of Computational Science , 52:101213. 487 
+
+Carroll, L. M., Larralde, M., Fleck, J. S., Ponnudurai, R., Milanese, A., Cappio, E., and Zeller, G. (2021). 488 
+
+Accurate de novo identification of biosynthetic gene clusters with GECCO. BioRxiv , pages 2021–05. 489 
+
+18/20 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.07.17.739120 doi: bioRxiv preprint
+
+C ˘arunta, A., Mizeranschi, A. E., C ˘arunta, C., Banciu, H. L., Moldovan, O. T., Zaharie, D., and Negru, V. 490 
+
+(2024). An Exploration of K-Mer Ranges for MEGAHIT in the Context of Microbial Community-Wide 491 
+
+Identification of Antimicrobial Resistance Genes and Biosynthetic Gene Clusters. In 2024 IEEE 24th 492 
+
+International Conference on Bioinformatics and Bioengineering (BIBE) , pages 1–5. 493 
+
+Che, Y., Xia, Y., Liu, L., Li, A.-D., Yang, Y., and Zhang, T. (2019). Mobile antibiotic resistome in 494 
+
+wastewater treatment plants revealed by nanopore metagenomic sequencing. Microbiome , 7(44):1–13. 495 
+
+Chiciudean, I., Russo, G., Bogdan, D. F., Levei, E. A., Faur, L., Hillebrand-Voiculescu, A., Moldovan, 496 
+
+O. T., and Banciu, H. L. (2022). Competition-cooperation in the chemoautotrophic ecosystem of 497 
+
+Movile Cave: first metagenomic approach on sediments. Environmental Microbiome , 17(1):44. 498 
+
+Cimermancic, P., Medema, M. H., Claesen, J., Kurita, K., Brown, L. C. W., Mavrommatis, K., Pati, A., 499 
+
+Godfrey, P. A., Koehrsen, M., Clardy, J., et al. (2014). Insights into secondary metabolism from a 500 
+
+global analysis of prokaryotic biosynthetic gene clusters. Cell , 158(2):412–421. 501 
+
+Di Tommaso, P., Chatzou, M., Floden, E. W., Barja, P. P., Palumbo, E., and Notredame, C. (2017). 502 
+
+Nextflow enables reproducible computational workflows. Nature Biotechnology , 35(4):316–319. 503 
+
+Ewels, P. A., Peltzer, A., Fillinger, S., Patel, H., Alneberg, J., Wilm, A., Garcia, M. U., Di Tommaso, 504 
+
+P., and Nahnsen, S. (2020). The nf-core framework for community-curated bioinformatics pipelines. 505 
+
+Nature Biotechnology , 38(3):276–278. 506 
+
+Feldgarden, M., Brover, V., Gonzalez-Escalona, N., Frye, J. G., Haendiges, J., Haft, D. H., Hoffmann, M., 507 
+
+Pettengill, J. B., Prasad, A. B., Tillman, G. E., et al. (2021). AMRFinderPlus and the Reference Gene 508 
+
+Catalog facilitate examination of the genomic links among antimicrobial resistance, stress response, 509 
+
+and virulence. Scientific Reports , 11(1):12728. 510 
+
+Fierer, N., Holland-Moritz, H., Alexiev, A., Batther, H., Dragone, N. B., Friar, L., Gebert, M. J., Gering, 511 
+
+S., Henley, J. B., Jech, S., et al. (2022). A metagenomic investigation of spatial and temporal changes 512 
+
+in sewage microbiomes across a university campus. mSystems , 7(5):e00651–22. 513 
+
+Gorecki, A., Ostapczuk, P., and Dziewit, L. (2024). Diversity of antibiotic resistance gene variants at 514 
+
+subsequent stages of the wastewater treatment process revealed by a metagenomic analysis of pcr 515 
+
+amplicons. Frontiers in Genetics , 14:1334646. 516 
+
+Guo, J., Peng, Y., Ni, B.-J., Han, X., Fan, L., and Yuan, Z. (2015). Dissecting microbial community 517 
+
+structure and methane-producing pathways of a full-scale anaerobic reactor digesting activated sludge 518 
+
+from wastewater treatment by metagenomic sequencing. Microbial Cell Factories , 14:1–11. 519 
+
+Krakau, S., Straub, D., Gourl ´e, H., Gabernet, G., and Nahnsen, S. (2022). nf-core/mag: a best-520 
+
+practice pipeline for metagenome hybrid assembly and binning. NAR Genomics and Bioinformatics ,521 
+
+4(1):lqac007. 522 
+
+Lebedeva, J., Jukneviciute, G., ˇCepait ˙e, R., Vickackaite, V., Pranckut ˙e, R., and Kuisiene, N. (2021). 523 
+
+Genome Mining and Characterization of Biosynthetic Gene Clusters in Two Cave Strains of Paenibacil-524 
+
+lus sp. Frontiers in Microbiology , 11. 525 
+
+Li, D., Liu, C.-M., Luo, R., Sadakane, K., and Lam, T.-W. (2015). MEGAHIT: an ultra-fast single-node 526 
+
+solution for large and complex metagenomics assembly via succinct de Bruijn graph. Bioinformatics ,527 
+
+31(10):1674–1676. 528 
+
+Nurk, S., Meleshko, D., Korobeynikov, A., and Pevzner, P. A. (2017). metaSPAdes: a new versatile 529 
+
+metagenomic assembler. Genome Research , 27(5):824–834. 530 
+
+Oulas, A., Pavloudi, C., Polymenakou, P., Pavlopoulos, G. A., Papanikolaou, N., Kotoulas, G., Arvani-531 
+
+tidis, C., and Iliopoulos, I. (2015). Metagenomics: tools and insights for analyzing next-generation 532 
+
+sequencing data derived from biodiversity studies. Bioinformatics and Biology Insights , 9:75–88. 533 
+
+P ´erez-Cobas, A. E., Gomez-Valero, L., and Buchrieser, C. (2020). Metagenomic approaches in microbial 534 
+
+ecology: an update on whole-genome and marker gene sequencing analyses. Microbial Genomics ,535 
+
+6(8):e000409. 536 
+
+Pohlert, T. (2023). PMCMRplus: Calculate Pairwise Multiple Comparisons of Mean Rank Sums Extended .537 
+
+R package version 1.9.10. 538 
+
+Qayyum, H., Raziq, M. F., Manzoor, H., Zaidi, S. S. A., Ali, A., and Kayani, M. U. R. (2025). Efficient De 539 
+
+Novo Assembly and Recovery of Microbial Genomes from Complex Metagenomes Using a Reduced 540 
+
+Set of k-mers. Interdisciplinary Sciences: Computational Life Sciences .541 
+
+R Core Team (2024). R: A Language and Environment for Statistical Computing . R Foundation for 542 
+
+Statistical Computing, Vienna, Austria. 543 
+
+Rutledge, P. J. and Challis, G. L. (2015). Discovery of microbial natural products by activation of silent 544 
+
+19/20 
+
+> (which was not certified by peer review) is the author/funder. All rights reserved. No reuse allowed without permission. The copyright holder for this preprint this version posted July 17, 2026. ;https://doi.org/10.64898/2026.07.17.739120 doi: bioRxiv preprint
+
+biosynthetic gene clusters. Nature reviews microbiology , 13(8):509–523. 545 
+
+Sczyrba, A., Hofmann, P., Belmann, P., Koslicki, D., Janssen, S., Dr ¨oge, J., Gregor, I., Majda, S., Fiedler, 546 
+
+J., Dahms, E., et al. (2017). Critical assessment of metagenome interpretation—a benchmark of 547 
+
+metagenomics software. Nature Methods , 14(11):1063–1071. 548 
+
+Tenover, F. C. (2006). Mechanisms of antimicrobial resistance in bacteria. The American journal of 549 
+
+medicine , 119(6):S3–S10. 550 
+
+Turrini, P., Tescari, M., Visaggio, D., Pirolo, M., Lugli, G. A., Ventura, M., Frangipani, E., and Visca, P. 551 
+
+(2020). The microbial community of a biofilm lining the wall of a pristine cave in western new guinea. 552 
+
+Microbiological Research , 241:126584. 553 
+
+Van der Walt, A. J., Van Goethem, M. W., Ramond, J.-B., Makhalanyane, T. P., Reva, O., and Cowan, 554 
+
+D. A. (2017). Assembling metagenomes, one community at a time. BMC Genomics , 18:1–13. 555 
+
+Vojvoda Zeljko, T., Kajan, K., Jal ˇzi ´c, B., Hu, A., Cukrov, N., Margu ˇs, M., Cukrov, N., Markovi ´c, T., 556 
+
+Sabatino, R., Di Cesare, A., and Orli ´c, S. (2024). Genome-centric metagenomes unveiling the hidden 557 
+
+resistome in an anchialine cave. Environmental Microbiome , 19(1):67. 558 
+
+Vollmers, J., Wiegand, S., and Kaster, A.-K. (2017). Comparing and evaluating metagenome assembly 559 
+
+tools from a microbiologist’s perspective-not only size matters! PloS One , 12(1):e0169662. 560 
+
+Yang, C., Chowdhury, D., Zhang, Z., Cheung, W. K., Lu, A., Bian, Z., and Zhang, L. (2021). A review of 561 
+
+computational tools for generating metagenome-assembled genomes from metagenomic sequencing 562 
+
+data. Computational and Structural Biotechnology Journal , 19:6301–6314. 563 
+
+Yates, J. A. F., Frangenberg, J., Ibrahim, A., Perelo, L., nf-core bot, Beber, M. E., Tavares, H., Talbot, A., 564 
+
+Patel, H., and Syme, R. (2024). nf-core/funcscan: 1.1.5 - British Beans on Toast (Patch) - 2024-03-20. 565 
+
+Zada, S., Sajjad, W., Rafq, M., Ali, S., Hu, Z., Wang, H., and Cai, R. (2022). Cave microbes as a potential 566 
+
+source of drugs development in the modern era. Microbial Ecology , 84(3):676–687. 567 
+
+20/20
