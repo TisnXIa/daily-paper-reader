@@ -1,0 +1,25 @@
+---
+title: "Integrating suboptimal secondary structures, AI-assisted genomic synteny, and evolutionary conservation to identify bacterial ncRNA homologs beyond sequence similarity"
+title_zh: 整合次优二级结构、AI辅助基因组同线性和进化保守性以识别细菌ncRNA同源物超越序列相似性
+authors: "Panek, J."
+date: 2026-07-16
+pdf: "https://www.biorxiv.org/content/10.64898/2026.07.10.737749v1.full.pdf"
+tags: ["query:microbiome"]
+score: 7.0
+evidence: 利用结构相似性和保守性识别细菌非编码RNA的生信方法
+tldr: 传统基于序列相似性难以鉴定细菌ncRNA的同源物。本文整合次优二级结构、AI辅助基因组共线性和进化保守性，通过扫描间隔区预测次优结构并统计筛选，再结合共线性和保守性过滤。在Glaciecola等菌属中成功预测spot42 RNA新同源物，在Frankia等中预测ms1 RNA基因。该方法为ncRNA同源鉴定提供了超越序列相似性的新途径。
+source: biorxiv
+selection_source: fresh_fetch
+figures_json: "[{\"url\": \"assets/figures/biorxiv/biorxiv-10-64898-2026-07-10-737749-v1/fig-001.webp\", \"caption\": \"\", \"page\": 0, \"index\": 1, \"width\": 1657, \"height\": 386, \"label\": \"Figure\"}, {\"url\": \"assets/figures/biorxiv/biorxiv-10-64898-2026-07-10-737749-v1/fig-002.webp\", \"caption\": \"\", \"page\": 0, \"index\": 2, \"width\": 1059, \"height\": 1097, \"label\": \"Figure\"}, {\"url\": \"assets/figures/biorxiv/biorxiv-10-64898-2026-07-10-737749-v1/fig-003.webp\", \"caption\": \"\", \"page\": 0, \"index\": 3, \"width\": 1513, \"height\": 490, \"label\": \"Figure\"}, {\"url\": \"assets/figures/biorxiv/biorxiv-10-64898-2026-07-10-737749-v1/fig-004.webp\", \"caption\": \"\", \"page\": 0, \"index\": 4, \"width\": 1075, \"height\": 457, \"label\": \"Figure\"}, {\"url\": \"assets/figures/biorxiv/biorxiv-10-64898-2026-07-10-737749-v1/fig-005.webp\", \"caption\": \"\", \"page\": 0, \"index\": 5, \"width\": 971, \"height\": 967, \"label\": \"Figure\"}, {\"url\": \"assets/figures/biorxiv/biorxiv-10-64898-2026-07-10-737749-v1/fig-006.webp\", \"caption\": \"\", \"page\": 0, \"index\": 6, \"width\": 1662, \"height\": 567, \"label\": \"Figure\"}, {\"url\": \"assets/figures/biorxiv/biorxiv-10-64898-2026-07-10-737749-v1/fig-007.webp\", \"caption\": \"\", \"page\": 0, \"index\": 7, \"width\": 1654, \"height\": 556, \"label\": \"Figure\"}]"
+tables_json: "[{\"url\": \"assets/tables/biorxiv/biorxiv-10-64898-2026-07-10-737749-v1/table-001.webp\", \"caption\": \"\", \"page\": 0, \"index\": 1, \"width\": 1515, \"height\": 1968, \"label\": \"Table\"}, {\"url\": \"assets/tables/biorxiv/biorxiv-10-64898-2026-07-10-737749-v1/table-002.webp\", \"caption\": \"\", \"page\": 0, \"index\": 2, \"width\": 1517, \"height\": 778, \"label\": \"Table\"}, {\"url\": \"assets/tables/biorxiv/biorxiv-10-64898-2026-07-10-737749-v1/table-003.webp\", \"caption\": \"\", \"page\": 0, \"index\": 3, \"width\": 1636, \"height\": 678, \"label\": \"Table\"}, {\"url\": \"assets/tables/biorxiv/biorxiv-10-64898-2026-07-10-737749-v1/table-004.webp\", \"caption\": \"\", \"page\": 0, \"index\": 4, \"width\": 1638, \"height\": 1933, \"label\": \"Table\"}]"
+motivation: 现有方法依赖序列相似性，难以发现结构保守但序列差异大的ncRNA同源物。
+method: 融合次优二级结构比对、ChatGPT辅助的基因组共线性和跨物种进化保守性，实现全基因组同源鉴定。
+result: 预测出Glaciecola和Pseudoalteromonas中spf基因新同源物，及Frankia和Bifidobacterium中ms1 RNA基因。
+conclusion: 整合结构、共线性与保守性可有效识别序列相似性之外的ncRNA同源物。
+---
+
+## 摘要
+提出了一种用于全基因组鉴定细菌非编码RNA（ncRNA）同源物的生物信息学方法，该方法整合了结构相似性、基因组同线性和进化保守性。结构相似性通过一种算法检测，该算法在全基因组范围内识别基因组间区（IGR）中能够形成与查询ncRNA相似二级结构的序列位点。该算法使用具有预定义步长的滑动窗口扫描IGR序列。对于每个窗口，预测次优二级结构，并与模板结构进行比较以计算结构相似性评分。这些评分在全基因组尺度上进行统计评估，以推断预测结构所代表RNA的同源性。进一步利用从基因组注释中推断出的查询ncRNA的基因组同线性，对编码统计显著结构的位点进行过滤。使用ChatGPT协助识别具有不同功能注释的基因之间文献支持的生物关系。然后检查具有这些结构的同线性位点在相关物种中的同源物，因为相关物种间的进化保守性是ncRNA的共同特征。使用这种方法，我们在Glaciecola和Pseudoalteromonas基因组中预测了spot42 RNA编码基因spf的新同源物，以及在Frankia和Bifidobacterium基因组中预测了ms1 RNA基因的新同源物，而先前的同源性搜索在这些物种中未能成功。
+
+## Abstract
+A bioinformatic approach for genome-wide identification of homologs of bacterial non-coding RNAs (ncRNAs) integrating structural similarity, genomic synteny, and evolutionary conservation is presented. The structural similarity is detected using an algorithm for genome-wide identification of loci in genomic intergenic regions (IGRs) containing sequences capable of adopting secondary structures similar to that of the query ncRNA. The algorithm scans IGR sequences using a sliding window with a predefined step. For each window, suboptimal secondary structures are predicted and compared with the template structure to compute structural similarity scores. These scores are evaluated statistically on a genome-wide scale to infer homology of the RNAs represented by the predicted structures. Loci encoding statistically significant structures are further filtered using genomic synteny of the query ncRNAs inferred from genomic annotations. ChatGPT was used to assist in identifying literature-supported biological relationships between genes with distinct functional annotations. Syntenic loci with the structures are then examined for homologs in related species, as evolutionary conservation among related species is a common feature of ncRNAs Using this approach, we predicted novel homologs of the spot42 RNA-encoding spf gene in Glaciecola and Pseudoalteromonas genomes, and ms1 RNA genes in Frankia and Bifidobacterium genomes, where previous homology searches had failed.

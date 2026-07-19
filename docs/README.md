@@ -6,29 +6,29 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-18
-- 运行时间：2026-07-18 20:37:49 UTC
+- 最新运行日期：2026-07-19
+- 运行时间：2026-07-19 21:16:42 UTC
 - 运行状态：成功
 - 本次总论文数：3
-- 精读区：2
-- 速读区：1
+- 精读区：1
+- 速读区：2
 
 ### 今日简报（AI）
-今日三篇论文聚焦宏基因组学新技术，涵盖真菌富集、组装优化和长读段比对。最值得看的是真菌宏基因组直接从临床样本分析的新方法（9分），以及MEGAHIT通过调k-mer范围提升功能基因恢复（8分）。建议关注临床真菌检测和组装参数优化，并尝试synpact处理HiFi数据。
-- 详情：[/202607/18/README](/202607/18/README)
+今日精读1篇、速读2篇，聚焦微生物组与病原体互动、非编码RNA进化识别及废水生物安全。最值得关注的是囊性纤维化气道中病原体通过差异代谢物破坏菌群稳态（8.0分），以及AI辅助基因组共线性方法突破传统序列同源限制以发现细菌ncRNA（7.0分）。建议优先精读代谢物介导的宿主-病原体作用机制，速读留意ncRNA识别新思路对耐药基因监测的启发。
+- 详情：[/202607/19/README](/202607/19/README)
 
 ### 精读区论文标签
-1. [Fungal microbial enrichment method enables fungal metagenomics directly from human clinical samples](/202607/18/biorxiv-10-64898-2026-07-16-738568-v2-fungal-microbial-enrichment-method-enables-fungal-metagenomics-directly-from-human-clinical-samples)  
-   标签：评分：9.0/10、query:microbiome
-   evidence：真菌宏基因组富集方法实现临床样本直接宏基因组测序
-2. [MEGAHIT k-mer range tuning trades computational efficiency for improved recovery of functional genes across cave sediment and wastewater metagenomes](/202607/18/biorxiv-10-64898-2026-07-17-739120-v1-megahit-k-mer-range-tuning-trades-computational-efficiency-for-improved-recovery-of-functional-genes-across-cave-sediment-and-wastewater-metagenomes)  
+1. [Differential Metabolite Production Underlies Disruption of the Cystic Fibrosis Airway Microbiota by Pathogens](/202607/19/biorxiv-10-64898-2026-07-16-738945-v2-differential-metabolite-production-underlies-disruption-of-the-cystic-fibrosis-airway-microbiota-by-pathogens)  
    标签：评分：8.0/10、query:microbiome
-   evidence：评估MEGAHIT k-mer范围调整对宏基因组组装中功能基因回收的影响
+   evidence：重新分析5260个16S rRNA基因微生物数据集以推断CF气道生态关联
 
 ### 速读区论文标签
-1. [synpact: accurate, memory-light PacBio HiFi read mapping via a hierarchy of locally-consistent syncmer blocks](/202607/18/biorxiv-10-64898-2026-06-28-735066-v2-synpact-accurate-memory-light-pacbio-hifi-read-mapping-via-a-hierarchy-of-locally-consistent-syncmer-blocks)  
+1. [Integrating suboptimal secondary structures, AI-assisted genomic synteny, and evolutionary conservation to identify bacterial ncRNA homologs beyond sequence similarity](/202607/19/biorxiv-10-64898-2026-07-10-737749-v1-integrating-suboptimal-secondary-structures-ai-assisted-genomic-synteny-and-evolutionary-conservation-to-identify-bacterial-ncrna-homologs-beyond-sequence-similarity)  
    标签：评分：7.0/10、query:microbiome
-   evidence：synpact长读段映射器，适用于宏基因组数据处理
+   evidence：利用结构相似性和保守性识别细菌非编码RNA的生信方法
+2. [Biocontainment attenuation of mobile DNA host range in a wastewater microbiome](/202607/19/biorxiv-10-64898-2026-07-13-738295-v1-biocontainment-attenuation-of-mobile-dna-host-range-in-a-wastewater-microbiome)  
+   标签：评分：7.0/10、query:microbiome
+   evidence：使用cat-RNA条形码标记16S rRNA评估废水微生物组中质粒宿主范围
 
 
 <div class="dpr-home-promo-card">
