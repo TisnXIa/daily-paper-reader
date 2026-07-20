@@ -6,29 +6,30 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-19
-- 运行时间：2026-07-19 21:16:42 UTC
+- 最新运行日期：2026-07-20
+- 运行时间：2026-07-20 21:42:15 UTC
 - 运行状态：成功
 - 本次总论文数：3
-- 精读区：1
-- 速读区：2
+- 精读区：0
+- 速读区：3
 
 ### 今日简报（AI）
-今日精读1篇、速读2篇，聚焦微生物组与病原体互动、非编码RNA进化识别及废水生物安全。最值得关注的是囊性纤维化气道中病原体通过差异代谢物破坏菌群稳态（8.0分），以及AI辅助基因组共线性方法突破传统序列同源限制以发现细菌ncRNA（7.0分）。建议优先精读代谢物介导的宿主-病原体作用机制，速读留意ncRNA识别新思路对耐药基因监测的启发。
-- 详情：[/202607/19/README](/202607/19/README)
+今日速读3篇论文，最高分7.0的是病原体生物信息学工具基准注册库PathoBench。重点关注致病菌分析工具标准化和肠道口腔微生物轴在IBD与原发性硬化性胆管炎中的作用。建议普通读者可优先了解PathoBench对工具选择的指导意义。
+- 详情：[/202607/20/README](/202607/20/README)
 
 ### 精读区论文标签
-1. [Differential Metabolite Production Underlies Disruption of the Cystic Fibrosis Airway Microbiota by Pathogens](/202607/19/biorxiv-10-64898-2026-07-16-738945-v2-differential-metabolite-production-underlies-disruption-of-the-cystic-fibrosis-airway-microbiota-by-pathogens)  
-   标签：评分：8.0/10、query:microbiome
-   evidence：重新分析5260个16S rRNA基因微生物数据集以推断CF气道生态关联
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [Integrating suboptimal secondary structures, AI-assisted genomic synteny, and evolutionary conservation to identify bacterial ncRNA homologs beyond sequence similarity](/202607/19/biorxiv-10-64898-2026-07-10-737749-v1-integrating-suboptimal-secondary-structures-ai-assisted-genomic-synteny-and-evolutionary-conservation-to-identify-bacterial-ncrna-homologs-beyond-sequence-similarity)  
+1. [PathoBench: an open community-driven benchmark registry for pathogen bioinformatics tools](/202607/20/biorxiv-10-64898-2026-07-16-739016-v1-pathobench-an-open-community-driven-benchmark-registry-for-pathogen-bioinformatics-tools)  
    标签：评分：7.0/10、query:microbiome
-   evidence：利用结构相似性和保守性识别细菌非编码RNA的生信方法
-2. [Biocontainment attenuation of mobile DNA host range in a wastewater microbiome](/202607/19/biorxiv-10-64898-2026-07-13-738295-v1-biocontainment-attenuation-of-mobile-dna-host-range-in-a-wastewater-microbiome)  
-   标签：评分：7.0/10、query:microbiome
-   evidence：使用cat-RNA条形码标记16S rRNA评估废水微生物组中质粒宿主范围
+   evidence：病原体生物信息学工具基准注册平台
+2. [elDORS: An elevated Database Of RNA Sequences](/202607/20/biorxiv-10-64898-2026-07-10-737016-v1-eldors-an-elevated-database-of-rna-sequences)  
+   标签：评分：6.0/10、query:microbiome
+   evidence：包含宏基因组数据的RNA序列数据库，用于序列比对
+3. [Oral Gut Microbial Axis in Inflammatory Bowel Disease and Primary Sclerosing Cholangitis](/202607/20/biorxiv-10-64898-2026-07-15-738466-v1-oral-gut-microbial-axis-in-inflammatory-bowel-disease-and-primary-sclerosing-cholangitis)  
+   标签：评分：6.0/10、query:microbiome
+   evidence：全宏基因组鸟枪测序数据分析
 
 
 <div class="dpr-home-promo-card">

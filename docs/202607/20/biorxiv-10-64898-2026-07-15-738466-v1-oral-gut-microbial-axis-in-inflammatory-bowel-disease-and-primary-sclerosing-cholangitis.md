@@ -1,0 +1,24 @@
+---
+title: Oral Gut Microbial Axis in Inflammatory Bowel Disease and Primary Sclerosing Cholangitis
+title_zh: 炎症性肠病和原发性硬化性胆管炎中的口腔-肠道微生物轴
+authors: "Ke, S., Zhou, Z., Yin, X., Yang, Y., Sun, Z., Quevedo, F., Javier, N., Dave, M., Wu, K., Mahmood, S. D., Liu, Y.-Y., Korzenik, J. R."
+date: 2026-07-16
+pdf: "https://www.biorxiv.org/content/10.64898/2026.07.15.738466v1.full.pdf"
+tags: ["query:microbiome"]
+score: 6.0
+evidence: 全宏基因组鸟枪测序数据分析
+tldr: 炎症性肠病(IBD)及其共病原发性硬化性胆管炎(PSC)中，口腔微生物可能易位至肠道影响疾病进程。本研究对191名参与者进行唾液、舌拭子和粪便宏基因组测序，发现溃疡性结肠炎(UC)患者口腔中具核梭杆菌、吉氏链球菌等富集，并鉴定出15种潜在口腔起源的肠道菌种，其中吉氏链球菌和Veillonella rogosae在UC粪便中持续富集。外部验证集（1716个肠道宏基因组）支持口腔微生物标志物的可重复性。吸烟史与健康对照口腔菌群向UC样状态转变相关，提示环境因素调控口腔-肠道轴。研究揭示了IBD和PSC中独特的口腔微生物特征及其向肠道的易位，强调口腔-肠道轴在疾病进展中的作用。
+source: biorxiv
+selection_source: fresh_fetch
+figures_json: "[{\"url\": \"assets/figures/biorxiv/biorxiv-10-64898-2026-07-15-738466-v1/fig-001.webp\", \"caption\": \"\", \"page\": 0, \"index\": 1, \"width\": 1740, \"height\": 1385, \"label\": \"Figure\"}, {\"url\": \"assets/figures/biorxiv/biorxiv-10-64898-2026-07-15-738466-v1/fig-002.webp\", \"caption\": \"\", \"page\": 0, \"index\": 2, \"width\": 1711, \"height\": 1322, \"label\": \"Figure\"}, {\"url\": \"assets/figures/biorxiv/biorxiv-10-64898-2026-07-15-738466-v1/fig-003.webp\", \"caption\": \"\", \"page\": 0, \"index\": 3, \"width\": 1712, \"height\": 1046, \"label\": \"Figure\"}, {\"url\": \"assets/figures/biorxiv/biorxiv-10-64898-2026-07-15-738466-v1/fig-004.webp\", \"caption\": \"\", \"page\": 0, \"index\": 4, \"width\": 1720, \"height\": 469, \"label\": \"Figure\"}, {\"url\": \"assets/figures/biorxiv/biorxiv-10-64898-2026-07-15-738466-v1/fig-005.webp\", \"caption\": \"\", \"page\": 0, \"index\": 5, \"width\": 1723, \"height\": 566, \"label\": \"Figure\"}, {\"url\": \"assets/figures/biorxiv/biorxiv-10-64898-2026-07-15-738466-v1/fig-006.webp\", \"caption\": \"\", \"page\": 0, \"index\": 6, \"width\": 1719, \"height\": 1132, \"label\": \"Figure\"}]"
+motivation: 口腔是微生物储库，可能通过口腔-肠道轴影响IBD和PSC发病机制，但具体微生物特征和易位证据不足。
+method: 收集191名参与者的唾液、舌拭子和粪便样本，进行全宏基因组鸟枪测序，对比分析IBD、PSC患者与健康对照的微生物群落，并通过外部数据集验证。
+result: 发现多种口腔细菌在UC患者中富集，如具核梭杆菌和吉氏链球菌；15种潜在口腔起源菌在粪便中富集；吸烟史与健康对照口腔菌群向UC样转变相关。
+conclusion: 口腔微生物特征可作为IBD和PSC的潜在标志物，口腔-肠道微生物轴在疾病进展中发挥重要作用。
+---
+
+## 摘要
+口腔越来越被认为是微生物的储库，这些微生物可以转移到肠道并影响肠道微生物组。这种口腔-肠道微生物轴可能有助于慢性胃肠和肝胆疾病的发病机制，包括炎症性肠病（IBD）及其合并症原发性硬化性胆管炎（PSC）。为了研究IBD和PSC中的口腔-肠道微生物轴，我们招募了191名参与者，涵盖克罗恩病（CD）、溃疡性结肠炎（UC）、CD合并PSC（CD-PSC）、UC合并PSC（UC-PSC）和健康对照。我们从唾液、舌拭子和粪便样本中生成并分析了全宏基因组鸟枪测序数据。在口腔和肠道生态位中，我们鉴定出多个与健康对照相比在UC参与者中差异富集的微生物物种，包括唾液中的具核梭杆菌（Fusobacterium nucleatum）和血链球菌（Gemella sanguinis），舌上的Massiliensis卡托菌（Catonella massiliensis）和蛇形坦纳菌（Tannerella serpentiformis），以及粪便中的G. sanguinis和肠道塞利菌（Sellimonas intestinalis）。配对的口腔-肠道分析揭示了15种潜在的肠道富集的口腔起源物种；值得注意的是，G. sanguinis和罗戈韦荣球菌（Veillonella rogosae）在UC参与者中持续富集。这些发现得到了来自五个独立IBD队列的1,716个肠道宏基因组的外部验证数据集的支持，突出了口腔微生物特征的可重复性。在探索性分析中，吸烟史与健康对照中口腔微生物组向UC样状态的转变相关，表明这是口腔-肠道微生物轴可能的环境修饰因子。总体而言，我们的研究在IBD和PSC中鉴定了独特的口腔微生物特征及其向肠道的潜在转移，强调了口腔-肠道微生物轴在疾病进展中的作用。
+
+## Abstract
+The oral cavity is increasingly recognized as a reservoir of microbes that can translocate to and influence the gut microbiome. This oral-gut microbial axis may contribute to the pathogenesis of chronic gastrointestinal and hepatobiliary disorders, including inflammatory bowel disease (IBD) and its comorbidity, primary sclerosing cholangitis (PSC). To investigate the oral-gut microbial axis in IBD and PSC, we enrolled 191 participants spanning Crohns disease (CD), ulcerative colitis (UC), CD with PSC (CD-PSC), UC with PSC (UC-PSC), and healthy controls. We generated and analyzed the whole-metagenome shotgun sequencing data from saliva, tongue swabs, and fecal samples. Across oral and gut niches, we identified multiple microbial species differentially enriched in participants with UC compared with healthy controls, including Fusobacterium nucleatum and Gemella sanguinis in saliva, Catonella massiliensis and Tannerella serpentiformis on the tongue, and G. sanguinis and Sellimonas intestinalis in feces. Paired oral-gut analyses revealed 15 potential oral-origin species enriched in fecal samples; notably, G. sanguinis and Veillonella rogosae were consistently enriched in participants with UC. These findings were further supported by an external validation dataset comprising 1,716 gut metagenomes from five independent IBD cohorts, highlighting the reproducibility of oral microbial signatures. In exploratory analyses, smoking history was associated with shifts in the oral microbiome toward a UC-like state in healthy controls, suggesting a possible environmental modifier of the oral-gut microbial axis. Collectively, our study identifies distinct oral microbial signatures and their potential translocation to the gut in IBD and PSC, underscoring the role of the oral- gut microbial axis in disease progression.
