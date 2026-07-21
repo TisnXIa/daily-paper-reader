@@ -6,30 +6,36 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-20
-- 运行时间：2026-07-20 21:42:15 UTC
+- 最新运行日期：2026-07-21
+- 运行时间：2026-07-21 21:42:33 UTC
 - 运行状态：成功
-- 本次总论文数：3
-- 精读区：0
+- 本次总论文数：4
+- 精读区：1
 - 速读区：3
 
 ### 今日简报（AI）
-今日速读3篇论文，最高分7.0的是病原体生物信息学工具基准注册库PathoBench。重点关注致病菌分析工具标准化和肠道口腔微生物轴在IBD与原发性硬化性胆管炎中的作用。建议普通读者可优先了解PathoBench对工具选择的指导意义。
-- 详情：[/202607/20/README](/202607/20/README)
+今日精读1篇高分论文、速读3篇，聚焦肠道微生物与宿主免疫的分子模拟机制。
+
+最值得关注的是炎症性肠病中肠道菌群蛋白如何通过结构与序列相似性模拟人类自身蛋白，以及纳米孔测序信号与泛基因组图谱的无偏映射方法。
+
+建议普通读者重点了解“分子模拟”在自身免疫病中的角色，日常可关注肠道菌群平衡对免疫健康的影响。
+- 详情：[/202607/21/README](/202607/21/README)
 
 ### 精读区论文标签
-- 本次无精读推荐。
+1. [Molecular Mimicry in Inflammatory Bowel Disease: Multi-layered Functional and Sequence-level Analysis of Gut Microbial Proteins Mimicking the Human Proteome](/202607/21/biorxiv-10-64898-2026-03-20-713231-v2-molecular-mimicry-in-inflammatory-bowel-disease-multi-layered-functional-and-sequence-level-analysis-of-gut-microbial-proteins-mimicking-the-human-proteome)  
+   标签：评分：8.0/10、query:microbiome
+   evidence：通过DIAMOND同源搜索对宏基因组序列进行功能注释
 
 ### 速读区论文标签
-1. [PathoBench: an open community-driven benchmark registry for pathogen bioinformatics tools](/202607/20/biorxiv-10-64898-2026-07-16-739016-v1-pathobench-an-open-community-driven-benchmark-registry-for-pathogen-bioinformatics-tools)  
-   标签：评分：7.0/10、query:microbiome
-   evidence：病原体生物信息学工具基准注册平台
-2. [elDORS: An elevated Database Of RNA Sequences](/202607/20/biorxiv-10-64898-2026-07-10-737016-v1-eldors-an-elevated-database-of-rna-sequences)  
+1. [Panomap: Unbiased Nanopore Signal Mapping with Pangenome Variation Graphs](/202607/21/biorxiv-10-64898-2026-07-10-737796-v2-panomap-unbiased-nanopore-signal-mapping-with-pangenome-variation-graphs)  
    标签：评分：6.0/10、query:microbiome
-   evidence：包含宏基因组数据的RNA序列数据库，用于序列比对
-3. [Oral Gut Microbial Axis in Inflammatory Bowel Disease and Primary Sclerosing Cholangitis](/202607/20/biorxiv-10-64898-2026-07-15-738466-v1-oral-gut-microbial-axis-in-inflammatory-bowel-disease-and-primary-sclerosing-cholangitis)  
+   evidence：用于鸟枪法宏基因组数据的纳米孔信号映射工具
+2. [Differential Metabolite Production Underlies Disruption of the Cystic Fibrosis Airway Microbiota by Pathogens](/202607/21/biorxiv-10-64898-2026-07-16-738945-v1-differential-metabolite-production-underlies-disruption-of-the-cystic-fibrosis-airway-microbiota-by-pathogens)  
    标签：评分：6.0/10、query:microbiome
-   evidence：全宏基因组鸟枪测序数据分析
+   evidence：重新分析5260个16S rRNA数据集以推断生态关联
+3. [Genomic Insights into Bacterial Communities of Coenocytic Algae Using Metagenome Assembled Genomes](/202607/21/biorxiv-10-64898-2026-07-19-739436-v1-genomic-insights-into-bacterial-communities-of-coenocytic-algae-using-metagenome-assembled-genomes)  
+   标签：评分：6.0/10、query:microbiome
+   evidence：利用宏基因组组装基因组和16S rRNA研究细菌群落
 
 
 <div class="dpr-home-promo-card">
