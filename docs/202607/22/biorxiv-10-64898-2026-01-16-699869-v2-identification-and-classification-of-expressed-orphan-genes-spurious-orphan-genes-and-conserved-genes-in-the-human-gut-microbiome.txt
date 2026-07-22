@@ -1,0 +1,345 @@
+Title: Identification and Classification of Expressed Orphan Genes, Spurious Orphan Genes, and Conserved Genes in the Human Gut Microbiome
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.01.16.699869v2.full.pdf
+
+Number of Pages: 20
+
+Markdown Content:
+# Identification and Classification of Expressed Orphan Genes, 1
+
+# Spurious Orphan Genes, and Conserved Genes in the Human 2
+
+# Gut Microbiome 3
+
+4Chen Chen 1, Nikolaos Vakirlis 2, Rens Holmer 1, Dick de Ridder 1, Anne Kupczok 1* 
+
+5
+
+6 1 Bioinformatics Group, Wageningen University, 6700 PB Wageningen, The Netherlands 7 2 Hellenic Pasteur Institute, Athens 11521, Greece 89* Author for correspondence: Anne Kupczok, Bioinformatics Group, Wageningen 10 University, Wageningen, The Netherlands, anne.kupczok@wur.nl 11 
+
+# Abstract 12 
+
+Orphan genes - genes lacking detectable homologs outside a species - are widespread in 13 microbial genomes and are thought to contribute to their adaptation and molecular innovation. 14 However, not all predicted orphan genes may represent novel functional coding sequences. 15 False positive orphan genes, also called spurious orphan genes, can arise from gene prediction 16 errors. We reason that orphan genes lacking detectable expression are more likely to be 17 spurious. To test this, we combined large-scale metatranscriptomic profiling of the human gut 18 microbiome with machine learning to distinguish expressed orphan genes from spurious ones 19 and to compare them with conserved genes found in multiple species. Using nearly 5,000 20 metatranscriptome libraries, we identified ~218,000 orphan genes supported by expression 21 evidence, while ~330,000 predicted orphan genes lacked detectable expression, and were 22 classified as spurious. We extracted 154 features for sequence, structural, and evolutionary 23 properties for each gene and trained XGBoost classifiers while accounting for genomic 24 representation. The models achieved an area under the receiver operating characteristic curve 25 (AUC) of 0.82 in distinguishing expressed orphan genes from spurious orphan genes and an 26 AUC of 0.93 in distinguishing expressed orphan genes from conserved genes. SHAP-based 27 interpretation revealed clear biological signals. Particularly, expressed orphans were present in 28 more genomes than spurious ones and expressed orphan genes were shorter than conserved 29 genes. This work improves orphan gene discovery and suggests that expressed orphan genes 30 differ systematically from conserved genes and spurious orphan genes in sequence composition, 31 structural constraints, and evolutionary signals. 32 
+
+# Key words 33 
+
+Orphan genes, spurious orphan genes, conserved genes, human gut microbiome, 34 metatranscriptomics, machine learning 35 
+
+36 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 22, 2026. ;https://doi.org/10.64898/2026.01.16.699869 doi: bioRxiv preprint
+
+# Significance statement 37 
+
+Species-specific genes, also called orphan genes, are abundant in bacterial genomes and have 38 the potential to drive evolutionary innovation. However, the study of orphan genes is 39 confounded by annotation errors that produce spurious gene predictions. Here, we leveraged 40 nearly 5,000 metatranscriptomes from the human gut microbiome and implemented machine 41 learning models to distinguish expressed orphan genes from non-expressed, likely spurious, 42 genes and conserved genes. We show that a substantial fraction of predicted orphan genes lacks 43 expression support and they exhibit distinct sequence and evolutionary signatures from 44 expressed orphans. By integrating expression evidence with sequence-, structure-, and 45 evolution-based features, our work refines orphan gene catalogs. This work improves the 46 reliability of orphan gene discovery and provides new insights into the biological 47 characteristics of orphan genes in human microbial communities. 48 
+
+# 1. Introduction 49 
+
+Orphan genes (OGs), also known as orphans, are defined as having no homologs outside a 50 given species or outside a particular lineage (Dujon 1996; Domazet-Loso and Tautz 2003; Li 51 et al. 2022). OGs are ubiquitous in each newly sequenced genome, including those of bacteria, 52 archaea, and phages (Tautz and Domazet-Lošo 2011). Compared to conserved genes (CGs), 53 which occur in multiple species, OGs are characterized by fewer exons in eukaryotes, shorter 54 lengths, higher Adenine-Thymine (AT) content, higher disorder protein structure, higher 55 nonsynonymous substitution rate, and higher isoelectric points (Daubin and Ochman 2004; 56 Fakhar et al. 2023; Vakirlis and Kupczok 2024). 57 58 OGs are thought to play a significant role in evolution and speciation, likely contributing to 59 crucial species- or lineage-specific adaptive processes by facilitating the generation of novel 60 functions (Tautz and Domazet-Lošo 2011; Arendsee et al. 2014; Vakirlis et al. 2020; Fakhar et 61 al. 2023; Vakirlis and Kupczok 2024). However, the role of OGs in evolution remains elusive 62 due to their lack of phylogenetic conservation and their origination by diverse of evolutionary 63 processes (Toll-Riera et al. 2009; Tautz and Domazet-Lošo 2011; Fakhar et al. 2023). OGs 64 potentially arise de novo from non-coding genomic regions or alternative reading frames of 65 existing genes, through fast divergence, or by horizontal gene transfer (HGT) (Tautz and 66 Domazet-Lošo 2011; Vakirlis and Kupczok 2024). Thus, OGs originate by different 67 mechanisms and are of different age, forming a heterogenous group (Pereira et al. 2025). 68 69 Some experimental studies have shown that proteins derived from random sequence libraries 70 can acquire biologically relevant functions in prokaryotic systems (Babina et al. 2023; Frumkin 71 et al. 2025). This suggests that even short, newly emerged sequences may rapidly become 72 functional, supporting the idea that orphan genes can contribute to evolutionary innovation. 73 Most of our current understanding of OGs and the evolutionary mechanisms has been derived 74 from studies in eukaryotes (Tautz and Domazet-Lošo 2011; Prabh and Rödelsperger 2019). In 75 addition to studies in eukaryotes, recent work has highlighted the importance of orphan genes 76 in non-eukaryotic systems, including viruses, where lineage-specific genes can play key roles 77 in host interaction and adaptation (Nomburg et al. 2024). Additionally, studying prokaryote 78 orphan genes is particularly interesting and relevant for a number of reasons (uz-Zaman and 79 Ochman 2025). Prokaryotes are ubiquitous, ample genome data is available, and they are found 80 in all ecosystems and play crucial roles in various ecological processes, such as nitrogen 81 fixation and organic matter decomposition, which are essential for ecosystem functioning and 82 stability (Whitman et al. 1998; Meng et al. 2022). Moreover, pathogenic prokaryotes can cause 83 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 22, 2026. ;https://doi.org/10.64898/2026.01.16.699869 doi: bioRxiv preprint
+
+diseases in humans, animals, and plants and there is great interest in determining factors 84 involved in pathogenicity (Zhou et al. 2023). Thus, understanding prokaryotic OGs can provide 85 insights into their unique environmental adaptations and mechanisms of pathogenicity, 86 potentially leading to new treatments and preventive measures. 87 88 In a previous study, we constructed an orphan reference dataset of predicted species-specific 89 OGs from the human gut environment — a well-explored habitat accommodating numerous 90 prokaryotic species (Vakirlis and Kupczok 2024). A key question is whether this dataset truly 91 contains only novel, functional coding sequences unique to each species. False positive OGs 92 could arise in two ways. First, non-existent genes may be incorrectly annotated as coding 93 sequences because OGs are typically short and often lack evolutionary conservation (Yu and 94 Stoltzfus 2012); we refer to these as spurious OGs (SOGs). Second, genes that are actually 95 conserved may be misclassified as OGs when distant homologs remain undetected, leading to 96 an overestimation of lineage-specific genes (Weisman et al. 2020). In this study, we focus on 97 the first category, SOGs. Our identification of SOGs is based on the expectation that such 98 spurious predictions lack detectable expression. To collect expression evidence for OGs, we 99 used human gut metatranscriptomics data to distinguish expressed OGs (EOGs) from SOGs, 100 defining EOGs as genes with sufficient coverage by mapped reads across multiple samples. 101 Genes without any expression are labelled SOGs and may be artifacts. 102 103 We then classified genes as EOGs and SOGs using machine learning (ML) models. ML offers 104 a powerful tool for classification tasks by effectively learning the relevant features in the data 105 and using them to make accurate predictions. These models, such as random forest (Breiman 106 2001) and XGBoost (Chen and Guestrin 2016), can be trained to identify complex relationships 107 between input features and output labels. Sequence analysis has been the primary source for 108 studying genes being CGs or OGs, focusing on features such as gene length, GC content, 109 isoelectric point, and codon adaptation index (Vakirlis and Kupczok 2024). Structural 110 properties also differed, particularly protein disorder levels were observed to be higher in OGs 111 (Basile et al. 2017). Recently, accurate protein language models such as ESMFold (Lin et al. 112 2023) have been proposed, greatly advancing the accuracy of protein structure prediction. 113 Because orphan proteins lack homologous sequences, structure prediction methods relying on 114 multiple sequence alignments (MSAs) often perform poorly. In contrast, protein language 115 model–based approaches have been shown to outperform such methods on orphan proteins 116 (Michaud et al. 2022). Here, we used ProstT5 (Heinzinger et al. 2024), which encodes protein 117 sequence information directly from protein sequences without relying on MSAs, to extract so-118 called 3Di token representations of protein structures from amino acid sequences. While this 119 approach enables structure-related features to be derived without relying on homologous 120 sequences, it may also introduce biases, as protein language models such as ProstT5 are trained 121 predominantly on datasets enriched for conserved proteins. Consequently, structural 122 representations for orphan proteins, which typically lack homologs, may be less reliable. In 123 this study, we address the following research questions. First, what proportion of predicted 124 orphan genes in the human gut microbiome are likely to be spurious due to annotation artefacts? 125 Second, which features are most informative for distinguishing EOGs from SOGs and which 126 features distinguish EOGs from CGs? To answer these questions, we developed machine 127 learning models using sequence-, evolution-, and structure-based features, and evaluated their 128 performance and feature contributions. 129 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 22, 2026. ;https://doi.org/10.64898/2026.01.16.699869 doi: bioRxiv preprint
+
+# 2. Results 130 
+
+# 2.1 A large proportion of orphan genes are likely spurious 131 In earlier work, we found 631,104 unique species-specific prokaryotic orphan genes from the 132 human gut microbiome (Vakirlis and Kupczok 2024). To investigate which of these genes are 133 supported by transcriptional evidence, we retrieved 4,969 prokaryotic human gut 134 metatranscriptomics libraries from the Sequence Read Archive (SRA) (Leinonen et al. 2011) 135 and mapped them to our orphan reference dataset (Figure 1). For each gene, we calculated 136 expression coverage across all libraries, assuming that expressed genes are likely true genes 137 and non-expressed genes may be spurious. A gene with no coverage in all libraries was 138 classified as a spurious orphan gene (SOG). We found that the number of genes detected in at 139 least one library decreased continuously with the coverage cutoff (Figure S1A) and additionally 140 the number of detected genes decreased with the number of libraries in which each gene was 141 detected as expressed (Figure S1B). In the following, we denote a gene with coverage ≥ 1.2 in 142 at least 2 libraries as an expressed orphan gene (EOG). These thresholds were selected to 143 minimize technical artifacts by requiring both a reliable coverage level and consistent detection 144 across multiple libraries. 145 146 Figure 1 . The pipeline used to distinguish spurious and expressed orphan genes. 147 This classification framework is based on the expectation that genuine protein-coding genes 148 are more likely to exhibit transcriptional evidence than spurious gene predictions. To evaluate 149 whether this expectation is reasonable, we compared expression support between OGs and CGs, 150 where CGs were defined as genes present in more than 10 species. We selected three 151 phylogenetically distinct species with varying numbers of genomes from the subset of species 152 represented by at least 700 genomes in UHGG (Table 1). This threshold was chosen to 153 minimize the effect of the number of genomes in the species on expression detection (see 154 Section 2.2). Crucially, in all three species, CGs were found to be expressed at very high 155 percentages supporting expression as a characteristic of a true gene (Figure 2A). What’s more, 156 CGs consistently showed substantially stronger transcriptional support than OGs: for example, 157 in Holdemanella sp002299315, 78.1% of CGs were classified as expressed, whereas only 31.9% 158 of OGs showed detectable expression, and 54.6% of OGs lacked detectable expression entirely. 159 Nevertheless, we observed variation in the number of expressed OGs in this small sample of 160 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 22, 2026. ;https://doi.org/10.64898/2026.01.16.699869 doi: bioRxiv preprint
+
+three species, suggesting that they represent a heterogeneous group with high variation in levels 161 of transcriptional support across species. 162 
+
+163 
+
+Table 1. Representative species selected for expression support analysis. 164          
+
+> Species ID Number of genomes Species name
+> GUT_GENOME001602 995 Holdemanella sp002299315
+> GUT_GENOME239670 1117 Bifidobacterium pseudocatenulatum
+> GUT_GENOME140299 2478 Prevotella copri
+
+165 To further investigate the heterogeneity of orphan genes, we separated both CGs and OGs into 166 core and accessory categories within each species (Figure 2B,C). Across all three species, the 167 majority of CGs belonged to the core genome (Figure 2B), whereas OGs were predominantly 168 accessory genes (Figure 2C). Core CGs consistently exhibited stronger expression support than 169 accessory CGs. For example, in Holdemanella sp002299315, 86.0% of core CGs were 170 expressed compared to 62.8% of accessory CGs, while lack of expression evidence was more 171 frequent among accessory CGs (25.6%) than core CGs (8.5%) and similar trends were observed 172 in the other two species. A similar pattern was observed for OGs. Core OGs generally showed 173 higher expression support than accessory OGs. For example, in Holdemanella sp002299315, 174 43.2% of core OGs were expressed, compared to only 29.9% of accessory OGs. Interestingly, 175 
+
+Holdemanella sp002299315 also exhibited the lowest proportion of core OGs among the three 176 species and simultaneously showed the lowest overall proportion of expressed OGs. This 177 pattern suggests that species whose OG repertoires are dominated by accessory genes may 178 show lower overall expression support for OGs. Since accessory genes are often low in 179 frequency and strain-specific within species, they may be less consistently detected across 180 metatranscriptomic samples. In addition, previous pangenome studies have shown that low-181 frequency genes are more enriched in annotation errors or assembly artifacts (Tonkin-Hill et 182 al. 2020), which could contribute to their lower expression support. 183 Together, these results suggest that the heterogeneous expression patterns of OGs are closely 184 linked to their distribution within the pangenome. Genes belonging to the accessory genome 185 are more likely to lack detectable expression, whereas core genes exhibit substantially stronger 186 transcriptional support. As conserved genes are enriched in core genes, their expression can 187 typically be detected. However, orphan genes contain a higher fraction of accessory genes and 188 the difference in expression evidence between core and accessory genes is less pronounced. 189 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 22, 2026. ;https://doi.org/10.64898/2026.01.16.699869 doi: bioRxiv preprint
+
+This supports our approach to include additional expression evidence for distinguishing EOGs 190 from likely spurious OGs. 191 192 
+
+Figure 2. (A) Comparison of expression support between conserved genes and orphan genes 193 across three species. Expression support in core and accessory genes across (B) conserved 194 and (C) orphan genes across three species. 195 Applying the expression-based framework to all OGs resulted in 217,680 EOGs out of the 196 631,104 reference OGs. A total of 337,985 genes showed no detectable expression and were 197 classified as SOGs. After removing genes with missing feature values and genes originating 198 from archaea, the final dataset contained 214,356 EOGs and 329,765 SOGs. We further 199 examined the robustness of this classification using a rarefaction analysis of metatranscriptome 200 libraries (Figure 3). The number of detected EOGs increased steadily as additional libraries 201 were included, whereas the number of detected SOGs decreased. The EOG curve increased 202 more slowly with larger sample sizes, suggesting that most OGs with readily detectable 203 expression had already been captured and that additional libraries contributed progressively 204 fewer newly detected EOGs. At the same time, the decreasing number of SOGs indicates that 205 some genes initially lacking expression support gain transcriptional evidence as sampling effort 206 increases. Nevertheless, some orphan genes may only be expressed under rare environmental 207 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 22, 2026. ;https://doi.org/10.64898/2026.01.16.699869 doi: bioRxiv preprint
+
+or physiological conditions and may therefore remain undetected in the current dataset. 208 Together, these results suggest that classification depends on the accumulation of expression 209 evidence but approaches stability with increasing sampling effort. 210 211 
+
+Figure 3 . Rarefaction analysis of OG expression. Gene count provides the average number of 212 genes detected among 50 resamplings. 213 
+
+# 2.2 Spurious orphans have distinct properties compared to expressed 214 
+
+# orphans 215 
+
+We next assessed the ability of models trained on different feature sets to distinguish EOGs 216 from SOGs using a balanced dataset of 214,356 samples per class. We evaluated four groups 217 of features: sequence features ( Fseq ), structural features ( Fstruct ), evolutionary features ( Fevo ), 218 and a combined feature set ( Fall ). Detailed descriptions of these features are provided in the 219 Materials and Methods section. Model performance was evaluated using 5-fold stratified cross-220 validation, where in each fold approximately 171,485 samples per class were used for training 221 and 42,871 per class for testing, with class balance preserved in all splits. We found that the 222 model based on Fevo features substantially outperformed those based on Fseq and Fstruct in 223 distinguishing EOGs from SOGs (Table 2, first row). To understand why this was the case, we 224 examined feature importance and found that the total number of genomes available for the 225 corresponding species ( Fevo feature “Number_genomes_in_species”) emerged as the most 226 important feature for classification (Figure S2). This result is supported by the observation that 227 EOGs tend to be found in species represented by a larger number of genomes (Figure S3A). In 228 contrast, CGs and SOGs exhibited similar distributions, with many genes derived from species 229 represented by fewer genomes. The higher genomic representation likely contributes to the 230 predictive power of evolutionary features in distinguishing EOGs from SOGs and might 231 introduce a bias in our analyses. 232 To address this potential bias introduced by genomic representation, we restricted the analysis 233 to 88 species for which at least 700 genomes were available, resulting in 72,828 EOGs and 234 26,732 SOGs (Number_genomes_in_species ≥ 700) (Table S1). Under this controlled scenario, 235 the distributions of Number_genomes_in_species between EOGs and SOGs become more 236 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 22, 2026. ;https://doi.org/10.64898/2026.01.16.699869 doi: bioRxiv preprint
+
+similar (Figure S3B), allowing for a less biased evaluation of evolutionary features. 237 Classification after bias correction and using datasets of equal size (26,732 samples per class; 238 21,386 for training and 5,346 for testing) showed that Fseq yields better performance than Fevo 239 and Fstruct (Table 2, second row). Thus, under these conditions, Fevo no longer stands out as 240 providing best performance in the individual feature classes. Additionally, to assess whether 241 the lower mean standard deviation (SD) in the uncorrected analysis (Table 2, first row) was 242 driven by sample size, we repeated the analysis using subsampled datasets matching the size 243 of the bias-corrected set analysis (Table 2, third row). Although the SD increased slightly, it 244 remained substantially lower than that observed after bias correction, indicating that the 245 reduced variance is not primarily attributable to sample size differences, but rather to the 246 presence of the strong representation bias signal, which makes the classification task easier and 247 more stable across folds. 248 
+
+Table 2. Classification performance (average AUC ± SD across inner folds) for EOGs versus 249 SOGs with various feature sets, shown before (first row, third row) and after (second row) 250 controlling for genomic representation bias. 251 
+
+Number of 
+
+species 
+
+n per 
+
+class Fseq Fstruct Fevo Fall 
+
+4470 (all) 214,356 0.752 ± 0.001 
+
+0.643 ± 0.001 
+
+0.8870 ± 0.001 0.916 ± 0.001 
+
+88 (Number genomes in species≥ 700 
+
+26,732 0.778 ± 0.012 
+
+0.693 ± 0.029 
+
+0.679 ± 0.013 0.818 ± 0.013 
+
+4470 (all, subsampled) 26,732 0.735 ± 0.005 
+
+0.6352 ± 0.005 
+
+0.8790 ± 0.005 0.915 ± 0.001 
+
+252 To better understand the protein and gene characteristics that distinguish EOGs from SOGs 253 after controlling for genomic representation bias, we examined the contribution of features to 254 classification performance using SHAP values (Figure 4). We focused on the top 25 features, 255 as individual feature contributions dropped below 1% after the 25th ranked feature, consistent 256 with a long-tail distribution of feature importance (Figure S4). 257 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 22, 2026. ;https://doi.org/10.64898/2026.01.16.699869 doi: bioRxiv preprint
+
+258 
+
+Figure 4. SHAP summary plot showing the top 25 contributing features in the classification of 259 EOGs vs. SOGs with controlling for genomic representation. Positive SHAP values (right side) 260 push predictions toward EOGs; negative values indicate a contribution toward SOGs. Features 261 are colored by their value in the original data (red = high, blue = low). See Table S2 for the 262 complete list. 263 We found several nucleotide composition and codon usage features, including specific di- and 264 trinucleotide frequencies (e.g., Dinuc CC, Dinuc_TC, Trinuc_CAG) (Figure 5). In addition, 265 SOGs showed more acidic amino acids, suggesting also a distinct amino acid composition 266 compared to EOGs. Additionally, GC content at the third synonymous codon position (GC3s) 267 tends to be higher in EOGs, while coding sequence (CDS) length tends to be higher in SOGs. 268 We also observed that EOGs are present in a larger number of genomes (higher 269 Number_genomes_gene_is_present values) compared to SOGs, indicating that SOGs represent 270 rarer genes in the pangenomes. We used MDS to reduce the complex pairwise phylogenetic 271 distance relationships from the species tree into a low-dimensional space while preserving the 272 relative evolutionary distances among species. The feature importance of MDS1 and MDS2 273 suggests that SOGs and EOGs were not uniformly distributed across species, indicating 274 differences in their phylogenetic distribution. 275 Besides evolutionary features, we also looked at structural features. However, almost no 276 structural features were ranked as important when classifying SOGs and EOGs; only 3Di 277 structural token l and s from ProstT5 appeared among the top 25 features. 278 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 22, 2026. ;https://doi.org/10.64898/2026.01.16.699869 doi: bioRxiv preprint
+
+To validate the SOG and EOG distinction, we considered the analysis of protein-level selection. 279 When genes are spurious, i.e., not coding for real proteins, we would not expect selection on 280 protein-coding genes. Thus, the nonsynonymous (dN) and synonymous substitution (dS) rate 281 would be the same, i.e., dN/dS equals 1. However, dS needs to be larger than 0 to calculate 282 dN/dS and dN/dS estimates were only available for a minority of genes. Among SOGs, only 283 2,027 out of 26,732 genes (~8%) had both dN and dS values, whereas among EOGs, 11,500 284 out of 72,828 genes (~16%) had such estimates. However, such a small selection of dN/dS 285 values might be biased, which limits the interpretation of the differences in dN/dS between 286 SOGs and EOGs. 287 
+
+# 2.3 Expressed orphan genes differ from conserved genes in sequence, 288 
+
+# evolutionary, and structural features 289 
+
+Next, we investigated whether the presence of SOGs in the orphan gene category would 290 influence the classification between OGs and CGs. Since we observed a bias by genomic 291 representation, we only include species with at least 700 genomes from now on. We trained 292 machine learning classifiers under two scenarios, using datasets of equal size (18,244 samples 293 per class; 14,595 for training and 3,649 for testing): (1) distinguishing CGs from OGs, and (2) 294 distinguishing CGs from only EOGs. We evaluated model performance using four feature sets 295 after controlling for genomic representation bias (Table 3). We find that model performance 296 improved for sequence, structural, and combined feature sets when classifying CGs vs. EOGs 297 compared to CGs vs. OGs, whereas the evolutionary feature set showed similar performance 298 between the two comparisons. 299 
+
+Table 3. Comparison of classification performance (AUC) for CGs vs. OGs and CGs vs. EOGs 300 using different feature sets, with controlling for genomic representation bias. 301 
+
+Fseq Fstruct Fevo Fall 
+
+CGs vs. OGs 0.977 ± 0.002 0.961± 0.004 0.895± 0.013 0.989 ± 0.002 CGs vs. EOGs 0.987 ± 0.002 0.969 ± 0.004 0.893 ± 0.015 0.993 ± 0.002 302 303 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 22, 2026. ;https://doi.org/10.64898/2026.01.16.699869 doi: bioRxiv preprint
+
+304 
+
+Figure 5. SHAP summary plot showing the top contributing features in the classification of 305 CGs vs. EOGs with controlled genomic representation (Number_genomes_in_species ≥ 700). 306 Positive SHAP values (right side) push predictions toward EOGs; negative values indicate a 307 contribution toward CGs. See Table S3 for the complete list. 308 We examined the contribution of features to classify EOG and CGs (Figure 5). We focused our 309 interpretation on the top 20 features, as individual feature contributions dropped below 1% 310 after the 20 th ranked feature (Figure S5). CDS length emerged as the most important 311 discriminative feature. As shown in the SHAP plot, shorter genes (blue values for CDS length) 312 were strongly associated with EOGs, while longer genes were more likely to be CGs. A similar 313 trend was observed for GC3s, with higher GC3s values occurring more frequently in CGs. 314 Additionally, some evolutionary features are highly important in CGs vs. EOGs comparison. 315 For example, EOGs tend to be present in a lower number of genomes within their species, and 316 this pattern is consistent with the pangenome analysis, where conserved genes were 317 predominantly composed of core genes whereas OGs were largely restricted to the accessory 318 genome. The lower prevalence of EOGs across genomes therefore reflects their tendency to 319 occupy the accessory component of bacterial pangenomes. 320 Amino acid composition (AAC), including acidic amino acids and the relative abundance of 321 specific residues like arginine (AAC_R), was important to classify EOGs and CGs, suggesting 322 that EOGs encode proteins with distinct biochemical compositions compared to CGs. 323 Moreover, sequence motifs such as trinucleotide frequencies, Trinuc_TGG, appeared among 324 the top features. 325 We found that several 3Di structural representation features - represented by single-letter 326 tokens (e.g., “a”, “c”, “d”, etc.) extracted via ProstT5 - were highly ranked in feature 327 importance. SHAP analysis of the 3Di features revealed that CGs generally exhibit higher 328 values for several 3Di structural representations, whereas EOGs tend to display lower 329 representation values. 330 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 22, 2026. ;https://doi.org/10.64898/2026.01.16.699869 doi: bioRxiv preprint
+
+# 3. Discussion 331 
+
+The dataset of microbial orphan genes analyzed here originates from large-scale predictions of 332 species-specific genes in the human gut microbiome (Vakirlis and Kupczok 2024). Various 333 evolutionary processes create orphan genes and bacteria offer large potential to study these due 334 to the ample genomic data that is available at species and strain level (uz-Zaman and Ochman 335 2025). For example, remodeled gene families have been detected using network approaches 336 (Watson et al. 2022), genes originating from divergence have been distinguished using 337 simulations (Tassios et al. 2026), and de novo genes have been traced using omics approaches 338 (uzZaman and Ochman 2025). Nevertheless, most previous studies have treated all predicted 339 orphans as a single category without considering their evolutionary heterogeneity (Pereira et 340 al. 2025). Additional heterogeneity is created by spurious predictions that can arise from 341 annotation errors or non-functional open reading frames, which has likely obscured the 342 functional and evolutionary signals of true orphans. Here, by explicitly distinguishing between 343 SOGs, which show no expression evidence, and EOGs, we aimed to separate non-expressed 344 artifacts from genuine OGs and to identify the features that best distinguish EOGs vs. SOGs, 345 and EOGs vs. CGs. Our analysis of conserved genes shows that a larger proportion of CGs is 346 expressed compared OGs. This suggests that expression provides a useful signal for 347 distinguishing between bona fide and spurious OGs, albeit imperfect for separating more likely 348 functional genes from less likely ones. Our results further show that the apparent importance 349 of evolutionary features is strongly influenced by sampling bias due to the number of genomes 350 representing a species. This pattern is likely explained by the fact that species with more 351 available genomes are typically more abundant in the gut microbiome, and therefore contribute 352 a larger proportion of reads in metatranscriptomic datasets, increasing the likelihood of 353 detecting gene expression (Almeida et al. 2021). Thus, their genomes are better represented in 354 the human gut environment, which could lead to higher expression levels in 355 metatranscriptomics data. To address this, we specifically filtered out species with low 356 genomic representation and restricted the analysis to well-represented species, thereby 357 ensuring that SOGs and EOGs had comparable distributions of genome counts across species. 358 Under this controlled scenario, much of the bias disappeared, highlighting the importance of 359 considering differences between species when studying orphan genes. 360 Here we analyze feature importance using SHAP values, which jointly evaluate contributions 361 of all features. This approach quantifies not only whether a feature is informative, but also its 362 importance relative to other features, which allows us to analyze all features at once. Feature 363 importance analyses highlight the number of genomes a gene is present in as an informative 364 signal for distinguishing SOGs from EOGs. Many SOGs are restricted to only a few genome 365 occurrences, which are consistent with their likely origin as prediction errors or non-functional 366 sequences. This observation can also be framed in the context of pangenome structure. The 367 pangenome of a species encompasses the complete set of genes across all sequenced genomes 368 and is typically divided into categories. The core genome comprises genes present in nearly all 369 strains, encoding essential or highly conserved functions, whereas the accessory genome 370 contains genes restricted to only a subset of strains (Matthews et al. 2024; Vakirlis and 371 Kupczok 2024). In pangenome studies, such low-frequency genes are known to be enriched in 372 annotation errors or assembly artifacts (Tonkin-Hill et al. 2020). SOGs tend to be rare genes 373 and could thus be also enriched in annotation artefacts. Nevertheless, EOGs were determined 374 using expression signal, which might be easier to detect for high-frequency genes; thus, true 375 low-frequency orphan genes could still be classified as SOGs. 376 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 22, 2026. ;https://doi.org/10.64898/2026.01.16.699869 doi: bioRxiv preprint
+
+Our approach is able to detect distinguishing sequence features for classifying EOGs vs. SOGs 377 and EOGs vs. CGs. GC content at the third synonymous codon position (GC3s) followed the 378 order CG > EOG > SOG. Given that GC3s is strongly linked to synonymous codon usage bias 379 and is interpreted as a signature of translational selection acting on coding sequences (Wan et 380 al. 2004; Babbitt et al. 2014), the higher GC3s in EOGs relative to SOGs suggests that EOGs 381 are unlikely to be transcriptional artifacts but are instead subject to selective pressures shaping 382 codon usage, potentially enhancing translational efficiency. This is consistent with the even 383 higher GC3s values of CGs indicating stronger selection in conserved genes. From an 384 evolutionary perspective, the intermediate GC3s levels observed in EOGs suggest that OGs are 385 relatively young coding sequences that are in the process of adapting to the cellular 386 environment and gradually acquiring functional characteristics. In contrast, the lower GC3s 387 values in SOGs are consistent with weak or absent selective constraints on codon usage, as 388 expected for non-functional open reading frames. Beyond GC3s, we observed that several 389 dinucleotides show differential enrichment between EOGs and SOGs, but not between EOGs 390 and CGs. Dinucleotide composition is shaped by genome-wide mutational processes and can 391 serve as a genomic signature that characterize the sequence composition of genes (Kariin and 392 Burge 1995; Chen et al. 2014). Thus, SOGs show sequence compositions that deviate from 393 EOGs consistent with the expectation that SOGs represent spurious ORFs or annotation 394 artifacts. Furthermore, CDS length emerged as one of the most informative features across 395 comparisons. SHAP analysis revealed that: CGs possess longer CDSs than EOGs, while SOGs 396 also tend to have longer CDSs than EOGs. The short length of EOGs is consistent with their 397 potential role as recently emerged genes (Tautz and Domazet-Lošo 2011; Vakirlis and 398 Kupczok 2024). The longer CDSs observed in SOGs, despite lacking expression support, likely 399 result from annotation artifacts. Gene prediction pipelines are biased toward reporting long 400 open reading frames (Choudhary et al. 2020), for example, gene-prediction pipelines such as 401 Prokka (Seemann 2014) and Prodigal (Hyatt et al. 2010) tend to detect long open reading 402 frames, thereby increasing the chance of spurious annotations in sequences without 403 experimental support. Thus, SOGs may appear long in sequence, but this does not equate to 404 functional or structural validity. 405 
+
+De novo genes in eukaryotes are often thought to originate from previously non-coding open 406 reading frames (ORFs), but in prokaryotic genomes, which are highly compact and dense in 407 coding regions, new genes may more commonly arise from alternative reading frames within 408 existing coding sequences (Watson et al. 2022). Thus, some de novo–originated EOGs likely 409 arose from alternative reading frames. Our results have shown that EOGs exhibit different 410 proportions of amino acids compared with CGs and SOGs. Amino acid composition is a major 411 determinant of intrinsic structural disorder (Wilson et al. 2017), and is therefore subject to 412 biophysical and evolutionary constraints. A previous study reported that predicted intrinsic 413 structural disorder is highest in de novo proteins, intermediate in random sequences, and lowest 414 in conserved proteins (Middendorf and Eicholt 2024). Although structural disorder does not 415 appear as an important feature in any of our analyses, the observed differences in amino acid 416 composition, particularly in the content of acidic amino acids, across EOGs, SOGs, and CGs 417 could reflect differences in the strength of selection acting on these genes. CGs encode proteins 418 shaped by long-term selection, whereas EOGs likely represent younger proteins that have 419 begun to acquire functional constraints. In contrast, SOGs, which lack expression support, are 420 expected to be under little or no selective pressure and may therefore exhibit amino acid 421 compositions that are closer to those of random sequences. 422 Interestingly, only few structural features appeared among the top predictors in our SHAP 423 analysis for distinguishing EOGs from SOGs. This likely reflects a methodological limitation 424 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 22, 2026. ;https://doi.org/10.64898/2026.01.16.699869 doi: bioRxiv preprint
+
+rather than the absence of structural signals. Specifically, the structural predictor we used was 425 ProstT5 (Heinzinger et al. 2024), which itself was trained on AlphaFold’s protein sequences 426 and 3Di information, and the 3Di representation was obtained via Foldseek (van Kempen et al. 427 2024). Because AlphaFold relies on multiple sequence alignments, its structural embeddings 428 are not independent of evolutionary conservation information. Consequently, structural 429 features may overlap with the sequence features already used in the model, reducing their 430 apparent contribution to orphan genes prediction. 431 In summary, our analysis shows that a substantial proportion of predicted orphan genes in gut 432 microbiomes are likely spurious, while a smaller subset exhibits consistent expression. By 433 integrating expression evidence with sequence, structural, and evolutionary features, we 434 established a framework for the discrimination between true orphan genes and prediction 435 artifacts. The findings enhance our understanding of orphan genes and provide a foundation 436 for future studies on the origination and functional roles of orphan genes in microbial 437 communities. 438 
+
+# 4. Materials and Methods 439 
+
+# 4.1 Dataset construction 440 
+
+In a previous study, orphan genes (OGs) were identified through a multi-step filtering process 441 (Vakirlis and Kupczok 2024). First, the Unified Human Gastrointestinal Protein catalogue, 442 clustered into protein families at 50% identity (UHGP50 v1.0) (Almeida et al. 2021) was 443 analyzed and protein families present in multiple species were removed, along with those 444 having a match in EggNOG (Buchfink et al. 2021; Hernández-Plaza et al. 2023). Next, 445 DIAMOND searches were performed against the NCBI prokaryotic RefSeq database, 446 removing sequences with significant matches (E-value < 10 -3 ), except for those with >90% 447 coverage and >95% identity, which were likely from the same species. A final BLASTp 448 (Altschul 1997) search against the UHGP50 protein catalogue further filtered out sequences 449 matching proteins from different species (E-value < 10 -5 ). To reduce contamination, OGs found 450 on contigs containing only orphans were removed. The remaining sequences formed our 451 reference dataset of 631,104 species-specific OGs, while the non-orphan families were labelled 452 conserved genes (CGs), totaling 4,104,442. In the following, we focused on highly conserved 453 genes (defined as genes present in >10 species, 26,545 genes in total) rather than all conserved 454 genes because their broad phylogenetic distribution provides stronger evidence of long-term 455 evolutionary conservation, making them a more reliable group to compare to orphan genes. 456 
+
+457 The Snakemake (v7.32.4) (Mölder et al. 2021) workflow management system was used to 458 develop an automated pipeline (Figure 1, https://github.com/cheche0109/OGs-SOGs-CGs). 459 The pipeline includes processing and alignment of metatranscriptomics sequencing data sets 460 against our orphan reference dataset and generating BAM files for further analysis to 461 distinguish EOGs and SOGs. 462 
+
+4.1.1 Search and download of metatranscriptomics data. We analyzed 463 metatranscriptomics data to label expressed genes in our reference dataset as EOGs, and non-464 expressed genes as SOGs. To this end, we searched for libraries containing raw 465 metatranscriptomics data in the sequence read archive (SRA) (Katz et al. 2022) (10 April 2024) 466 database of the National Center for Biotechnology Information (NCBI). To ensure that the 467 included metatranscriptomics data originated from prokaryotic human gut metagenomes, we 468 used the following criteria: (i) human gut metagenome, NOT mouse gut metagenome, (ii) AND 469 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 22, 2026. ;https://doi.org/10.64898/2026.01.16.699869 doi: bioRxiv preprint
+
+metatranscriptomics, AND biomol RNA, (iii) AND prokaryote, NOT virome. The compressed 470 RNA-seq read data (.fastq.gz) of the accessions was downloaded directly using fasterq-dump 471 (v3.1.1) (Leinonen et al. 2011) from the SRA Toolkit. 472 
+
+4.1.2 Read processing. Cutadapt (v4.0) (Martin 2011) with the parameter -q 30 was used 473 to trim low-quality bases from the compressed sequencing reads downloaded from the SRA 474 database. Trimmed reads were mapped to our orphan reference genes with CoverM (v0.7.0) 475 (Aroney et al. 2025) using the command coverm make --discard-unmapped -p bwa-mem2 ,476 generating BAM files directly converted from the SAM outputs. Reads with a mapping quality 477 score of 0 were then removed using the command samtools view -hbq 1 to eliminate low-478 confidence alignments and ensure accurate coverage estimation. 479 480 
+
+4.1.3 Labeling EOGs and SOGs. We used CoverM with the command coverm contig --481 
+
+min-read-percent-identity 95 --min-read-aligned-percent 75 --min-covered-fraction 0.6 --482 
+
+contig-end-exclusion 0 to calculate read coverage per gene from the bam files, without 483 excluding any base pairs from the beginning or end of each gene. To ensure that only highly 484 similar reads are mapped, we require at least 95% identity to the reference gene and to exclude 485 short, ambiguous matches, we require a minimum of 75% of the read length aligned to the gene. 486 Finally, to ensure that the detected expression is biologically meaningful rather than resulting 487 from fragmented or low-confidence mappings, we retained only genes with at least 60% of 488 their length covered by mapped reads. Genes that did not meet the defined thresholds for any 489 library were classified as SOGs. For the remaining genes, we explored the influence of 490 threshold settings on coverage and the number of libraries in which a gene was detected. Genes 491 exceeding the coverage threshold and present in at least 2 libraries were designated as EOGs. 492 493 
+
+4.1.4 Expression analysis of CGs. To evaluate whether the absence of detectable 494 expression is a reasonable criterion for identifying potentially SOGs, we performed a parallel 495 expression analysis on conserved genes (CGs). To reduce bias caused by uneven genomic 496 representation across species, we restricted the analysis to species with 497 Number_of_genomes_in_species ≥ 700, consistent with the filtering strategy used in our 498 orphan gene analyses. We then estimated low, medium, and high genomic representation levels 499 using the 25%, 50%, and 75% quantiles of Number_of_genomes_in_species among the 500 eligible species. Based on these thresholds and the species phylogeny, we selected three 501 phylogenetically distant representative species with different genome representation levels: 502 GUT_GENOME001602 (Holdemanella sp002299315), GUT_GENOME239670 503 (Bifidobacterium pseudocatenulatum ), and GUT_GENOME140299 ( Prevotella copri ). 504 For each selected species, we extracted CGs belonging to that species by retaining genes 505 present in more than 10 species across the UHGP-50 dataset. Expression analysis was 506 performed using the same Snakemake pipeline and the same set of 4,969 human gut 507 metatranscriptomic libraries described above. Read processing, mapping, and coverage 508 estimation were conducted identically to the procedure used for OGs. A CG was considered 509 expressed if it showed detectable coverage in the metatranscriptomic data according to the 510 same criteria applied to OGs. 511 
+
+# 4.2 Feature construction 512 
+
+Several features were derived from our previous study (Vakirlis and Kupczok 2024), including: 513  
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 22, 2026. ;https://doi.org/10.64898/2026.01.16.699869 doi: bioRxiv preprint (i)
+
+Sequence features — GC content, GC content at the third synonymous codon position, 514 biosynthetic cost, isoelectric point, coding sequence (CDS) length, CpG dinucleotide 515 frequency, and protein self-aggregation propensity (length and energy); 516  
+
+> (ii)
+
+Structural features — number of predicted transmembrane domains, percentage of 517 transmembrane regions, and percentage of intrinsically disordered regions; 518  
+
+> (iii)
+
+Evolutionary features — number of genomes in which the gene is detected, total number 519 of genomes available for the corresponding species, and terminal branch length for each 520 species, taken from the phylogenetic tree of Almeida et al. (Almeida et al. 2021). 521 We included additional features for the three groups as follows. 522 
+
+4.2.1 Sequence features. We processed DNA and protein fasta files to extract sequence-523 based features. For DNA sequences, we computed Shannon entropy, dinucleotide frequencies, 524 and trinucleotide frequencies. For protein sequences, we calculated amino acid composition 525 (AAC) and physicochemical properties with Biopython (version 1.83), including Kyte-526 Doolittle hydropathy scores (to evaluate protein hydrophobicity), average residue weight, and 527 average charge at pH 7.0. Additionally, amino acids were classified (tiny, small, aliphatic, 528 aromatic, non-polar, polar, charged, basic, and acidic) based on their size, structure, and charge, 529 using Pepstats from the EMBOSS tools (Rice et al. 2000). The presence of signal peptides was 530 predicted using SignalP 6.0 (Teufel et al. 2022) in fast mode. Each sequence was processed 531 individually, and the extracted features were stored in a CSV file for downstream analysis. 532 
+
+4.2.2 Structural features. Protein secondary structure was predicted using the RaptorX 533 Predict_Property package (v1.01) in default mode, and the percentage composition of 534 disordered regions, helices, and strands was computed. Additionally, the protein language 535 model ProstT5 (Heinzinger et al. 2024) was used to translate 1D amino acid sequences into 536 3Di structural representations. Based on the T5 transformer architecture, ProstT5 was 537 implemented using Hugging Face’s Transformers library and executed on CUDA-enabled 538 hardware. The model output was stored in FASTA format, and the percentage composition of 539 the 20 distinct 3Di structural representations per sequence was calculated. 540 
+
+4.2.3 Evolutionary features. We first computed the pairwise phylogenetic distance matrix 541 for all bacterial species based on their positions in the reference phylogenetic tree provided in 542 newick format, as computed by Almeida. The distance between each species pair corresponds 543 to the total branch length separating them on the tree, as calculated using the ETE3 toolkit 544 (Huerta-Cepas et al. 2016), reflecting the evolutionary divergence among species. The 545 computed pairwise distances were then projected into a three-dimensional space using metric 546 multidimensional scaling (MDS) implemented in scikit-learn (Buitinck et al. 2013) (version 547 1.3.2). 548 To assess the discriminative power of different feature sets in classifying CGs, SOGs, EOGs, 549 we evaluated the effectiveness of various feature groups. Specifically, we trained classification 550 models using 4 feature sets: 551 1. Fseq – 122 sequence features. 552 2. Fstruct – 26 structural features. 553 3. Fevo – 6 evolutionary features. 554 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 22, 2026. ;https://doi.org/10.64898/2026.01.16.699869 doi: bioRxiv preprint
+
+4. Fall – 154 features, combining Fseq , Fstruct , and Fevo .555 
+
+# 4.3 Machine learning 556 
+
+To classify SOGs versus EOGs, and EOGs versus CGs, we developed machine learning models 557 based on XGBoost (Chen and Guestrin 2016). For each comparison, we constructed a balanced 558 dataset by randomly downsampling the majority class to achieve equal representation of both 559 classes. Additionally, prior to model training, z-score normalization was applied using 560 parameters (mean and standard deviation) estimated from the training set only, which were 561 then used to normalize the test data. 562 Classifiers were trained on Fseq , Fstruct , Fevo , and Fall . Model selection and hyperparameter 563 tuning were performed using a nested cross-validation strategy: an inner 4-fold cross-validation 564 for hyperparameter optimization, and an outer 5-fold stratified cross-validation to assess 565 generalization performance. The hyperparameter grid search explored the following parameter 566 ranges: n_estimators: [100, 200], max_depth: [3, 5, 7], learning_rate: [0.005, 0.01, 0.1], 567 subsample: [0.8, 1.0], colsample_bytree: [0.8, 1.0]. 568 Model performance was primarily evaluated using the area under the receiver operating 569 characteristic curve (AUC). For each comparison, we report the mean AUC ± standard 570 deviation (SD) across inner folds. SD reflects variability among the folds. For interpretability, 571 we extracted feature importance from the trained models and applied SHAP (SHapley Additive 572 exPlanations) (Lundberg and Lee 2017) to quantify the contribution of each feature to the 573 classification outcome. 574 
+
+# Data Availability 575 
+
+The data underlying this study are provided within the manuscript and its Supplementary 576 Information files. The complete Snakemake pipeline used for data processing and model 577 training is available at https://github.com/cheche0109/OGs-SOGs-CGs. Metatranscriptomic 578 data were retrieved from the NCBI Sequence Read Archive (SRA) 579 (https://www.ncbi.nlm.nih.gov/sra), and the full list of SRA accession numbers used in this 580 study is available at https://github.com/cheche0109/OGs-SOGs-581 CGs/blob/main/metatranscriptomics/runs_4969.txt. 582 583 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 22, 2026. ;https://doi.org/10.64898/2026.01.16.699869 doi: bioRxiv preprint
+
+# References 584 
+
+Almeida A et al. 2021. A unified catalog of 204,938 reference genomes from the human gut microbiome. Nat 585 Biotechnol. 39(1):105–114. https://doi.org/10.1038/s41587-020-0603-3 586 
+
+Altschul S. 1997. Gapped BLAST and PSI-BLAST: a new generation of protein database search programs. 587 Nucleic Acids Res. 25(17):3389–3402. https://doi.org/10.1093/nar/25.17.3389 588 
+
+Arendsee ZW, Li L, Wurtele ES. 2014. Coming of age: orphan genes in plants. Trends Plant Sci. 19(11):698– 589 708. https://doi.org/10.1016/j.tplants.2014.07.003 590 
+
+Aroney STN et al. 2025. CoverM: read alignment statistics for metagenomics. Bioinformatics. 41(4). 591 https://doi.org/10.1093/bioinformatics/btaf147 592 
+
+Babbitt GA, Alawad MA, Schulze K V., Hudson AO. 2014. Synonymous codon bias and functional constraint 593 on GC3-related DNA backbone dynamics in the prokaryotic nucleoid. Nucleic Acids Res. 42(17):10915–10926. 594 https://doi.org/10.1093/nar/gku811 595 
+
+Babina AM et al. 2023. Rescue of Escherichia coli auxotrophy by de novo small proteins. Elife. 12. 596 https://doi.org/10.7554/eLife.78299 597 
+
+Basile W, Sachenkova O, Light S, Elofsson A. 2017. High GC content causes orphan proteins to be intrinsically 598 disordered. PLoS Comput Biol. 13(3):e1005375. https://doi.org/10.1371/journal.pcbi.1005375 599 
+
+Brandis G, Hughes D. 2016. The Selective Advantage of Synonymous Codon Usage Bias in Salmonella. PLoS 600 Genet. 12(3):e1005926. https://doi.org/10.1371/journal.pgen.1005926 601 
+
+Breiman L. 2001. Random Forests. Machine Learning . 5–32 602 
+
+Buchfink B, Reuter K, Drost H-G. 2021. Sensitive protein alignments at tree-of-life scale using DIAMOND. 603 Nat Methods. 18(4):366–368. https://doi.org/10.1038/s41592-021-01101-x 604 
+
+Buitinck L et al. 2013. API design for machine learning software: experiences from the scikit-learn project. 605 http://arxiv.org/abs/1309.0238 606 
+
+Chen T, Guestrin C. 2016. XGBoost. In: Proceedings of the 22nd ACM SIGKDD International Conference on 607 Knowledge Discovery and Data Mining. ACM; p 785–794. https://doi.org/10.1145/2939672.2939785 608 
+
+Chen W et al. 2014. PseKNC: A flexible web server for generating pseudo K-tuple nucleotide composition. 609 Anal Biochem. 456:53–60. https://doi.org/10.1016/j.ab.2014.04.001 610 
+
+Choudhary S, Li W, D. Smith A. 2020. Accurate detection of short and long active ORFs using Ribo-seq data. 611 Bioinformatics. 36(7):2053–2059. https://doi.org/10.1093/bioinformatics/btz878 612 
+
+Contreras-Moreira B et al. 2017. Analysis of Plant Pan-Genomes and Transcriptomes with 613 GET_HOMOLOGUES-EST, a Clustering Solution for Sequences of the Same Species. Front Plant Sci. 8. 614 https://doi.org/10.3389/fpls.2017.00184 615 
+
+Daubin V, Ochman H. 2004. Start-up entities in the origin of new genes. Curr Opin Genet Dev. 14(6):616–619. 616 https://doi.org/10.1016/j.gde.2004.09.004 617 
+
+Domazet-Loso T, Tautz D. 2003. An evolutionary analysis of orphan genes in Drosophila. Genome Res. 618 13(10):2213–2219. https://doi.org/10.1101/gr.1311003 619 
+
+Dujon B. 1996. The yeast genome project: what did we learn? Trends in Genetics. 12(7):263–270. 620 https://doi.org/10.1016/0168-9525(96)10027-5 621 
+
+Fakhar AZ, Liu J, Pajerowska-Mukhtar KM, Mukhtar MS. 2023. The Lost and Found: Unraveling the Functions 622 of Orphan Genes. J Dev Biol. 11(2). https://doi.org/10.3390/jdb11020027 623 
+
+Frumkin I, Vassallo CN, Chen YH, Laub MT. 2025. Emergence of antiphage functions from random sequence 624 libraries reveals mechanisms of gene birth. Proceedings of the National Academy of Sciences. 122(42). 625 https://doi.org/10.1073/pnas.2513255122 626 
+
+Heinzinger M et al. 2024. Bilingual language model for protein sequence and structure. NAR Genom 627 Bioinform. 6(4). https://doi.org/10.1093/nargab/lqae150 628 
+
+Hernández-Plaza A et al. 2023. eggNOG 6.0: enabling comparative genomics across 12 535 organisms. Nucleic 629 Acids Res. 51(D1):D389–D394. https://doi.org/10.1093/nar/gkac1022 630 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 22, 2026. ;https://doi.org/10.64898/2026.01.16.699869 doi: bioRxiv preprint
+
+Huerta-Cepas J, Serra F, Bork P. 2016. ETE 3: Reconstruction, Analysis, and Visualization of Phylogenomic 631 Data. Mol Biol Evol. 33(6):1635–1638. https://doi.org/10.1093/molbev/msw046 632 
+
+Hyatt D et al. 2010. Prodigal: prokaryotic gene recognition and translation initiation site identification. BMC 633 Bioinformatics. 11(1):119. https://doi.org/10.1186/1471-2105-11-119 634 
+
+Kariin S, Burge C. 1995. Dinucleotide relative abundance extremes: a genomic signature. Trends in Genetics. 635 11(7):283–290. https://doi.org/10.1016/S0168-9525(00)89076-9 636 
+
+Katz K et al. 2022. The Sequence Read Archive: a decade more of explosive growth. Nucleic Acids Res. 637 50(D1):D387–D390. https://doi.org/10.1093/nar/gkab1053 638 
+
+van Kempen M et al. 2024. Fast and accurate protein structure search with Foldseek. Nat Biotechnol. 639 42(2):243–246. https://doi.org/10.1038/s41587-023-01773-0 640 
+
+Leinonen R, Sugawara H, Shumway M. 2011. The Sequence Read Archive. Nucleic Acids Res. 641 39(Database):D19–D21. https://doi.org/10.1093/nar/gkq1019 642 
+
+Li J et al. 2022. Foster thy young: enhanced prediction of orphan genes in assembled genomes. Nucleic Acids 643 Res. 50(7):e37–e37. https://doi.org/10.1093/nar/gkab1238 644 
+
+Lin Z et al. 2023. Evolutionary-scale prediction of atomic-level protein structure with a language model. 645 Science (1979). 379(6637):1123–1130. https://doi.org/10.1126/science.ade2574 646 
+
+Lundberg S, Lee S-I. 2017. A Unified Approach to Interpreting Model Predictions. 647 http://arxiv.org/abs/1705.07874 648 
+
+Martin M. 2011. Cutadapt removes adapter sequences from high-throughput sequencing reads. EMBnet J. 649 17(1):10. https://doi.org/10.14806/ej.17.1.200 650 
+
+Matthews CA, Watson-Haigh NS, Burton RA, Sheppard AE. 2024. A gentle introduction to pangenomics. Brief 651 Bioinform. 25(6). https://doi.org/10.1093/bib/bbae588 652 
+
+Meng S et al. 2022. Ecological Role of Bacteria Involved in the Biogeochemical Cycles of Mangroves Based on 653 Functional Genes Detected through GeoChip 5.0. mSphere. 7(1). https://doi.org/10.1128/msphere.00936-21 654 
+
+Michaud JM, Madani A, Fraser JS. 2022. A language model beats alphafold2 on orphans. Nat Biotechnol. 655 40(11):1576–1577. https://doi.org/10.1038/s41587-022-01466-0 656 
+
+Middendorf L, Eicholt LA. 2024. Random, de novo, and conserved proteins: How structure and disorder 657 predictors perform differently. Proteins: Structure, Function, and Bioinformatics. 92(6):757–767. 658 https://doi.org/10.1002/prot.26652 659 
+
+Mölder F et al. 2021. Sustainable data analysis with Snakemake. F1000Res. 10:33. 660 https://doi.org/10.12688/f1000research.29032.1 661 
+
+Nomburg J et al. 2024. Birth of protein folds and functions in the virome. Nature. 633(8030):710–717. 662 https://doi.org/10.1038/s41586-024-07809-y 663 
+
+Pereira AB et al. 2025. Orphan genes are not a distinct biological entity. BioEssays. 47(1). 664 https://doi.org/10.1002/bies.202400146 665 
+
+Prabh N, Rödelsperger C. 2019. De Novo , Divergence, and Mixed Origin Contribute to the Emergence of 666 Orphan Genes in Pristionchus Nematodes. G3 Genes|Genomes|Genetics. 9(7):2277–2286. 667 https://doi.org/10.1534/g3.119.400326 668 
+
+Rice P, Longden I, Bleasby A. 2000. EMBOSS: The European Molecular Biology Open Software Suite. Trends 669 in Genetics. 16(6):276–277. https://doi.org/10.1016/S0168-9525(00)02024-2 670 
+
+Seemann T. 2014. Prokka: rapid prokaryotic genome annotation. Bioinformatics. 30(14):2068–2069. 671 https://doi.org/10.1093/bioinformatics/btu153 672 
+
+Tassios E et al. 2026. Machine learning can distinguish orphans that have resulted from sequence divergence 673 beyond recognition. Bioinformatics Advances. 6(1). https://doi.org/10.1093/bioadv/vbaf324 674 
+
+Tautz D, Domazet-Lošo T. 2011. The evolutionary origin of orphan genes. Nat Rev Genet. 12(10):692–702. 675 https://doi.org/10.1038/nrg3053 676 
+
+Teufel F et al. 2022. SignalP 6.0 predicts all five types of signal peptides using protein language models. Nat 677 Biotechnol. 40(7):1023–1025. https://doi.org/10.1038/s41587-021-01156-3 678 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted July 22, 2026. ;https://doi.org/10.64898/2026.01.16.699869 doi: bioRxiv preprint
+
+Toll-Riera M et al. 2009. Origin of primate orphan genes: A comparative genomics approach. Mol Biol Evol. 679 26(3):603–612. https://doi.org/10.1093/molbev/msn281 680 
+
+uz-Zaman MdH, Ochman H. 2025. De novo gene birth and the conundrum of ORFan genes in bacteria. Genome 681 Res. 35(8):1679–1688. https://doi.org/10.1101/gr.280157.124 682 
+
+uz-Zaman MdH, Ochman H. 2025. Propensity for proto-gene emergence in bacteria. Genome Biol. 26(1):362. 683 https://doi.org/10.1186/s13059-025-03825-x 684 
+
+Vakirlis N, Carvunis AR, McLysaght A. 2020. Synteny-based analyses indicate that sequence divergence is not 685 the main source of orphan genes. Elife. 9. https://doi.org/10.7554/eLife.53500 686 
+
+Vakirlis N, Kupczok A. 2024. Large-scale investigation of species-specific orphan genes in the human gut 687 microbiome elucidates their evolutionary origins. Genome Res. 34(6):888–903. 688 https://doi.org/10.1101/gr.278977.124 689 
+
+Wan X-F, Xu D, Kleinhofs A, Zhou J. 2004. Quantitative relationship between synonymous codon usage bias 690 and GC composition across unicellular genomes. BMC Evol Biol. 4(1):19. https://doi.org/10.1186/1471-2148-4-691 19 692 
+
+Watson AK, Lopez P, Bapteste E. 2022. Hundreds of Out-of-Frame Remodeled Gene Families in the 693 Escherichia coli Pangenome. Mol Biol Evol. 39(1). https://doi.org/10.1093/molbev/msab329 694 
+
+Weisman CM, Murray AW, Eddy SR. 2020. Many, but not all, lineage-specific genes can be explained by 695 homology detection failure. PLoS Biol. 18(11):e3000862. https://doi.org/10.1371/journal.pbio.3000862 696 
+
+Whitman WB, Coleman DC, Wiebe WJ. 1998. Prokaryotes: The unseen majority. Proceedings of the National 697 Academy of Sciences. 95(12):6578–6583. https://doi.org/10.1073/pnas.95.12.6578 698 
+
+Wilson BA, Foy SG, Neme R, Masel J. 2017. Young genes are highly disordered as predicted by the 699 preadaptation hypothesis of de novo gene birth. Nat Ecol Evol. 1(6):0146. https://doi.org/10.1038/s41559-017-700 0146 701 
+
+Yu G, Stoltzfus A. 2012. Population Diversity of ORFan Genes in Escherichia coli. Genome Biol Evol. 702 4(11):1176–1187. https://doi.org/10.1093/gbe/evs081 703 
+
+Zhou J, Ma H, Zhang L. 2023. Mechanisms of Virulence Reprogramming in Bacterial Pathogens. Annu Rev 704 Microbiol. 77(1):561–581. https://doi.org/10.1146/annurev-micro-032521-025954 705 
+
+706
