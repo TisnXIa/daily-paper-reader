@@ -1,0 +1,1168 @@
+Title: Diversity and evolution of the transcriptional regulatory networks of Pseudomonas strains revealed using machine learning
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.07.20.739605v1.full.pdf
+
+Number of Pages: 20
+
+Markdown Content:
+Diversity and evolution of the transcriptional 
+
+# regulatory networks of Pseudomonas strains 
+
+# revealed using machine learning 
+
+Heera Bajpe 1, Ying Hefner 1, Richard Szubin 1, Jaemin Sung 1, Bernhard O. Palsson 1,2,3,4* 
+
+1.  Department of Bioengineering, University of California San Diego, La Jolla, CA, 92093, USA 
+
+2.  Department of Pediatrics, University of California San Diego, La Jolla, CA, 92093, USA 
+
+3.  Bioinformatics and Systems Biology Program, University of California, San Diego, La Jolla, USA 
+
+4.  Center for Microbiome Innovation, University of California San Diego, La Jolla, CA 92093, USA 
+
+*Address correspondence to Bernhard O. Palsson:  bpalsson@ucsd.edu 
+
+# Abstract 
+
+The genus Pseudomonas consists of diverse and ecologically significant species that form close associations 
+
+with both plants and animals. This genus is widely studied due to the clinically relevant Pseudomonas 
+
+aeruginosa , model plant pathogen Pseudomonas syringae , and non -pathogenic, industrially relevant 
+
+Pseudomonas putida . The different metabolic and physiological capabilities of these species are enabled by 
+
+their unique genetic makeup as well as varying regulatory mechanisms. To study the transcriptional basis for the 
+
+diversity of the three species, we applied independent component analysis to strain -specific RNA -seq datasets 
+
+to identify independently modulated gene sets (iModulons) and their condition -specific activity levels. We then 
+
+mapped iModulons across strains based on their similarity in orthologous gene membership. Through 
+
+comparison of iModulon gene membership and activities, we find that: (i) iModulons reveal shared and unique 
+
+regulatory modalities across strains; (ii) unique adaptations in c ommon functions, such as translation and 
+
+pyoverdine production/uptake, manifest through both differential iModulon gene membership and condition -
+
+specific activation states in each strain ; (iii) iModulons facilitate comparison of stress responses at the systems 
+
+level ; and (iv) iModulons highlight unique virulence factor enrichment and host -specific adaptations in human 
+
+and plant pathogens. Altogether, comparing the modularized transcriptomes of the three strains provides unique 
+
+and comprehensive insights into their di fferential evolution. 
+
+# Importance 
+
+Closely related bacterial species often have vastly different metabolic and physiological capabilities , yet the 
+
+regulatory mechanisms underlying these adaptations remain poorly understood. Here, we compare the 
+
+transcriptional regulatory networks of three representative Pseudomonas strains through cross -strain iModulon 
+
+analysis . By comparing both iModulon gene composition and activity across s train s, we identify conserved 
+
+regulatory modules alongside lineage -specific adaptations in functions associated with virulence, translation, 
+
+iron acquisition , motility, and stress responses . Our results demonstrate that iModulons provide a genome -scale 
+
+framework for comparing transcriptional regulation across closely related organisms, revealing regulatory 
+
+innovations that are not apparent from genome comparisons alone. This work establishes a scalable approach 
+
+for studying the evolution of bacterial tr anscriptional regulatory networks and the regulatory basis of niche 
+
+specialization. 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 20, 2026. ;https://doi.org/10.64898/2026.07.20.739605 doi: bioRxiv preprint
+
+# Introduction 
+
+Pseudomonas is a complex genus containing the largest number of gram -negative bacterial species (1, 2) .
+
+Pseudomonas aeruginosa , Pseudomonas syringae , and Pseudomonas putida are prominent species of this 
+
+genus with high genomic similarity , but diverse functionalities (3) . P. aeruginosa is a n opportunistic pathogen that 
+
+is a leading cause of nosocomial infections in humans (4) . P. syringae is a phyto pathogen responsible for 
+
+agricultural and economic losses worldwide (3) . Finally, P. putida is a largely non -pathogenic saprophytic species 
+
+of industrial relevance (5) . While the metabolic and physiological versatility of these pseudomonads is in part due 
+
+to genomic differences, unique regulatory mechanisms enable surviv al in diverse niches. These regulatory 
+
+mechanisms are controlled by the transcriptional regulatory network (TRN). Genome -scale TRN comparison is 
+
+imperative to furthering our knowledge on the evolution of transcriptional regulation across this lineage. 
+
+The TRN is a complex network of regulators and their target genes. TRN characterization is limited by bottom -
+
+up approaches that tend to be tedious and expensive (6) . However, rapid growth of RNA -seq data and 
+
+development of scalable data analytic tools has furthered efforts to deconvolute the TRN through top -down 
+
+approaches. Independent component analysis (ICA), a blind source separation algorithm that identifies 
+
+stat istically independent components in complex datasets, has been proven to successfully untangle bacterial 
+
+transcriptomes (7 –10) . When appli ed to bacterial gene expression profiles , it identifies independently modulated 
+
+gene sets called iModulons. ICA determines the gene composition of each iModulon and its activity across all 
+
+conditions in the dataset. iModulons represent groups of genes that are coregulated under certain conditions, 
+
+thereby corresponding to interpretable regulatory sig nals. Modularization of bacterial transcriptomes has 
+
+previously enabled the discovery of regulons, characterization of unknown genes and regulons, and identification 
+
+of transcriptomic trade -offs (6, 10, 11) .
+
+We previously used iModulon analysis to study the TRNs of P. aeruginosa PAO1 (12, 13) , P. syringae pv. tomato 
+
+DC3000 (14) , and P. putida KT2440 (5) . iModulon s of P. aeruginosa revealed biosynthetic gene cluster (BGC) 
+
+and multidrug resistance -associated regulation that contribute to virulence. iModulons of P. syringae provided 
+
+insight into microbe -microbe and plant -pathogen interactions. Finally, iModulons of P. putida uncovered 
+
+transcriptional responses relevant to industrial bioprocesses. iModulons from these pseudomonads have also 
+
+guided metabolic engineering through the transfer of catabolic iModulons across species to confer novel 
+
+substrate readiness on the recipien t strain (15) . These studies highlight strain -specific regulatory mechanisms 
+
+that enable each strain to survive in their unique environments. 
+
+iModulons also enable comparison of regulatory mechanisms across strains. A previous study comparing 
+
+iModulons of seven strains across different genera uncovered conserved and lineage -specific regulatory aspects 
+
+across the TRNs (16) . The application of this methodology to strains belonging to a single genus is expected to 
+
+reveal common and unique TRN adaptations in closely related strains. Here, we use iModulon analysis to 
+
+compare the TRNs of P. aeruginosa PAO1, P. syringae pv. tomato DC3000, and P. putida KT2440. We first 
+
+expanded the RNA -seq datasets of each strain by adding samples generated under common conditions. Then ,
+
+we used ICA to recompute strain -specific iModulon structures. 
+
+Using the updated iModulon structures, we mapped iModulons across the strains based on orthologous gene 
+
+membership and compared TRNs based on structure and activation state. We find that strain -specific 
+
+adaptations within conserved functions , such as translation and pyoverdine biosynthesis/uptake, include unique 
+
+iModulon gene membership and activation states. Additionally, motility -associated iModulons reveal strain -
+
+specific requirements influenced by varying lifestyles of pathogens and saprophytes. Furthermore, genome -wide 
+
+antibiotic stress response s var y across strains, with the P. aeruginosa TRN having specialized antibiotic stress 
+
+response components . Our analysis thus details differential adaptation and evolution of TRNs across three 
+
+Pseudomonas strains through the unique lens of iModulons. 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 20, 2026. ;https://doi.org/10.64898/2026.07.20.739605 doi: bioRxiv preprint
+
+# Results 
+
+# Reconstruction of iModulon structures 
+
+Although a few conditions are roughly comparable across the datasets used i n our previous studies on the three 
+
+strains , there is an overall lack of comparability (Supplementary Note S1). This results in differences in iModulon 
+
+structures and hinders iModulon activation comparisons under identical conditions across strains. To address 
+
+this limitation, we expanded each dataset by adding RNA -seq samples generated under common conditions. 
+
+After quality control , each dataset contained eight newly generated common conditions, including nutrient 
+
+starvation, metal ion stress, antibiotic stress, and oxidative stress (Supplementary Note S2). The datasets of P. 
+
+aeruginosa , P. putida , and P. syringae were expanded to 431, 343, and 244 RNA -seq samples, respectively 
+
+(Supplementary Table S1 -3). Principal component analysis reveals that growth conditions largely contribute to 
+
+the separation between samples (Fig. 1A). 
+
+After normalizing log 2[TPM] data to project -specific reference conditions, we applied ICA to each dataset (17) .
+
+We extracted 107, 82, and 60 iModulons for P. aeruginosa , P. putida , and P. syringae , respectively (Fig. 1B, 
+
+Supplementary Table S4 -6; Supplementary Note S3). Each iModulon represents a group of genes that are co -
+
+regulated within the given condition -space. ICA provides iModulon gene composition s and activities across all 
+
+conditions (Fig. 1C). iModulons correspond to the effects of transcription factors under conditions within the 
+
+dataset, thus hav ing both statistical and biological significance. 
+
+# iModulons enable genome -scale TRN comparison 
+
+After curating and characterizing the iModulons, they were categorized based on regulator enrichment. 
+
+iModulons that are significantly enriched for a single regulon were categorized as “regulatory”. The remaining 
+
+iModulons were categorized as “biological” ( representing a biological function), “genomic” ( representing genomic 
+
+features), “uncharacterized” (representing unknown cellular function s), or “technical” (containing a single highly 
+
+weighted gene, likely linked to noise in gene expression). Comparison of regulator enrichment across strains 
+
+reveals an overall lack in available regulatory annotations in P. syringae (Supplementary Fig. S1; Supplementary 
+
+Note S4). 
+
+The iModulon structures of all three strains capture diverse cellular functions, such as metabolism, stress 
+
+responses, and translation (Fig. 1D -F). “Metabolic” iModulons dominate P. aeruginosa and P. putida , while 
+
+“uncharacterized” iModulons dominate P. syringae (16). Together with the low count of “regulatory” iModulons 
+
+identified in P. syringae , these findings highlight the lower level of TRN characterization for this strain. The 
+
+availability of iModulon structures for all three strains provides a unique opportunity to improve characterization 
+
+of the P. syringae TRN through cross -strain iModulon comparison, as detailed in Supplementary Note S5. 
+
+Functional categorization of iModulons also reveals strain -specific characteristics. For instance, the “quorum 
+
+sensing” (QS) category is unique to P. aeruginosa , which is known to have multiple QS systems that play key 
+
+role s in pathogenicity and antibiotic resistance  (18) . The absence of QS iModulons in the other strains may be 
+
+due to a lack of conditions differentially activating the associated genes . Alternatively, QS may not be regulated 
+
+in a coordinated manner in these strains, resulting in ICA being unable to identify any associated signals. 
+
+Additionally, the strains differed based on the iModulons capturing the highest percentage of variance in gene 
+
+expression within each dataset (Fig. 1G -I; Supplementary Note S6). While stress response iModulons capture a 
+
+high percentage of variance in all three strains, the associated regulators vary . iModulons enriched for RpoS, 
+
+which governs the general stress response, capture the highest percentage of variance within the P. aeruginosa 
+
+and P. putida datasets. However, the primary stress response iModulon in P. syringae is enriched for AlgU, 
+
+which plays a larger role in stress tolerance in the strain compar ed to RpoS (19) . These differences suggest that 
+
+although stress adaptation is a major driver of transcriptional variation across the strains, the underlying 
+
+regulatory programs have diverged. 
+
+Together, these observations suggest that cross -strain iModulon comparison can reveal conserved and diverged 
+
+re gulatory mechanisms across the strains. 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 20, 2026. ;https://doi.org/10.64898/2026.07.20.739605 doi: bioRxiv preprint
+
+Figure 1. Overview of iModulons of three Pseudomonas strains. (A) Scatter plots of first two principal components of 
+
+the RNA -seq compendiums for each strain. Colored sample points represent new samples generated for the present study. 
+
+Samples from select projects have been highlighted and labelled by project name. ( n: number of RNA -seq samples in 
+
+dataset) (B) Data processing pipeline used to run ICA to generate iModulons. This diagram was adapted from Anand et 
+
+al (20) . (C) ICA decomposes the gene expression profiles into an “ M” matrix containing the weights of each gene in the 
+
+iModulons identified and an “ A” matrix containing the activity of each iModulon across all conditions (iM: iModulon). (D -F) 
+
+Pie charts represent iModulon counts per functional category for each strain. (G -I) Bar graphs show the percentage of 
+
+variance explained by the top five iModulons with the highest explained variance for each strain. (BGC: biosynthetic gene 
+
+cluster) 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 20, 2026. ;https://doi.org/10.64898/2026.07.20.739605 doi: bioRxiv preprint
+
+# Cross -strain iModulon mapping identifies conserved and strain -specific 
+
+# regulatory modules 
+
+To compare iModulons across the pseudomonads, we first used OrthoFinder to identify orthologous gene 
+
+groups (21) . Of 4,556 orthogroups identified, 2,063 have at least one gene member belonging to an iModulon 
+
+(Supplementary Table S7; Supplementary Fig. S2; Supplementary Note S7). We mapped iModulons across the 
+
+strains based on the absolute correlation (Pearson’s r) of M matrix gene weights of orthologous genes (see 
+
+Methods) to generate an iModulon network map (Fig. 2A; Supplementary Table S8). We observed that 52% 
+
+(56/107), 63% (52/82), and 68% (41/60) of iModulons in P. aeruginosa , P. putida , and P. syringae , respectively, 
+
+are connected to at least one iModulon in another strain based on orthologous gene weights (Pearson’s r<0.3) .
+
+Of these , 14% (15/107), 17% (14/82), and 15% (9/60) of iModulons in P. aeruginosa , P. putida , and P. syringae 
+
+had a Jaccard similarity of at least 0.5 with at least one iModulon in another strain , represent ing transcriptional 
+
+signals involv ing the expression of a core set of orthologous genes across the strains. Correlated iModulons with 
+
+high similarity in orthologous gene membership often represent essential cellular functions, such as translation. 
+
+In contrast , those with low similarity represent evolved functions with notable differences in gene membership 
+
+due to lineage -specific adaptations, such as stress responses. 
+
+Mapping iModulons across strains also highlights strain -specific regulatory mechanisms, represented by 
+
+iModulons that fail to match to at least one iModulon from another strain (Fig. 2B). While the detection of unique 
+
+iModulons may be due to condition space differences (Supplementary Note S8), iModulons that represent t rue 
+
+unique capabilities of strains were identified. These iModulons often contain genes with no known orthologs 
+
+within the other strains. For instance, P. aeruginosa con ta ins unique iModulons involved in antibiotic resistance 
+
+and O -antigen biosynthesis which contribute to its virulence and pathogenicity. Additionally, P. putida contains 
+
+unmapped iModulons that correspond to aromatic compound metabolism , represent ing the persistence of the 
+
+strain against toxic substances in its natural environment. Finally, several unique iModulons of P. syringae can 
+
+be linked to plant pathogenicity, such as type III secretion system (T3SS) generation . Overall, the iModulon 
+
+network map serves as a basis for cross -strain TRN comparison .
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 20, 2026. ;https://doi.org/10.64898/2026.07.20.739605 doi: bioRxiv preprint
+
+Figure 2. Network map of iModulons. (A) Network map of iModulons categorized based on dominant functional category. 
+
+(B) Pie charts of unmapped iModulons across the three strains categorized based on iModulon function (IS: insertion 
+
+sequence; BGC: biosynthetic gene cluster). (PA: P. aerugino sa, PP: P. putida, PS: P. syringae) 
+
+# iModulon s reveal differences in activation of translation 
+
+iModulons representing fundamental cellular functions across the strains often share a large core orthologous 
+
+gene set. Nevertheless , these iModulons may have different activation states in similar conditions. We studied 
+
+.CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 20, 2026. ;https://doi.org/10.64898/2026.07.20.739605 doi: bioRxiv preprint a cluster of translation -associated iModulons with high orthologous gene membership similarity, containing the 
+
+Translational -1 (P. aeruginosa ), Translation (P. putida ), and Translation -1 (P. syringae) iModulon s. Despite 
+
+shar ing 27 orthologous genes encoding ribosomal proteins ( Supplementary Fig. S3; Supplementary Note S9), 
+
+their activities differ within the shared condition space (Fig. 3A). For instance, P. aeruginosa and P. putida 
+
+strongly upregulate the ir t ranslation iModulons in CAMHB media compared to M9 media. Additionally, they 
+
+downregulate these iModulons during treatment with the cell wall active antibiotic , ceftazidime. These activities 
+
+reflect the expected pattern of the fear -greed trade -off: faster growth in rich media, and retardation of growth in 
+
+stressful conditions (22) . In contrast, t he Translation -1 iModulon of P. syringae displayed a lack of increased 
+
+growth in CAMHB media. Additionally, treatment with ceftazidime strong ly upregulat ed the iModulon. Being a 
+
+phyto pathogen, encountering a stressor is often a n indicat or of the activation of the plant immune system to P. 
+
+syringae . As a response, the bacteria increases translation of T3SS effectors that suppress the immune system, 
+
+as seen with the coordinated upregulation of the T3SS -1 iModulon (Fig. 3B). Thus, the upregulation of the 
+
+Translation -1 iModulon in this stress condition may be a result of divergent adaptations influenced by host -related 
+
+pressures. 
+
+These results highlight that strong conservation of iModulon gene membership does not necessarily translate to 
+
+conserved activation states, reflecting divergence in regulatory responses across strains. We also performed a 
+
+broader analysis of iModulon activities across the strains, details of which can be found in Supplementary Not e
+
+S10 (Supplementary Fig. S 4-5). 
+
+Figure 3. Cross -strain iModulon comparison based on iModulon gene membership and activities. (A) Activity of 
+
+translation -associated iModulons across common conditions in the new RNA -seq data generated in this study (TE: trace 
+
+element solution). (B) Scatter plot of the activities of the T3SS -1 and Translation -1 iModulons. (C) General pyoverdine 
+
+production and uptake pathways in pseudomonads. The pathway is colored based on P. aeruginosa iModulon membership 
+
+of genes encoding pathway components (OM: outer membrane; IM: inner membrane) (Created using Biorender) (23, 24) .
+
+(D) Upset plot of orthogroup membership of pyoverdine -associated iModulons. Orthogroup counts include unique genes 
+
+not assigned to any orthogroup. (PA: P. aeruginosa; PP: P. putida; PS: P. syringae; iM: iModulon; OG: orthogroup) 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 20, 2026. ;https://doi.org/10.64898/2026.07.20.739605 doi: bioRxiv preprint
+
+# P. aeruginosa uniquely regulates pyoverdine biosynthesis independently 
+
+# from pyoverdine uptake 
+
+Next, we analyzed iModulons involved in pyoverdine -mediated iron acquisition (25) . In iron -limiting conditions, 
+
+Pseudomonas strains produce a fluorescent siderophore called pyoverdine which chelates iron (Fig. 3C) (23) .
+
+The newly formed ferri -pyoverdine complex is then taken up by the cell and reduced to a usable form. Pyoverdine 
+
+biosynthesis and uptake are regulated by PvdS and FpvR, respectively. P. aeruginosa contains two iModulons 
+
+individually enriched for the regulon s of each regulator, namely the PvdS and FpvR iModulons. In contrast , P. 
+
+putida and P. syringae both have a single iModulon representing both pyoverdine biosynthesis and uptake ( P. 
+
+putida : PvdS iModulon; P. syringae : Pyoverdine iModulon). 
+
+To understand the unique split of the PvdS and FpvR regulated genes into two individual iModulons in P. 
+
+aeruginosa , we compared the activities of the iModulons across the dataset (Supplementary Fig. S 6). Indirect 
+
+regulatory mechanisms linked to virulence as well as differences in spatial structures of bacterial growth modes 
+
+(i.e., biofilm, planktonic, and dispersed cell growth) contribute to divergence in the activities of the otherwise 
+
+strongly correlated iModulons (Pearson’s r=0.71) (Supplementary Note S11). The extraction of individual PvdS 
+
+and FpvR iModulons in P. aeruginosa may be linked to the pathogenicity of the strain and its consequent 
+
+versatility. Alternatively, this may be a regulatory strategy employed to enable recycling of internalized 
+
+pyoverdine, thereby reducing the energetic cost of pyoverdine biosynthesis (26) .
+
+We also compared gene membership of the pyoverdine biosynthesis and uptake iModulons across strains (Fig. 
+
+3D) . M ost genes in the pyoverdine iModulons of P. putida and P. syringae have orthologs in either the PvdS or 
+
+FpvR iModulons of P. aeruginosa . However, some genes are unique to the iModulons of the two strains. For 
+
+instance, seven orthologous genes are shared by the pyoverdine iModulons of P. putida and P. syringae , but 
+
+absent in those of P. aeruginosa . These include oxidative stress mitigation genes sodA and fumC , indicating a 
+
+coupling of oxidative stress and iron limitation responses in the strains. Together, iModulon structures and gene 
+
+membership patterns underscore both the shared and lineage -specific adaptations in pyoverdine regulation. 
+
+# Motility iModulons reveal varying needs across bacterial lifestyles 
+
+A cellular function common among pseudomonads is flagella -mediated motility (28) . Each of the three strains 
+
+possesses a primary flagellar assembly iModulon: FleN (P. aeruginosa ), FleQ -2 (P. putida ), and Flagella -1 (P. 
+
+syringae ) iModulons (Supplementary Fig. S 7). P. syringae contains a second flagellar assembly iModulon, 
+
+Flagella -2, which is hypothesized to enable evasion of the plant immune system (14) . We found a conserved set 
+
+of orthologous genes in the primary flagellar assembly iModulons , m ost of which encode structural components 
+
+of the flagella ( 5A-B; Supplementary Fig. S 8; Supplementary Note S12 ). 
+
+While the gene neighborhoods harboring these genes are highly conserved , some iModulon genes within these 
+
+regions are unique to individual strains. The FleN iModulon of P. aeruginosa contains a glycosylation island 
+
+formed by three unique genes, PA1088 -PA1090 (Fig. 4A) (29, 30) . This BGC is involved in glycan biosynthesis 
+
+and is linked to virulence and host cell -specific interactions. We also found u nique iModulon genes linked to 
+
+flagellar arrangements. Of the three strains , P. putida possesses the highest number of flagella (31) . A unique 
+
+gene within the FleQ -2 iModulon, PP_4331, is predicted to influence flagellation patterns (34)  (Fig. 4B). 
+
+Additionally, while the fleN gene involved in flagellar numerical control is found in all three strains, it is not an 
+
+iModulon member in P. putida . This may indicate a lower restriction on transcriptional control of flagellar count, 
+
+allowing the strain to produce more flagella and move through viscous soil environments it typically inhabits. 
+
+Overall, these findings suggest that unique iModulon genes may represent key drivers of strain -specific 
+
+phenotypes despite overall conservation of the genomic regio ns. 
+
+We also identified differences in motility iModulon activities under common condition s (Fig. 4 C-E). P. syringae 
+
+strongly downregulates both flagellar assembly and chemotaxis in the presence of ceftazidime, whereas P. 
+
+putida and P. aeruginosa upregulate both functions. Additionally, P. aeruginosa and P. syringae have stronger 
+
+responses to oxidative stress and metal ion stress, respectively, in comparison to the other strains. Interestingly, 
+
+the motility iModulons of P. putida have a very narrow positive activity range (Fig. 4 D). This may be attributed to 
+
+the existence of the strain in homogeneous environments where swimming away from stressors is most often 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 20, 2026. ;https://doi.org/10.64898/2026.07.20.739605 doi: bioRxiv preprint
+
+not beneficial. Further analysis of iModulon activities may thus reveal similarities or differences in the “flight” 
+
+component of stress responses across the strains that can be linked to strain -specific biology. 
+
+Figure 4. Motility iModulons of Pseudomonas strains. (A,B ) Comparison of gene maps for two neighborhoods harboring 
+
+most gene members of the primary flagella -assembly iModulons of the three strains (P. aeruginosa: FleN iModulon; P. 
+
+putida: FleQ -2 iModulon; P. syringae: Flagella -1 iModulon). Gene members of these iModulons are in bold colors, and 
+
+orthologs unique to one or two of these iModulons across all three strains are highlighted in red. Genes found in the Flagell a-
+
+2 iModulon of P. syringae are marked with an asterisk. (C -E) Heatmaps of activities of motility iModulons in the conditions 
+
+newly generated in this study. (TE: trace element solution; multiple carbon sources: mixture of succinate, fructose, and 
+
+toluene) 
+
+# iModulon activities uncover varying antibiotic stress mitigation mechanisms 
+
+# across strains 
+
+Another feature of interest of Pseudomonas species is antibiotic resistance  (35) . Using iModulons, we studied 
+
+transcriptome -wide response s to ceftazidime treatment (Fig. 5A -C). Multiple carbon and amino acid metabolism -
+
+associated iModulons were differentially a ctivated in the ceftazidime treatment condition in P. aeruginosa and P. 
+
+putida , although they largely represent different metabolic functions in each strain. Additionally , only P. syringae 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 20, 2026. ;https://doi.org/10.64898/2026.07.20.739605 doi: bioRxiv preprint
+
+was observed to differentially upregulate all translation -associated iModulons during ceftazidime treatment . As 
+
+previously suggested, this may be a host interaction -based adaptation. 
+
+The antibiotic stress responses of P. putida and P. syringae are global and non -specific. Upon antibiotic 
+
+treatment, both strains activated non -specific stress response iModulons such as chaperone -associated 
+
+iModulons. However, iModulon activations in P. aeruginosa revealed specialized response components. The 
+
+only stress response iModulon that was differentially activated in the strain was the AmpR iModulon , containing 
+
+the beta -lactamase gene ampC . Additionally, the most strongly differentially activated iModulon was the Cell 
+
+Division iModulon, involved in cell wall bio synthesis. Both the AmpR and Cell Division iModulons are unique to 
+
+P. aeruginosa , revealing the unique antibiotic resistance capabilities of the strain. 
+
+Figure 5. Antibiotic stress responses of Pseudomonas strains. (A -C) Differential iModulon activation plots for the three 
+
+strains, comparing growth in CAMHB media to growth in CAMHB media treated with ceftazidime. (D) Heatmap depicting 
+
+the number of orthologous genes across the three strains for select genes within antibiotic responsive iModulo ns of P. 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 20, 2026. ;https://doi.org/10.64898/2026.07.20.739605 doi: bioRxiv preprint
+
+aeruginosa (12) . All efflux pump genes within the selected iModulons are depicted. Activating conditions for each selected 
+
+iModulon are listed in brackets. The iModulon membership of orthologs of selected genes is highlighted in the colored boxed 
+
+regions, and is indicative of the iModulon membership of at least one of the identified orthologs. 
+
+# Abundance of antibiotic -responsive iModulons contribute to antibiotic 
+
+# resistance in P. aeruginosa 
+
+To further explore the distinctive antibiotic resistance capabilities of P. aeruginosa , we studied previously 
+
+identified antibiotic -responsive iModulons (12) . The AmpR iModulon in P. aeruginosa contains four genes (ampC ,
+
+creD , PA4111, and PA0466) and is involved in beta -lactam resistance (Supplementary Fig. S 9A) (37) . While 
+
+orthologs for ampC and PA4111 exist in P. putida and P. syringae , creD and PA0466 lack orthologs in these 
+
+strains. Additionally , while the expression of the AmpR iModulon genes showcase strong positive correlation 
+
+with one another across the P. aeruginosa dataset, the expression of ampC and PA4111 orthologs in P. putida 
+
+and P. syringae display low correlation with one another (Supplementary Fig. S 9B-D). This indicates a lack of 
+
+coexpression of these orthologs across their respective datasets, resulting in the absence of an AmpR -
+
+associated iModulon. 
+
+Bacteria also utilize efflux pumps to resist toxic compounds. P. aeruginosa possesses four iModulons containing 
+
+genes encoding efflux pumps previously found to be antibiotic -responsive: CpxR ( muxABC ), MexZ ( mexXY ), 
+
+SoxR ( mexGHI -opmD ), and EsrC ( mexCD -oprJ ) iModulons (12) . Efflux pump genes in these iModulons contain 
+
+at least one ortholog in P. putida (Fig. 5D). Several of these orthologs in P. putida are iModulon members, and 
+
+at least one ortholog for the selected genes in the MexZ and EsrC iModulons are members of the IonicLiquid 
+
+iModulon. This iModulon is strongly responsive to triethylammonium hydrogen sulfate. Future studies may reveal 
+
+its responsiveness to antibiotics such as those activat ing the MexZ and EsrC iModulons of P. aeruginosa . In 
+
+contrast to P. putida , a few of the selected genes lack orthologs in P. syring ae. Of the genes with orthologs in 
+
+the strain, only one was a n iModulon member . Since the condition space of P. syringae mostly consists of plant 
+
+infection and co -culture conditions , it is possible that these efflux pumps are not activated in this dataset. With 
+
+the antibiotic treatment conditions within the P. aeruginosa dataset as reference, expansion of the P. putida and 
+
+P. syringae datasets may reveal specific antibiotic resistance mechanisms and contribute to a more 
+
+comprehensive iModulon coverage of efflux pumps. Alternatively, these conditions may elicit responses that are 
+
+aligned with the previously identified general stress response patterns observed during ceftazidime treatment. 
+
+# Discussion 
+
+In this study, we present a genome -scale comparison of the TRNs of P. aeruginosa PAO1, P. putida KT2440 ,
+
+and P. syringae pv. tomato DC3000 . After expanding strain -specific RNA -seq datasets with eight common 
+
+growth conditions, we applied ICA to each dataset to extract 107, 82, and 60 iModulons for P. aeruginosa , P. 
+
+putida , and P. syringae , respectively. Mapping iModulons across the strains based on orthologous gene 
+
+membership reveal s shared and unique regulatory modalities. Comparative analysis of iModulon gene 
+
+membership and activities provides insight into the diversification of TRNs . We find that conserved cellular 
+
+functions, including translation and pyoverdine biosynthesis/uptake, can undergo strain -specific regulatory 
+
+adaptations through both differences in iModulon gene membership and condition -specific activation patterns. 
+
+Addition ally, analysis of motility -associated iModulons reveals how transcriptional regulation of conserved 
+
+processes reflects differences in bacterial lifestyles, including environmental adaptation, virulence, and host -
+
+associated behaviors. Finally, genome -level comparisons of antibiotic -responsive iModulons uncover divergent 
+
+antibiotic stress response strategies across the strains and highlight the enrichment of specialized virulence -
+
+associated functions in P. aeruginosa .
+
+As an advancement over previous iModulon studies focused primarily on individual strains, this study establishes 
+
+a scalable framework for comparing TRNs across closely related strains. We first expanded the existing strain -
+
+specific transcriptomic datasets by incorporating shared growth conditions. This common experimental 
+
+framework allows us to compare both TRN structure and regulator activity under common conditions. The 
+
+improved comparability across the datasets provides new opportunities to investigate strain -specific regulatory 
+
+strategies. A major finding of this study is that conservation of iModulon structure does not imply conservation of 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 20, 2026. ;https://doi.org/10.64898/2026.07.20.739605 doi: bioRxiv preprint
+
+regulatory dynamics. Our analysis suggests that even essential cellular processes like translation can be rewired 
+
+to support different lifestyles of bacteria. This highlights the importance of comparing both iModulon composition 
+
+and activity across strains . Furthermore, this framework enables systematic comparisons of global transcriptome 
+
+compositions across strains exposed to the same environmental pressures. We identified differences in the 
+
+extent to which motility is employed as a stress response among the three pseudomona ds, and demonstrated 
+
+the utility of this method in enabling a comprehensive genome -scale comparison of stress response 
+
+mechanisms. These case studies illustrate the breadth of biological insights that can be gained through cross -
+
+strain iModulon analysis. 
+
+The iModulon structure of a strain provides a modularized representation of the TRN that allows it to adapt to 
+
+the condition space of the dataset used to compute iModulons. While transcriptional signals like translation are 
+
+captured by ICA with a minimally diverse condition space, the comprehensiveness of the iModulons obtained 
+
+depend on the conditions within the dataset. As a result, the comprehensiveness of cross -strain iModulon 
+
+comparison is improved by increasing the similarity between the condition spaces of the datasets being 
+
+analyzed. This enables the capturing of transcriptional responses of each strain to a more similar set of activating 
+
+conditions. In this study, we provi de a first step towards building datasets for P. aeruginosa , P. putida , and P. 
+
+syringae with greater condition space comparability through the addition of eight new overlapping conditions. 
+
+With the new set of conditions, along with a few others that roughly compare, we show how condition -specific 
+
+responses can be compared through cross -strai n iModulon analysis. Given the scalability of iModulon 
+
+computation, future studies can further expand on our analysis through sample generation to improve the 
+
+condition space overlap (Supplementary Note S8). 
+
+In conclusion, we have demonstrated the utility of iModulons in comparing the TRNs of strains at the genome 
+
+scale. By comparing iModulons across Pseudomonas strains, we can trace the evolutionary dynamics along 
+
+their lineages. Altogether, this study provides a roadmap for cross -strain iModulon analysis. 
+
+# Methods 
+
+# RNA extraction and library preparation 
+
+The following strains were used in this study: P. aeruginosa PAO1, P. putida KT2440, and P. syringae pv. tomato 
+
+DC3000. Cells were grown overnight at 30 °C with shaking in 4 mL of the base medium indicated in 
+
+Supplementary Tables S1 -3. The following day, fresh cultures were inoculated in duplicate to an initial OD 600 of 
+
+0.05. For iron starvation (2,2' dipyridyl treatment) and nitrogen starvation (nitrogen -free M9 media with addition 
+
+of eighteen amino acids, except for cysteine and methionine) conditions, cultures were grown in medium 
+
+supplemented as specified in Supplementary Tables S1 -3. Cultures were harvested at mid -log phase (OD ₆₀₀ ≈
+
+0.5) and 3 mL of culture was immediately mixed with 6 mL of RNAprotect reagent for the following conditions: 
+
+growth in M9 glucose media (with and without trace element solution), CAMHB media, mixed carbon source 
+
+(succinate, fructose, and toluene treatment), iron starvation, and nitrogen starvation. For ceftazidime treatment 
+
+conditions, ceftazidime (¼ of minimum inhibitory concentration) was added at OD ₆₀₀ ≈ 0.2, and cultures were 
+
+incubated for 1 h prior to collection. For osmotic stress (NaCl treatment), oxidative stress (H 2O2 treatment), and 
+
+metal ion stress (CuSO 4 and ZnSO 4 treatment) conditions, cultures were grown to OD ₆₀₀ ≈ 0.5 before addition 
+
+of the corresponding supplement to the final concentration indicated in Supplementary Table S1 -3. This was 
+
+followed by incubation for an additional 30 min (osmotic and oxidative str ess conditions) or 1 h (metal ion stress 
+
+conditions) before mixing 3 mL of culture with 6 mL of RNAprotect reagent. Cells were pelleted and stored at 
+
+−80 °C until RNA extraction and RNA -seq library preparation. 
+
+Total RNA was isolated and prepared from cell pellets using reagents from Zymo Research and silica -coated 
+
+magnetic beads (Luna Nanotech). Cell pellets were resuspended in 415 uL RNA Binding Buffer (Zymo Research) 
+
+containing 8 uL Beta -mercaptoethanol in 1.5 mL tubes. After dislodging pellets into the buffer using an inoculating 
+
+loop, they were poured into 2 mL tubes containing ~250 uL 0.1mm diameter zirconia/silica beads (BioSpec 
+
+Products). Any remaining buffer was transferred by pipetting. Cells were lysed using an Omni International Bead 
+
+Ruptor 12 instrument (2 cycles, 1 min each at maximum speed of 6 m/s) with a 1 min centrifugation at 10,000 x 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 20, 2026. ;https://doi.org/10.64898/2026.07.20.739605 doi: bioRxiv preprint
+
+g between cycles. Lysates were cleared by centrifugation (2 min , 10,000 x g ). A total of 200 uL of the cleared 
+
+lysates were transferred to tubes containing 400 uL 50% ethanol and 20 uL silica -coated beads . Samples were 
+
+vortexed and incubated at room temperature for 2 min and placed on a magnetic rack until supernatants were 
+
+clear, after which they were aspirated. Beads were washed once with RNA Wash Buffer (Zymo Research) and 
+
+resuspended in DNaseI master mi x (Zymo Research DNA digestion buffer plus Zymo Research DNaseI). After 
+
+15 min incubation at room temperature, each sample was vortexed with 400 uL RNA Prep Buffer (Zymo 
+
+Research). Samples were returned to the magnetic rack, after which they were washed twice with RNA Wash 
+
+Buffer and eluted in 15 uL 10 mM Tris, pH 7.5. RNA c oncentrations and quality were assessed using an Agilent 
+
+TapeStation and Nanodrop, respectively. 
+
+For each sample, 1 ug was used for the standard RiboRid procedure (38) . RNA -seq libraries were prepared from 
+
+5 uL of the rRNA -subtracted RNA using KAPA RNA HyperPrep Kit (Roche) according to the manufacturer’s 
+
+protocol with volumes reduced by half. The final PCR amplification step was modified by incorporating SYBR 
+
+and using a qPCR instrument. Samples were removed from the thermal cycler just before entering the plate au 
+
+phase of amplification to avoid biases being potentially introduced by reagent depletion. The quality and 
+
+concentrations of the libraries were checked with an Agilent TapeStation and Qubit instrument, respectively. 
+
+Pooled libraries were then run on an AVITI instrument (Element Biosciences). 
+
+# Data processing and quality control 
+
+The iModulonMiner workflow was used to process all candidate RNA -seq samples (Supplementary Note 
+
+S1 3)(17) . Raw read trimming was performed using Trim Galore 
+
+(https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/ ). The reads were then assessed using 
+
+FastQC ( https://www.bioinformatics.babraham.ac.uk/projects/fastqc/ ) and aligned to the reference genome 
+
+(Accession numbers: NC_002516.2 ( P. aeruginosa PAO1); AE015451.2 ( P. putida KT2440); NC_004578.1, 
+
+NC_004633.1, NC_004632.1 ( P. syringae pv. tomato DC3000, plasmid pDC3000A, plasmid pDC3000B, 
+
+respectively)) using Bowtie (39) . Read direction was inferred using RSeQC (40) , and read counts were generated 
+
+using featureCounts (41) . Finally, quality control metrics were compiled using MultiQC (42) . The final expression 
+
+data are reported in units of log 2 transcripts per million (log 2[TPM]). 
+
+Samples that failed the following FastQC metrics were discarded : per_base_sequence_quality, 
+
+per_sequence_quality_scores, per_base_n_content, and adapter_content. Sample with less than 500,000 reads 
+
+mapped to coding sequences was also discarded. Global correlations (Pearson’s r) between the gene 
+
+expression (log 2[TPM]) of all samples within each dataset were visualized using hierarchical clustering, and 
+
+outliers with atypical expression profiles were discarded. Samples without a biological replicate or having low 
+
+correlation (Pearson’s r<0.95) between replicate gene expression (log 2[TPM]) were dropped. Finally, the 
+
+log 2[TPM] data were normalized to the reference condition of each project to remove batch effects. All relevant 
+
+files can be found on Zenodo ( https://zenodo.org/records/18931002 ). 
+
+# Computing iModulons with ICA 
+
+We applied ICA to each of the centered log 2[TPM] datasets by running the Scikit -learn (43)  algorithm, 
+
+FastICA (44) , as previously described (10, 17) . Using the OptICA method (45) , the optimal dimensionality of the 
+
+P. aeruginosa , P. putida , and P. syringae datasets were determined to be 370, 230, and 200, respectively. The 
+
+algorithm decomposes a matrix of gene expression profiles ( X) into an iModulon matrix ( M) and activity matrix 
+
+(A). The weights of all genes within each component extracted by ICA is provided in the M matrix, whereas the 
+
+activity of each component across all samples in the dataset is provided in the A matrix. 
+
+The gene weights in the M matrix specify the association of each gene with a particular iModulon, with higher 
+
+absolute weights indicating greater association. The gene membership of an iModulon is defined by applying a 
+
+threshold to segregate genes based on their weights in an iMod ulon. These thresholds were calculated for each 
+
+iModulon using the D’Augustino’s K2 test for normality, as previously described (10) .
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 20, 2026. ;https://doi.org/10.64898/2026.07.20.739605 doi: bioRxiv preprint
+
+# iModulon annotation and curation 
+
+The TRNs of all three strains were annotated using RegPrecise (46) , Pseudomonas Genome Database (47) , and 
+
+literature. Fisher’s exact test with Benjamini -Hochberg false discovery rate (FDR) correction was used to 
+
+compute regulator enrichment against known regulons (FDR = 10 −5). iModulons were then named based on 
+
+enriched regulators or functional characteristics , with further details in Supplementary Table S4 -6. 
+
+# Cross -strain iModulon mapping 
+
+We ran Orthofinder (21)  on default settings to identify orthologous genes. The many -to -many Orthofinder results 
+
+were used for further steps as suggested on the Orthofinder GitHub page. If more than one gene from a single 
+
+strain was mapped to an orthogrou p, the highest absolute gene weight was selected as the representative gene 
+
+weight for the orthogroup within an iModulon. The M matrix for each strain was reconstructed to provide the 
+
+weight of an orthogroup in an iModulon, using which iModulons were mapped across the strains using the 
+
+PyModulon package (cutoff=0.3) (17) . After identifying iModulons with Pearson’s r correlation of M matrix 
+
+orthogroup weights higher than the selected threshold, we compared iModulons based on orthologous gene 
+
+membership similarity using the Jaccard similarity metric. 
+
+# Differential iModulon activation 
+
+Differential iModulon activities between conditions were calculated as previously described (10) . The statistical 
+
+significance of the differences in the activities was determined by comparing the absolute difference in mean 
+
+iModulon activities between the conditions and the log -normal distribution of the iModulon. iModulons with a 
+
+threshold > 5 and F DR below the selected value were classified as differentially activated. 
+
+# Data Availability 
+
+All code and data (aside from raw RNA -seq files) used to generate the results in this paper can be found on 
+
+Zenodo ( https://zenodo.org/records/18931002 ). New RNA -seq data reported in this study have bee n deposited 
+
+in the Gene Expression Omnibus under the accession codes GSE322682, GSE322955, and GSE322719. The 
+
+general iModulon analysis pipeline can be found at  https://zenodo.org/records/18238197 .
+
+# Acknowledgements 
+
+We acknowledge the National Energy Research Scientific Computing Center for support with high -performance 
+
+computing. 
+
+Author contributions: H.B. and B.O.P designed research. Y.H. collected the experimental data. R.S. and J. Sung 
+
+performed RNA isolation and library construction. H.B. processed the data, performed the analysis, and wrote 
+
+the manuscript. B.O.P. provided ment orship and guidance throughout. All participated in reviewing the 
+
+manuscript. 
+
+# Funding 
+
+This work was supported by the Novo Nordisk Foundation (NNF) Center for Biosustainability (CfB) at the 
+
+Technical University of Denmark (NNF20CC0035580) and the Y.C. Fung Endowed Chair in Bioengineering at 
+
+the University of California, San Diego. 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 20, 2026. ;https://doi.org/10.64898/2026.07.20.739605 doi: bioRxiv preprint
+
+# References 
+
+1.  Silby MW, Winstanley C, Godfrey SAC, Levy SB, Jackson RW. 2011. Pseudomonas genomes: diverse 
+
+and adaptable. FEMS Microbiol Rev 35:652 –680. 
+
+2.  Lalucat J, Mulet M, Gomila M, García -Valdés E. 2020. Genomics in Bacterial Taxonomy: Impact on the 
+
+Genus Pseudomonas. 2. Genes 11:139. 
+
+3.  Buell CR, Joardar V, Lindeberg M, Selengut J, Paulsen IT, Gwinn ML, Dodson RJ, Deboy RT, Durkin AS, 
+
+Kolonay JF, Madupu R, Daugherty S, Brinkac L, Beanan MJ, Haft DH, Nelson WC, Davidsen T, Zafar N, 
+
+Zhou L, Liu J, Yuan Q, Khouri H, Fedorova N, Tran B, Russell D, Berry K, Utterback T, Van Aken SE, 
+
+Feldblyum TV, D’Ascenzo M, Deng W -L, Ramos AR, Alfano JR, C artinhour S, Chatterjee AK, Delaney TP, 
+
+Lazarowitz SG, Martin GB, Schneider DJ, Tang X, Bender CL, White O, Fraser CM, Collmer A. 2003. The 
+
+complete genome sequence of the Arabidopsis and tomato pathogen Pseudomonas syringae pv . tomato 
+
+DC3000. Proc Natl Acad Sci U S A 100:10181 –10186. 
+
+4.  Qin S, Xiao W, Zhou C, Pu Q, Deng X, Lan L, Liang H, Song X, Wu M. 2022. Pseudomonas aeruginosa: 
+
+pathogenesis, virulence factors, antibiotic resistance, interaction with host, technology advances and 
+
+emerging therapeutics. Signal Transduct Target Ther 7:1 –27. 
+
+5.  Lim HG, Rychel K, Sastry AV, Bentley GJ, Mueller J, Schindel HS, Larsen PE, Laible PD, Guss AM, Niu 
+
+W, Johnson CW, Beckham GT, Feist AM, Palsson BO. 2022. Machine -learning from Pseudomonas putida 
+
+KT2440 transcriptomes reveals its transcriptional regulatory network. Metab Eng 72:297 –310. 
+
+6.  Lamoureux CR, Decker KT, Sastry AV, Rychel K, Gao Y, McConn JL, Zielinski DC, Palsson BO. 2023. A 
+
+multi -scale expression and regulation knowledge base for Escherichia coli. Nucleic Acids Res 51:10176 –
+
+10193. 
+
+7.  Bajpe H, Shin J, Hefner Y, Szubin R, Sung J, Yuan Y, Palsson BO. 2026. The transcriptional regulatory 
+
+network of the Escherichia coli MG1655 reference strain. Nucleic Acids Res 54:gkag059. 
+
+8.  Shlens J. 2014. A Tutorial on Independent Component Analysis. arXiv:1404.2986. arXiv 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 20, 2026. ;https://doi.org/10.64898/2026.07.20.739605 doi: bioRxiv preprint
+
+https://doi.org/10.48550/arXiv.1404.2986. 
+
+9.  Saelens W, Cannoodt R, Saeys Y. 2018. A comprehensive evaluation of module detection methods for 
+
+gene expression data. 1. Nat Commun 9:1090. 
+
+10.  Sastry AV, Gao Y, Szubin R, Hefner Y, Xu S, Kim D, Choudhary KS, Yang L, King ZA, Palsson BO. 2019. 
+
+The Escherichia coli transcriptome mostly consists of independently regulated modules. Nat Commun 
+
+10:5536. 
+
+11.  Rychel K, Sastry AV, Palsson BO. 2020. Machine learning uncovers independently regulated modules in 
+
+the Bacillus subtilis transcriptome. 1. Nat Commun 11:6338. 
+
+12.  Rajput A, Tsunemoto H, Sastry AV, Szubin R, Rychel K, Chauhan SM, Pogliano J, Palsson BO. 2022. 
+
+Advanced transcriptomic analysis reveals the role of efflux pumps and media composition in antibiotic 
+
+responses of Pseudomonas aeruginosa. Nucleic Acids Res 50:9675 –9688. 
+
+13.  Rajput A, Tsunemoto H, Sastry AV, Szubin R, Rychel K, Sugie J, Pogliano J, Palsson BO. 2022. Machine 
+
+learning from Pseudomonas aeruginosa transcriptomes identifies independently modulated sets of genes 
+
+associated with known transcriptional regulators. Nucleic Acids Res 50:3658 –3672. 
+
+14.  Bajpe H, Rychel K, Lamoureux CR, Sastry AV, Palsson BO. 2023. Machine learning uncovers the 
+
+Pseudomonas syringae transcriptome in microbial communities and during infection. mSystems 8:e00437 -
+
+23. 
+
+15.  Choe D, Olson CA, Szubin R, Yang H, Sung J, Feist AM, Palsson BO. 2024. Advancing the scale of 
+
+synthetic biology via cross -species transfer of cellular functions enabled by iModulon engraftment. Nat 
+
+Commun 15:2356. 
+
+16.  Jönsson M, Sigrist R, Gren T, Semenov Petrov M, Marcussen NEJ, Svetlova A, Charusanti P, Gockel P, 
+
+Palsson BO, Yang L, Özdemir E. 2025. Machine learning uncovers the transcriptional regulatory network 
+
+for the production host  Streptomyces albidoflavus . Cell Rep 44:115392. 
+
+17.  Sastry AV, Yuan Y, Poudel S, Rychel K, Yoo R, Lamoureux CR, Li G, Burrows JT, Chauhan S, Haiman 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 20, 2026. ;https://doi.org/10.64898/2026.07.20.739605 doi: bioRxiv preprint
+
+ZB, Bulushi TA, Seif Y, Palsson BO, Zielinski DC. 2024. iModulonMiner and PyModulon: Software for 
+
+unsupervised mining of gene expression compendia. PLOS Comput Biol 20:e1012546. 
+
+18.  Miranda SW, Asfahl KL, Dandekar AA, Greenberg EP. 2022. Pseudomonas aeruginosa Quorum Sensing, 
+
+p. 95 –115.  In  Filloux, A, Ramos, J -L (eds.), Pseudomonas aeruginosa: Biology, Pathogenesis and Control 
+
+Strategies. Springer International Publishing, Cham. 
+
+19.  Yu X, Lund SP, Greenwald JW, Records AH, Scott RA, Nettleton D, Lindow SE, Gross DC, Beattie GA. 
+
+2014. Transcriptional Analysis of the Global Regulatory Networks Active in Pseudomonas syringae during 
+
+Leaf Colonization. mBio 5:10.1128/mbio.01683 -14. 
+
+20.  Sastry AV, Poudel S, Rychel K, Yoo R, Lamoureux CR, Chauhan S, Haiman ZB, Bulushi TA, Seif Y, 
+
+Palsson BO. 2021. Mining all publicly available expression data to compute dynamic microbial 
+
+transcriptional regulatory networks. bioRxiv https://doi.org/10.1101/ 2021.07.01.450581. 
+
+21.  Emms DM, Kelly S. 2019. OrthoFinder: phylogenetic orthology inference for comparative genomics. 
+
+Genome Biol 20:238. 
+
+22.  Dalldorf C, Rychel K, Szubin R, Hefner Y, Patel A, Zielinski DC, Palsson BO. 2024. The hallmarks of a 
+
+tradeoff in transcriptomes that balances stress and growth functions. mSystems 9:e00305. 
+
+23.  Cornelis P, Tahrioui A, Lesouhaitier O, Bouffartigues E, Feuilloley M, Baysse C, Chevalier S. 2023. High 
+
+affinity iron uptake by pyoverdine in Pseudomonas aeruginosa involves multiple regulators besides Fur, 
+
+PvdS, and FpvI. BioMetals 36:255 –261. 
+
+24.  Gasser V, Guillon L, Cunrath O, Schalk IsabelleJ. 2015. Cellular organization of siderophore biosynthesis 
+
+in  Pseudomonas aeruginosa:  Evidence for siderosomes. J Inorg Biochem 148:27 –34. 
+
+25.  Ringel MT, Brüser T. 2018. The biosynthesis of pyoverdines. Microb Cell 5:424 –437. 
+
+26.  Molina L, Geoffroy VA, Segura A, Udaondo Z, Ramos J -L. 2016. Iron Uptake Analysis in a Set of Clinical 
+
+Isolates of Pseudomonas putida. Front Microbiol 7. 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 20, 2026. ;https://doi.org/10.64898/2026.07.20.739605 doi: bioRxiv preprint
+
+27.  Arvizu -Gómez JL, Hernández -Morales A, Aguilar JRP, Álvarez -Morales A. 2013. Transcriptional profile of 
+
+P. syringae pv. phaseolicola NPS3121 at low temperature: Physiology of phytopathogenic bacteria. BMC 
+
+Microbiol 13:81. 
+
+28.  Bouteiller M, Dupont C, Bourigault Y, Latour X, Barbey C, Konto -Ghiorghi Y, Merieau A. 2021. 
+
+Pseudomonas Flagella: Generalities and Specificities. Int J Mol Sci 22:3337. 
+
+29.  Hensbergen PJ, van Huijkelom L, van Angeren J, de Ru AH, Claushuis B, van Veelen PA, Smits WK, 
+
+Corver J. 2025. Elucidation of the Glycan Structure of the b -type Flagellin of Pseudomonas aeruginosa 
+
+PAO1. ACS Infect Dis 11:518 –528. 
+
+30.  Verma A, Schirm M, Arora SK, Thibault P, Logan SM, Ramphal R. 2006. Glycosylation of b -Type Flagellin 
+
+of Pseudomonas aeruginosa: Structural and Genetic Basis. J Bacteriol 188:4395 –4403. 
+
+31.  de Lorenzo V, Pérez -Pantoja D, Nikel PI. 2024. Pseudomonas putida KT2440: the long journey of a soil -
+
+dweller to become a synthetic biology chassis. J Bacteriol 206:e00136 -24. 
+
+32.  Nogales J, Vargas P, Farias GA, Olmedilla A, Sanjuán J, Gallegos M -T. 2015. FleQ Coordinates 
+
+Flagellum -Dependent and -Independent Motilities in Pseudomonas syringae pv. tomato DC3000. Appl 
+
+Environ Microbiol 81:7533 –7545. 
+
+33.  Kazmierczak BI, Hendrixson DR. 2013. Spatial and Numerical Regulation of Flagellar Biosynthesis in 
+
+Polarly -Flagellated Bacteria. Mol Microbiol 88:655 –663. 
+
+34.  Arroyo -Pérez EE, Hook JC, Alvarado A, Wimmi S, Glatter T, Thormann K, Ringgaard S. 2024. A 
+
+conserved cell -pole determinant organizes proper polar flagellum formation. eLife 13:RP93004. 
+
+35.  Prince A. 1986. Antibiotic resistance of  Pseudomonas  species. J Pediatr 108:830 –834. 
+
+36.  Elfadadny A, Ragab RF, AlHarbi M, Badshah F, Ibáñez -Arancibia E, Farag A, Hendawy AO, De los Ríos -
+
+Escalante PR, Aboubakr M, Zakai SA, Nageeb WM. 2024. Antimicrobial resistance of Pseudomonas 
+
+aeruginosa: navigating clinical impacts, current resistance trends, and innovations in breaking therapies. 
+
+Front Microbiol 15:1374466. 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 20, 2026. ;https://doi.org/10.64898/2026.07.20.739605 doi: bioRxiv preprint
+
+37.  Balasubramanian D, Kumari H, Mathee K. 2015. Pseudomonas aeruginosa AmpR : an acute –chronic 
+
+switch regulator. Pathog Dis 73:1 –14. 
+
+38.  Choe D, Szubin R, Poudel S, Sastry A, Song Y, Lee Y, Cho S, Palsson B, Cho B -K. 2021. RiboRid: A low 
+
+cost, advanced, and ultra -efficient method to remove ribosomal RNA for bacterial transcriptomics. PLOS 
+
+Genet 17:e1009821. 
+
+39.  Langmead B, Trapnell C, Pop M, Salzberg SL. 2009. Ultrafast and memory -efficient alignment of short 
+
+DNA sequences to the human genome. Genome Biol 10:R25. 
+
+40.  Wang L, Wang S, Li W. 2012. RSeQC: quality control of RNA -seq experiments. Bioinforma Oxf Engl 
+
+28:2184 –2185. 
+
+41.  Liao Y, Smyth GK, Shi W. 2014. featureCounts: an efficient general purpose program for assigning 
+
+sequence reads to genomic features. Bioinforma Oxf Engl 30:923 –930. 
+
+42.  Ewels P, Magnusson M, Lundin S, Käller M. 2016. MultiQC : summarize analysis results for multiple tools 
+
+and samples in a single report. Bioinformatics 32:3047 –3048. 
+
+43.  Pedregosa F, Varoquaux G, Gramfort A, Michel V, Thirion B, Grisel O, Blondel M, Prettenhofer P, Weiss 
+
+R, Dubourg V, Vanderplas J, Passos A, Cournapeau D, Brucher M, Perrot M, Duchesnay É. 2011. Scikit -
+
+learn: Machine Learning in Python. J Mach Learn Res 12: 2825 –2830. 
+
+44.  Hyvarinen A. 1999. Fast and robust fixed -point algorithms for independent component analysis. IEEE 
+
+Trans Neural Netw 10:626 –634. 
+
+45.  McConn JL, Lamoureux CR, Poudel S, Palsson BO, Sastry AV. 2021. Optimal dimensionality selection for 
+
+independent component analysis of transcriptomic data. BMC Bioinformatics 22:584. 
+
+46.  Novichkov PS, Kazakov AE, Ravcheev DA, Leyn SA, Kovaleva GY, Sutormin RA, Kazanov MD, Riehl W, 
+
+Arkin AP, Dubchak I, Rodionov DA. 2013. RegPrecise 3.0 – A resource for genome -scale exploration of 
+
+transcriptional regulation in bacteria. BMC Genomics 14:745. 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 20, 2026. ;https://doi.org/10.64898/2026.07.20.739605 doi: bioRxiv preprint
+
+47.  Winsor GL, Griffiths EJ, Lo R, Dhillon BK, Shay JA, Brinkman FSL. 2016. Enhanced annotations and 
+
+features for comparing thousands of Pseudomonas genomes in the Pseudomonas genome database. 
+
+Nucleic Acids Res 44:D646 –D653. 
+
+.CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted July 20, 2026. ;https://doi.org/10.64898/2026.07.20.739605 doi: bioRxiv preprint
