@@ -6,35 +6,22 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-25
-- 运行时间：2026-07-25 20:27:00 UTC
+- 最新运行日期：2026-07-26
+- 运行时间：2026-07-26 20:20:12 UTC
 - 运行状态：成功
-- 本次总论文数：5
-- 精读区：1
-- 速读区：4
+- 本次总论文数：0
+- 精读区：0
+- 速读区：0
 
 ### 今日简报（AI）
-今日精选5篇文献，其中1篇精读：宏基因组测序4小时即可加速血流感染的临床管理，获8.0高分。速读亮点包括浏览器基因注释平台GeneAutomate和交互式代谢模型模拟工具ChatGEM。建议临床和微生物研究者重点关注宏基因组快速诊断的实际应用，并尝试整合自动化分析平台到常规流程中。
-- 详情：[/202607/25/README](/202607/25/README)
+> 今日无新推荐，系统未产出可展示论文。
+- 详情：[/202607/26/README](/202607/26/README)
 
 ### 精读区论文标签
-1. [From culture to clarity in four hours: accelerating clinical management of bloodstream infections using metagenomics](/202607/25/biorxiv-10-64898-2026-07-20-739511-v1-from-culture-to-clarity-in-four-hours-accelerating-clinical-management-of-bloodstream-infections-using-metagenomics)  
-   标签：评分：8.0/10、query:microbiome
-   evidence：基于宏基因组测序的血液培养快速病原体检测方法
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [GeneAutomate: A Browser-Based, Integer-Indexed Platform for Dual-Gene-List Functional Annotation and Interactive Network Visualization](/202607/25/biorxiv-10-64898-2026-07-16-738882-v1-geneautomate-a-browser-based-integer-indexed-platform-for-dual-gene-list-functional-annotation-and-interactive-network-visualization)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：双基因列表功能注释工具，可迁移至宏基因组功能分析
-2. [Diversity and evolution of the transcriptional regulatory networks of Pseudomonas strains revealed using machine learning](/202607/25/biorxiv-10-64898-2026-07-20-739605-v1-diversity-and-evolution-of-the-transcriptional-regulatory-networks-of-pseudomonas-strains-revealed-using-machine-learning)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：用于假单胞菌转录调控网络分析的机器学习方法
-3. [ChatGEM: An Agentic Architecture Enabling Interactive Simulation of Genome-Scale Metabolic Models](/202607/25/biorxiv-10-64898-2026-07-20-739662-v1-chatgem-an-agentic-architecture-enabling-interactive-simulation-of-genome-scale-metabolic-models)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：自然语言交互式基因组规模代谢模型模拟，属于微生物组分析的生信方法
-4. [ChatGEM: An Agentic Architecture Enabling Interactive Simulation of Genome-Scale Metabolic Models](/202607/25/biorxiv-10-64898-2026-07-20-739662-v2-chatgem-an-agentic-architecture-enabling-interactive-simulation-of-genome-scale-metabolic-models)  
-   标签：评分：6.0/10、query:microbiome
-   evidence：自然语言交互式基因组规模代谢模型模拟，属于微生物组分析的生信方法
+- 本次无速读推荐。
 
 
 <div class="dpr-home-promo-card">
