@@ -1,0 +1,2325 @@
+Title: Bayesian inference on beta diversity via feature allocation models with imperfect detection
+
+URL Source: https://arxiv.org/pdf/2608.11180v1
+
+Published Time: Wed, 12 Aug 2026 01:31:21 GMT
+
+Number of Pages: 44
+
+Markdown Content:
+# Bayesian inference on beta diversity via feature allocation models with imperfect detection 
+
+Federica Stolf 1, Tommaso Rigon 2, and David B. Dunson 11Department of Statistical Science, Duke University, Durham, NC, USA 
+
+> 2
+
+Department of Economics, Management, and Statistics, University of Milano–Bicocca, 20126 Milano, Italy 
+
+Abstract 
+
+Beta diversity quantifies variation in species composition across ecological communities and is fundamental for understanding biodiversity patterns across space and environmental gradients. Statistical inference on beta diversity is challenging: species occurrence data are high dimensional, many species remain unobserved despite extensive sampling, and surveys are subject to imperfect detection. Existing approaches are typically based on empirical dissimilarity indices with limited uncertainty quantification or on models that rely on unrealistic exchangeability and perfect detection assumptions. We introduce a new class of Bayesian feature allocation models for partially exchange-able species occurrence data with imperfect detection. The framework combines latent feature allocation models with occupancy-based detection mechanisms, allowing heterogeneous species compositions across sites, explicitly accounting for false negatives, and accommodating the discovery of previously unobserved species. We develop coherent probabilistic inference for species sharing and beta diversity, deriving explicit posterior and predictive distributions for between-community heterogeneity, including the number of shared species across sites and the number expected under future sampling. These analytical results yield interpretable posterior summaries of compositional heterogeneity and facilitate scalable inference in high-dimensional biodiversity studies. Simulation studies and an application to global fungal biodiversity data demonstrate improved inference on species sharing and between-community diversity. 
+
+Keywords: Ecology, Indian buffet process, occupancy model, partial exchangeability, shared species. 
+
+# 1 Introduction 
+
+Biodiversity studies increasingly seek to characterize how species compositions vary across ecological communities and geographic regions. Quantifying this between-community heterogeneity, commonly 1arXiv:2608.11180v1 [stat.ME] 11 Aug 2026 referred to as β-diversity, is fundamental for understanding ecological processes, monitoring environ-mental change, and prioritizing conservation efforts (Tuomisto, 2010). A central scientific objective is to infer the extent of species sharing across locations and to predict how many previously unobserved species would be discovered through additional sampling. Such questions arise naturally in large-scale biodiversity monitoring projects, where species occurrence data are collected across multiple habitats, ecosystems, or geographic regions. Statistical inference on β-diversity is challenging for several reasons. Species occurrence data are typically high dimensional and sparse, with many species remaining unobserved even after extensive sampling. Ecological communities often exhibit substantial heterogeneity across locations due to differences in environmental conditions and habitat characteristics, making exchangeability assumptions unrealistic. In addition, biodiversity surveys are affected by imperfect detection: species that are present may fail to be observed because of limitations in sampling technologies and measurement protocols. Ignoring detection error can substantially bias estimates of species richness, species sharing, and between-community heterogeneity. These challenges are particularly pronounced in modern DNA meta-barcoding studies. We are motivated by the Global Spore Sampling Project (GSSP) (Ovaskainen et al., 2024; Abrego et al., 2024), which collected airborne fungal spore samples at locations around the world using cyclone samplers. Ecologists typically analyze these data in terms of operational taxonomic units (OTUs), obtained by assigning taxonomic labels to DNA sequences (Somervuo et al., 2016). Because the proportion of sequences mapped to each OTU is not a reliable indicator of abundance, meta-barcoding studies commonly reduce the observations to binary occurrence data indicating whether a species is detected in each sample. These data are characterized by large numbers of rare species, substantial heterogeneity across locations, and non-negligible false negative rates arising from low DNA concentrations, PCR biases, and sequencing errors (Doi et al., 2019; Schlegel et al., 2024). Despite the importance of inference on β-diversity, existing approaches remain largely based on empirical dissimilarity indices with limited probabilistic interpretation and inadequate uncertainty quantification (Rigon et al., 2025). Occupancy models explicitly account for imperfect detection by separating ecological and observational processes (MacKenzie et al., 2002; Royle et al., 2005; Wenger and Freeman, 2008; Tobler et al., 2019), and have become standard tools in ecology. However, these models are not designed to characterize latent species sharing structure across heterogeneous communities or to accommodate the continual discovery of previously unobserved species in highly diverse ecosystems. Bayesian nonparametric feature allocation models provide a natural probabilistic framework for species occurrence data. Indian buffet processes (Teh and Gorur, 2009; Griffiths and Ghahramani, 2011; Broderick et al., 2013) and related models (James, 2017; Battiston et al., 2018; Masoero et al., 2022; Camerlenghi et al., 2024; Ghilotti et al., 2026) characterize binary latent feature matrices in which rows correspond to samples and columns to a potentially unbounded collection of features. In 2biodiversity applications the features are species, so that new species emerge as sampling proceeds and the latent feature matrix encodes precisely the pattern of species sharing that β-diversity seeks to quantify. Existing models, however, are ill-suited to this task on two counts. First, they assume exchangeability, that is, invariance of the occurrence matrix under permutations of the samples, which precludes the systematic variation in species composition across communities that β-diversity is about. Second, they assume perfect detection, and thus attribute every absence to genuine absence rather than to a failure to observe. Partially exchangeable constructions have recently received growing attention for species sampling models (e.g., Franzolini et al., 2025; Colombi et al., 2025), but substantially fewer results are available for feature allocations: Shen et al. (2025) proposed a bivariate beta process for genetic variants across two heterogeneous populations, though the approach is restricted to two groups and does not admit a tractable analytical characterization, while Ghilotti et al. (2025) introduced a broad class of priors for partially exchangeable trait allocations, without addressing imperfect detection or developing inferential results for biodiversity functionals such as species sharing and β-diversity. Motivated by these challenges, we propose the class of Multi-site Occupancy-aware Species Allocation with Imperfect deteCtion ( MOSAIC ) models, which addresses both issues at once. Partial exchangeability allows species compositions to vary systematically across sites, while an occupancy-based detection layer separates the probability that a species occupies a site from the probability that it is recorded there, so that an absence in the data need not be an absence in the field. The number of species is finite but random, a choice that preserves substantial modeling flexibility while enabling analytical tractability and scalable posterior computation; by contrast, natural extensions of infinite-activity beta process constructions to heterogeneous populations may violate fundamental finiteness conditions or require computationally prohibitive inference procedures (Shen et al., 2025). The resulting framework supports a coherent probabilistic treatment of diversity at every level. While α-diversity and γ-diversity, measuring within-community and global diversity, respectively, have received extensive attention in the Bayesian nonparametric literature (Lijoi et al., 2007; De Blasi et al., 2015; Ghilotti et al., 2026), this is not the case for multi-site incidence data, for which even the distribution of the number of distinct species at each site has not been characterized; and substantially less work has addressed principled inference on β-diversity, despite its central ecological importance (Rigon et al., 2025). We therefore develop the α- and γ-diversity theory first, obtaining prior and posterior distributions for the site-specific and pooled species counts, along with predictive distributions for the species that would be discovered under further sampling. Beyond their own interest, these results underpin our treatment of β-diversity, since the same machinery delivers the distribution of the number of species shared between any pair of sites, the main ingredient of our proposed index. The predictive quantities are moreover directly relevant for biodiversity monitoring and adaptive sampling design, where decisions must be made regarding whether and where further sampling effort should 3be allocated. The resulting summaries of compositional heterogeneity are interpretable and account simultaneously for latent species richness, partial exchangeability, and imperfect detection. We further specify a hierarchical prior in which site-specific covariates drive the occurrence probabilities, inducing borrowing of information across sites. The remainder of the paper is organized as follows. Section 2 introduces the proposed class of partially exchangeable feature allocation models with imperfect detection, while Section 3 develops their theoretical properties and studies inference on biodiversity functionals, including β-diversity. Section 4 presents simulation studies evaluating finite-sample performance, while Section 5 analyzes global fungal biodiversity data from the GSSP study. 
+
+# 2 The MOSAIC model 
+
+2.1 Notation and model 
+
+In this section, we define the notation and introduce our proposed class of feature allocation models for partially exchangeable data with imperfect detection. The data are sampled from Q distinct sites, indexed by q ∈ { 1, . . . , Q }; we denote by nq the number of samples from site q and by n = ( n1, . . . , n Q)the corresponding vector of sample sizes. We assume a common species reference set across sites, and we denote by ( ˜Xj )j≥1 the sequence of all possible species labels, which are unknown a priori. Let Xq
+
+be the set of distinct species actually observed at site q and let Kq,n q = |X q| = kq be its cardinality. The total number of distinct species observed across all sites is Kn = | ⋃Qq=1 Xq| = k, and we write 
+
+X1, . . . , X k for the labels of the species actually observed, which form a subset of the complete list ( ˜Xj )j≥1. This notation explicitly accounts for the fact that some species may remain unseen. Finally, let Cnq ,n r = |X q ∩ X r| = cq,r denote the number of species shared between the samples from sites q and 
+
+r with q̸ = r. Because sites may share species, in general Kn ≤ ∑Qq=1 Kq,n q ; for instance, with Q = 2 we have Kn = K1,n 1 + K2,n 2 − Cn1,n 2 . Throughout, we further assume that the species pool is finite, that is, the complete list reduces to ˜X1, . . . , ˜XN , so that the number of distinct species observed in the full sample satisfies Kn ≤ N . The total number of species N is itself unknown and is inferred from the data. Accordingly, we adopt the beta–Bernoulli (BB) class of feature allocation models (Griffiths and Ghahramani, 2011; Ghilotti et al., 2026), under which the distribution of Kn has bounded support given N . This choice is motivated by analytical tractability: known infinite-species models lead to considerably less tractable expressions (Shen et al., 2025). The data can be encoded as binary occurrence indicators, one for each combination of sample, species, and site, and we distinguish between a version involving the full species list and its observed counterpart. Let ˜Y = ( ˜Yijq ) with i = 1 , . . . , n q; j = 1 , . . . , N ; q = 1 , . . . , Q , where ˜Yijq = 1 if species ˜Xj is recorded in sample i of site q, and ˜Yijq = 0 otherwise. A zero entry is ambiguous: species ˜Xj may 4be absent from site q at the time of sampling, or present but not detected. We collect the observed 
+
+occurrences in Y = ( Yijq ) with i = 1 , . . . , n q; j = 1 , . . . , k ; q = 1 , . . . , Q , obtained from ˜Y by discarding the species that are never recorded, namely those j for which ˜Yijq = 0 for every i and q; equivalently, each species retained in Y has at least one non-zero entry. The distinction between ˜Y and Y would be inconsequential if N were known, since the discarded species could then be reinstated, or if all species were discovered, in which case N = k and the two arrays coincide. These are not realistic assumptions in ecological applications, where neither the labels nor the number of undiscovered species is known a priori, and hence ˜Y carries strictly more information than Y . In what follows we specify a model for ˜Y , which induces a model for the observed indicators Y .Let ηq = ( η1q, . . . , η N q ) and γq = ( γ1q, . . . , γ N q ), for q = 1 , . . . , Q , collect independent random probabilities representing the species- and site-specific occupancy and detectability components, respec-tively. In our MOSAIC model, given these parameters, the entries of ˜Y are conditionally independent Bernoulli random variables, ˜Yijq | ηjq , γ jq ind 
+
+∼ Bernoulli( ηjq γjq ), (1) for i = 1 , . . . , n q, j = 1 , . . . , N and q = 1 , . . . , Q . The factorization in (1) separates the occupancy and detection components of the model: ηjq is the probability that species ˜Xj occupies site q, and 
+
+γjq is the probability that it is detected, given presence. The two differ because a species present at a site may go unrecorded, so that the observed occurrences are a thinned version of the underlying presence/absence pattern. This is made precise by a data augmentation, in which each ˜Yijq is written as the product of two independent Bernoulli random variables representing the occupancy and detection events separately. Let ˜W = ( ˜Wijq ) and ˜T = ( ˜Tijq ), with i = 1 , . . . , n q, j = 1 , . . . , N and q = 1 , . . . , Q ,be augmented binary arrays encoding respectively the true presence of each species and its potential detection, so that ˜Wijq | ηjq ind 
+
+∼ Bernoulli( ηjq ) and ˜Tijq | γjq ind 
+
+∼ Bernoulli( γjq ). Then ˜Yijq = ˜Wijq ˜Tijq ,so that a species is recorded if and only if it is both present and detected. Analogously, let Wq be the set of distinct species present in at least one of the nq samples from site q according to ˜W , and let 
+
+Lq,n q = |W q| = ℓq be its cardinality. We write Ln = | ⋃Qq=1 Wq| = ℓ for the number of species present in at least one sample across sites, and Unq ,n r = |W q ∩ W r| = uq,r , with q̸ = r, for the number of species present at both sites q and r. We then let W = ( Wijq ), with i = 1 , . . . , n q, j = 1 , . . . , ℓ and 
+
+q = 1 , . . . , Q , be the array obtained from ˜W by discarding the species that are never present, so that each retained species has at least one non-zero entry. Unlike their observed counterparts, none of these quantities is available in practice, and they satisfy Kq,n q ≤ Lq,n q , Kn ≤ Ln ≤ N and Cnq ,n r ≤ Unq ,n r .We now specify priors for our MOSAIC model, with two inferential goals in mind: (i) estimating the site and species specific parameters ηjq and γjq ; (ii) estimating the number of unseen species N − k. To achieve the latter goal, we need to estimate N , the total number of species. To this end, we treat N as random and assume N ∼ Poisson( λ), with λ > 0. Moreover, we assume that the parameters γjq and ηjq 
+
+5are conditionally independent for j = 1 , . . . , N and q = 1 , . . . , Q given a set of parameters ( αq, θ q, σ q)and follow a beta distribution. We will further denote the corresponding vectors of parameters as 
+
+α = ( α1, . . . , α Q), θ = ( θ1, . . . , θ Q) and σ = ( σ1, . . . , σ Q). This implies the following specification for the MOSAIC model with parameters ( λ, α, θ, σ)
+
+N ∼ Poisson( λ),ηjq ind 
+
+∼ Beta {− αq, σ q(αq + θq)}, (j = 1 , . . . , N, q = 1 , . . . , Q ),γjq ind 
+
+∼ Beta {− αq + σq(αq + θq), (1 − σq)( αq + θq)}, (j = 1 , . . . , N, q = 1 , . . . , Q ),
+
+(2) where σq ∈ (0 , 1), αq < 0, θq > −αq for q = 1 , . . . , Q . By a result of James (1972) on products of independent beta random variables, 
+
+ηjq γjq ind 
+
+∼ Beta( −αq, α q + θq), (j = 1 , . . . , N, q = 1 , . . . , Q ), (3) and in particular E(ηjq γjq ) = −αq/θ q. Crucially, (3) holds for every value of σq ∈ (0 , 1): the parameter 
+
+σq redistributes mass between occupancy and detectability. Its role is made explicit by the expectations 
+
+E(ηjq ) = −αq
+
+σq(αq + θq) − αq
+
+, E(γjq ) = −αq + σq(αq + θq)
+
+θq
+
+,
+
+which are respectively decreasing and increasing in σq. Values of σq close to 1 thus correspond to near-perfect detectability, whereas values close to 0 describe the least favorable regime, in which every species occupies every site and the observed sparsity is ascribed entirely to detection failure. In the limit σq → 1 the law of γjq degenerates at one, giving E(ηjq ) = −αq/θ q, which recovers the expected occurrence probability of a partially exchangeable BB model with perfect detection. This framework borrows information across sites in two ways. First, all sites share a common total number of species N . Second, it introduces dependence among species occurrence probabilities through site-specific covariates via a hierarchical formulation, detailed in Section 3.3. 
+
+Remark 1. The occupancy indicators ˜Wijq vary across samples i within a site, so that occupancy is understood as presence at the time of collection of sample i rather than as a fixed site attribute. This departs from standard occupancy formulations (e.g., MacKenzie et al., 2002; Wenger and Freeman, 2008), in which a single indicator is shared by all samples from a site, but it yields substantially simpler expressions for several quantities of interest, as discussed in Section 2.2 and Section 3.1. The price to pay is that the observed occurrences depend on ηjq and γjq only through their product, so that occupancy and detectability cannot be separated on the basis of ˜Y alone. The parameter σq trades one against the other while leaving the law of the observed occurrences unchanged; the split between the two components is therefore driven entirely by the choice of σq, which cannot be learned from the data. Accordingly, we do not estimate σq and treat it instead as a sensitivity parameter, exploring different detectability scenarios ranging from σq → 1 (perfect detection) to values implying substantial under-detection. 62.2 Relationship with the beta–Bernoulli model and distribution theory 
+
+In this section, we relate MOSAIC to the partially exchangeable BB model of Ghilotti et al. (2025), which did not consider undetected species or develop inferences for beta diversity. We show that the two induce the same law for the observed occurrences and therefore differ only by data augmentation. Our detectability layer provides an interpretation of the BB parameters that has not been exploited previously. Let πjq , for j = 1 , . . . , N and q = 1 , . . . , Q , be independent random probabilities, which we collect into the vectors πq = ( π1q, . . . , π N q ) for each site q. The partially exchangeable BB model is ˜Yijq | πjq ind 
+
+∼ Bernoulli( πjq ), (i = 1 , . . . , n q, j = 1 , . . . , N, q = 1 , . . . , Q ),N ∼ Poisson( λ),πjq ind 
+
+∼ Beta( −αq, α q + θq), (j = 1 , . . . , N, q = 1 , . . . , Q ),
+
+(4) with αq < 0 and θq > −αq. As can be recognized by combining (2) with (3), our MOSAIC model is equivalent to the partially exchangeable BB model of Ghilotti et al. (2025), having set πjq = ηjq γjq , in the sense that it leads to the same marginal distribution for Y , for any fixed value of the parameters (λ, α, θ). Due to the crucial relevance of this result, we state it in the following theorem, although it is essentially a consequence of James (1972). 
+
+Theorem 1. Let Y follow the MOSAIC model with parameters (λ, α, θ, σ) and set πjq = ηjq γjq . Then, for every σ = ( σ1, . . . , σ Q), the marginal distribution of (Y , K n) coincides with that of the partially exchangeable BB model (4) with parameters (λ, α, θ).
+
+Theorem 1 has practical, and not merely conceptual, consequences. Under the model of Ghilotti et al. (2025) and MOSAIC , the marginal distribution of Y , that is, the likelihood function for ( λ, α, θ), and the posterior distributions of πjq and N are all available in closed form. The marginal law of Y
+
+under MOSAIC , or more precisely the joint law of ( Y = y, K n = k), depends on y only through the sufficient statistics given by the marginal occurrence frequencies of each species. Let Mjq = ∑nq 
+
+> i=1
+
+Yijq 
+
+denote the frequency of species Xj in site q, let M = ( Mjq ) be the corresponding matrix, and let 
+
+m = ( mjq ) be its observed counterpart, for j = 1 , . . . , k and q = 1 , . . . , Q . Then pr( Y = y, K n = k | λ, α, θ) = λk
+
+k! exp 
+
+> 
+
+−λ
+
+> 
+
+1 −
+
+> Q∏
+> q=1
+
+(αq + θq)nq
+
+(θq)nq
+
+> 
+
+× 
+
+> Q∏
+> q=1
+> {
+
+−αq
+
+(θq)nq 
+
+> }kk∏
+> j=1
+
+(1 − αq)mjq −1(αq + θq)nq −mjq  
+
+> 
+
+,
+
+(5) where ( x)m = Γ( x + m)/Γ( x) is the Pochhammer symbol and Γ( x) is the gamma function. The above result is a special case of Theorem 1 in Ghilotti et al. (2025); for completeness, the derivation is reported in the Supplementary Material. We refer to (5) as a partially exchangeable feature probability function (pEFPF), since it specializes their partially exchangeable trait probability function to the 7case of binary traits. It is also related to the partially exchangeable partition probability function of Franzolini et al. (2025). We now characterize the posterior distributions of the occurrence probabilities πjq = ηjq γjq and of the total number of species N , both of which admit simple closed-form expressions. Let N ′ = N − k
+
+denote the number of unseen species given Y , and split the occurrence probabilities into two groups: those associated with the observed species X1, . . . , X k, denoted by π∗ 
+
+> jq
+
+for j = 1 , . . . , k , and those associated with the unobserved ones, denoted by π′ 
+
+> jq
+
+for j = 1 , . . . , N ′, in both cases with q = 1 , . . . , Q .
+
+Theorem 2 (Ghilotti et al., 2025) . Let Y follow the MOSAIC model with parameters (λ, α, θ, σ) and set πjq = ηjq γjq . Then the posterior distribution of the number of unseen species is 
+
+N ′ | Y ∼ Poisson {λ p 0(α, θ, n)}, p0(α, θ, n) = 
+
+> Q∏
+> q=1
+
+p0,q (αq, θ q, n q),
+
+with p0,q (αq, θ q, n q) = ( αq + θq)nq /(θq)nq . Moreover, the occurrence probabilities are independent across species and sites given Y , with 
+
+π∗ 
+
+> jq
+
+| Y ind 
+
+∼ Beta( mjq − αq, α q + θq + nq − mjq ), (j = 1 , . . . , k ),π′ 
+
+> jq
+
+| Y ind 
+
+∼ Beta( −αq, α q + θq + nq), (j = 1 , . . . , N ′),
+
+for q = 1 , . . . , Q . In particular, the posterior does not depend on σ.
+
+We note that p0,q (αq, θ q, n q) = ( αq + θq)nq /(θq)nq = E{(1 − πjq )nq } is the probability that a species goes unrecorded in the nq samples from site q, and that p0(α, θ, n) = ∏Qq=1 p0,q (αq, θ q, n q)is the probability that it goes unrecorded at every site. We will show in Section 3.1 that E(Kn) = 
+
+λ{1 − p0(α, θ, n)}, so that 1 − p0(α, θ, n) and p0(α, θ, n) admit a direct interpretation as the expected fractions of the species pool that are respectively discovered and left undiscovered. Moreover, the posterior expectations of the occurrence probabilities are E(π∗ 
+
+> jq
+
+| Y ) = ( mjq − αq)/(θq + nq) and 
+
+E(π′ 
+
+> jq
+
+| Y ) = −αq/(θq + nq), for j = 1 , . . . , k and j = 1 , . . . , N ′ respectively, and q = 1 , . . . , Q . The first is a shrunken version of the empirical occurrence frequency mjq /n q, with −αq acting as a pseudo-count and θq as a pseudo-sample size. Finally, the parameters above are not known in practice and must themselves be inferred from the data, possibly borrowing information across the Q sites. This is achieved in Section 3.3 through a hierarchical specification inducing priors on αq and θq and a Gamma prior for λ. The expressions of Theorem 2 nonetheless remain valuable, since they are transparent to interpret and can be embedded within an MCMC scheme, where the availability of conditional distributions in closed form yields substantial computational savings. These expressions can moreover be extended beyond the Poisson case: placing a Gamma prior on λ induces a negative binomial distribution for N , for which analogous closed forms are available, as detailed in the Supplementary Material. 83 Biodiversity quantification and inference 
+
+3.1 Species richness and shared species 
+
+In this section, we investigate the theoretical properties of MOSAIC for key quantities of interest in biodiversity studies. Among the many diversity measures, species richness, the total number of species in a community, is arguably the simplest and most widely used. In the multi-site setting a distinction is needed: the richness of a single site, or α-diversity, refers to one site at a time, whereas the richness across sites, or γ-diversity, refers to the pooled species list. The results below concern both, together with the number of shared species, a priori and a posteriori. The study of species richness is well established in the Bayesian nonparametric literature for exchangeable data: see Lijoi et al. (2007); De Blasi et al. (2015); Zito et al. (2023); Rigon et al. (2025) for abundance data and Ghilotti et al. (2026) for incidence data. In the multi-site case, that is, under partial exchangeability, closed-form expressions are instead scarce, with the notable exception of Colombi et al. (2025) for abundance data. The findings below are new and were not investigated in Ghilotti et al. (2025); involving essentially only Poisson distributions, they are among the first available in the literature. We provide results based both on the observed data Y and on the latent occupancies W . Recall that 
+
+Kq,n q and Kn denote the number of distinct species observed at site q and across all sites, respectively, and let Lq,n q and Ln be their latent counterparts based on W , so that Kn ≤ Ln ≤ N . In the terminology above, Kq,n q and Lq,n q are the observed and latent α-diversities of site q, whereas Kn and 
+
+Ln are their γ-diversity analogues; all four depend on the sampling effort and are bounded by the size N
+
+of the species pool. In ecological applications, the expectations E(K1), . . . , E (Kn) provide model-based estimates of the global rarefaction curve (Gotelli and Colwell, 2001; Zito et al., 2023) in terms of the global sampling effort n. Analogously, the sequence E(Kq, 1), . . . , E (Kq,n q ) defines a model-based estimate of the rarefaction curve at site q as a function of the sampling effort nq. Recall also that 
+
+p0,q (αq, θ q, n q) = ( αq + θq)nq /(θq)nq is the probability that a species goes unrecorded in the nq samples from site q, and that p0(α, θ, n) = ∏Qq=1 p0,q (αq, θ q, n q) is the probability that it goes unrecorded at every site. Conversely, we let p1,q (αq, θ q, n q) := 1 − p0,q (αq, θ q, n q) be the probability that a species is recorded at least once at site q, and p1(α, θ, n) := 1 − p0(α, θ, n) the probability that it is recorded at least once overall. Finally, we write θq(σq) := σq(αq +θq)−αq and θ(σ) := {θ1(σ1), . . . , θ Q(σQ)}, noting that θq(1) = θq. The following proposition provides the marginal distributions of these quantities. 
+
+Proposition 1 (A priori distinct species) . Under the MOSAIC model with parameters (λ, α, θ, σ), the number of distinct species observed at site q and across sites is distributed as 
+
+Kq,n q ∼ Poisson {λ p 1,q (αq, θ q, n q)}, Kn ∼ Poisson {λ p 1(α, θ, n)}, (q = 1 , . . . , Q ),
+
+9whereas the number of distinct species present at site q and across sites is distributed as 
+
+Lq,n q ∼ Poisson {λ p 1,q (αq, θ q(σq), n q)}, Ln ∼ Poisson {λ p 1(α, θ(σ), n)}, (q = 1 , . . . , Q ).
+
+Proposition 1 shows that the number of distinct species under the MOSAIC model admits a simple, analytically tractable and highly interpretable form. In the expected value E(Kn) = λ p 1(α, θ, n), the parameter λ is the expected total number of species across sites and p1(α, θ, n) is the fraction of these that is observed under sampling effort n. The site-specific quantities admit the same reading, since 
+
+E(Kq,n q ) = λ p 1,q (αq, θ q, n q). The laws of Kq,n q and Kn are recovered from those of Lq,n q and Ln in the limit σq → 1, that is, under perfect detection. Of key ecological interest in the study of community similarity is the number of species shared between two sites q and r, denoted by Cnq ,n r , together with its latent counterpart Unq ,n r based on the occupancies W , so that Cnq ,n r ≤ Unq ,n r . When Q = 2, the number of shared species is linked to the site-specific and total counts through Cn1,n 2 = K1,n 1 + K2,n 2 − Kn. The following proposition provides the distribution of the number of species shared between any pair of sites. 
+
+Proposition 2 (A priori shared species) . Under the MOSAIC model with parameters (λ, α, θ, σ), the number of species shared between sites q and r, with q̸ = r, is distributed as 
+
+Cnq ,n r ∼ Poisson {λ p 1,q (αq, θ q, n q) p1,r (αr, θ r, n r)},
+
+whereas its latent counterpart is distributed as 
+
+Unq ,n r ∼ Poisson {λ p 1,q (αq, θ q(σq), n q) p1,r (αr, θ r(σr), n r)}.
+
+Proposition 2 is the first result characterizing the distribution of the number of shared species for partially exchangeable feature allocation models with finitely many features. The mean of Cnq ,n r is the expected species richness λ multiplied by the probability that a species is recorded at both sites, which factorizes because the occurrence probabilities are independent across sites. The same reading applies to Unq ,n r , which counts the species genuinely present at both sites, and the two coincide in the limit 
+
+σq, σ r → 1. The above result allows us to define model-based estimates of rarefaction for shared species between pairs of sites, providing a measure of overlap in species composition. Although the definition of a single-site rarefaction curve is straightforward, its extension to shared species is less direct. The shared rarefaction surface is the matrix of dimension nq × nr with entries E(Ciq ,i r ), for iq =1, . . . , n q and ir = 1 , . . . , n r, representing the expected number of shared species as sampling effort increases at both sites. This two-dimensional surface can be summarized by the one-dimensional curve 
+
+E(C1,1), E (C2,2), . . . , E (C¯n, ¯n), with ¯ n = min( nq, n r), obtained by increasing sampling effort jointly and equally at the two sites. The resulting curve is a symmetric and interpretable summary of how 10 overlap accumulates under balanced sampling, and it is most informative when the two sites have similar sample sizes, since the diagonal then spans the entire range of sampling effort. Otherwise the curve stops at ¯ n and the full surface should be inspected instead. Propositions 1-2 concern a priori properties of Kq,n q , Kn, Cnq ,n r and of their latent counterparts. We now consider the important problem of predicting the number of new species that would be discovered if s = ( s1, . . . , s Q) additional samples were collected after an initial n, resulting in an enlarged sample of size n + s. The key ingredient is the posterior distribution of the number of unseen species N ′, reported in Theorem 2 together with the posterior of the occurrence probabilities. We denote by K(nq ) 
+
+> q,s q
+
+and K(n) 
+
+> s
+
+the number of new species that would be discovered at site q and across all sites, respectively, and by L(nq ) 
+
+> q,s q
+
+and L(n) 
+
+> s
+
+their latent counterparts based on W . These quantities extrapolate the accumulation curves beyond the observed effort, since E(Kn+s | Y ) = k + E(K(n) 
+
+> s
+
+| Y ). Two groups of species contribute to the predictive of K(nq ) 
+
+> q,s q
+
+: those not yet recorded anywhere, whose number is random; and the k − kq species recorded at some other site but not at q, whose number is known given Y . The same reading applies to L(nq ) 
+
+> q,s q
+
+, with ℓ and ℓq in place of k and kq.
+
+Theorem 3 (A posteriori distinct species) . Under the MOSAIC model with parameters (λ, α, θ, σ), the number of new species discovered at site q and across sites satisfies 
+
+K(nq ) 
+
+> q,s q
+
+| Y d
+
+= Poisson {λ p 0(α, θ, n) p1,q (αq, θ q + nq, s q)}
+
++ Binomial {k − kq, p 1,q (αq, θ q + nq, s q)}, (q = 1 , . . . , Q ),K(n) 
+
+> s
+
+| Y ∼ Poisson {λ p 0(α, θ, n) p1(α, θ + n, s)},
+
+whereas their latent counterparts satisfy 
+
+L(nq ) 
+
+> q,s q
+
+| W d
+
+= Poisson {λ p 0(α, θ(σ), n) p1,q (αq, θ q(σq) + nq, s q)}
+
++ Binomial {ℓ − ℓq, p 1,q (αq, θ q(σq) + nq, s q)}, (q = 1 , . . . , Q ),L(n) 
+
+> s
+
+| W ∼ Poisson {λ p 0(α, θ(σ), n) p1(α, θ(σ) + n, s)}.
+
+Here and in the following, the sum of two named distributions denotes the distribution of the sum of two independent random variables with those laws. The latent quantities are conditional on 
+
+W , which is itself unobserved, and are therefore available only within the sampler of Section S.2.1 in the Supplementary Material, where ˜W is imputed at each iteration. Theorem 3 admits the same interpretation as its a priori counterpart, with the roles of the two factors made explicit: λ p 0(α, θ, n)is the expected number of species left undiscovered after the initial n samples, and p1(α, θ + n, s) is the probability that one such species is recorded at least once in the s additional samples. The Bayesian estimator of the number of new species is therefore E(K(n) 
+
+> s
+
+| Y ) = λ p 0(α, θ, n) p1(α, θ + n, s), and the site-specific expressions read analogously, with λ p 0,q (αq, θ q, n q) the expected number of species not yet recorded at site q. The latter includes species already recorded elsewhere, so that K(nq ) 
+
+> q,s q
+
+counts 11 species new to site q rather than new to the study. These results generalize those of Ghilotti et al. (2026) in the exchangeable case. Finally, we characterize the predictive distribution of the number of new species shared between two sites q and r, denoted by C(nq ,n r )  
+
+> sq,s r
+
+, and of its latent counterpart U (nq ,n r )  
+
+> sq,s r
+
+based on W . Let 
+
+kq,r = kq + kr − cq,r be the number of distinct species recorded at site q or at site r, and let 
+
+ℓq,r = ℓq + ℓr − uq,r be its latent counterpart. Three groups of species contribute to the predictive: those not yet recorded at either site, which must appear at both; those recorded only at site q, which must appear at site r; and those recorded only at site r, which must appear at site q.
+
+Theorem 4 (A posteriori shared species) . Under the MOSAIC model with parameters (λ, α, θ, σ), the number of species shared between sites q and r, with q̸ = r, that would be discovered in (sq, s r) additional samples satisfies 
+
+C(nq ,n r )  
+
+> sq,s r
+
+| Y d
+
+= Poisson {λ p 0(α, θ, n) p1,q (αq, θ q + nq, s q) p1,r (αr, θ r + nr, s r)}
+
++ Binomial {k − kq,r , p 1,q (αq, θ q + nq, s q) p1,r (αr, θ r + nr, s r)}
+
++ Binomial {kq − cq,r , p 1,r (αr, θ r + nr, s r)}
+
++ Binomial {kr − cq,r , p 1,q (αq, θ q + nq, s q)},
+
+whereas its latent counterpart satisfies 
+
+U (nq ,n r )  
+
+> sq,s r
+
+| W d
+
+= Poisson {λ p 0(α, θ(σ), n) p1,q (αq, θ q(σq) + nq, s q) p1,r (αr, θ r(σr) + nr, s r)}
+
++ Binomial {ℓ − ℓq,r , p 1,q (αq, θ q(σq) + nq, s q) p1,r (αr, θ r(σr) + nr, s r)}
+
++ Binomial {ℓq − uq,r , p 1,r (αr, θ r(σr) + nr, s r)}
+
++ Binomial {ℓr − uq,r , p 1,q (αq, θ q(σq) + nq, s q)},
+
+where in both displays the four terms are independent. 
+
+Theorem 4 provides a simple closed-form expression for extrapolating the shared rarefaction surface between a pair of sites, and is the first result analytically characterizing the posterior distribution of the number of shared species for partially exchangeable feature allocation models. Each term corresponds to a distinct group of species. The Poisson and the first binomial term account for species not yet recorded at either site, which must appear at both: the former counts those never recorded anywhere, whose number is itself random and Poisson distributed, whereas the latter counts the k − kq,r species already recorded at some other site, whose number is known given Y . The last two binomial terms count species recorded at only one of the two sites, which need appear at the other site alone. All the above results extend to the case in which the total number of species in (2) follows a negative binomial distribution, which accommodates overdispersion while retaining the same analytical tractability and interpretability. The Supplementary Material reports the details, together with a closed-form expression for the marginal distribution analogous to (5). 12 3.2 A model-based index of β-diversity 
+
+Compared to species richness, comparatively little work in the Bayesian nonparametric literature has addressed the so-called β-diversity, namely the heterogeneity of species composition across different sampling regions, despite its central role in the quantification of biodiversity. While the pairwise rarefaction and extrapolation curves of Section 3.1 based on shared species are valuable, it is often convenient to summarize heterogeneity across regions in a single number. Many measures of β-diversity have been introduced in ecology, but there is no overall consensus on which one is the most appropriate (Anderson et al., 2011). The oldest is the decomposition of Whittaker (1960), in which the γ-diversity of a set of sites is expressed as the product of the average α-diversity of the individual sites and a multiplicative factor, the β-diversity, measuring how much the pooled species list exceeds what a typical site contains. A second family of measures is instead based on dissimilarities; for incidence data the most popular are the Jaccard and Sørensen indices (Tuomisto, 2010). Jaccard similarity is the number of shared species divided by the total number of species, namely |X q ∩ X r|/|X q ∪ X r| in our notation, for q̸ = r; Sørensen is similar but places more weight on the overlap, so that for the same two sets it never returns a lower value than Jaccard. Barwell et al. (2015) point out that many commonly used β-diversity indices are highly correlated and redundant, yet do not properly account for undetected shared and unshared species. Our proposed MOSAIC model offers a principled way to solve this problem, based on a ratio of shared species between and within sites. 
+
+Definition 1. The β-diversity between sites q and r, with q̸ = r, is 
+
+βqr = 1 − 
+
+> ∑Nj=1
+
+ηjq ηjr  
+
+> ( ∑ Nj=1
+
+η2 
+
+> jq
+> ∑Nj=1
+
+η2 
+
+> jr
+> )1/2
+
+.
+
+The proposed index is the cosine dissimilarity between the occupancy profiles of the two sites; it is therefore symmetric, βqr = βrq , and, since the occupancy probabilities are nonnegative, conveniently bounded between 0 and 1. It equals 0 when the two profiles are proportional, and 1 when no species has positive occupancy probability at both sites; in general, increasing values of βqr indicate greater heterogeneity between sites. The numerator of 1 − βqr is the expected number of species shared in two samples drawn from different sites, say the ith sample from site q and the i′th from site r,
+
+> N∑
+> j=1
+
+pr( ˜Wijq = ˜Wi′jr = 1 | ηq, ηr) = 
+
+> N∑
+> j=1
+
+ηjq ηjr ,
+
+which equals E(U1,1 | ηq, ηr) in the notation of Section 3.1, whereas each term in the denominator is the expected number of species shared in two samples i̸ = i′ drawn from the same site, 
+
+> N∑
+> j=1
+
+pr( ˜Wijq = ˜Wi′jq = 1 | ηq) = 
+
+> N∑
+> j=1
+
+η2
+
+> jq
+
+.
+
+13 The denominator thus rescales the between-site co-occurrence by the geometric mean of the two within-site co-occurrences, so that the index measures similarity of occupancy patterns rather than their overall magnitude: two sites whose profiles differ by a common multiplicative factor are regarded as maximally similar. The index βqr is monotonically equivalent to the chord distance of Orloci (1967), although the latter is commonly applied to empirical relative abundances rather than to model-based probabilities. Replacing each ηjq with the empirical indicator 1( ˜Xj ∈ X q) yields instead one minus the Ochiai similarity coefficient (Ochiai, 1957), 1 − |X q ∩ X r|/
+
+> √
+
+|X q| |X r|, since the sums appearing in βqr then count the species shared by the two sites and those observed at each of them; the Jaccard index differs in that it normalizes the shared species by |X q ∪ X r|. A further connection is with the correlation between random probability measures in Proposition 4 of Franzolini et al. (2025), which equals the probability of a tie across two groups, normalized by the geometric mean of the two within-group tie probabilities: our index has the same structure, with co-occurrences of binary features replacing ties among species labels, and thus provides its feature allocation counterpart. We note in passing that their quantity would in turn provide a natural definition of β-diversity for multivariate species sampling models, based on relative abundances rather than on presence–absence patterns. Our definition is based on the occupancy probabilities ηq rather than on the occurrence probabilities 
+
+πq, since under-detection thins the recorded occurrences and would otherwise bias the resulting measure of biodiversity; it is moreover defined over the complete list of N species, and hence accounts for the species left unobserved. Since βqr is a function of occupancy probabilities whose posterior is available, it admits full uncertainty quantification in addition to point estimation. However, as noted in Remark 1, the occupancy probabilities ηq cannot be learned from the data, and their posterior law is entirely driven by the choice of σq. The induced β-diversity βqr is nonetheless considerably more stable, because varying σq shrinks all the occupancy probabilities at site q by a common factor and the cosine similarity is invariant to such a global rescaling. Finally, the same construction applies more broadly to any probabilistic framework that yields species-occurrence probabilities, such as joint species distribution models (Ovaskainen et al., 2016), on replacing ηq by πq and N by k; the resulting index no longer corrects for under-detection or for unseen species, but remains well defined. 
+
+3.3 Hierarchical prior specification with site-specific covariates 
+
+In this section, we discuss the prior specification for the MOSAIC model. In order to induce borrowing of information across sites, we define hierarchical priors for the parameters α and θ. Given the formal equivalence with the BB model shown in Theorem 1, we focus on this construction for easier computation and interpretation. Hence, we consider πjq | αq, θ q ∼ Beta( −αq, α q + θq) with αq < 0 and 
+
+θq > −αq in (4), and we need to define a hyperprior for αq and θq, for q = 1 , . . . , Q . For convenience, 14 we reparametrize the beta distribution in terms of mean and precision, considering 
+
+μq = −αq
+
+θq
+
+, ϕq = θq, with μq ∈ (0 , 1) , ϕ q > 0, (6) for q = 1 , . . . , Q . Therefore, πjq | μq, ϕ q ∼ Beta {μqϕq, (1 − μq)ϕq}, with 
+
+E(πjq | μq, ϕ q) = μq, var( πjq | μq, ϕ q) = μq(1 − μq)
+
+ϕq + 1 .
+
+In biodiversity studies, it is common to have site-specific covariates, such as mean wind speed, mean temperature, and mean precipitation. We incorporate this information into a regression model for μq.Letting ζ = ( ζ1, . . . , ζ H )⊤ denote regression coefficients and zq = ( zq1, . . . , z qH )⊤ site-specific covariates, we assume log  
+
+> (
+
+μq
+
+1 − μq
+
+> )
+
+= z⊤ 
+
+> q
+
+ζ, ζ ∼ N (b0, B0), (7) for q = 1 , . . . , Q , and we let Z denote the Q × H covariate matrix. This specification admits a direct interpretation of the regression coefficients in terms of odds ratios, analogous to standard logistic regression. For the dispersion parameters ϕ = ( ϕ1, . . . , ϕ Q)⊤, we assume a common distribution across sites, ϕq ∼ Gamma( aϕ, b ϕ) for q = 1 , . . . , Q . Since the detectability parameter σq is not identifiable, we take it to be common across sites and conduct a sensitivity analysis over a set of plausible values, for instance {0.4, 0.6, 0.8}; ideally, prior information on the detectability of species should guide this choice. For the parameter of the Poisson distribution for N , we assume λ ∼ Gamma( ρ0, ρ 0/ν 0), which implies N ∼ NegBinomial( r0, ν 0). We recall that all the theoretical results in Section 3.1 extend to the negative binomial case, as detailed in the Supplementary Material. 
+
+# 4 Simulation studies 
+
+In this section, we evaluate the performance of the proposed approach with synthetic data. Specifically, we assess estimation accuracy for the regression coefficients ζ, which capture covariate effects, and the dispersion parameters ϕ, as well as predictive performance for the number of shared species between site pairs, C(nq ,n r )  
+
+> sq,s r
+
+, and the number of site-specific distinct species, K(nq ) 
+
+> q,s q
+
+. To the best of our knowledge, there are no existing methods specifically designed for predicting the number of shared species across sites, as considered here. However, for the prediction of K(nq ) 
+
+> q,s q
+
+, different feature allocation models are available. Accordingly, we adopt as a natural benchmark the exchangeable negative binomial mixture of beta–Bernoulli models proposed by Ghilotti et al. (2026). We begin by evaluating the performance of the proposed approach in estimating the number of shared species in a simple setting with Q = 3 sites. We generate occurrence data under the hierarchical formulation of the MOSAIC model with N = 3 ,000, regression coefficients ζ = ( −3, 0.5, −0.3) ⊤, where the negative intercept reflects the presence of many rare species, and draw ϕ from a Gamma distribution 15 with shape 4 and rate 2. The elements of the design matrix Z are simulated from standard normal variables. We consider sample sizes n = (100 , 80 , 80) and split the data into training and test sets, using 60% of the observations in each site for training. The MOSAIC model is fitted to the training data using the following hyperparameter specification: b0 = ( −2, 0, 0) ⊤, B0 = I, ρ0 = 10, ν0 = 1 .5k, aϕ = 2 and bϕ = 2. The MCMC algorithm is run for 8 ,000 iterations, of which the first half is discarded as burn-in. We predict the number of shared species C(nq ,n r )  
+
+> sq,s r
+
+for each pair of sites in the test set, with 
+
+s = (40 , 32 , 32). Figure 1 displays the rarefaction surfaces for shared species on the test set, together with the corresponding model-based predictions. The posterior mean closely follows the empirical surfaces for all pairs, indicating a strong agreement between observed and predicted values. For the pair with the same number of samples, (2 , 3), we additionally report the full one-dimensional rarefaction curve, corresponding to the diagonal of the surface, together with its model-based prediction on the test set. This representation further highlights the strong agreement between empirical and predicted values and provides a clearer view of how the number of shared species increases under balanced sampling effort. Figure S2 in the Supplementary Material shows the 95% posterior credible intervals for the predicted rarefaction surfaces for all site pairs. We next consider a more complex setting with Q = 15 sites, where the sample sizes nq are drawn uniformly between 15 and 40 and N follows a negative binomial distribution with mean 5 ,000 and size 1 ,000. The parameters ζ and ϕ are set as in the previous experiment. This configuration reflects typical biodiversity data. Data are generated under two scenarios: (A) the correctly specified MOSAIC 
+
+model and (B) a misspecified version in which a random intercept is added to the linear predictor in (7), log {μq/(1 − μq)} = z⊤ 
+
+> q
+
+ζ + uq, with uq ∼ N (0 , τ 2) and τ = 0 .1. For each scenario, we replicate the experiment 25 times. Each dataset is split into training and test sets, with 10 observations in the test set for all sites. The MOSAIC model is fitted to the training data using the same hyperparameter configuration as in the previous experiment. Based on the fitted model, we predict the number of new species at each site, K(nq ) 
+
+> q,s q
+
+, with sq = 10 for q = 1 , . . . , Q . Predictive performance is evaluated using the average mean squared error across sites, scaled by the true values, for each sq = 1 , . . . , 10. We compare our approach with the exchangeable negative binomial mixture of beta–Bernoulli models (Ghilotti et al., 2026), using the same negative binomial hyperparameter specification as in our model. Figure 2 shows that the proposed method achieves comparable or improved predictive performance in both scenarios, highlighting the benefit of borrowing information across sites. Moreover, we recall that exchangeable feature allocation models of this type do not provide estimates or predictions for the number of shared species between sites. In the Supplementary Material, we provide additional results for experiments with varying numbers of sites Q, together with additional experiments evaluating the frequentist coverage of posterior credible intervals for the regression coefficients ζ and dispersion 16 Figure 1: Top panel: empirical rarefaction surfaces for shared species in the test set, together with the corresponding posterior mean estimates of C(nq ,n r )  
+
+> sq,s r
+
+for all pairs of sites. Bottom panel: simplified one-dimensional rarefaction curve for shared species (black dots), alongside the posterior mean of 
+
+C(n2,n 3) 
+
+> s2,s 3
+
+(solid line) and its 95% credible intervals for site pair 2-3. Gray vertical line indicates the training set. parameters ϕ.
+
+# 5 Global patterns in airborne fungal diversity 
+
+We analyze data from a global project on the biodiversity of fungi, the GSSP (Ovaskainen et al., 2024; Abrego et al., 2024). Fungi are among the most diverse and ecologically important kingdoms of life, despite fungal diversity and its environmental drivers remaining poorly understood (Abrego et al., 2024). We consider samples in temperate and polar-continental climatic zones, for a total of 
+
+Q = 34 sites in the Northern hemisphere, covering North America, Europe, Asia and the Arctic. In the Supplementary Material we show the map with the sampling locations. The data consist of 1 ,425 observations over 1 year with site-specific sample sizes nq ranging between 12 and 103, with a median of 17 Figure 2: Average MSE in predicting K(nq ) 
+
+> q,s q
+
+for each sq = 1 , . . . , 10 for all q = 1 , . . . , Q for MOSAIC and the exchangeable negative binomial mixture of beta-Bernoulli (BB). 37. The Supplementary Material reports the GSSP labels used in the following to denote the sampling locations, together with the corresponding sample sizes for all sites. The total number of identified species is k = 15 ,352. Data are very sparse, as more than half of the species (57%) have only been observed once. To account for climatic and latitudinal effects, we include latitude and mean annual temperature along with its quadratic term as covariates. In addition, weather covariates may influence variation in fungal communities (Abrego et al., 2024). Consequently, we also include the mean annual wind speed and the mean annual precipitation for each sampling area, leading to H = 6 columns of Z.We fit MOSAIC using the MCMC specification in the simulation study. The posterior mean of the global number of species N is 16 ,574, with 95% credible interval (16 ,494 , 16 ,659). This estimate exceeds the 15 ,352 observed species, suggesting that about 1 ,200 species remain undetected. Table 1 reports estimates of the regression coefficients ζ. The large negative intercept reflects the extreme sparsity of the data. Temperature and latitude emerge as the main drivers of the distribution of airborne fungi, consistent with Abrego et al. (2024) and previous studies on soil fungi (Tedersoo et al., 2014). Fungi follow a predictable latitudinal diversity gradient, with prevalence decreasing with distance from the Equator. The mean annual temperature coefficients reveal a hump-shaped relationship with temperature, where fungal activity increases with temperature up to an optimal point before declining at higher, physiologically stressful temperatures. This pattern is commonly described as a thermal performance curve (Hess et al., 2025). The negative sign of the mean annual precipitation coefficient is consistent with rainfall washout, where fungal spores are scavenged from the air and deposited onto surfaces. Several studies have reported negative relationships between rainfall and airborne fungal abundance, see, e.g., Pakpour et al. (2015), with genera such as Cladosporium and Alternaria being 18 Intercept Latitude Temperature Temperature 2 Wind Precipitation Mean −5.55 −0.27 0.67 −0.47 −0.11 −0.26 95% CI (−5.56 , −5.53) (−0.30 , −0.25) (0 .64 , 0.71) (−0.50 , −0.44) (−0.14 , −0.09) (−0.28 , −0.24) 
+
+Table 1: Posterior means and 95% credible intervals for ζ.particularly susceptible to rainfall-induced declines in airborne occurrence (Ho et al., 2005). To assess diversity in fungal composition we compute the β-diversity index proposed in Section 3.2. Figure 3 displays the posterior mean of the similarity 1 − βqr for all pairs of sites, with detectability parameter σq = 0 .6 for all sites. Because the index is invariant to a global rescaling of the occupancy probabilities, the choice of σq leaves the overall structure essentially unchanged, as illustrated in the Supplementary Material. The results are compared to those obtained via the Jaccard and Ochiai similarity indices (Ochiai, 1957). Although the overall patterns are broadly consistent, the proposed index reveals more complex and nuanced biodiversity patterns, particularly for sites with small sample sizes. For example, our measure identifies a small cluster of High Arctic and Arctic tundra locations, comprising CHA, ZAC, NUU, PRI and TOO, that is not visible in the Jaccard index. These sites are associated with cold-climate ecosystems and are geographically isolated, all having relatively small sample sizes nq, highlighting the importance of borrowing information across locations in the estimation procedure. In general, airborne fungal communities exhibit a pronounced biogeographic organization, with temperate European sites forming a highly connected cluster (from KLA to ZUR) and polar-continental locations in Europe grouping separately (from TUR to TAR). These patterns are consistent with evidence that fungal community composition is strongly shaped by climatic zone (Abrego et al., 2024). The high similarity among temperate European sites likely reflects shared climate and atmospheric factors, while Arctic and polar-continental sites appear to be more strongly shaped by environmental filtering and geographic isolation. For example, the marked dissimilarity of CAM (Sandgerði, Iceland) and CHA (Cambridge Bay, Canada) from most other locations is ecologically meaningful and consistent with Arctic aerobiology and microbial biogeography theory (Cao et al., 2024). This likely reflects their atypical climatic settings, with Sandgerði influenced by strong wind exposure and North Atlantic air-mass transport and Cambridge Bay characterized by extreme continental isolation and sparse vegetation, both of which may shape local airborne fungal assemblages differently from typical polar-continental sites. To further explore fungal biodiversity, we produce extrapolations of rarefaction curves for shared species between pairs of sites, C(nq ,n r )  
+
+> sq,s r
+
+. Since most sites have different sample sizes, the one-dimensional summary curve taking the diagonal of the whole surface has limited utility here. We instead construct extrapolations of rarefaction curves by simulating from the posterior under two prediction sets: (i) a 19 Figure 3: Posterior mean of the proposed β-similarity for all sites, grouped by climatic zone, compared with Jaccard and Ochiai similarities. one-side test set, where we simulate additional observations only for the site with the smaller sample size and compute the number of shared species using the remaining observations from the other site; and (ii) a full test set, where we simulate additional observations from both sites. Assuming nq > n r,the size of the one-side test set is nq − nr. This approach makes full use of the available data, avoiding unnecessary discarding of observations. The results with test size sq = 1 , . . . , 30 are shown in Figure 4 for three illustrative site pairs: a pair of temperate locations, Klagenfurt (KLA) and Zurich (ZUR); a pair of polar-continental locations, Nuuk (NUU) and Wrangel Island (PRI); and a cross-zone pair, Klagenfurt and Fetsund (FTS). The figure also displays the posterior density of βqr for each pair. The expected number of new shared species grows rather slowly when collecting additional balanced samples for the Nuuk–Wrangel Island pair, which exhibits the highest β-diversity among the three. As previously noted, Arctic locations tend to appear quite distinct, likely reflecting the combined effects of geographic isolation, sparse tundra vegetation, and limited regional spore sources. Growth is faster for the remaining two pairs, which comprise locations in Europe, even though Fetsund belongs to the polar-continental climatic zone, consistent with lower β-diversity. In the Supplementary Material we provide additional experiments assessing the model performance in predicting the number of shared species in out-of-sample experiments. To explore the detectability component, we provide site-specific rarefaction curves for the latent number of species Lq,n q . Figure 5 shows results for three sites under three values of σ ∈ { 0.05 , 0.5, 0.95 }.These values span a range of detectability regimes: σ = 0 .05 corresponds to almost no species being detectable, σ = 0 .95 to near-perfect detectability, and σ = 0 .5 to an intermediate case. The curves characterize the growth rate of the number of species based on the latent occupancy data W , which has no directly observed counterpart. Across all three sites, the effect of detectability is clearly visible: the expected number of species increases substantially as detectability decreases, highlighting 20 Figure 4: Top panel: empirical site-specific rarefaction curves (dots), posterior mean (solid lines) and 95% credible intervals (shaded ribbons) for one-side test and test predictions across three sampling location pairs. Gray vertical lines indicate training and one-side test sets. Bottom panel: posterior densities of βqr for the same three pairs. how undetected species can represent a large fraction of the underlying diversity. We stress that these are illustrative scenarios rather than inferences about detectability: as discussed in Remark 1, σ is not identified from the data, so each curve reports what the latent diversity would be under the corresponding assumption. In the Supplementary Material we provide analogous results for the rarefaction curves of the latent number of shared species based on the occupancy data, Unq ,n r .
+
+# 6 Discussion 
+
+We have proposed a MOSAIC modeling framework, defining a novel partially exchangeable feature allocation model with imperfect detection. Our motivation is to define a principled statistical framework for inference on β−diversity and heterogeneity in community composition across sites. In order for this framework to be useful to ecologists, including in the framework of modern large scale biodiversity surveys, it is crucial for model fitting to be both efficient and scalable. For this reason, we have balanced ecological realism and computational efficiency and scalability in MOSAIC . Data and code to 21 Figure 5: Posterior means and 95% credible intervals for site-specific rarefaction curves for the latent number of species Lq,n q for different values of σ.reproduce our analysis are available at https://github.com/federicastolf/MOSAIC .To obtain analytic tractability, we have made some simplifying assumptions that are not entirely realistic in ecology. For example, unlike joint species distribution models (JSDMs), we have not modeled statistical dependence in co-occurrence across species. Modern versions of JSDMs typically rely on Bayesian factor models for high-dimensional multivariate binary outcome species occurrence data, and substantial challenges arise in implementing such models for highly diverse communities containing 1,000s to millions of species (Mauri and Dunson, 2025). In addition, a key aspect that forms much of the focus of the MOSAIC framework is the ability to allow and predict new species discovery as sampling proceeds, which is currently lacking in JSDMs models with the exception of Stolf and Dunson (2025). In future work, it will be of substantial interest to define new approaches bridging between JSDMs and feature allocation models such as MOSAIC .An additional key consideration in conducting inference in MOSAIC and related models is the challenge of non-identifiability of detectability parameters. For other types of ecological occupancy models, detectability parameters can sometimes be inferred using targeted sampling designs, such as capture-recapture (Pollock et al., 1990). For ecological surveys using cyclone samplers or malaise traps and DNA meta-barcoding, such designs are not possible, as one cannot release the organisms. An important open problem is developing new designs that allow inference on detectability parameters. 
+
+# Acknowledgments 
+
+This research was partially supported by the European Research Council under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 856506) and the National 22 Science Foundation (IIS-2426762). The authors thank Otso Ovaskainen, Tomas Roslin, and other members of the Lifeplan project team for helpful discussions. 
+
+# References 
+
+Abrego, N., B. Furneaux, B. Hardwick, P. Somervuo, I. Palorinne, C. A. Aguilar-Trigueros, N. R. Andrew, U. V. Babiy, T. Bao, G. Bazzano, et al. (2024). Airborne DNA reveals predictable spatial and seasonal dynamics of fungi. Nature 631 (8022), 835–842. Anderson, M. J., T. O. Crist, J. M. Chase, M. Vellend, B. D. Inouye, A. L. Freestone, N. J. Sanders, H. V. Cornell, L. S. Comita, K. F. Davies, et al. (2011). Navigating the multiple meanings of β
+
+diversity: a roadmap for the practicing ecologist. Ecology Letters 14 (1), 19–28. Barwell, L. J., N. J. Isaac, and W. E. Kunin (2015). Measuring β-diversity with species abundance data. Journal of Animal Ecology 84 (4), 1112–1122. Battiston, M., S. Favaro, D. M. Roy, and Y. W. Teh (2018). A characterization of product-form exchangeable feature probability functions. The Annals of Applied Probability 28 (3), 1423–1448. Broderick, T., J. Pitman, and M. Jordan (2013). Feature allocations, probability functions, and paintboxes. Bayesian Analysis 8 (4), 801–836. Camerlenghi, F., S. Favaro, L. Masoero, and T. Broderick (2024). Scaled process priors for Bayesian nonparametric estimation of the unseen genetic variation. Journal of the American Statistical Association 119 (545), 320–331. Cao, Y., T. Xu, X. Yu, Z. Hua, H. Liu, W. Gu, H. Liu, H. Kang, Z. Wei, and Z. Xie (2024). Fungal aerosols over the Northwest Pacific to Arctic ocean: The influence of air mass and environmental factors. Atmospheric Environment 337 , 120776. Carpenter, B., A. Gelman, M. D. Hoffman, D. Lee, B. Goodrich, M. Betancourt, M. Brubaker, J. Guo, P. Li, and A. Riddell (2017). Stan: A probabilistic programming language. Journal of Statistical Software 76 , 1–32. Colombi, A., R. Argiento, F. Camerlenghi, and L. Paci (2025). How many unseen species are in multiple areas? arXiv preprint arXiv:2502.04122 .De Blasi, P., S. Favaro, A. Lijoi, R. H. Mena, I. Prünster, and M. Ruggiero (2015, 2). Are gibbs-type priors the most natural generalization of the dirichlet process? IEEE Transactions on Pattern Analysis and Machine Intelligence 37 , 212–229. 23 Doi, H., K. Fukaya, S. I. Oka, K. Sato, M. Kondoh, and M. Miya (2019). Evaluation of detection probabilities at the water-filtering and initial pcr steps in environmental DNA metabarcoding using a multispecies site occupancy model. Scientific Reports 9 (1), 3581. Franzolini, B., A. Lijoi, I. Prünster, and G. Rebaudo (2025). Multivariate species sampling models. 
+
+arXiv preprint arXiv:2503.24004 .Ghilotti, L., F. Camerlenghi, and T. Rigon (2026). Bayesian analysis of product feature allocation models. Journal of the Royal Statistical Society Series B: Statistical Methodology 88 (2), 540–566. Ghilotti, L., F. Camerlenghi, T. Rigon, and M. Guindani (2025). Bayesian nonparametric modeling of multivariate count data with an unknown number of traits. arXiv preprint arXiv:2510.24526 .Gotelli, N. J. and R. K. Colwell (2001). Quantifying biodiversity: procedures and pitfalls in the measurement and comparison of species richness. Ecology Letters 4 (4), 379–391. Griffiths, T. L. and Z. Ghahramani (2011). The Indian buffet process: An introduction and review. 
+
+Journal of Machine Learning Research 12 (4). Hess, O. C., T. van der Deure, M. Bolander, C. A. Leal Dutra, and J. Z. Shik (2025). The evolution of thermal performance curves in fungi farmed by attine ant mutualists in above-ground or below-ground microclimates. Journal of Evolutionary Biology 38 (1), 83–93. Ho, H.-M., C. Y. Rao, H.-H. Hsu, Y.-H. Chiu, C.-M. Liu, and H. J. Chao (2005). Characteristics and determinants of ambient fungal spores in Hualien, Taiwan. Atmospheric Environment 39 (32), 5839–5850. James, I. R. (1972). Products of independent beta variables with application to Connor and Mosimann’s generalized Dirichlet distribution. Journal of the American Statistical Association 67 (340), 910–912. James, L. F. (2017). Bayesian Poisson calculus for latent feature modeling via generalized Indian buffet process priors. The Annals of Statistics 45 (5), 2016–2045. Lijoi, A., R. H. Mena, and I. Prünster (2007). Bayesian nonparametric estimation of the probability of discovering new species. Biometrika 94 , 769–786. MacKenzie, D. I., J. D. Nichols, G. B. Lachman, S. Droege, J. Andrew Royle, and C. A. Langtimm (2002). Estimating site occupancy rates when detection probabilities are less than one. Ecology 83 (8), 2248–2255. Masoero, L., F. Camerlenghi, S. Favaro, and T. Broderick (2022). More for less: predicting and maximizing genomic variant discovery via Bayesian nonparametrics. Biometrika 109 (1), 17–32. 24 Mauri, L. and D. B. Dunson (2025). Factor pretraining in Bayesian multivariate logistic models. 
+
+Biometrika 112 (4), asaf056. Ochiai, A. (1957). Zoogeographical studies on the soleoid fishes found in Japan and its neighbouring regions—II. Bulletin of the Japanese Society of Scientific Fisheries 22 (9), 526–530. In Japanese. Orloci, L. (1967). An agglomerative method for classification of plant communities. Journal of Ecology 55 , 193–206. Ovaskainen, O., N. Abrego, B. Furneaux, B. Hardwick, P. Somervuo, I. Palorinne, N. R. Andrew, U. V. Babiy, T. Bao, G. Bazzano, et al. (2024). Global spore sampling project: A global, standardized dataset of airborne fungal DNA. Scientific Data 11 (1), 561. Ovaskainen, O., N. Abrego, P. Halme, and D. B. Dunson (2016). Using latent variable models to identify large networks of species-to-species associations at different spatial scales. Methods in Ecology and Evolution 7 (5), 549–555. Pakpour, S., D.-W. Li, and J. Klironomos (2015). Relationships of fungal spore concentrations in the air and meteorological factors. Fungal Ecology 13 , 130–134. Pollock, K. H., J. D. Nichols, C. Brownie, and J. E. Hines (1990). Statistical inference for capture-recapture experiments. Wildlife Monographs , 3–97. Rigon, T., C.-L. Hsu, and D. B. Dunson (2025). A Bayesian theory for estimation of biodiversity. 
+
+arXiv:2502.01333 .Royle, J. A., J. D. Nichols, M. Kéry, and E. Ranta (2005). Modelling occurrence and abundance of species when detection is imperfect. Oikos 110 , 353–359. Schlegel, M., A. D. Treindl, J. Panziera, V. Zengerer, D. Zani, J. Brännhage, and A. Gross (2024). A case study on the application of spore sampling for the monitoring of macrofungi. Molecular Ecology Resources 24 (4), e13941. Shen, Y., L. Masoero, J. G. Schraiber, and T. Broderick (2025). Double trouble: Predicting new variant counts across two heterogeneous populations. Bayesian Analysis 1 (1), 1–33. Somervuo, P., S. Koskela, J. Pennanen, R. Henrik Nilsson, and O. Ovaskainen (2016). Unbiased probabilistic taxonomic classification for DNA barcoding. Bioinformatics 32 (19), 2920–2927. Stolf, F. and D. B. Dunson (2025). Infinite joint species distribution models. Biometrika 112 (4), asaf055. 25 Tedersoo, L., M. Bahram, S. Põlme, U. Kõljalg, N. S. Yorou, R. Wijesundera, L. V. Ruiz, A. M. Vasco-Palacios, P. Q. Thu, A. Suija, et al. (2014). Global diversity and geography of soil fungi. 
+
+Science 346 (6213), 1256688. Teh, Y. and D. Gorur (2009). Indian buffet processes with power-law behavior. In Advances in Neural Information Processing Systems , Volume 22. Tobler, M. W., M. Kéry, F. K. Hui, G. Guillera-Arroita, P. Knaus, and T. Sattler (2019). Joint species distribution models with species correlations and imperfect detection. Ecology 100 (8), e02754. Tuomisto, H. (2010). A diversity of beta diversities: straightening up a concept gone awry. Part 1. Defining beta diversity as a function of alpha and gamma diversity. Ecography 33 (1), 2–22. Wenger, S. J. and M. C. Freeman (2008). Estimating species occurrence, abundance, and detection probability using zero-inflated distributions. Ecology 89 , 2953–2959. Whittaker, R. H. (1960). Vegetation of the Siskiyou Mountains, Oregon and California. Ecological Monographs 30 (3), 279–338. Zito, A., T. Rigon, O. Ovaskainen, and D. B. Dunson (2023). Bayesian modeling of sequential discoveries. Journal of the American Statistical Association 118 (544), 2521–2532. 26 Supplementary materials S.1 Proofs of theoretical results 
+
+S.1.1 Auxiliary results 
+
+Lemma S1. Let V ≥ 1 be an integer and let ϱ1, . . . , ϱ V be independent and identically distributed random variables with values in (0 , 1) . Let G1, . . . , G V be conditionally independent Bernoulli random variables given (ϱ1, . . . , ϱ V ), with pr( Gj = 1 | ϱ1, . . . , ϱ V ) = ϱj for j = 1 , . . . , V . Then 
+
+> V
+
+∑
+
+> j=1
+
+Gj ∼ Binomial {V, E (ϱ1)}.
+
+Proof. Consider the probability generating function G(z) = E(z
+
+∑Vj=1 Gj ). By the tower property and the conditional independence of the Gj ’s, 
+
+E
+
+(
+
+z
+
+∑Vj=1 Gj
+
+)
+
+= E
+
+{
+
+E
+
+(
+
+z
+
+∑Vj=1 Gj | ϱ1, . . . , ϱ V
+
+)} 
+
+= E
+
+{ V∏
+
+> j=1
+
+E(zGj | ϱ1, . . . , ϱ V
+
+)}
+
+.
+
+Since E(zGj | ϱ1, . . . , ϱ V ) = 1 −ϱj +ϱj z depends on ϱj only, and the ϱj ’s are independent and identically distributed, 
+
+E
+
+(
+
+z
+
+∑Vj=1 Gj
+
+)
+
+=
+
+> V
+
+∏
+
+> j=1
+
+E(1 − ϱj + ϱj z) = {1 − E(ϱ1) + E(ϱ1)z}V ,
+
+which is the probability generating function of a Binomial {V, E (ϱ1)} random variable. 
+
+Lemma S2. If V ∼ Poisson( μ) and X | V ∼ Binomial( V, p ), then X ∼ Poisson( μp ).Proof. For any integer x ≥ 0, pr( X = x) = ∑
+
+> v≥x
+
+(vx
+
+)
+
+px(1 − p)v−x μve−μ
+
+v! = (μp )x
+
+x! e−μ ∑
+
+> v≥x
+
+{μ(1 − p)}v−x
+
+(v − x)! = (μp )x
+
+x! e−μeμ(1 −p) = (μp )x
+
+x! e−μp ,
+
+which is the probability mass function of a Poisson distribution with mean μp .
+
+S.1.2 Proof of Theorem 1 
+
+The proof is a special case of Theorem 1 in James (1972) with n = 2, a1 = −αq, b1 = σq(αq + θq), 
+
+a2 = −αq + σq(αq + θq) and b2 = (1 − σq)( αq + θq). 27 S.1.3 Proof of Proposition 1 
+
+Conditionally on N , the number of distinct species observed in the nq samples collected at site q is 
+
+Kq,n q =
+
+> N
+
+∑
+
+> j=1
+
+1
+
+( nq
+
+∑
+
+> i=1
+
+˜Yijq > 0
+
+)
+
+=
+
+> N
+
+∑
+
+> j=1
+
+Gjq ,
+
+where the Gjq are independent Bernoulli given the random probabilities 
+
+ϱjq := pr( Gjq = 1 | πjq ) = 1 − pr 
+
+( nq
+
+∑
+
+> i=1
+
+˜Yijq = 0 | πjq 
+
+)
+
+= 1 − (1 − πjq )nq .
+
+The πjq ’s are independent and identically distributed across j, and hence so are the ϱjq ’s, being the same measurable transformation of them. Lemma S1 then gives Kq,n q | N ∼ Binomial {N, E (ϱ1q)}
+
+with 
+
+E(ϱ1q) = 1 − E{(1 − π1q)nq } = 1 − p0,q (αq, θ q, n q) = p1,q (αq, θ q, n q).
+
+Since N ∼ Poisson( λ), Lemma S2 yields Kq,n q ∼ Poisson {λ p 1,q (αq, θ q, n q)}. Conditionally on N , the total number of distinct species observed in n samples is 
+
+Kn =
+
+> N
+
+∑
+
+> j=1
+
+1
+
+( Q∑
+
+> q=1
+> nq
+
+∑
+
+> i=1
+
+˜Yijq > 0
+
+)
+
+=
+
+> N
+
+∑
+
+> j=1
+
+Gj ,
+
+where the Gj are independent Bernoulli given the random probabilities 
+
+ϱj := pr( Gj = 1 | πj1, . . . , π jQ ) = 1 − pr 
+
+( Q∑
+
+> q=1
+> nq
+
+∑
+
+> i=1
+
+˜Yijq = 0 | πj1, . . . , π jQ 
+
+)
+
+= 1 −
+
+> Q
+
+∏
+
+> q=1
+
+(1 − πjq )nq .
+
+The vectors ( πj1, . . . , π jQ ) are independent and identically distributed across j, and hence so are the 
+
+ϱj ’s. Lemma S1 then gives Kn | N ∼ Binomial {N, E (ϱ1)} with 
+
+E(ϱ1) = 1 − E
+
+{ Q∏
+
+> q=1
+
+(1 − π1q)nq
+
+}
+
+= 1 −
+
+> Q
+
+∏
+
+> q=1
+
+E{(1 − π1q)nq } = 1 −
+
+> Q
+
+∏
+
+> q=1
+
+p0,q (αq, θ q, n q) = p1(α, θ, n),
+
+where the second equality uses the independence of the occurrence probabilities across sites. Lemma S2 then gives Kn ∼ Poisson {λ p 1(α, θ, n)}. For 
+
+Lq,n q =
+
+> N
+
+∑
+
+> j=1
+
+1(
+
+> nq
+
+∑
+
+> i=1
+
+˜Wijq > 0) and Ln =
+
+> N
+
+∑
+
+> j=1
+
+1(
+
+> Q
+
+∑
+
+> q=1
+> nq
+
+∑
+
+> i=1
+
+˜Wijq > 0) ,
+
+the proof proceeds in exactly the same way, with πjq replaced by the occupancy probabilities ηjq ind 
+
+∼
+
+Beta {− αq, σ q(αq +θq)}, which are independent across j and across sites. Since σq(αq +θq) = αq +θq(σq), we have E{(1 − η1q)nq } = p0,q (αq, θ q(σq), n q), and it follows that Lq,n q ∼ Poisson {λ p 1,q (αq, θ q(σq), n q)}
+
+and Ln ∼ Poisson {λ p 1(α, θ(σ), n)}.28 S.1.4 Proof of Proposition 2 
+
+Conditionally on N , the number of species shared between two sites q and r, with q̸ = r, is 
+
+Cnq ,n r =
+
+> N
+
+∑
+
+> j=1
+
+Gj,qr , Gj,qr = 1
+
+( nq
+
+∑
+
+> i=1
+
+˜Yijq > 0
+
+)
+
+1
+
+( nr∑
+
+> i=1
+
+˜Yijr > 0
+
+)
+
+,
+
+where the Gj,qr are independent Bernoulli given the random probabilities 
+
+ϱj,qr := pr( Gj,qr = 1 | πjq , π jr ) = 
+
+{
+
+1 − pr 
+
+( nq
+
+∑
+
+> i=1
+
+˜Yijq = 0 | πjq 
+
+)}{ 
+
+1 − pr 
+
+( nr∑
+
+> i=1
+
+˜Yijr = 0 | πjr 
+
+)} 
+
+= {1 − (1 − πjq )nq }{ 1 − (1 − πjr )nr },
+
+the factorization following from the conditional independence of the samples collected at the two sites. The pairs ( πjq , π jr ) are independent and identically distributed across j, and hence so are the ϱj,qr ’s, so Lemma S1 gives Cnq ,n r | N ∼ Binomial {N, E (ϱ1,qr )} with 
+
+E(ϱ1,qr ) = E[{1 − (1 − π1q)nq }{ 1 − (1 − π1r)nr }] = [1 − E{(1 − π1q)nq }][ 1 − E{(1 − π1r)nr }]
+
+= p1,q (αq, θ q, n q) p1,r (αr, θ r, n r),
+
+where the second equality uses the independence of the occurrence probabilities across sites. Since 
+
+N ∼ Poisson( λ), Lemma S2 then yields Cnq ,n r ∼ Poisson {λ p 1,q (αq, θ q, n q) p1,r (αr, θ r, n r)}. For the latent number of shared species, Unq ,n r = ∑Nj=1 1(∑nq 
+
+> i=1
+
+˜Wijq > 0) 1(∑nr 
+
+> i=1
+
+˜Wijr > 0), the proof proceeds in the same way with πjq , π jr replaced by the occupancy probabilities ηjq ind 
+
+∼ Beta {− αq, σ q(αq + θq)}
+
+and ηjr ind 
+
+∼ Beta {− αr, σ r(αr +θr)}, which are independent across j and across sites. Since σq(αq +θq) = 
+
+αq + θq(σq), we have E{(1 − η1q)nq } = p0,q (αq, θ q(σq), n q), giving 
+
+Unq ,n r ∼ Poisson {λ p 1,q (αq, θ q(σq), n q) p1,r (αr, θ r(σr), n r)}.
+
+S.1.5 Proof of Theorem 3 
+
+Let A = {j ∈ { 1, . . . , N } : ∑Qq=1 
+
+∑nq 
+
+> i=1
+
+˜Yijq = 0 } be the set of species unrecorded at all sites, so that 
+
+|A| = N − k given Y . In the MOSAIC model the number of new species that would be discovered in s
+
+additional samples is 
+
+K(n) 
+
+> s
+
+= ∑
+
+> j∈A
+
+1
+
+( Q∑ 
+
+> q=1
+> nq+sq
+
+∑ 
+
+> i=nq+1
+
+˜Yijq > 0
+
+)
+
+= ∑
+
+> j∈A
+
+Gj ,
+
+where the Gj ’s are independent Bernoulli given the random probabilities 
+
+ϱj := pr 
+
+( Q∑ 
+
+> q=1
+> nq+sq
+
+∑ 
+
+> i=nq+1
+
+˜Yijq > 0 | πj1, . . . , π jQ 
+
+)
+
+= 1 −
+
+> Q
+
+∏
+
+> q=1
+
+(1 − πjq )sq .
+
+By Theorem 2 in the main text, the occurrence probabilities of the previously unobserved species satisfy π′ 
+
+> jq
+
+| Y ind 
+
+∼ Beta( −αq, α q + θq + nq), independently across species and sites, so that the ϱj ’s are 29 independent and identically distributed across j ∈ A given Y , with 
+
+E(ϱj | Y ) = 1 −
+
+> Q
+
+∏
+
+> q=1
+
+E{(1 − πjq )sq | Y } = 1 −
+
+> Q
+
+∏
+
+> q=1
+
+p0,q (αq, θ q + nq, s q) = p1(α, θ + n, s).
+
+Lemma S1 then gives K(n) 
+
+> s
+
+| Y , N ∼ Binomial {N − k, p 1(α, θ + n, s)}. By the same theorem, 
+
+N − k | Y ∼ Poisson {λ p 0(α, θ, n)}, so that marginalizing through Lemma S2 gives K(n) 
+
+> s
+
+| Y ∼
+
+Poisson {λ p 0(α, θ, n) p1(α, θ + n, s)}.Let now Aq = {j ∈ { 1, . . . , N } : ∑nq 
+
+> i=1
+
+˜Yijq = 0 } be the set of species not yet recorded at site q, so that |A q| = N − kq; note that Aq contains species that have been recorded at some other site. The number of species new to site q that would be discovered in sq additional samples is 
+
+K(nq ) 
+
+> q,s q
+
+= ∑
+
+> j∈A q
+
+1
+
+( nq +sq
+
+∑ 
+
+> i=nq+1
+
+˜Yijq > 0
+
+)
+
+= ∑
+
+> j∈A q
+
+Gjq ,
+
+where the Gjq ’s are independent Bernoulli given the random probabilities ϱjq := 1 − (1 − πjq )sq , which are independent and identically distributed across j ∈ A q given Y , again by Theorem 2, and satisfy 
+
+E(ϱjq | Y ) = 1 − E{(1 − πjq )sq | Y } = 1 − p0,q (αq, θ q + nq, s q) = p1,q (αq, θ q + nq, s q).
+
+We decompose Aq = A ∪ (Aq \ A ), where Aq \ A is the set of species recorded at some site other than q,whose cardinality k − kq is known given Y . Applying Lemma S1 to each of the two groups separately gives 
+
+K(nq ) 
+
+> q,s q
+
+| Y , N d
+
+= Binomial {N − k, p 1,q (αq, θ q + nq, s q)}
+
++ Binomial {k − kq, p 1,q (αq, θ q + nq, s q)},
+
+the two terms being independent, since they involve disjoint sets of species with independent occurrence probabilities. Marginalizing the first term over N − k | Y ∼ Poisson {λ p 0(α, θ, n)} through Lemma S2, we obtain 
+
+K(nq ) 
+
+> q,s q
+
+| Y d
+
+= Poisson {λ p 0(α, θ, n) p1,q (αq, θ q + nq, s q)}
+
++ Binomial {k − kq, p 1,q (αq, θ q + nq, s q)}.
+
+The latent quantities are obtained along the same lines, replacing the observed data Y with the occupancies W throughout. Let B = {j ∈ { 1, . . . , N } : ∑Qq=1 
+
+∑nq 
+
+> i=1
+
+˜Wijq = 0 } and Bq = {j ∈{1, . . . , N } : ∑nq 
+
+> i=1
+
+˜Wijq = 0 } be the sets of species absent from all samples and from those collected at site q, respectively, so that |B| = N − ℓ and |B q| = N − ℓq, and set 
+
+L(n) 
+
+> s
+
+= ∑
+
+> j∈B
+
+1
+
+( Q∑ 
+
+> q=1
+> nq+sq
+
+∑ 
+
+> i=nq+1
+
+˜Wijq > 0
+
+)
+
+, L(nq ) 
+
+> q,s q
+
+= ∑
+
+> j∈B q
+
+1
+
+( nq +sq
+
+∑ 
+
+> i=nq+1
+
+˜Wijq > 0
+
+)
+
+.
+
+30 Conditioning on W rather than on Y is essential here: a null entry of Y is ambiguous between absence and non-detection, whereas a null entry of W identifies absence, and only in the latter case does the occupancy probability of an unrecorded species admit the conjugate posterior ηjq | W ind 
+
+∼
+
+Beta {− αq, σ q(αq + θq) + nq}. Since σq(αq + θq) = αq + θq(σq), the argument used for the occurrence probabilities applies verbatim with θq replaced by θq(σq), and the number of species absent everywhere satisfies N − ℓ | W ∼ Poisson {λ p 0(α, θ(σ), n)}. Hence 
+
+L(n) 
+
+> s
+
+| W ∼ Poisson {λ p 0(α, θ(σ), n) p1(α, θ(σ) + n, s)},
+
+and, decomposing Bq = B ∪ (Bq \ B ) with |B q \ B| = ℓ − ℓq known given W ,
+
+L(nq ) 
+
+> q,s q
+
+| W d
+
+= Poisson {λ p 0(α, θ(σ), n) p1,q (αq, θ q(σq) + nq, s q)}
+
++ Binomial {ℓ − ℓq, p 1,q (αq, θ q(σq) + nq, s q)},
+
+with the two terms independent, as above. 
+
+S.1.6 Proof of Theorem 4 
+
+Let q̸ = r and define the three disjoint sets of species 
+
+A00 =
+
+{
+
+j ∈ { 1, . . . , N } :
+
+> nq
+
+∑
+
+> i=1
+
+˜Yijq = 0 ,
+
+> nr
+
+∑
+
+> i=1
+
+˜Yijr = 0 
+
+}
+
+,
+
+Aq =
+
+{
+
+j ∈ { 1, . . . , N } :
+
+> nq
+
+∑
+
+> i=1
+
+˜Yijq > 0,
+
+> nr
+
+∑
+
+> i=1
+
+˜Yijr = 0 
+
+}
+
+,
+
+Ar =
+
+{
+
+j ∈ { 1, . . . , N } :
+
+> nq
+
+∑
+
+> i=1
+
+˜Yijq = 0 ,
+
+> nr
+
+∑
+
+> i=1
+
+˜Yijr > 0
+
+}
+
+,
+
+namely the species recorded at neither site, those recorded only at site q and those recorded only at site r. To indicate the detection of species j at site h ∈ { q, r } in the additional samples we use 
+
+Ijh = 1(∑nh+sh 
+
+> i=nh+1
+
+˜Yijh > 0). In the MOSAIC model the number of new species shared between sites q
+
+and r that would be discovered in ( sq, s r) additional samples is 
+
+C(nq ,n r )  
+
+> sq,s r
+
+= ∑
+
+> j∈A 00
+
+Ijq Ijr + ∑
+
+> j∈A q
+
+Ijr + ∑
+
+> j∈A r
+
+Ijq . (S1) For h ∈ { q, r }, the indicators Ijh are independent Bernoulli given the random probabilities ϱjh := 1−(1 −πjh )sh . By Theorem 2 in the main text, the occurrence probabilities of the previously unobserved species satisfy π′ 
+
+> jh
+
+| Y ind 
+
+∼ Beta( −αh, α h + θh + nh), independently across species and sites, so that 
+
+E(ϱjh | Y ) = 1 − E{(1 − πjh )sh | Y } = 1 − p0,h (αh, θ h + nh, s h) = p1,h (αh, θ h + nh, s h),
+
+whereas the species in A00 contribute with random success probability ϱjq ϱjr , whose expectation factorizes by the independence of πjq and πjr ,
+
+E(ϱjq ϱjr | Y ) = p1,q (αq, θ q + nq, s q) p1,r (αr, θ r + nr, s r).
+
+31 Within each of the sets A00 , Aq and Ar these success probabilities are independent and identically distributed across j given Y .It remains to identify the cardinalities of the three sets. Recalling that kq and kr denote the number of species recorded at sites q and r, that cq,r is the number of species recorded at both and that 
+
+kq,r = kq + kr − cq,r , we have |A q| = kq − cq,r and |A r| = kr − cq,r , both known given Y . As for A00 ,we split it into the species that are unrecorded everywhere, which are N − k and hence random, and the species recorded at some site other than q and r, which are k − kq,r and hence known given Y .Applying Lemma S1 to each of the four groups separately, we obtain 
+
+C(nq ,n r )  
+
+> sq,s r
+
+| Y , N d
+
+= Binomial {N − k, p 1,q (αq, θ q + nq, s q) p1,r (αr, θ r + nr, s r)}
+
++ Binomial {k − kq,r , p 1,q (αq, θ q + nq, s q) p1,r (αr, θ r + nr, s r)}
+
++ Binomial {kq − cq,r , p 1,r (αr, θ r + nr, s r)}
+
++ Binomial {kr − cq,r , p 1,q (αq, θ q + nq, s q)},
+
+where the four terms are independent because they involve disjoint sets of species with independent occurrence probabilities. Finally, by Theorem 2 in the main text, N − k | Y ∼ Poisson {λ p 0(α, θ, n)},so that marginalizing the first term through Lemma S2 gives 
+
+C(nq ,n r )  
+
+> sq,s r
+
+| Y d
+
+= Poisson {λ p 0(α, θ, n) p1,q (αq, θ q + nq, s q) p1,r (αr, θ r + nr, s r)}
+
++ Binomial {k − kq,r , p 1,q (αq, θ q + nq, s q) p1,r (αr, θ r + nr, s r)}
+
++ Binomial {kq − cq,r , p 1,r (αr, θ r + nr, s r)}
+
++ Binomial {kr − cq,r , p 1,q (αq, θ q + nq, s q)}.
+
+For the latent number of new shared species U (nq ,n r )  
+
+> sq,s r
+
+the proof proceeds along the same lines, replacing the observed data Y with the occupancies W throughout, as in the proof of Theorem 3. The three sets are now defined by absence rather than by non-detection, namely 
+
+B00 =
+
+{
+
+j ∈ { 1, . . . , N } :
+
+> nq
+
+∑
+
+> i=1
+
+˜Wijq = 0 ,
+
+> nr
+
+∑
+
+> i=1
+
+˜Wijr = 0 
+
+}
+
+,
+
+Bq =
+
+{
+
+j ∈ { 1, . . . , N } :
+
+> nq
+
+∑
+
+> i=1
+
+˜Wijq > 0,
+
+> nr
+
+∑
+
+> i=1
+
+˜Wijr = 0 
+
+}
+
+,
+
+Br =
+
+{
+
+j ∈ { 1, . . . , N } :
+
+> nq
+
+∑
+
+> i=1
+
+˜Wijq = 0 ,
+
+> nr
+
+∑
+
+> i=1
+
+˜Wijr > 0
+
+}
+
+;the target is (S1) with the indicators ˜Ijh = 1(∑nh+sh 
+
+> i=nh+1
+
+˜Wijh > 0) in place of the Ijh ; and the occupancy probabilities of the species absent from site h satisfy ηjh | W ind 
+
+∼ Beta {− αh, σ h(αh + θh) + nh}. Since 
+
+σh(αh + θh) = αh + θh(σh), every occurrence of θh is replaced by θh(σh), including in the Poisson mean, which becomes λ p 0(α, θ(σ), n) because N − ℓ | W ∼ Poisson {λ p 0(α, θ(σ), n)}. The four cardinalities become N − ℓ, ℓ − ℓq,r , ℓq − uq,r and ℓr − uq,r , with ℓq,r = ℓq + ℓr − uq,r , all determined by W .32 S.2 Derivation of the pEFPF 
+
+In this section, we obtain the analytical formulation for the marginal distribution of the proposed approach reported in (5) in the main paper. Let ˜Mjq = ∑nq 
+
+> i=1
+
+˜Yijq , for j = 1 , . . . , N and q = 1 , . . . , Q ,be the number of samples from site q in which species ˜Xj is recorded, and let ˜M = ( ˜Mjq ) be the corresponding N × Q matrix, with realization ˜m. These extend the observed frequencies M of the main text to the complete species list, and the two coincide once the N − k all-zero rows of ˜m are discarded, up to a permutation of the columns. Conditionally on the parameters N , α, θ and on π = ( πjq : j = 1 , . . . , N ; q = 1 , . . . , Q ), the likelihood function for the event ˜M = ˜ m is 
+
+L(π, N ; ˜ m) = 
+
+> Q
+
+∏
+
+> q=1
+> N
+
+∏
+
+> j=1
+
+π ˜mjq  
+
+> jq
+
+(1 − πjq )nq − ˜mjq ,
+
+and integrating over π we obtain the marginal probability pr( ˜M = ˜ m) = 
+
+> Q
+
+∏
+
+> q=1
+> N
+
+∏
+
+> j=1
+
+∫ 10
+
+π ˜mjq  
+
+> jq
+
+(1 − πjq )nq − ˜mjq Γ( θq)Γ( θq + αq)Γ( −αq) π−αq −1 
+
+> jq
+
+(1 − πjq )αq +θq −1 dπjq 
+
+=
+
+> Q
+
+∏
+
+> q=1
+
+{ Γ( θq)Γ( θq + αq)Γ( −αq)Γ( θq + nq)
+
+}N N∏
+
+> j=1
+
+Γ( ˜ mjq − αq)Γ( nq − ˜mjq + αq + θq)
+
+ .
+
+The event ( M = m, K n = k) obtains when exactly k rows of ˜ m are nonzero and carry the observed frequencies m, the remaining N −k rows being identically zero. Since the species labels are exchangeable, the (Nk
+
+) choices of which rows are the nonzero ones all contribute the same probability, and it suffices to evaluate the display above at ( ˜ m1q, . . . , ˜mN q ) = ( m1q, . . . , m kq , 0, . . . , 0) for every q = 1 , . . . , Q and multiply by (Nk
+
+). Hence pr( M = m, K n = k | N, α, θ) = 
+
+(Nk
+
+) Q∏
+
+> q=1
+
+[ { Γ( θq)Γ( θq + αq)Γ( −αq)Γ( θq + nq)
+
+}N
+
+× { Γ( −αq)Γ( nq + θq + αq)}N −k
+
+×
+
+> k
+
+∏
+
+> j=1
+
+Γ( mjq − αq)Γ( nq − mjq + αq + θq)
+
+]
+
+,
+
+which, expressing the gamma ratios through Pochhammer symbols, becomes pr( M = m, K n = k | N, α, θ) = 
+
+(Nk
+
+) Q∏
+
+> q=1
+
+[ { (θq + αq)nq
+
+(θq)nq
+
+}N { −αq
+
+(θq + αq)nq
+
+}k
+
+×
+
+> k
+
+∏
+
+> j=1
+
+(θq + αq)nq −mjq (1 − αq)mjq −1
+
+]
+
+.
+
+33 Finally, marginalizing with respect to N ∼ Poisson( λ) we obtain pr( M = m, K n = k | λ, α, θ) = = ∑ 
+
+> N≥k
+
+e−λ λN
+
+N !
+
+(Nk
+
+) Q∏
+
+> q=1
+
+[ { (θq + αq)nq
+
+(θq)nq
+
+}N { −αq
+
+(θq + αq)nq
+
+}k
+
+×
+
+> k
+
+∏
+
+> j=1
+
+(θq + αq)nq −mjq (1 − αq)mjq −1
+
+]
+
+= e−λλk
+
+k!
+
+∑ 
+
+> N≥k
+
+λN −k
+
+(N − k)! 
+
+> Q
+
+∏
+
+> q=1
+
+[ { (θq + αq)nq
+
+(θq)nq
+
+}N −k { −αq
+
+(θq)nq
+
+}k
+
+×
+
+> k
+
+∏
+
+> j=1
+
+(θq + αq)nq −mjq (1 − αq)mjq −1
+
+]
+
+= e−λλk
+
+k!
+
+ ∑ 
+
+> N≥k
+
+λN −k
+
+(N − k)! 
+
+> Q
+
+∏
+
+> q=1
+
+{ (θq + αq)nq
+
+(θq)nq
+
+}N −k
+
+×
+
+> Q
+
+∏
+
+> q=1
+
+{ −αq
+
+(θq)nq
+
+}k k∏
+
+> j=1
+
+(θq + αq)nq −mjq (1 − αq)mjq −1
+
+
+
+= λk
+
+k! exp 
+
+−λ
+
+1 −
+
+> Q
+
+∏
+
+> q=1
+
+(αq + θq)nq
+
+(θq)nq
+
+
+
+×
+
+> Q
+
+∏
+
+> q=1
+
+{ −αq
+
+(θq)nq
+
+}k k∏
+
+> j=1
+
+(1 − αq)mjq −1(αq + θq)nq −mjq 
+
+ .
+
+S.2.1 Posterior computation 
+
+Posterior computation for the proposed MOSAIC model proceeds through a Markov chain Monte Carlo (MCMC) algorithm. The procedure is facilitated by the explicit relationship between the partially exchangeable BB and MOSAIC models established in Theorem 1, and by the availability of the closed-form pEFPF in (5). Indeed, draws from the posterior distribution of ( α, θ) can be obtained via any collapsed Metropolis–Hastings algorithm leveraging the marginal likelihood in (5). Specifically, we obtain posterior samples of the regression coefficients ζ and of the precision parameters ϕ using Hamiltonian Monte Carlo implemented in the probabilistic programming language Stan (Carpenter et al., 2017), and then map these samples through (6) to recover posterior draws of ( α, θ). We recall that the posterior of N has a closed-form expression, as stated in Theorem 2, so that no MCMC step is needed to obtain posterior draws of the number of unseen species. To sample the occupancy and detectability components ηq and γq, the sampler relies on a data augmentation strategy based on the augmented arrays ˜W and ˜T . Conditional on N and on these augmented data, the full conditional distributions of ηjq and γjq are beta by conjugacy, which enables straightforward Gibbs updates. The full sampling procedure is summarized in Algorithm 1, which is stated for the Poisson formulation with 
+
+λ fixed, for the sake of simplicity. The extension to a random λ with a Gamma prior is straightforward 34 Algorithm 1 Posterior sampling algorithm for the MOSAIC model 1. Sample B draws of ζ and ϕ from their posterior through a collapsed HMC algorithm targeting the marginal likelihood (5). 2. Set θ(b) = ϕ(b) and α(b) = −μ(b)ϕ(b), with μ(b) = 1 /(1 + e−Zζ (b)
+
+), for b = 1 , . . . , B .3. For b = 1 , . . . , B , sample the number of unseen species N ′(b) ∼ Poisson {λ p 0(α(b), θ(b), n)} and set N (b) = k + N ′(b).4. For each draw b = 1 , . . . , B and each site q = 1 , . . . , Q (in parallel), suppressing the index b for readability and setting ˜ yijq = yijq for the observed species j = 1 , . . . , k and ˜ yijq = 0 for the unseen ones j = k + 1 , . . . , N :(i) for i = 1 , . . . , n q and j = 1 , . . . , N , if ˜ yijq = 1 then set ˜Wijq = ˜Tijq = 1, otherwise sample ( ˜Wijq , ˜Tijq ) from the categorical distribution ( ˜Wijq , ˜Tijq ) = 
+
+
+
+(0 , 0) with probability proportional to (1 − ηjq )(1 − γjq ),
+
+(0 , 1) with probability proportional to (1 − ηjq )γjq ,
+
+(1 , 0) with probability proportional to ηjq (1 − γjq ); (ii) for j = 1 , . . . , N , sample 
+
+ηjq | − ∼ Beta 
+
+{
+
+− αq + ∑nq 
+
+> i=1
+
+˜Wijq , σ q(αq + θq) + nq − ∑nq 
+
+> i=1
+
+˜Wijq 
+
+}
+
+,γjq | − ∼ Beta 
+
+{
+
+− αq + σq(αq + θq) + ∑nq 
+
+> i=1
+
+˜Tijq , (1 − σq)( αq + θq) + nq − ∑nq 
+
+> i=1
+
+˜Tijq 
+
+}
+
+.
+
+and requires only two modifications: the marginal likelihood in step 1 and the sampling distribution of 
+
+N ′ in step 3 are replaced by their negative binomial counterparts, reported in Section S.3. 
+
+# S.3 The negative binomial extension 
+
+S.3.1 Extension of theoretical results 
+
+In this section we adapt the results of Section 3.1 of the main paper to the case in which the total number of species follows a negative binomial distribution, i.e. N ∼ NegBinomial( r0, ν 0) with size 
+
+r0 > 0 and mean ν0 > 0. This is equivalent to assuming N ∼ Poisson( λ) and λ ∼ Gamma( r0, r 0/ν 0). All the remaining assumptions of the MOSAIC model are left unchanged. The results below are obtained exactly as their Poisson counterparts, the only difference being that Lemma S2 is replaced by the following thinning property of the negative binomial distribution. 
+
+Lemma S3. If V ∼ NegBinomial( r, μ ) and X | V ∼ Binomial( V, p ), then X ∼ NegBinomial( r, μp ).
+
+35 Proof. Let ϕ = μ/ (μ+r), so that the probability generating function of V is E(zV ) = {(1 −ϕ)/(1 −ϕz )}r.Then 
+
+E(zX ) = E{E(zX | V )} = E{(1 − p + pz )V } = 
+
+> (
+
+1 − ϕ
+
+1 − ϕ(1 − p) − ϕpz 
+
+> )r
+
+= 
+
+> (
+
+1 − ϕ′
+
+1 − ϕ′z
+
+> )r
+
+,
+
+with ϕ′ = ϕp/ {1 − ϕ(1 − p)}, since 1 − ϕ′ = (1 − ϕ)/{1 − ϕ(1 − p)}. Hence X is negative binomial with size r and mean rϕ ′/(1 − ϕ′) = rϕp/ (1 − ϕ) = μp .We first state the analogue of Theorem 2 in the main paper, which is a special case of a more general result in Ghilotti et al. (2025). Recall that N ′ = N − k denotes the number of species unseen given Y and that L′ = N − ℓ denotes the number of species never present given W .
+
+Proposition S1. Let Y follow the negative binomial specification of the MOSAIC model with parameters 
+
+(r0, ν 0, α, θ, σ), then 
+
+N ′ | Y ∼ NegBinomial( r0 + k, μ 0), μ0 = (r0 + k) p0(α, θ, n)
+
+r0/ν 0 + p1(α, θ, n) ,
+
+whereas the posterior distributions of the occurrence probabilities π∗ 
+
+> jq
+
+and π′ 
+
+> jq
+
+are those given in Theorem 2, and are therefore unchanged. 
+
+Proposition S2 (A priori distinct species) . Under the MOSAIC model with N ∼ NegBinomial( r0, ν 0),the number of distinct species observed at site q and across sites is distributed as 
+
+Kq,n q ∼ NegBinomial {r0, ν 0 p1,q (αq, θ q, n q)}, Kn ∼ NegBinomial {r0, ν 0 p1(α, θ, n)},
+
+for q = 1 , . . . , Q , whereas the number of distinct species present at site q and across sites is distributed as 
+
+Lq,n q ∼ NegBinomial {r0, ν 0 p1,q (αq, θ q(σq), n q)}, Ln ∼ NegBinomial {r0, ν 0 p1(α, θ(σ), n)}.
+
+Proof. The proof of Proposition 1 shows that Kq,n q | N ∼ Binomial {N, p 1,q (αq, θ q, n q)} and Kn | N ∼
+
+Binomial {N, p 1(α, θ, n)}, since that step does not involve the law of N . The statements then follow from Lemma S3 in place of Lemma S2. For the latent counterparts the same proof applies with θq
+
+replaced by θq(σq). The simple interpretation of the Poisson case carries over: E(Kn) = ν0 p1(α, θ, n), with ν0 the expected total number of species and p1(α, θ, n) the expected fraction of these that is observed under sampling effort n.
+
+Proposition S3 (A priori shared species) . Under the MOSAIC model with N ∼ NegBinomial( r0, ν 0),the number of species shared between sites q and r, with q̸ = r, is distributed as 
+
+Cnq ,n r ∼ NegBinomial {r0, ν 0 p1,q (αq, θ q, n q) p1,r (αr, θ r, n r)},
+
+36 whereas its latent counterpart is distributed as 
+
+Unq ,n r ∼ NegBinomial {r0, ν 0 p1,q (αq, θ q(σq), n q) p1,r (αr, θ r(σr), n r)}.
+
+Proof. As in the proof of Proposition 2, Cnq ,n r | N ∼ Binomial {N, p 1,q (αq, θ q, n q)p1,r (αr, θ r, n r)}, and the statement follows from Lemma S3; the latent counterpart is obtained by replacing θq and θr with 
+
+θq(σq) and θr(σr) respectively. 
+
+Proposition S4 (A posteriori distinct species) . Under the MOSAIC model with N ∼ NegBinomial( r0, ν 0),the number of new species discovered at site q and across sites satisfies 
+
+K(nq ) 
+
+> q,s q
+
+| Y d
+
+= NegBinomial {r0 + k, μ 0 p1,q (αq, θ q + nq, s q)}
+
++ Binomial {k − kq, p 1,q (αq, θ q + nq, s q)}, (q = 1 , . . . , Q ),K(n) 
+
+> s
+
+| Y ∼ NegBinomial {r0 + k, μ 0 p1(α, θ + n, s)},
+
+with μ0 as in Proposition S1, whereas their latent counterparts satisfy 
+
+L(nq ) 
+
+> q,s q
+
+| W d
+
+= NegBinomial {r0 + ℓ, μ W 
+
+> 0
+
+p1,q (αq, θ q(σq) + nq, s q)}
+
++ Binomial {ℓ − ℓq, p 1,q (αq, θ q(σq) + nq, s q)}, (q = 1 , . . . , Q ),L(n) 
+
+> s
+
+| W ∼ NegBinomial {r0 + ℓ, μ W 
+
+> 0
+
+p1(α, θ(σ) + n, s)},
+
+with 
+
+μW 
+
+> 0
+
+= (r0 + ℓ) p0(α, θ(σ), n)
+
+r0/ν 0 + p1(α, θ(σ), n) .
+
+Proof. The proof of Theorem 3 applies up to the point where the number of unseen species is integrated out: conditionally on N ′ one has K(n) 
+
+> s
+
+| N ′, Y ∼ Binomial {N ′, p 1(α, θ + n, s)}, and the species new to site q split into the N ′ species unrecorded everywhere and the k − kq species recorded at some other site but not at q, each contributing with probability p1,q (αq, θ q + nq, s q). Since 
+
+N ′ | Y ∼ NegBinomial( r0 + k, μ 0) by Proposition S1, applying Lemma S3 instead of Lemma S2 to the first group gives the stated expressions, the binomial term being unchanged because k − kq is known given Y . The latent counterparts are obtained analogously, by replacing Y with W , θ with θ(σ) and (k, k q, N ′, μ 0) with ( ℓ, ℓ q, L ′, μ W 
+
+> 0
+
+). 
+
+Proposition S5 (A posteriori shared species) . Under the MOSAIC model with N ∼ NegBinomial( r0, ν 0),the number of species shared between sites q and r, with q̸ = r, that would be discovered in (sq, s r)
+
+additional samples satisfies 
+
+C(nq ,n r )  
+
+> sq,s r
+
+| Y d
+
+= NegBinomial {r0 + k, μ 0 p1,q (αq, θ q + nq, s q) p1,r (αr, θ r + nr, s r)}
+
++ Binomial {k − kq,r , p 1,q (αq, θ q + nq, s q) p1,r (αr, θ r + nr, s r)}
+
++ Binomial {kq − cq,r , p 1,r (αr, θ r + nr, s r)}
+
++ Binomial {kr − cq,r , p 1,q (αq, θ q + nq, s q)},
+
+37 with μ0 as in Proposition S1, whereas its latent counterpart satisfies 
+
+U (nq ,n r )  
+
+> sq,s r
+
+| W d
+
+= NegBinomial {r0 + ℓ, μ W 
+
+> 0
+
+p1,q (αq, θ q(σq) + nq, s q) p1,r (αr, θ r(σr) + nr, s r)}
+
++ Binomial {ℓ − ℓq,r , p 1,q (αq, θ q(σq) + nq, s q) p1,r (αr, θ r(σr) + nr, s r)}
+
++ Binomial {ℓq − uq,r , p 1,r (αr, θ r(σr) + nr, s r)}
+
++ Binomial {ℓr − uq,r , p 1,q (αq, θ q(σq) + nq, s q)},
+
+with μW 
+
+> 0
+
+as in Proposition S4. Proof. Identical to the proof of Theorem 4: the four groups of species and the corresponding success probabilities are unaffected by the law of N , and only the first term, which involves the N ′ species unrecorded everywhere, requires integrating out N ′. Since N ′ | Y ∼ NegBinomial( r0 + k, μ 0) by Proposition S1, Lemma S3 replaces Lemma S2 in that step. The latent counterpart follows in the same way, with θ replaced by θ(σ) and ( k, k q, k r, c q,r , k q,r , N ′, μ 0) replaced by ( ℓ, ℓ q, ℓ r, u q,r , ℓ q,r , L ′, μ W 
+
+> 0
+
+). 
+
+S.3.2 Derivation of the pEFPF 
+
+In this section, we obtain the analytical formulation for the marginal distribution of the proposed 
+
+MOSAIC model under the assumption N ∼ NegBinomial( r0, ν 0). Let πn(m; r0, ν 0, θ, α) = pr( M =
+
+m, K n = k | r0, ν 0, θ, α), then adapting the results presented in Section S.2, the pEFPF is 
+
+πn(m; r0, ν 0, θ, α) = 
+
+(k + r0 − 1
+
+k
+
+) ( r0
+
+ν0 + r0
+
+)r0
+
+1 −
+
+( ν0
+
+ν0 + r0
+
+) Q∏
+
+> q=1
+
+(θq + αq)nq
+
+(θq)nq
+
+
+
+> −k−r0
+
+××
+
+( ν0
+
+ν0 + r0
+
+)k Q∏
+
+> q=1
+
+{ −αq
+
+(θq)nq
+
+}k k∏
+
+> j=1
+
+(1 − αq)mjq −1(αq + θq)nq −mjq .
+
+(S2) 
+
+Proof. Adapting the calculation in Section S.2, given the following expression 
+
+πn(m; N, α, θ) = 
+
+(Nk
+
+) Q∏
+
+> q=1
+
+{ (θq + αq)nq
+
+(θq)nq
+
+}N { −αq
+
+(θq + αq)nq
+
+}k k∏
+
+> j=1
+
+(θq + αq)nq −mjq (1 − αq)mjq −1,
+
+38 we need to marginalize with respect to N ∼ NegBinomial( r0, ν 0), hence 
+
+πn(m; r0, ν 0, α, θ) = ∑ 
+
+> N≥k
+
+(N + r0 − 1
+
+N
+
+) ( ν0
+
+ν0 + r0
+
+)N ( r0
+
+r0 + ν0
+
+)r0
+
+(Nk
+
+) Q∏
+
+> q=1
+
+{ (θq + αq)nq
+
+(θq)nq
+
+}N
+
+××
+
+{ −αq
+
+(θq + αq)nq
+
+}k k∏
+
+> j=1
+
+(θq + αq)nq −mjq (1 − αq)mjq −1
+
+= 1
+
+k!( r0 − 1)! 
+
+
+
+> Q
+
+∏
+
+> q=1
+
+{ −αq
+
+(θq + αq)nq
+
+}k k∏
+
+> j=1
+
+(θq + αq)nq −mjq (1 − αq)mjq −1
+
+ ××
+
+( r0
+
+r0 + ν0
+
+)r0 ∑ 
+
+> N≥k
+
+(N + r0 − 1)! (N − k)! 
+
+( ν0
+
+ν0 + r0
+
+)N Q∏
+
+> q=1
+
+{ (θq + αq)nq
+
+(θq)nq
+
+}N
+
+= 1
+
+k!( r0 − 1)! 
+
+
+
+> Q
+
+∏
+
+> q=1
+
+{ −αq
+
+(θq + αq)nq
+
+}k k∏
+
+> j=1
+
+(θq + αq)nq −mjq (1 − αq)mjq −1
+
+ ××
+
+( r0
+
+r0 + ν0
+
+)r0 ∑ 
+
+> N≥0
+
+(N + k + r0 − 1)! 
+
+N !
+
+( ν0
+
+ν0 + r0
+
+)N +k Q∏
+
+> q=1
+
+{ (θq + αq)nq
+
+(θq)nq
+
+}N +k
+
+.
+
+Since −αq > 0 and αq + θq > 0, we have 0 < ν 0/(ν0 + r0) ∏Qq=1 (θq + αq)nq /(θq)nq < 1, thus we recognize the probability mass function of a negative binomial and the latter equation simplifies to 
+
+πn(m; r0, ν 0,α, θ) = 
+
+
+
+> Q
+
+∏
+
+> q=1
+
+{ −αq
+
+(θq + αq)nq
+
+}k k∏
+
+> j=1
+
+(θq + αq)nq −mjq (1 − αq)mjq −1
+
+ (k + r0 − 1)! 
+
+k!( r0 − 1)! 
+
+×
+
+( r0
+
+r0 + ν0
+
+)r0 ( ν0
+
+ν0 + r0
+
+)k Q∏
+
+> q=1
+
+{ (θq + αq)nq
+
+(θq)nq
+
+}k 1 − ν0
+
+ν0 + r0
+
+> Q
+
+∏
+
+> q=1
+
+(θq + αq)nq
+
+(θq)nq
+
+
+
+> −k−r0
+
+.
+
+# S.4 Additional results for simulation study 
+
+S.4.1 Additional experiments 
+
+To assess the performance of the MOSAIC model in predicting K(nq ) 
+
+> q,s q
+
+as a function of the number of sites, we simulate data under the same settings as scenario A in Section 4 of the main paper, considering different values for Q, namely Q ∈ { 5, 8, 10 , 15 , 20 , 25 , 30 }. Figure S1 shows the predictive performance compared with the exchangeable negative binomial mixture of beta Bernoulli. As Q increases, the improved predictive performance of MOSAIC relative to analyzing data from each site separately becomes increasingly apparent. To assess whether Bayesian posterior distributions are well calibrated, we evaluate the frequentist coverage of posterior credible intervals for the regression coefficients ζ and dispersion parameters ϕ.These parameters are directly interpretable in the MOSAIC framework - ζ governs the mean structure, while ϕ controls site-level dispersion - making reliable uncertainty quantification essential. We simulate 39 Figure S1: Average MSE in predicting K(nq ) 
+
+> q,s q
+
+, averaged over l = 1 , . . . , s q, with sq = 10, for the MOSAIC 
+
+model and the exchangeable negative binomial mixture of beta-Bernoulli models ( BB ) across different values of Q.Table S1: Coverage probabilities for ζ and ϕ under two values of ν0.Scenario ζ1 ζ2 ζ3
+
+ν0 = 3000 0.93 0.95 0.95 
+
+ν0 = 5000 0.93 0.95 0.96 
+
+Scenario ϕ1 ϕ2 ϕ3 ϕ4 ϕ5 ϕ6 ϕ7 ϕ8 ϕ9 ϕ10 ϕ11 ϕ12 ϕ13 ϕ14 ϕ15 
+
+ν0 = 3000 0.95 0.94 0.90 0.96 0.93 0.93 0.95 0.93 0.94 0.94 0.93 0.94 0.95 0.94 0.96 
+
+ν0 = 5000 0.95 0.94 0.91 0.95 0.93 0.92 0.94 0.94 0.94 0.94 0.95 0.95 0.94 0.94 0.94 
+
+the data under the MOSAIC model using the same parameter settings as in the main paper with 
+
+Q = 15 sites, but consider two different values for the mean of the negative binomial distribution from which N is drawn, namely 3000 and 5000. We generated 500 datasets and for each replicate compute 95% posterior credible intervals for each component of ζ and ϕ. Coverage is then estimated as the proportion of times the true parameter values are contained within these intervals. The results, reported in Table S1, show coverage close to the nominal level for both parameters, with moderate variability across components. 40 S.4.2 Additional plots 
+
+Figure S2: Posterior summaries of the rarefaction surfaces for shared species across site pairs, showing the upper bounds of the 95% credible intervals (bottom panels), posterior means (middle panels), and lower bounds (top panels). 41 S.5 Additional details and results on fungal biodiversity application 
+
+S.5.1 Additional details on fungi data 
+
+Figure S3: Map of sampling locations for the fungi data analysis colored by climatic zones. Table S2: Labels of sampling locations and sample sizes for the fungi data analysis. 
+
+Temperate Polar-Continental 
+
+Site Name nq Site Name nq
+
+ABE Aberystwyth (Wales) 17 ABI Abisko (Sweden) 36 BAN Bangor (Wales) 17 CAM Sandgerøi (Iceland) 12 BAV Waldhäuser (Germany) 103 CHA Cambridge Bay (Canada) 18 CBN Urdorf (Switzerland) 57 EDM Edmonton (Canada) 42 EUR Wien (Austria) 38 FTS Fetsund (Norway) 62 HAI Hainich (Germany) 93 IGL Memramcook (Canada) 16 INR Bordeaux (France) 45 KEV Kevon (Finland) 33 KLA Klagenfurt (Austria) 35 NUU Nuuk (Greenland) 27 ROS Rostov-on-Don (Russia) 32 PEC Krasnoyarsk (Russia) 13 SAN Santa Cruz (US) 34 PRI Wranger Island (Russia) 51 SCH Schwarzwald (Germany) 40 PRM Dikimdzha (Russia) 13 STE Steigerwald (Germany) 72 SVA Svalbard (Norway) 24 WOR Worcester (England) 71 TAR Tartu (Estonia) 78 ZAG Zagreb (Croatia) 69 TOO Toolik (Alaska) 55 ZRC Zurich I (Switzerland) 40 TUR Turku (Finland) 39 ZUR Zurich II (Switzerland) 70 VII Viikki (Finland) 34 YAK Terney (Russia) 24 ZAC Zackenberg (Greenland) 15 
+
+42 S.5.2 Additional results on fungal biodiversity application 
+
+We provide rarefaction curves for the latent total number of shared species Unq ,n r for pairs of sites with the same sample sizes. Figure S5 shows results for three pairs under three values of σ ∈ { 0.1, 0.4, 0.95 }
+
+for all sites. The results are analogous to those for site-specific rarefaction curves in the main paper: lower detectability yields notably higher expected shared species counts. 
+
+Figure S4: Posterior mean of proposed β-similarity for all sites grouped by climatic zones for different values of σq = σ ∈ { 0.3, 0.6, 0.9} for all q = 1 , . . . , 34. 
+
+Figure S5: Posterior mean and 95% credible intervals for simplified rarefaction curves for the latent total number of shared species Unq ,n r for different values of σ.
+
+S.5.3 Additional experiments for fungal biodiversity application 
+
+We perform additional experiments to evaluate the out of sample predictive performance of the MOSAIC 
+
+model for the number of shared species on the fungi data. We split the data into training and test sets, using 70% of the observations in each site for training and the remaining for test, so that each training set size is proportional to nq. We fit MOSAIC using the same hyperparameters as in the main paper on 43 HAI SAN BAV FTS VII YAK 
+
+nq 65 23 72 43 23 16 
+
+sq 28 11 31 19 11 8Table S3: Training ( nq) and test ( sq) sample sizes for each site. the training data. Based on the model estimates, we then predict the number of shared species for pairs of sites in the test set, that is, C(nq ,n r )  
+
+> sq,s r
+
+. Figure S6 displays the rarefaction surfaces for shared species on the test set along with the corresponding model-based predictions for three illustrative pairs of sites: a pair of temperate locations Hainich (HAI) - Santa Cruz (SAN); a pair of polar-continental locations Viikki (VII) - Terney (YAK); and a cross-zone pair Waldhäuser (BAV) - Fetsund (FTS). The test set sizes, summarized in Table S3, vary across sites in proportion to their sample sizes, allowing evaluation of predictive performance across a range of sampling efforts. Viikki, a district in northeastern Helsinki, and Terney, a remote coastal site in the Sikhote-Alin region of the Russian Far East, are the pair with the fewest shared species. While both sites lie at similar latitudes, they differ markedly in vegetation and degree of human influence: Terney is characterized by mixed forests dominated by Korean pine and Mongolian oak under a climate influenced by the Sea of Japan, whereas Viikki is located within the urban research campus of the University of Helsinki. In contrast, the two European locations -Waldhäuser and Fetsund - share the highest number of species in common. The posterior mean closely follows the empirical surfaces for all pairs, indicating strong agreement between observed and predicted values. 
+
+Figure S6: Empirical rarefaction surfaces for shared species in the test set, together with the corre-sponding posterior mean estimates of C(nq ,n r )  
+
+> sq,s r
+
+.44

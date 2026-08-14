@@ -41,17 +41,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-07-16 ~ 2026-08-14</span>
+      <span class="dpr-home-dashboard-kicker">2026-08-14</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 9 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 2 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
     <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>5</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>4</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>1</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>1</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-08-14 01:23:16 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-08-14 21:24:58 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -62,7 +62,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日共读9篇论文，精读5篇、速读4篇，聚焦微生物组组成分析与基因组比对工具。最值得关注的两项精读研究：银纳米颗粒暴露下肠道微生物组的组成规律，以及高维微生物组差异的bootstrap统计检验方法。建议普通读者优先从统计方法入手，理解如何用稳健工具分析复杂微生物数据。</p>
+<p>今日阅读论文2篇，其中精读1篇、速读1篇。最值得关注的是贝叶斯多样性特征分配模型（8.0分），涉及不完美检测下的Beta多样性推断。建议普通读者优先精读这篇高分论文，理解其方法框架即可。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -71,12 +71,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">精读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">5 篇</strong>
+    <strong class="dpr-home-dashboard-count">1 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="CoLaDAG: Compositional Latent Log-ratio DAG Analysis of the Gut Microbiome under Silver Nanoparticle Exposure">CoLaDAG: Compositional Latent Log-ratio DAG Analysis of the Gut Microbiome under Silver Nanoparticle Exposure</span></li><li><span class="dpr-home-dashboard-paper-title" title="Testing Microbiome Community Differences in High Dimensions: A Bootstrap Approach for Compositional Data">Testing Microbiome Community Differences in High Dimensions: A Bootstrap Approach for Compositional Data</span></li><li><span class="dpr-home-dashboard-paper-title" title="Beyond Attention: Signed Integrated Gradients Attribution in a BiomeGPT-Style Microbiome Transformer">Beyond Attention: Signed Integrated Gradients Attribution in a BiomeGPT-Style Microbiome Transformer</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Bayesian inference on beta diversity via feature allocation models with imperfect detection">Bayesian inference on beta diversity via feature allocation models with imperfect detection</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">microbiome <strong>5</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">microbiome <strong>1</strong></span></div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -84,12 +84,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">4 篇</strong>
+    <strong class="dpr-home-dashboard-count">1 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="IndelFreeAligner: A Streaming Aligner for Comprehensive Gapless Alignment Against Terabase-Scale References">IndelFreeAligner: A Streaming Aligner for Comprehensive Gapless Alignment Against Terabase-Scale References</span></li><li><span class="dpr-home-dashboard-paper-title" title="Seed-applied multi-kingdom synthetic communities selectively reshape bacterial communities and highlight key criteria for strain selection">Seed-applied multi-kingdom synthetic communities selectively reshape bacterial communities and highlight key criteria for strain selection</span></li><li><span class="dpr-home-dashboard-paper-title" title="PPanGGOLiN V2: technical enhancement and extended functionalities for prokaryotic pangenome analysis">PPanGGOLiN V2: technical enhancement and extended functionalities for prokaryotic pangenome analysis</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Bayesian Distilled Clustering for High-Dimensional Mixture Models">Bayesian Distilled Clustering for High-Dimensional Mixture Models</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">microbiome <strong>4</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">microbiome <strong>1</strong></span></div>
 </section>
 </div>
 

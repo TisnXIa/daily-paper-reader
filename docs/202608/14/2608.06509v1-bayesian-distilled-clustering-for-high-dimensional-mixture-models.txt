@@ -1,0 +1,1026 @@
+Title: Bayesian Distilled Clustering for High-Dimensional Mixture Models
+
+URL Source: https://arxiv.org/pdf/2608.06509v1
+
+Published Time: Mon, 10 Aug 2026 00:07:03 GMT
+
+Number of Pages: 21
+
+Markdown Content:
+# Bayesian Distilled Clustering for High-Dimensional Mixture Models 
+
+Pulkita Aggarwal ∗1 and Abhishek Bhattacharjee †21,2 Abstract Math Institute 
+
+> 1
+
+pulkitaaggarwal09@gmail.com 
+
+> 2
+
+abhishek@theabstractmath.com 
+
+August 10, 2026 
+
+# 1 Introduction 
+
+Latent subgroup analysis is a central problem in modern statistics, with applications in genomics, precision medicine, social science, and large-scale observational studies. In these settings, the observed population is often heterogeneous, and the scientific objective is not merely to predict an outcome, but to identify interpretable subpopulations with distinct covariate structure, response behavior, or dependence patterns. Mixture models provide a natural probabilistic framework for this task. They allow the data-generating distribution to be represented as a weighted combination of subgroup-specific laws, with the subgroup label treated as an unobserved random variable. The high-dimensional regime presents a more delicate problem. When the number of measured covariates is large, only a small subset of variables may be responsible for meaningful subgroup sep-aration. The remaining variables may contain measurement noise, nuisance variation, or correlation induced by the relevant covariates, but they need not carry independent information about subgroup membership. Standard clustering methods often treat all variables as exchangeable inputs. In high dimensions, this can be statistically inefficient and scientifically misleading: irrelevant coordinates accumulate noise, distort distances, and may obscure the low-dimensional structure that defines the latent classes. This paper develops a Bayesian distilled clustering framework for high-dimensional mixture models. The basic premise is that clustering should be carried out in a statistically justified subspace rather than in the full ambient space. The proposed method first uses a Bayesian variable-selection model to estimate posterior inclusion probabilities for the covariates. These probabilities quantify the evidence that each covariate contributes to subgroup separation or subgroup-specific response behavior. A distilled covariate set is then obtained by controlling the posterior expected false-discovery proportion. Clustering is subsequently performed only on this selected subspace. Finally, within each inferred subgroup, conditional-independence diagnostics are used to study subgroup-specific dependence among the selected variables. The formulation is deliberately model-based. The selected variables are not obtained by marginal screening, nor by a generic dimension-reduction criterion. Instead, the distillation step is tied to the mixture structure and to the response model. This makes the resulting subspace directly aligned 
+
+> ∗Corresponding author: pulkitaaggarwal09@gmail.com
+> †Corresponding author: abhishek@theabstractmath.com
+
+1arXiv:2608.06509v1 [stat.ME] 6 Aug 2026 with the scientific object of interest: latent subgroups that differ in distributional structure and response behavior. 
+
+1.1 Existing Works 
+
+The literature on variable selection for clustering problems from a frequentist perspective includes methods based on the ideas of sparse K-means by Witten and Tibshirani [2010], pairwise penalized model-based clustering by Guo et al. [2010], and L1-penalized EM algorithms for finite mixtures of regressions by St¨ adler et al. [2010]. The extension of the latter approach to group-lasso penalization without sample splitting was provided by Wang et al. [2024]. None of these methods maintain an uncertainty measure over the selected set of variables and do not provide a means of controlling the false discoveries of variables within the selection step. The Bayesian approach to variable selection in clustering was first considered by Tadesse et al. [2005]. Kim et al. [2006] extended this approach to Dirichlet process mixtures. Raftery and Dean [2006] employed a likelihood approach to model variable selection, where models including and excluding each variable were compared using Bayes factors and greedy search procedures. Maugis et al. [2009] considered variable selection within Dirichlet process mixtures, but with a more careful modeling of the dependence between relevant and irrelevant variables. In each of these approaches, however, no asymptotic theoretical results are provided for cases in which the number of variables p is allowed to grow at a much faster rate than the number of observations n, and where a response model is included that is specific to subgroups of the clustering algorithm results. The posterior concentration theory for high-dimensional Bayesian variable selection was developed by Castillo and van der Vaart [2012], and also by Castillo et al. [2015]. The theory applies to the type of spike-and-slab priors with complexity penalties that have been used in this paper. Scott and Berger [2010] provided an analysis of the multiplicity properties of these priors. The posterior false-discovery rate rule is based upon the approaches of Newton et al. [2004] and M¨ uller et al. [2004]. The graphical diagnostics for the subgroups is based upon the graphical lasso method of Friedman et al. [2008] and the debiasing approach of Jankov´ a and van de Geer [2015], who prove that the debiased graphical lasso estimator is asymptotically normal entry-wise. Thus, statistical tests can be performed on each graphical edge within the estimated subgroups. A false-discovery rate control rule for graphical edges is that of Benjamini and Hochberg [1995]. The approach of this paper unifies these methods in a way that does not appear in the existing literature. While the variable selection and clustering steps are separate in terms of their computational approach, the two methods are based upon the same underlying probabilistic model that encompasses both the subgroup-specific covariate distribution and the response variable. Furthermore, the choice of subspace is based upon the posterior false-discovery rate rule rather than upon model selection methods. Asymptotic guarantees are established for each of the steps of the approach: variable selection, information preservation, clustering, response variable estimation, and graphical model estimation. 
+
+1.2 Our contributions 
+
+The main contributions are as follows. 
+
+• We introduce a Bayesian distillation framework for high-dimensional mixture models in which feature selection and clustering are separated computationally but connected through a common probabilistic model. 2• We define posterior inclusion probabilities for covariates and use them to construct a distilled covariate set with posterior false-discovery control. This provides a principled alternative to marginal screening or unsupervised dimension reduction. 
+
+• We show that, under a conditional-irrelevance assumption, the excluded covariates contain no additional subgroup information once the distilled variables are known. Consequently, the Bayes classifier based on all covariates coincides with the Bayes classifier based only on the relevant covariates. 
+
+• We establish theoretical properties of the procedure, including posterior selection consistency, preservation of subgroup information after distillation, clustering consistency, posterior con-traction for subgroup-specific response parameters, and validity of subgroup-level conditional-independence tests. 
+
+• We formulate a subgroup-specific graphical diagnostic based on conditional independence. In the Gaussian case, this diagnostic is expressed through the precision matrix within each inferred subgroup and allows the analyst to study how selected covariates interact differently across latent classes. 
+
+• We provide a simulation framework for evaluating variable-selection accuracy, cluster recovery, prediction, and graph recovery in high-dimensional mixture settings. 
+
+1.3 Structure of the paper 
+
+The remainder of the paper is organized as follows. Section 2 gives the statistical model and defines the relevant covariate set. Section 3 presents the Bayesian distillation model, including the prior specification, posterior inclusion probabilities, and posterior false-discovery rule. Section 4 describes the clustering step on the distilled subspace. Section 5 introduces subgroup-specific conditional-independence diagnostics. Section 6 states the assumptions and theoretical guarantees. Section 7 summarizes the practical implementation. Section 8 gives a recommended simulation design. Section 9 concludes. Proofs are collected in Appendix A. 
+
+# 2 Statistical Setting 
+
+Let 
+
+Dn = {(Yi, X i) : 1 ≤ i ≤ n}
+
+be independent observations, where Yi ∈ Y is a response and 
+
+Xi = ( Xi1, . . . , X ip )⊤ ∈ Rp
+
+is a high-dimensional covariate vector. The dimension p may be much larger than n. The population is assumed to contain K latent subgroups. For each subject i, let 
+
+Zi ∈ { 1, . . . , K }
+
+denote the unobserved subgroup label, with 
+
+P(Zi = k) = πk, πk > 0,
+
+> K
+
+X
+
+> k=1
+
+πk = 1 .
+
+3The central statistical assumption is that only a small subset of covariates carries information about the latent subgroup structure and the subgroup-specific response behavior. Let 
+
+S0 ⊂ { 1, . . . , p }
+
+be the unknown set of relevant covariates, with 
+
+|S0| = s0 ≪ p. 
+
+The complement Sc 
+
+> 0
+
+consists of variables that may be noisy, correlated, or biologically measurable, but do not help distinguish the latent subgroups after the variables in S0 are known. For a candidate subset S, write XiS for the coordinates of Xi indexed by S. A rigorous model for the joint distribution of ( Yi, X i) is 
+
+p(y, x ) = 
+
+> K
+
+X
+
+> k=1
+
+πkqk(xS ; ψk)rk(y | xS ; θk)h(xSc | xS ),
+
+where qk is the subgroup-specific covariate density on the selected coordinates, rk is the subgroup-specific response model, and h is the conditional distribution of the excluded variables. The key structural restriction is that h does not depend on k. Thus the excluded variables may be statistically dependent on the selected variables, but they do not contain additional subgroup information once 
+
+XS is known. A concrete Gaussian version, useful for theory and implementation, is 
+
+XiS 0 | Zi = k ∼ Ns0 (μk0, Σk0),
+
+and 
+
+Yi | Xi, Z i = k ∼ f {y; ηik , ϕ k}, ηik = αk + X⊤ 
+
+> iS 0
+
+βk0.
+
+Here f may be a Gaussian, Bernoulli, Poisson, or other regular exponential-family density. The covariates outside S0 satisfy 
+
+p(XiS c 
+
+> 0
+
+| XiS 0 , Z i = k) = p(XiS c 
+
+> 0
+
+| XiS 0 )for every k. Therefore, irrelevant variables may still be statistically associated with relevant variables, but they do not help separate the latent groups. This distinction is important. A variable is not called irrelevant merely because it has small marginal variance or weak marginal association with the response. It is irrelevant only if it contributes neither to subgroup separation nor to subgroup-specific response behavior after the selected variables are accounted for. 
+
+# 3 Bayesian Distillation Model 
+
+Introduce a binary inclusion vector 
+
+γ = ( γ1, . . . , γ p)⊤ ∈ { 0, 1}p,
+
+where 
+
+γj =
+
+(
+
+1, if covariate j is included ,
+
+0, otherwise .
+
+4Let 
+
+Sγ = {j : γj = 1 }.
+
+For a given γ, define the observed-data likelihood 
+
+Ln(Θ , γ ) = 
+
+> n
+
+Y
+
+> i=1
+> K
+
+X
+
+> k=1
+
+πkqk(XiS γ ; ψk)rk(Yi | XiS γ ; θk),
+
+where Θ = {πk, ψ k, θ k : 1 ≤ k ≤ K}.
+
+The variables outside Sγ are not used in the clustering likelihood because, under the model, their conditional distribution does not depend on the latent subgroup once XiS γ is given. A sparse prior is placed on γ. One convenient choice is the complexity prior 
+
+P(γ) ∝ c−| γ|p−a|γ|, a > 1, c > 0,
+
+where 
+
+|γ| =
+
+> p
+
+X
+
+> j=1
+
+γj .
+
+This prior penalizes large models strongly enough to prevent the posterior from including many irrelevant variables when p is large. Conditional on γ, the mixture weights have prior (π1, . . . , π K ) ∼ Dirichlet( aπ, . . . , a π),
+
+and the subgroup-specific parameters receive proper continuous priors. For example, in the Gaussian covariate model, 
+
+μk,S γ | Σk,S γ ∼ N|Sγ |(m0, κ −10 Σk,S γ ),
+
+and Σ−1 
+
+> k,S γ
+
+∼ Wishart( ν0, A 0).
+
+For the response model, 
+
+βk,S γ ∼ N|Sγ |(0 , τ 2 
+
+> β
+
+I), αk ∼ N (0 , τ 2
+
+> α
+
+).
+
+The posterior distribution is Π(Θ , γ | Dn) = Ln(Θ , γ )p(Θ | γ)p(γ)
+
+P
+
+> γ′
+
+R Ln(Θ ′, γ ′)p(Θ ′ | γ′)p(γ′) dΘ′ .
+
+For each variable j, define its posterior inclusion probability 
+
+wj = Π( γj = 1 | Dn).
+
+The distilled set is chosen by controlling the posterior expected false-discovery proportion. For a threshold t ∈ [0 , 1], define bS(t) = {j : wj ≥ t}.
+
+The posterior expected false-discovery proportion is BFDR( t) = 
+
+P 
+
+> j:wj≥t
+
+(1 − wj )
+
+| bS(t)| ∨ 1 .
+
+5For a preassigned level q ∈ (0 , 1), choose 
+
+bt = inf {t : BFDR( t) ≤ q},
+
+and set bS = bS(bt).
+
+This rule has a clear interpretation: among the selected variables, the posterior expected fraction of irrelevant variables is at most q.
+
+# 4 Clustering on the Distilled Subspace 
+
+After the distilled set bS is obtained, the clustering step is performed only on Xi bS . The primary clustering model is 
+
+Xi bS | Zi = k ∼ qk(·; ψk), P(Zi = k) = πk.
+
+In the Gaussian version, 
+
+Xi bS | Zi = k ∼ N| bS|(μk, bS , Σk, bS ).
+
+Let bΨ = {bπk, bμk, bΣk : 1 ≤ k ≤ K}
+
+denote the fitted mixture parameters. The posterior membership weight for observation i and subgroup k is 
+
+brik = bπkφ| bS|(Xi bS ; bμk, bΣk)
+
+PKℓ=1 bπℓφ| bS|(Xi bS ; bμℓ, bΣℓ) .
+
+The estimated subgroup label is bZi = arg max 
+
+> 1≤k≤K
+
+brik .
+
+The response Yi may be incorporated in two ways. In the primary version, Yi is used to guide variable selection, but cluster assignment is based on the covariate subspace. This respects the goal of identifying covariate-defined latent subgroups. In a supervised extension, one may assign labels by the joint posterior weight 
+
+brjoint  
+
+> ik
+
+= bπkqk(Xi bS ; bψk)rk(Yi | Xi bS ; bθk)
+
+PKℓ=1 bπℓqℓ(Xi bS ; bψℓ)rℓ(Yi | Xi bS ; bθℓ) .
+
+The covariate-only version is preferred when the scientific target is subgroup discovery. The joint version is useful when the target is response-stratified prediction. 
+
+# 5 Conditional-Independence Diagnostics Within Subgroups 
+
+For each estimated subgroup k, define 
+
+bIk = {i : bZi = k}, bnk = |bIk|.
+
+The goal is to study how the selected variables depend on one another within each subgroup. In the Gaussian case, 
+
+Xi bS | Zi = k ∼ N (μk, Σk),
+
+6and the conditional-independence structure is encoded by the precision matrix Ωk = Σ −1 
+
+> k
+
+.
+
+For two distinct selected variables a, b ∈ bS,
+
+Xa ⊥ Xb | X bS\{ a,b }, Z = k ⇐⇒ (Ω k)ab = 0 .
+
+Thus the subgroup-specific graph is 
+
+Gk = ( bS, E k),
+
+where (a, b ) ∈ Ek ⇐⇒ (Ω k)ab ̸ = 0 .
+
+A high-dimensional estimator of Ω k may be obtained using a penalized likelihood, 
+
+bΩk = arg min 
+
+> Ω≻0
+
+tr( bΣkΩ) − log det(Ω) + λk
+
+X
+
+> a̸=b
+
+|Ωab |
+
+ ,
+
+where bΣk is the sample covariance matrix within subgroup k.For inference on individual edges, use a debiased estimator bΩdk,ab . The test statistic is 
+
+Tk,ab =
+
+√bnk bΩdk,ab 
+
+bσk,ab 
+
+.
+
+Under the null hypothesis 
+
+H0,k,ab : (Ω k)ab = 0 ,
+
+the statistic satisfies 
+
+Tk,ab ⇝ N (0 , 1) .
+
+The resulting p-values are adjusted within each subgroup using the Benjamini-Hochberg procedure. This yields a subgroup-specific dependence graph with controlled false discoveries. 
+
+# 6 Theoretical Properties 
+
+The following results are stated for a clean Gaussian version of the model. This is the natural first theory for the proposed method. Extensions to generalized responses or non-Gaussian covariates require the same structure: identifiability, sparsity, regular priors, and concentration of likelihood ratios. 
+
+6.1 Assumptions 
+
+Assumption 6.1 (Sparse truth) . There exists a true subset S0 ⊂ { 1, . . . , p } with 
+
+|S0| = s0, s0 log p = o(n).
+
+The true inclusion vector is γ0, where (γ0)j = 1 if and only if j ∈ S0.
+
+7This condition formalizes the high-dimensional regime in which only a small number of covariates drive the mixture structure and the subgroup-specific response model. The requirement s0 log p =
+
+o(n) is the usual effective-sample-size condition for recovering a sparse subset among p candidates. It links the distillation step to the central statistical goal of the paper: clustering should be performed on the variables that carry subgroup information, not on the full ambient feature space. 
+
+Assumption 6.2 (Irrelevant variables contain no subgroup information) . For all k,
+
+p0(XSc 
+
+> 0
+
+| XS0 , Z = k) = p0(XSc 
+
+> 0
+
+| XS0 ).
+
+Thus XSc 
+
+> 0
+
+may be correlated with XS0 , but it carries no additional information about Z.
+
+This assumption gives a precise meaning to irrelevance in the mixture setting. Variables in Sc
+
+> 0
+
+are allowed to be correlated with the selected variables, so the condition does not impose marginal independence. Rather, it requires that, after conditioning on XS0 , the remaining variables do not further distinguish the latent subgroups. This is the population-level justification for distillation: removing Sc 
+
+> 0
+
+should reduce noise without removing information about the latent class. 
+
+Assumption 6.3 (Identifiability) . For k̸ = ℓ,
+
+(μk0, Σk0, α k, β k0, ϕ k)̸ = ( μℓ0, Σℓ0, α ℓ, β ℓ0, ϕ ℓ).
+
+The mixture is identifiable up to relabeling of the K components. 
+
+The latent classes must correspond to distinct data-generating mechanisms. Since mixture labels are inherently arbitrary, identifiability is required only up to permutation of the component labels. Without this condition, neither posterior concentration nor clustering consistency has a well-defined target. The assumption ensures that the inferred subgroups can be compared to a population-level mixture decomposition rather than to an artifact of parameterization. 
+
+Assumption 6.4 (Eigenvalue control) . There exist constants 0 < c < C < ∞ such that, for every 
+
+k,
+
+c ≤ λmin (Σ k0) ≤ λmax (Σ k0) ≤ C. 
+
+This condition rules out degenerate or nearly singular within-component covariance matrices. It prevents subgroup separation from being created by ill-conditioned covariance structure rather than by stable distributional differences. The bounded-eigenvalue condition is also needed for likelihood concentration, Gaussian tail bounds, and precision-matrix inference within subgroups. 
+
+Assumption 6.5 (Signal strength) . For every j ∈ S0, the variable has detectable subgroup or response signal. Define 
+
+bj = max   
+
+> k̸=ℓ
+
+|μkj, 0 − μℓj, 0| + max  
+
+> k
+
+|βkj, 0|.
+
+Assume 
+
+min 
+
+> j∈S0
+
+bj ≥ bn,
+
+where 
+
+nb 2 
+
+> n
+
+≥ C1 log p
+
+for a sufficiently large constant C1.
+
+8Each relevant variable must leave a detectable trace either through subgroup separation or through the subgroup-specific response model. The lower bound nb 2 
+
+> n
+
+≥ C1 log p is a beta-min condition adapted to the high-dimensional setting. It separates true variables from noise at the scale needed to search over many candidate covariates. This condition is what makes posterior distillation possible rather than merely descriptive. 
+
+Assumption 6.6 (Component separation) . Define 
+
+∆n = min  
+
+> k̸=ℓ
+
+h
+
+(μk0 − μℓ0)⊤Σ−10 (μk0 − μℓ0)
+
+i1/2
+
+,
+
+where Σ0 is a representative within-component covariance, such as a common covariance in the homoscedastic case. Assume 
+
+∆n → ∞ 
+
+for vanishing clustering error, and 
+
+∆2 
+
+> n
+
+≥ C2 log n
+
+for exact recovery with probability tending to one. 
+
+The quantity ∆ n measures the minimum separation between latent components in the informative subspace. Consistent clustering cannot be expected when components overlap too strongly, even if the correct variables are known. The stronger logarithmic separation condition gives exact label recovery with high probability. This assumption connects the variable-selection part of the method to the downstream clustering target: after the relevant subspace has been recovered, the components must still be statistically distinguishable. 
+
+Assumption 6.7 (Prior regularity) . The prior on γ satisfies 
+
+P(γ) ∝ c−| γ|p−a|γ|, a > 1,
+
+and the parameter priors have continuous densities that are positive in neighborhoods of the true parameter values. 
+
+The prior assigns enough mass near the true sparse model while penalizing unnecessarily large models. The factor p−a|γ|, with a > 1, prevents the posterior from favoring large models that improve the likelihood only by fitting noise. Positivity of the parameter priors near the truth ensures that the Bayesian procedure does not exclude the data-generating parameter values. Together, these conditions make posterior model selection compatible with high-dimensional sparsity. 
+
+6.2 Posterior Selection Consistency 
+
+Theorem 6.1 (Posterior selection consistency) . Under Assumptions 6.1, 6.3, 6.5, and 6.7, 
+
+Π( γ = γ0 | Dn) −→ 1
+
+in P0-probability. Consequently, 
+
+max 
+
+> j∈S0
+
+(1 − wj ) → 0, max 
+
+> j / ∈S0
+
+wj → 0
+
+in P0-probability. Therefore, for any fixed threshold t ∈ (0 , 1) ,
+
+bS(t) = S0
+
+with probability tending to one. 
+
+9The posterior inclusion probabilities separate relevant and irrelevant variables asymptotically. Relevant variables receive inclusion probability tending to one, while irrelevant variables receive inclusion probability tending to zero. This gives the distillation step a formal target: the selected subspace converges to the population subspace that drives subgroup and response heterogeneity. The proof is given in Appendix A.1. 
+
+6.3 Information Preservation After Distillation 
+
+Theorem 6.2 (Information preservation after distillation) . Under Assumption 6.2, the Bayes classifier based on all variables X is identical to the Bayes classifier based only on XS0 . That is, 
+
+arg max 
+
+> k
+
+P(Z = k | X) = arg max 
+
+> k
+
+P(Z = k | XS0 ).
+
+The relevant subspace is sufficient for optimal subgroup classification. Discarding XSc 
+
+> 0
+
+does not change the population Bayes rule because those variables contain no additional class information once XS0 is known. This property is central to the paper’s construction: distillation is not merely a computational reduction, but a statistically lossless reduction for the clustering target under the stated model. The proof is given in Appendix A.2. 
+
+6.4 Clustering Consistency 
+
+Theorem 6.3 (Clustering consistency) . Assume Theorem 6.1 holds and Assumptions 6.2, 6.4, and 6.6 hold. Let bZi be the label obtained by fitting the mixture model on Xi bS . Then, up to a permutation of component labels, 
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+1( bZi̸ = Zi) = OP {exp( −c∆2
+
+> n
+
+)} + oP (1) 
+
+for some constant c > 0.If, in addition, 
+
+∆2 
+
+> n
+
+≥ C log n
+
+for a sufficiently large constant C, then 
+
+P
+
+
+
+min 
+
+> σ∈SK
+
+max  
+
+> 1≤i≤n
+
+1{ bZi̸ = σ(Zi)} = 0 
+
+
+
+→ 1,
+
+where SK is the set of all permutations of {1, . . . , K }.
+
+Once the distilled subspace recovers the relevant variables, clustering in that subspace attains the usual Gaussian-mixture classification behavior. The error rate is governed by the separation ∆ n,not by the ambient dimension p. This supports the two-stage design: posterior distillation controls the high-dimensional feature problem, while mixture clustering then operates in the statistically relevant coordinates. The proof is given in Appendix A.3. 10 6.5 Posterior Contraction for the Response Model 
+
+Theorem 6.4 (Posterior contraction for the response model) . Suppose the response model is a regular exponential-family regression model and Assumptions 6.1, 6.3, 6.5, and 6.7 hold. Then, after relabeling the mixture components, 
+
+Π max  
+
+> 1≤k≤K
+
+∥βk,S 0 − βk0,S 0 ∥2 > M 
+
+r s0 log pn Dn
+
+!
+
+→ 0
+
+in P0-probability for a sufficiently large constant M . The same rate holds for μk,S 0 under the Gaussian covariate model. 
+
+After model selection, the subgroup-specific response parameters concentrate at the standard sparse high-dimensional rate. The rate depends on s0 log p, rather than on the full dimension p.This result links clustering to inference: the distilled variables are not only useful for label recovery, but also support stable estimation of subgroup-specific response relationships. The proof is given in Appendix A.4. 
+
+6.6 Validity of Subgroup Conditional-Independence Tests 
+
+Theorem 6.5 (Validity of subgroup conditional-independence tests) . Assume the subgroup-specific covariate distribution is Gaussian. For subgroup k, let 
+
+Ωk0 = Σ −1 
+
+> k0
+
+.
+
+Assume Ωk0 is sparse, with maximum node degree dk, and 
+
+d2
+
+> k
+
+log s0
+
+nk
+
+→ 0,
+
+where 
+
+nk = # {i : Zi = k}.
+
+Assume also that Theorem 6.3 gives exact recovery of the subgroup labels with probability tending to one. Then, for every null edge (a, b ) satisfying 
+
+(Ω k0)ab = 0 ,
+
+the debiased statistic satisfies 
+
+Tk,ab ⇝ N (0 , 1) .
+
+Consequently, if the Benjamini-Hochberg procedure is applied within subgroup k, the false-discovery rate satisfies 
+
+FDR k ≤ q + o(1) .
+
+Moreover, if for a nonzero edge √nk|(Ω k0)ab |
+
+σk,ab 
+
+→ ∞ ,
+
+then the probability of detecting that edge tends to one. 
+
+11 The subgroup-specific graphical analysis remains valid after clustering, provided the labels are recovered with high probability and the precision matrices are sufficiently sparse. The result separates two sources of uncertainty: label uncertainty is controlled by the clustering theorem, and edge-level uncertainty is handled by debiased precision-matrix inference. This gives a formal basis for using the inferred subgroups to study conditional dependence structures among the distilled variables. The proof is given in Appendix A.5. 
+
+# 7 Practical Methodology 
+
+7.1 Step 1: Preprocessing 
+
+Each covariate is centered and scaled. For biological data, variables with extreme missingness or near-zero variance are removed before modeling. Missing values may be handled by model-based imputation, but the imputation model should be fit inside the training folds when cross-validation is used. 
+
+7.2 Step 2: Bayesian Variable Distillation 
+
+Fit the Bayesian mixture-response model with sparse inclusion vector γ. Compute posterior inclusion probabilities 
+
+wj = Π( γj = 1 | Dn).
+
+Select bS = {j : wj ≥ bt}
+
+using posterior false-discovery control. This step is not a marginal screening rule. A variable is selected because the posterior evidence supports its role in subgroup separation, subgroup-specific response behavior, or both. 
+
+7.3 Step 3: Refit the Mixture on the Distilled Subspace 
+
+Fit a finite mixture model to 
+
+{Xi bS : 1 ≤ i ≤ n}.
+
+Compute posterior membership weights brik and assign 
+
+bZi = arg max 
+
+> k
+
+brik .
+
+Uncertainty should be reported through the entropy 
+
+Hi = −
+
+> K
+
+X
+
+> k=1
+
+brik log brik .
+
+Subjects with large Hi are weakly assigned and should not be overinterpreted. 
+
+7.4 Step 4: Estimate Subgroup-Specific Response Models 
+
+Within each inferred subgroup, fit 
+
+Yi | Xi bS , bZi = k. 
+
+This provides subgroup-specific associations between the selected covariates and the response. These estimates are useful for interpretation, prediction, and treatment-effect heterogeneity analysis. 12 7.5 Step 5: Conditional-Independence Diagnostics 
+
+For each subgroup k, estimate the precision matrix Ω k of X bS . Test 
+
+H0,k,ab : (Ω k)ab = 0 for all pairs a̸ = b. Adjust the resulting p-values using Benjamini-Hochberg within each subgroup. The output is a collection of graphs 
+
+bG1, . . . , bGK ,
+
+where each graph describes conditional dependence among selected variables inside one subgroup. 
+
+7.6 Step 6: Model Checking 
+
+The following checks should be reported: 1. Stability of bS under resampling. 2. Stability of cluster assignments under resampling. 3. Posterior uncertainty of K, if K is not fixed. 4. Predictive performance for Y .5. Separation of clusters in the selected subspace. 6. Sensitivity to the posterior false-discovery level q.7. Sensitivity to the prior on model size. 
+
+# 8 Simulation Studies 
+
+A rigorous simulation study should vary the following factors: 
+
+n ∈ { 100 , 300 , 500 }, p ∈ { 500 , 2000 , 10000 },
+
+and 
+
+s0 ∈ { 5, 10 , 25 }, K ∈ { 2, 3, 5}.
+
+Generate latent labels 
+
+Zi ∼ Categorical( π1, . . . , π K ).
+
+For j ∈ S0, generate subgroup-dependent covariates. For j / ∈ S0, generate noise covariates that may be correlated with S0, but do not depend on Zi after conditioning on XiS 0 .Generate responses from 
+
+Yi = αZi + X⊤ 
+
+> iS 0
+
+βZi + εi, εi ∼ N (0 , σ 2),
+
+or from a logistic model for binary outcomes. Report: variable-selection TPR , variable-selection FDR , adjusted Rand index ,
+
+13 Figure 1: Adjusted rank index across methods 
+
+Figure 2: Misclassification rates across methods and misclassification rate , prediction error , graph edge FDR , graph edge power .
+
+The main comparisons should include full-dimensional Gaussian mixtures, sparse K-means, penalized mixture models, spectral clustering on all variables, and clustering after marginal screening. The central empirical claim should be modest and testable: when the relevant subgroup information is sparse, Bayesian distillation should reduce noise accumulation and improve both variable recovery and cluster recovery relative to methods that treat all variables equally. For the details, we refer to the following diagrams. 14 Figure 3: Selection false discovery rate for Bayesian Distillation 
+
+Figure 4: Selection true positive rate for Bayesian Distillation 15 Figure 5: Out-of-sample prediction error 
+
+# 9 Conclusion 
+
+High-dimensional clustering is most useful when the recovered groups correspond to interpretable and reproducible sources of heterogeneity. In mixture models, this objective is difficult to achieve when the relevant subgroup information is sparse and embedded in a large number of nuisance variables. The framework developed here addresses this difficulty by placing variable selection before clustering, while preserving a coherent probabilistic link between the selected variables, the latent subgroup labels, and the response. The proposed procedure has three features that are especially important in scientific applications. First, the distilled subspace is selected using posterior evidence, rather than by marginal association or purely geometric dimension reduction. Second, clustering is performed only after the high-dimensional noise has been attenuated, which improves both interpretability and statistical stability. Third, the subgroup-specific conditional-independence analysis provides a second layer of inference: after the subgroups are estimated, one may examine how the selected variables relate to one another within each subgroup. The theory formalizes these points. Under sparsity, signal-strength, identifiability, and separation conditions, the posterior concentrates on the true relevant variables, the distilled subspace preserves subgroup information, and the clustering rule consistently recovers the latent labels. Under additional sparsity assumptions on subgroup-specific precision matrices, conditional-independence tests within the estimated subgroups are asymptotically valid. These results support the use of Bayesian distillation as a principled tool for high-dimensional subgroup discovery, particularly in settings such as genomics and multi-omics studies where interpretability, uncertainty quantification, and structural insight are all central to the analysis. 
+
+# References 
+
+Yoav Benjamini and Yosef Hochberg. Controlling the false discovery rate: A practical and powerful approach to multiple testing. Journal of the Royal Statistical Society: Series B (Methodological) ,57(1):289–300, 1995. doi: 10.1111/j.2517-6161.1995.tb02031.x. 16 Isma¨ el Castillo and Aad van der Vaart. Needles and straw in a haystack: Posterior concentration for possibly sparse sequences. The Annals of Statistics , 40(4):2069–2101, 2012. doi: 10.1214/ 12-AOS1029. Isma¨ el Castillo, Johannes Schmidt-Hieber, and Aad van der Vaart. Bayesian linear regression with sparse priors. The Annals of Statistics , 43(5):1986–2018, 2015. doi: 10.1214/15-AOS1334. Jerome Friedman, Trevor Hastie, and Robert Tibshirani. Sparse inverse covariance estimation with the graphical lasso. Biostatistics , 9(3):432–441, 2008. doi: 10.1093/biostatistics/kxm045. Jian Guo, Elizaveta Levina, George Michailidis, and Ji Zhu. Pairwise variable selection for high-dimensional model-based clustering. Biometrics , 66(3):793–804, 2010. doi: 10.1111/j.1541-0420. 2009.01341.x. Jana Jankov´ a and Sara van de Geer. Confidence intervals for high-dimensional inverse covariance estimation. Electronic Journal of Statistics , 9(1):1205–1229, 2015. doi: 10.1214/15-EJS1031. Sinae Kim, Mahlet G. Tadesse, and Marina Vannucci. Variable selection in clustering via Dirichlet process mixture models. Biometrika , 93(4):877–893, 2006. doi: 10.1093/biomet/93.4.877. Cathy Maugis, Gilles Celeux, and Marie-Laure Martin-Magniette. Variable selection for clustering with Gaussian mixture models. Biometrics , 65(3):701–709, 2009. doi: 10.1111/j.1541-0420.2008. 01160.x. Peter M¨ uller, Giovanni Parmigiani, Christian Robert, and Judith Rousseau. Optimal sample size for multiple testing: The case of gene expression microarrays. Journal of the American Statistical Association , 99(468):990–1001, 2004. doi: 10.1198/016214504000001646. Michael A. Newton, Amine Noueiry, Deepayan Sarkar, and Paul Ahlquist. Detecting differential gene expression with a semiparametric hierarchical mixture method. Biostatistics , 5(2):155–176, 2004. doi: 10.1093/biostatistics/5.2.155. Adrian E. Raftery and Nema Dean. Variable selection for model-based clustering. Journal of the American Statistical Association , 101(473):168–178, 2006. doi: 10.1198/016214506000000113. James G. Scott and James O. Berger. Bayes and empirical-Bayes multiplicity adjustment in the variable-selection problem. The Annals of Statistics , 38(5):2587–2619, 2010. doi: 10.1214/ 10-AOS792. Nicolas St¨ adler, Peter B¨ uhlmann, and Sara van de Geer. ℓ1-penalization for mixture regression models. TEST , 19(2):209–256, 2010. doi: 10.1007/s11749-010-0197-z. With discussion. Mahlet G. Tadesse, Naijun Sha, and Marina Vannucci. Bayesian variable selection in clustering high-dimensional data. Journal of the American Statistical Association , 100(470):602–617, 2005. doi: 10.1198/016214504000001565. Ning Wang, Xin Zhang, and Qing Mai. Statistical analysis for a penalized EM algorithm in high-dimensional mixture linear regression model. Journal of Machine Learning Research , 25 (222):1–85, 2024. Daniela M. Witten and Robert Tibshirani. A framework for feature selection in clustering. Journal of the American Statistical Association , 105(490):713–726, 2010. doi: 10.1198/jasa.2010.tm09415. 17 A Appendix A - Proofs of Results 
+
+A.1 Proof of Theorem 6.1 
+
+Proof of Theorem 6.1. Write the posterior probability of an incorrect model as Π( γ̸ = γ0 | Dn) = 
+
+P  
+
+> γ̸=γ0
+
+mγ (Dn)p(γ)
+
+P 
+
+> γ′
+
+mγ′ (Dn)p(γ′) ,
+
+where 
+
+mγ (Dn) = 
+
+Z
+
+Ln(Θ , γ )p(Θ | γ) dΘis the marginal likelihood under model γ.It is enough to show that X 
+
+> γ̸=γ0
+
+mγ (Dn)p(γ)
+
+mγ0 (Dn)p(γ0) → 0.
+
+Separate the incorrect models into two classes. First, consider underfitted models, for which Sγ̸ ⊃ S0. Such a model excludes at least one truly relevant variable. By Assumption 6.5, excluding that variable causes a loss in Kullback-Leibler risk of at least order b2
+
+> n
+
+. Therefore there exists c0 > 0 such that inf  
+
+> Θ
+
+KL( p0, p Θ,γ ) ≥ c0b2
+
+> n
+
+,
+
+where KL( p0, p Θ,γ ) is the Kullback-Leibler divergence from the true density to the best density under model γ. Standard likelihood concentration gives 
+
+mγ (Dn)
+
+mγ0 (Dn) ≤ exp {− c1nb 2
+
+> n
+
+}
+
+with P0-probability tending to one. Since nb 2 
+
+> n
+
+≥ C1 log p, and C1 is sufficiently large, the sum of these ratios over all underfitted models tends to zero. Second, consider overfitted models, for which Sγ ⊋ S0. These models contain the true variables and at least one irrelevant variable. Their likelihood can improve only by fitting noise. The marginal likelihood automatically penalizes the additional dimension. More precisely, for a model with 
+
+m = |Sγ | − s0
+
+extra variables, 
+
+mγ (Dn)
+
+mγ0 (Dn) = OP0 (n−c2m)for some c2 > 0. The prior contributes the additional factor 
+
+p(γ)
+
+p(γ0) = c−mp−am .
+
+The number of models with m extra variables is at most   pm
+
+ ≤ pm. Hence 
+
+X
+
+> m≥1
+
+pmp−am n−c2m = X
+
+> m≥1
+
+p−(a−1) mn−c2m → 0because a > 1. Thus the total posterior mass on overfitted models vanishes. Combining the two cases yields Π( γ̸ = γ0 | Dn) → 0,
+
+which proves the result. 18 A.2 Proof of Theorem 6.2 
+
+Proof of Theorem 6.2. By Bayes’ rule, 
+
+P(Z = k | X) = πkp(X | Z = k)
+
+PKℓ=1 πℓp(X | Z = ℓ) .
+
+Write X = ( XS0 , X Sc 
+
+> 0
+
+). Then 
+
+p(X | Z = k) = p(XS0 | Z = k)p(XSc 
+
+> 0
+
+| XS0 , Z = k).
+
+By Assumption 6.2, 
+
+p(XSc 
+
+> 0
+
+| XS0 , Z = k) = p(XSc 
+
+> 0
+
+| XS0 )for all k. Therefore, 
+
+P(Z = k | X) = πkp(XS0 | Z = k)p(XSc 
+
+> 0
+
+| XS0 )
+
+PKℓ=1 πℓp(XS0 | Z = ℓ)p(XSc 
+
+> 0
+
+| XS0 ) .
+
+The common factor p(XSc 
+
+> 0
+
+| XS0 ) cancels, so 
+
+P(Z = k | X) = πkp(XS0 | Z = k)
+
+PKℓ=1 πℓp(XS0 | Z = ℓ) = P(Z = k | XS0 ).
+
+Thus the selected subspace preserves all subgroup information. 
+
+A.3 Proof of Theorem 6.3 
+
+Proof of Theorem 6.3. Let 
+
+An = { bS = S0}.
+
+By Theorem 6.1, 
+
+P(An) → 1.
+
+On An, clustering is performed on exactly the true informative variables. By Theorem 6.2, no subgroup information is lost by ignoring Sc
+
+> 0
+
+.For Gaussian mixtures with bounded eigenvalues and identifiable components, the fitted mixture parameters are consistent up to label switching. Thus max 
+
+> k
+
+
+
+∥bμk − μk0∥ + ∥bΣk − Σk0∥ + |bπk − πk0|
+
+
+
+= oP (1) after a suitable relabeling. The misclassification rate of the plug-in classifier is therefore asymptotically equal to that of the Bayes classifier. For two Gaussian components with Mahalanobis distance ∆ n, standard Gaussian tail bounds imply that the probability of assigning an observation from one component to the other is at most 
+
+C0 exp( −c0∆2
+
+> n
+
+)for constants C0, c 0 > 0. Taking the union over the finite number of component pairs gives 
+
+P( bZi̸ = Zi) ≤ C1 exp( −c1∆2
+
+> n
+
+) + o(1) .
+
+19 Averaging over i gives 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+1( bZi̸ = Zi) = OP {exp( −c1∆2
+
+> n
+
+)} + oP (1) .
+
+If ∆ 2 
+
+> n
+
+≥ C log n, then 
+
+n exp( −c1∆2
+
+> n
+
+) → 0for sufficiently large C. Hence, by the union bound, 
+
+P(∃i : bZi̸ = Zi) → 0,
+
+again up to label permutation. This proves exact recovery. 
+
+A.4 Proof of Theorem 6.4 
+
+Proof of Theorem 6.4. By Theorem 6.1, the posterior places probability tending to one on the true model S0. It is therefore sufficient to prove the contraction rate conditional on S0.Within the true model, the effective parameter dimension is of order Ks 0. The log likelihood is locally quadratic around the true parameter, and the Fisher information matrix has eigenvalues bounded away from zero and infinity under the regularity assumptions. Hence, for parameters at Euclidean distance rn from the truth, 
+
+rn = M
+
+r s0 log pn ,
+
+the likelihood ratio is bounded by exp( −cnr 2
+
+> n
+
+) = exp( −cM 2s0 log p)outside the ball of radius rn.The prior assigns at least exp( −Cs 0 log p)mass to a neighborhood of the true parameter. Choosing M sufficiently large makes the likelihood decay outside the ball dominate the prior mass denominator. Standard testing arguments for parametric models with growing dimension then give Π( ∥β − β0∥2 > M r n | Dn, S 0) → 0.
+
+Combining this with Π( S0 | Dn) → 1 proves the result. 
+
+A.5 Proof of Theorem 6.5 
+
+Proof of Theorem 6.5. By Theorem 6.3, with probability tending to one the estimated subgroup labels equal the true subgroup labels up to permutation. Conditional on this event, the sample used for subgroup k is an independent sample from 
+
+N (μk0, Σk0).
+
+Under the sparsity condition 
+
+d2
+
+> k
+
+log s0
+
+nk
+
+→ 0,
+
+20 the graphical-lasso or nodewise-regression estimator has elementwise error small enough for debiasing. The debiased estimator admits the expansion 
+
+√nk
+
+bΩdk,ab − Ωk0,ab 
+
+
+
+= 1
+
+√nk
+
+X
+
+> i:Zi=k
+
+ξi,ab + oP (1) ,
+
+where ξi,ab are mean-zero random variables with variance σ2
+
+> k,ab
+
+. The central limit theorem gives 
+
+√nk(bΩdk,ab − Ωk0,ab )
+
+bσk,ab 
+
+⇝ N (0 , 1) .
+
+Under the null Ω k0,ab = 0, this is exactly the stated result for Tk,ab . The Benjamini-Hochberg false-discovery control follows because the null p-values are asymptotically uniform. The additional error caused by estimated labels is o(1), since exact recovery holds with probability tending to one. For a nonzero edge, the statistic has mean 
+
+√nkΩk0,ab 
+
+σk,ab 
+
+,
+
+which diverges by assumption. Therefore the rejection probability tends to one. 21
