@@ -1,0 +1,911 @@
+Title: Co-clustering of Response and Covariate Variables by Tri-Factorizing Their Non-negative Regression Coefficient Matrix
+
+URL Source: https://arxiv.org/pdf/2607.27474v1
+
+Published Time: Fri, 31 Jul 2026 00:14:30 GMT
+
+Number of Pages: 40
+
+Markdown Content:
+# Co-clustering of Response and Covariate Variables by Tri-Factorizing Their Non-negative Regression Coefficient Matrix 
+
+## Kenichi Satoh (ORCID: 0000-0003-4436-9347) 1* and Yomei Tokuda (ORCID: 0000-0002-6943-8794) 21Faculty of Data Science, Shiga University, Banba 1-1-1, Hikone, 522-8522, Shiga, Japan. 
+
+2Faculty of Education, Shiga University, Hiratsu 2-5-1, Otsu, 520-0862, Shiga, Japan. *Corresponding author(s). E-mail(s): kenichi-satoh@biwako.shiga-u.ac.jp; Contributing authors: tokuda@edu.shiga-u.ac.jp; 
+
+Abstract 
+
+Two-block data—two sets of variables measured on the same individuals, such as microbial taxa and metabolites—raise the question of how groups of covariate variables relate to groups of response variables. Co-clustering answers this for a single matrix, not for two variable blocks; existing two-block methods either clus-ter only one side or return signed factors rather than clusters. Starting from the multivariate linear regression Y1 ≈ M Y 2, we give its non-negative coefficient matrix a tri-factorization M = X1ΘX2 (a tri-NMF), so that X1 softly clus-ters the response variables, X2 the covariate variables, and Θ is a tested matrix of block correspondences. This makes the method the non-negative member of the reduced-rank regression (RRR) family, expressing RRR’s low-rank class in a parts-based basis as NMF relates to PCA; the constraint can only restrict the fit, so predictive accuracy is not the aim; the co-clustering and tested cor-respondences are. We give multiplicative update rules, choose the two ranks by cross-validation, and develop a conditional Wald test for Θ applied after basis selection; its size is nominal with fixed bases, conservative after re-estimation, and slightly above nominal under correlated responses, while a non-zero path’s 
+
+magnitude stays conditional on the estimated bases. We illustrate the method— a tri-factorized non-negative RRR (NMF-RRR)—on four data sets spanning a permutation structure (Doubs, community ecology), a weak cross-structure 
+
+1arXiv:2607.27474v1 [stat.ME] 29 Jul 2026 under p > n (nutrimouse, nutrigenomics), a pronounced one in a screened microbiome–metabolome study (FRANZOSA, where two microbial groups are jointly associated with each metabolite module), and a classification special case (Wine).  
+
+> Keywords: Co-clustering of response and covariate variables, Non-negative matrix tri-factorization (tri-NMF), Multivariate linear regression, Regression coefficient matrix, Block-correspondence inference, Reduced-rank regression
+
+# 1 Introduction 
+
+Non-negative matrix factorization (NMF) of Lee and Seung (1999, 2000) approximates a non-negative data matrix by the product of a basis matrix and a coefficient matrix. Because the coefficients are non-negative and normalize to proportions, they admit a direct soft-clustering reading (Ding et al, 2005), which has made NMF a standard tool for parts-based representation and exploratory analysis. Inserting a third, middle factor yields the non-negative matrix tri-factorization (tri-NMF) of Ding et al (2006), V ≈ F SG ⊤, which clusters the rows and the columns of a single matrix simultaneously—the canonical algebraic form of co-clustering .Co-clustering has been developed along several lines, all operating on one observed matrix and clustering its two index sets: bipartite spectral co-clustering (Dhillon, 2001), information-theoretic co-clustering (Dhillon et al, 2003b), latent block mod-els (Govaert and Nadif, 2013), and biclustering of gene-expression data (Cheng and Church, 2000). In each case the two modes are simply the rows and columns of the same matrix (e.g., documents × words, or genes × samples). In many studies, however, the data arrive as two blocks of variables mea-sured on the same individuals —a block of covariates (inputs) and a block of 
+
+responses (outputs)—and the scientific question is how groups of covariates relate to groups of responses . Hepatic gene expression versus fatty-acid concentrations in nutrigenomics, environmental gradients versus species abundances in community ecol-ogy, gut microbial taxa versus metabolite concentrations in microbiome studies, and chemical composition versus optical properties in materials science (Tokuda et al, 2020, 2021) are all of this kind. One then wishes to co-cluster the covariate variables and the response variables jointly , while respecting the regression of the responses on the covariates. Existing methods address parts of this problem but not the whole. 
+
+• (i) Single-matrix co-clustering (above) clusters the two index sets of one matrix; it has no notion of a covariate–response relationship, uses no covariates, and cannot predict a new individual. 
+
+• (ii) Supervised one-sided feature clustering —the information bottleneck (Tishby et al, 1999) and information-theoretic word clustering for text classification (Dhillon et al, 2003a)—clusters the covariate features so as to preserve information about the response, but clusters only one side. 2• (iii) Two-block latent-variable methods relate covariates and responses through shared directions: canonical correlation analysis (CCA; Hotelling, 1936), partial least squares (PLS; Wold, 1975), and reduced-rank regression (RRR; Ander-son, 1951; Izenman, 1975; Reinsel and Velu, 1998). These return signed factors or loadings rather than clusters, so a downstream clustering step is required to obtain groups; and canonical correlation analysis and unregularized reduced-rank regres-sion, in particular, become ill-posed when the number of variables approaches or exceeds the sample size. 
+
+• (iv) NMF with covariates (Satoh, 2023, 2025, 2026c) models the NMF coeffi-cient matrix by a known covariate matrix, Y ≈ XΘA, recovering exactly the mean structure of the growth curve model (GCM; Potthoff and Roy, 1964) and thereby enabling prediction—but the covariate side is given , not clustered. 
+
+• (v) Other NMF extensions —deep NMF and deep matrix factorization (Trigeor-gis et al, 2017), graph-regularized NMF (Cai et al, 2011), and kernel NMF (Zhang et al, 2006)—enrich the factorization with depth, an auxiliary similarity graph, or a nonlinear feature map; but they are formulated as the decomposition or self-reconstruction of a single non-negative matrix, not with a distinct covariate block, and none co-clusters a covariate and a response variable set jointly. Closest in spirit are three lines of work. First, supervised and discriminative vari-ants of NMF (Zafeiriou et al, 2006; Lee et al, 2010) inject label or discriminant information into the factorization of a single data matrix. Second, several methods impose structure on both sides of the low-rank coefficient M of a two-block regres-sion: sparse and co-sparse reduced-rank and factor regression (Chen et al, 2012; Bunea et al, 2012; Chen and Huang, 2012; Mishra et al, 2017), and the sparse orthogonal factor regression of Uematsu et al (2019), which reads M as a response–covariate “association network”. Third, and closest of all, Yu et al (2019) bi-cluster the regres-sion coefficient matrix itself, grouping both the responses and the predictors. These last two lines come nearest to a joint co-clustering of the two variable sets, but the structure they impose is signed sparsity/selection (CCA/PLS/RRR and their sparse variants) or a hard fusion clustering (Yu et al, 2019)—not a non-negative, normalized soft membership, and none equips the between-group links with significance tests. The nearest non-negative neighbour is the non-negative (Poisson) reduced-rank regression of Fitzgerald et al (2022) (nn-PRRR), a rank-r bi-factorization M = U V ⊤ that ties both blocks to the same r components, clustering both sides only jointly—with no sep-arate numbers of response and covariate clusters and no block-correspondence matrix to test. We instead tri-factorize the coefficient, M = X1ΘX2 with X1, X 2 normal-ized non-negative—sharing the three-factor algebra of Ding et al (2006), but replacing their orthogonality constraint by an ℓ1 normalization, so that the factors become soft cluster profiles rather than the hard indicators that exact non-negative orthogonality entails—giving Q response clusters, R covariate clusters, and a Q × R correspondence Θ whose entries we estimate and test : an inferable co-clustering of the response and covariate variables that neither nn-PRRR nor the structured-coefficient methods above provide. Table 1 (Section 2) places these methods side by side on the axes that distin-guish them. The method is thus best read as a tri-factorized non-negative reduced-rank regression , the natural next step in the sequence RRR → nn-PRRR → NMF-RRR. 3We fill this gap by starting from the multivariate linear regression Y1 ≈ M Y 2
+
+of the responses on the covariates and giving its coefficient matrix the non-negative, three-factor form 
+
+Y1 ≈ X1 Θ X2 Y2, (1) where the responses Y1 and the covariates Y2 are known, X1 (response basis) and X2
+
+(covariate basis) are non-negative, with each column of X1 and each row of X2 sum-ming to one, and Θ links them. The induced regression coefficient matrix M = X1ΘX2
+
+is then a non-negative tri-factorization, so X1 co-clusters the response variables ,
+
+X2 co-clusters the covariate variables , and Θ gives the block correspondence .We thus read the method as a co-clustering of the response and covariate variables obtained by tri-factorizing the non-negative regression coefficient matrix; because, algebraically, Y1 ≈ M Y 2 is a non-negative low-rank regression of Y1 on Y2, its estima-tor is a tri-factorized non-negative reduced-rank regression (NMF-RRR), the name we use for it below. The co-clustering is supervised in the weak sense that the bases are fitted by regressing Y1 on Y2—in contrast to clustering a single matrix—not in the sense of optimizing predictive accuracy. It is essential to note that it is the coefficient 
+
+matrix M that is tri-factorized, not the data matrix Y1, and that the clusters are of the covariate and response variables , not of the samples—the samples serve only as the bridge over which M is estimated. 
+
+Why this model, and what can only it do? Among methods that structure the regression coefficient M , the non-negative tri -factorization is the one that simultane-ously delivers all three of: (i) soft clusterings of both the response and the covariate variables—non-negative cluster profiles (soft memberships read from relative loadings) rather than signed loadings or sparse selection; (ii) separate group counts Q̸ = R, so that one response group may be driven by several covariate groups (cross-structure); and (iii) an estimable, significance-tested correspondence Θ between the two group-ings. Non-negativity by itself does not suffice—a bi-factorization M = U V ⊤ (such as nn-PRRR) forces Q = R with no Θ to test; it is the middle factor Θ that makes the three-factor form the minimal structure achieving a tested, two-sided soft co-clustering (Remark 1; Table 1). The model has two complementary readings. The primary one, which we pursue, is co-clustering: M = X1ΘX2 is a non-negative tri-factorization—a soft, non-orthogonal counterpart of the tri-NMF of Ding et al (2006), applied to the regression coeffi-cient matrix—so X1 and X2 softly cluster the response and covariate variables and Θ records their Q × R block correspondence, whose entries we estimate and test (a co-clustering augmented by a group-level network). The secondary reading explains the algebra: dropping non-negativity, Y1 ≈ M Y 2 with rank( M ) ≤ min( Q, R ) is a reduced-rank regression—specializing, under whitening, to CCA and PLS, and to principal component analysis when Y1 = Y2 (Eckart and Young, 1936)—so the estimator is a 
+
+tri-factorized non-negative RRR : it shares RRR’s low-rank class (Proposition 1) but expresses it in a non-negative, parts-based basis, exactly as NMF relates to PCA (their leading fitted directions nearly coincide when the structure is strong, while secondary directions and the basis differ; Section 6). This paper makes the following contributions. 41. We formalize NMF with two variable blocks as a co-clustering of the response and covariate variables , obtained by tri-factorizing the non-negative regression coefficient matrix of Y1 ≈ M Y 2, clarifying that the tri-factorization acts on the coefficient matrix M (not the data) and that it clusters covariate and response variables (not samples). 2. We develop inference for the block-correspondence matrix Θ—the central object that is absent from bi-factorized alternatives—using sample-wise robust (sandwich) standard errors and one-sided significance tests, with a wild bootstrap for interval estimates and as a robustness check. This distinguishes a cross-structure 
+
+(one response group linked to several covariate groups, exposed when Q < R )from the permutation structure that a square Θ tends to impose, turning the co-clustering into a tested group-level network linking covariate and response clusters; since for Q < R the covariate-side split is not uniquely identified (Appendix A), these paths are read conditionally on the selected factorization. 3. We compare the method, theoretically and empirically, with reduced-rank regression, tri-NMF, and canonical correlation analysis , reporting not only the differences but the similarities (the shared low-rank subspace), and we delineate when the non-negative, supervised formulation is genuinely needed (e.g. p > n , more variables than samples—written p ≫ n when far more—or when within-block and cross-block structure disagree) and when conventional methods suffice. 4. We illustrate the method on four two-block data sets—the Doubs fish– environment data (community ecology), the nutrimouse data (nutrigenomics), the FRANZOSA gut microbiome–metabolome study, originally p ≫ n and screened to 30 variables per block for the analysis reported here, and the Wine data—spanning a permutation structure, a weak cross-structure, a pronounced cross-structure, and the classification special case in which a one-hot label reduces the method to a tested co-clustering of features against classes. The remainder of the paper is organized as follows. Section 2 introduces the model and its relation to reduced-rank regression, CCA, and tri-NMF. Section 3 gives the multiplicative update rules, and Section 4 the choice of the two ranks ( Q, R ). Section 5 develops the inference for Θ. Section 6 presents the data analyses and the systematic comparison with related methods, Section 7 validates the inference by a simulation study, and Section 8 concludes. 
+
+# 2 Model and its relation to established methods 
+
+This section states the model (Section 2.1), reads its regression coefficient matrix as a non-negative tri-factorization of bounded rank (Section 2.2), and locates it among reduced-rank regression, CCA/PLS, tri-NMF, and the autoencoder and growth-curve special cases (Section 2.3, with the positioning summarized in Table 1); Proposition 1 makes the relation to RRR precise and Remark 1 the necessity of the three-factor form. Section 2.4 gives the co-clustering reading. 52.1 The model 
+
+Let Y1 = ( y1,1, . . . , y1,N ) = ( y(1) 
+
+> p,n
+
+)P1×N collect, as columns, the response vectors of 
+
+N individuals on P1 response variables, and let Y2 = ( y(2) 
+
+> p,n
+
+)P2×N collect the cor-responding covariate vectors on P2 predictors. Both blocks are taken non-negative; signed variables are made non-negative beforehand by a per-variable min–max trans-form (Section 6). This transform is central to the method: it makes sign-free variables non-negative, but a negative covariate–response association can then be encoded only indirectly, through membership in a different non-negative group rather than through a negative coefficient—a limitation we return to in Section 8. Writing M = X1ΘX2,model (2) below is the multivariate linear regression Y1 ≈ M Y 2 of the responses on the covariates, with its coefficient matrix constrained to a non-negative tri-factorization. We approximate 
+
+Y1
+
+> P1×N
+
+≈ X1
+
+> P1×Q
+
+Θ
+
+> Q×R
+
+X2
+
+> R×P2
+
+Y2
+
+> P2×N
+
+, (2) with X1 the response basis (Q response factors), X2 the covariate basis (R covariate factors), and Θ the parameter (link) matrix. We require X1, X 2 ≥ 0 and remove the scale indeterminacy by normalizing each column of X1 and each row of X2 to sum to one; each column of X1 is then a probability vector over the response variables and each row of X2 a probability vector over the covariate variables, so the two bases are soft co-clusterings of the two variable sets. We take Θ ≥ 0, so that every covariate–response path is a non-negative contribution. For individual n, (2) reads y1,n ≈ X1ΘX2 y2,n . Writing sn = X2y2,n ∈ RR for the covariate scores (a non-negative, low-dimensional summary of the predictors) and 
+
+bn = Θ sn ∈ RQ for the response scores , the model decomposes as encoding sn =
+
+X2y2,n , linking bn = Θ sn, and decoding y1,n ≈ X1bn.
+
+## 2.2 The coefficient matrix and its rank 
+
+The covariate-to-response map is the regression coefficient matrix 
+
+M = X1ΘX2 (P1 × P2), rank( M ) ≤ min( Q, R ), (3) so that (2) is the low-rank multivariate regression Y1 ≈ M Y 2. Since rank( M ) ≤
+
+min( Q, R ), the attainable fit is bounded by this rank; in our experiments the fit was essentially determined by min( Q, R ), the larger of Q, R adding resolution on its own side at little cost in fit. The non-negativity of X1, X 2 is what turns the three factors into interpretable soft clusters rather than an arbitrary low-rank product. 
+
+## 2.3 Relation to established methods 
+
+Model (2) sits at the intersection of three traditions; the differences are summarized in Table 1. 
+
+Reduced-rank regression, CCA, PLS. 
+
+Dropping non-negativity, M in (3) is an arbitrary rank-r matrix with r = min( Q, R ), and Y1 ≈ M Y 2 is reduced-rank regression (Anderson, 1951; Izenman, 1975; Reinsel 6and Velu, 1998); the three factors then collapse to the left and right singular subspaces of the fitted values. Whitening the two blocks by their covariances turns the same construction into canonical correlation analysis (Hotelling, 1936), and a covariance-based two-block criterion into partial least squares (Wold, 1975). The proposed method is thus the non-negative member of this family, related to RRR as NMF is to PCA. Proposition 1 makes the relationship precise: the two share the rank class, RRR being its unconstrained optimum and NMF-RRR its non-negatively tri-factorizable member; their fitted values coincide only under a condition, but in practice their subspaces are close when the structure is strong (Section 6). 
+
+Proposition 1. Fix r = min( Q, R ). (i) The NMF-RRR coefficient M = X1ΘX2
+
+satisfies rank( M ) ≤ r, the same rank class as the rank-r RRR coefficient. (ii) RRR minimizes ∥Y1 − M Y 2∥2 
+
+> F
+
+over all M with rank( M ) ≤ r, whereas NMF-RRR minimizes it over the non-negatively tri-factorizable subset {X1ΘX2 : X1, X 2 ≥
+
+0 (normalized) , Θ ≥ 0}; hence ∥Y1 − ˆMRRR Y2∥F ≤ ∥ Y1 − ˆMNMF −RRR Y2∥F . (iii) The two fitted matrices coincide iff some feasible non-negative tri-factorized coefficient M
+
+satisfies M Y 2 = ˆMRRR Y2; in general they differ—and even their column spaces need not coincide—their proximity being an empirical matter (Section 6). 
+
+Part (ii) explains why RRR always attains the better in-sample fit, and part (iii) why “shared subspace” is a property to be checked, not assumed—which we do in Section 6. 
+
+Remark 1. As a matrix class the tri-factorization M = X1ΘX2 is not more general than a rank-r bi-factorization M = U V ⊤; it is a reparameterization with 
+
+r = min( Q, R ). Its value is therefore not a larger class but the constrained, nor-malized, non-negative structure : X1 and X2 are soft clusterings of the response and covariate variables and Θ is their Q × R correspondence, so the coefficient reads as a co-clustering of the two variable sets—which a (non-negative) bi-factorization U V ⊤,tying both blocks to one shared set of r components, does not deliver. Read the other way round, this is a necessity argument: once one asks for a non-negative soft co-clustering of both variable sets—with possibly different numbers of groups Q̸ = R
+
+and an estimable correspondence between them—non-negativity alone does not suffice, since a bi-factorization forces a single shared rank ( Q = R, in one-to-one correspon-dence; see the “soft (shared)” row of Table 1). The middle factor Θ is exactly what decouples the two groupings and links them, so the three-factor form M = X1ΘX2
+
+is the minimal non-negative parameterization of the regression coefficient that yields two-sided soft co-clustering. 
+
+Autoencoder and two-layer special cases. 
+
+When Y2 = Y1 = Y , (2) becomes Y ≈ X1ΘX2Y , a non-negative linear autoencoder whose signed counterpart is PCA (Eckart and Young, 1936). When X2 = IP2 (so 
+
+R = P2) and Y2 = A is a known covariate matrix, M = X1Θ and Y ≈ X1ΘA is NMF with covariates (Satoh, 2023, 2026c), whose mean structure is the growth curve model (Potthoff and Roy, 1964). The present model adds a learned covariate basis X2, i.e. it additionally clusters the covariates. 7tri-NMF. 
+
+The coefficient M = X1ΘX2 is a non-negative matrix tri-factorization (Ding et al, 2006). Two differences matter. First, Ding’s tri-NMF factorizes a single observed non-negative matrix V (clustering its rows and columns), whereas here the tri-factorized object is the coefficient M , estimated by predicting Y1 from Y2. Second, their bi-orthogonal formulation constrains F ⊤F = I and G⊤G = I; since a non-negative matrix with orthonormal columns has at most one non-zero per row, exact orthog-onality is a hard clustering. We replace that constraint by the ℓ1 normalization of Section 3.5—unit column sums for X1, unit row sums for X2—which keeps the factors interpretable as cluster profiles while allowing a variable to load on several groups. The present model is in this sense a soft counterpart of the orthogonal tri-factorization, not an instance of it. The proposed method is therefore a supervised tri-NMF: it co-clusters the response variables ( X1) and the covariate variables ( X2) with block correspondence Θ, and—unlike tri-NMF, which only describes the matrix it is given—predicts a new individual through ˆ y = X1ΘX2 a. This is not tri-NMF with one factor merely held fixed, however: because the tri-factorized object is the coefficient M rather than Y1
+
+itself (the first difference above), the fitting criterion is the regression Y1 ≈ X1ΘX2Y2,not tri-NMF’s direct reconstruction of an observed matrix—a different construction, not a constrained instance of the same one. Fixing Y2 as a known covariate is what makes this a regression on a known design, the same device by which the growth curve model (Potthoff and Roy, 1964) fixes its design matrix (its mean structure coincides with ours, above), and it is precisely this that admits external covariates, predic-tion, and the connections to established multivariate models, greatly broadening the method’s range of application; the author’s NMF-VAR (Satoh, 2026b) and NMF-LAB (Satoh, 2026a) broaden NMF from this same viewpoint. 
+
+Table 1 Positioning of the proposed method against related factorizations (discussed in the text). “Tests Θ” = inference on the block-correspondence entries; “Predicts” = a new individual’s response is obtained from its covariates. In the two clustering columns, soft /hard denote a non-negative soft / a hard clustering of that side and 
+
+soft (shared) a soft membership tied to one shared rank ( Q = R, one-to-one); – marks no clustering of that side (signed loadings or sparse selection only), and (A given) a known, unclustered covariate block. The bi-orthogonal tri-NMF of Ding et al (2006) is listed as hard because a non-negative matrix with orthonormal columns has at most one non-zero per row; its multiplicative updates approach that constraint only approximately, so fitted factors are in practice softer than the formulation prescribes. Rows follow Ding et al (2006) (tri-NMF), Fitzgerald et al (2022) (nn-PRRR), Chen et al (2012); Bunea et al (2012); Chen and Huang (2012); Mishra et al (2017); Uematsu et al (2019) (sparse/co-sparse RRR, SOFAR), and Yu et al (2019) (bi-clustering of M ).                                                         
+
+> Method Object factorized Non-neg. Clust. covariates Clust. responses Tests Θ Predicts tri-NMF (bi-orthogonal) single matrix Vyes hard (orth.) hard (orth.) no no RRR / CCA / PLS M(low rank) no ––no yes Sparse/co-sparse RRR, SOFAR M(sparse) no ––no yes nn-PRRR M=U V ⊤yes soft (shared) soft (shared) no yes Sup. bi-clustering of MMno hard hard no yes NMF w/ covariates (GCM) X1Θyes (Agiven) soft ( X1)one-sided yes
+> Proposed (NMF-RRR) M=X1ΘX2yes soft ( X2)soft ( X1)yes yes
+
+8Model depth. 
+
+Three factors are not arbitrary; they are the maximal meaningful depth. Because Θ carries no constraint beyond (optional) non-negativity, any deeper product with 
+
+unconstrained inner factors collapses—stacking matrices between the response basis 
+
+X1 and the known Y2 multiplies them into one—so the model reduces to one of only two forms, 
+
+Y1 ≈ X1 Θ Y2 or Y1 ≈ X1 Θ X2 Y2 :the two-factor form, which puts a response basis on the raw covariates (NMF with covariates, i.e. X2 = I), or the three-factor form of this paper, which additionally clusters the covariates. No unconstrained product is richer than the three-factor model, so it is the maximal structure that softly co-clusters both variable sets. The reduction breaks only when the inner factors are themselves constrained (sparsity, orthogonality, or non-negativity), as in deep NMF (Trigeorgis et al, 2017). 
+
+## 2.4 Co-clustering interpretation 
+
+Because X1 and X2 are non-negative, the columns of X1 and the rows of X2 are non-negative cluster profiles —the normalized loadings of the response and, respectively, the covariate variables on each group; the soft membership of a variable across the groups is read from its relative loadings across these profiles—for response variable i,
+
+πiq = ( X1)iq / P
+
+> h
+
+(X1)ih , and analogously for a covariate variable from the columns of X2—giving a soft co-clustering of the two variable sets. The entry θq,r measures how strongly covariate group r drives response group q. When Q = R the optimum tends towards a near-permutation Θ—a one-to-one correspondence between covariate and response groups—whereas Q < R exposes cross-structure in which one response group integrates several covariate groups. Section 5 provides a test that distinguishes significant cross-structure from the permutation pattern that a square Θ tends to impose. 
+
+# 3 Multiplicative update rules 
+
+We estimate the unknown factors of model (2) by minimizing the squared Euclidean (Frobenius) discrepancy 
+
+D(X1, Θ, X 2) = Y1 − X1ΘX2Y2 
+
+> 2
+> F
+
+, (4) which corresponds to maximum likelihood under a Gaussian error model. Optimizing all factors jointly is non-convex, but, fixing two of the three blocks, D is convex in the remaining one (Section 3.6); we therefore minimize D by block coordinate descent, updating each block by a Lee–Seung multiplicative rule (Lee and Seung, 2000) that preserves non-negativity and does not increase D. Each rule has the form 
+
+ξ ← ξ ⊙ (∇− ⊘ ∇ +), where − 12 ∂D/∂ξ = ∇− − ∇ + is the split of the (negative) gradient into its non-negative “pull” and “push” parts, ⊙ and ⊘ are the elementwise (Hadamard) product and division, and a small ε is added to the denominator as a numerical safeguard. The monotonicity and stationarity statements below refer to the 9exact updates ( ε = 0) with strictly positive denominators; at such a fixed point a strictly positive coordinate has ∇− = ∇+, so the update leaves it unchanged. 
+
+## 3.1 Precomputation avoiding the sample dimension 
+
+A naive evaluation of (4) costs O(P1QRP 2N ) per iteration. Since the sample size N
+
+enters only through inner products, we compute, once , before the iteration, 
+
+S = Y2Y ⊤ 
+
+> 2
+
+∈ RP2×P2 
+
+> ≥0
+
+, G0 = Y1Y ⊤ 
+
+> 2
+
+∈ RP1×P2 , (5) at cost O(P 22 N + P1P2N ); S ≥ 0 because Y2 ≥ 0, while G0 inherits the sign of Y1 (it is non-negative after the per-variable transform of Section 6). Within each iteration we then form the small matrices 
+
+P = X⊤ 
+
+> 1
+
+X1 ∈ RQ×Q 
+
+> ≥0
+
+, SX = X2SX ⊤ 
+
+> 2
+
+∈ RR×R 
+
+> ≥0
+
+, GX = X⊤ 
+
+> 1
+
+G0X⊤ 
+
+> 2
+
+∈ RQ×R,G0X = G0X⊤ 
+
+> 2
+
+∈ RP1×R, A = X⊤ 
+
+> 1
+
+G0 ∈ RQ×P2 , (6) all independent of N . The updates below are written entirely in terms of (5)–(6). 
+
+## 3.2 Update for the parameter matrix Θ 
+
+Fixing X1, X 2 and writing ˆY1 = X1Θ( X2Y2), 
+
+∂D ∂Θ = −2X⊤
+
+> 1
+
+ Y1 − X1ΘX2Y2
+
+(X2Y2)⊤ = −2 GX − P Θ SX
+
+, (7) using X⊤ 
+
+> 1
+
+Y1(X2Y2)⊤ = X⊤ 
+
+> 1
+
+G0X⊤ 
+
+> 2
+
+= GX and X⊤ 
+
+> 1
+
+X1Θ( X2Y2)( X2Y2)⊤ = P ΘSX . With Θ ≥ 0 and GX ≥ 0, the pull and push parts are ∇− = GX and ∇+ = P ΘSX , giving Θ ← Θ ⊙ GX
+
+P Θ SX + ε (8) 
+
+## 3.3 Update for the response basis X1
+
+Fixing Θ , X 2 and writing B = Θ X2Y2 (the Q × N response scores), D = ∥Y1 − X1B∥2
+
+> F
+
+and ∂D/∂X 1 = −2( Y1B⊤−X1BB ⊤). Since Y1B⊤ = G0X⊤ 
+
+> 2
+
+Θ⊤ = G0X Θ⊤ and BB ⊤ =ΘSX Θ⊤,
+
+X1 ← X1 ⊙ G0X Θ⊤
+
+X1 ΘSX Θ⊤ + ε (9) which coincides with the ordinary NMF basis update with coefficient matrix B.
+
+## 3.4 Update for the covariate basis X2
+
+Fixing X1, Θ and writing H = X1Θ (the P1×R effective decoder), D = ∥Y1−HX 2Y2∥2
+
+> F
+
+and ∂D/∂X 2 = −2( H⊤Y1Y ⊤ 
+
+> 2
+
+−H⊤HX 2S) = −2(Θ ⊤A−Θ⊤P Θ X2S), using H⊤G0 =10 Θ⊤X⊤ 
+
+> 1
+
+G0 = Θ ⊤A and H⊤H = Θ ⊤P Θ. Hence 
+
+X2 ← X2 ⊙ Θ⊤A
+
+Θ⊤P Θ X2S + ε (10) 
+
+## 3.5 Normalization 
+
+The factorization is invariant to X1 ← X1D−1, Θ ← DΘE, X2 ← E−1X2 for posi-tive diagonal D, E . After each sweep we therefore rescale each column of X1 to sum to one and each row of X2 to sum to one, absorbing the scales into Θ; this fixes the scaling indeterminacy above and makes the columns of X1 and the rows of X2
+
+probability vectors (cluster profiles), leaving ˆY1 unchanged. It does not by itself make the tri-factorization unique—the remaining non-uniqueness, most visible for Q < R 
+
+(Section 4.3), is why the inference of Section 5 is conditioned on the estimated bases rather than on a claim that the decomposition is uniquely identified. The normalization also pins a scalar summary of Θ. 
+
+Proposition 2. Under the normalization above, the entries of Θ sum to the grand total of the coefficient matrix: 
+
+> Q
+
+X
+
+> q=1
+> R
+
+X
+
+> r=1
+
+θqr = 1⊤ 
+
+> P1
+
+M 1P2 , M = X1ΘX2. (11) This is immediate from 1⊤ 
+
+> P1
+
+X1 = 1⊤ 
+
+> Q
+
+and X21P2 = 1R, which give 1⊤M 1 =(1⊤X1)Θ( X21) = 1⊤
+
+> Q
+
+Θ1R. The identity is elementary and, on its own, says nothing about how Θ is estimated. It acquires statistical content only in combination with Appendix A: when M is itself identified—which needs Y2 to have full row rank, and so excludes the P2 > N example of Section 6.2, where the regression pins only M Y 2—and when its grand total is stable across estimates, (11) makes the QR path coefficients share a fixed total, so that an error in one entry is necessarily offset by the others. We stress what this does and does not deliver. It is an algebraic constraint on the estima-tion errors, and it does not by itself say which paths gain the mass and which lose it; the direction is an empirical matter, reported in Section 7, where the compensation the constraint predicts is also verified numerically. 
+
+## 3.6 Monotonicity and the algorithm 
+
+Proposition 3. With the other two blocks fixed, D is convex in the remaining block: the Hessians are 2( SX ⊗ P ) for Θ, 2( BB ⊤ ⊗ IP1 ) for X1, and 2( S ⊗ H⊤H) for X2,each a Kronecker product of positive-semidefinite Gram matrices and hence positive semidefinite. 
+
+Proposition 4. Take ε = 0 with strictly positive denominators. Then each of (8) ,
+
+(9) , (10) does not increase D; every strictly positive fixed point satisfies the Karush– Kuhn–Tucker conditions ξ ≥ 0, ∂D/∂ξ ≥ 0, ξ ⊙ ∂D/∂ξ = 0 , and a fixed point with a zero coordinate does so provided that coordinate is not zero-locked (i.e. its gradient there is non-negative). The ε > 0 in (8) –(10) is a numerical safeguard only. 
+
+11 The monotonicity follows the auxiliary-function argument of Lee and Seung (2000) applied to each convex subproblem; that a strictly positive fixed point satisfies the Karush–Kuhn–Tucker conditions, and the caveat about zero-locked coordinates, are the stationarity properties of multiplicative updates analyzed by Lin (2007). We omit the details. Algorithm 1 collects the steps. Initialization uses the three-step NMF scheme of Satoh (2026c); the convergence tolerance is set tightly (Algorithm 1) because, when a link lies on the non-negativity boundary, the multiplicative updates approach it slowly and a looser tolerance can stop prematurely. The k-means initializa-tion is run from several restarts (20 in our analyses), which we recommend whenever the bases feed inference. We confirmed the stability on the data of Section 6: with multi-start and a tight tolerance, all 20 random initializations converged to the same 
+
+solution—the in-sample R2 was constant and both the response and the covariate co-clusterings were reproduced (adjusted Rand index ≥ 0.999 to the default for every example). Single-start fitting (one restart) occasionally settles on a slightly worse local optimum—e.g. on nutrimouse the response partition falls to adjusted Rand index 0 .90 and R2 to 0 .152—which multi-start removes; the only residual non-uniqueness is the labelling of the over-parameterized covariate side when Q < R , exactly the (non-)identifiability of Section 4.3, which leaves the identified response groups and the fit unaffected. This mirrors the initialization robustness reported for NMF with covariates by Satoh (2025). 
+
+Algorithm 1 Multiplicative updates for NMF-RRR 
+
+Require: Y1 ∈ RP1×N 
+
+> ≥0
+
+, Y2 ∈ RP2×N 
+
+> ≥0
+
+, ranks ( Q, R ), convergence tolerance εtol (e.g. 10 −8) 
+
+> 1:
+
+Precompute S = Y2Y ⊤ 
+
+> 2
+
+and G0 = Y1Y ⊤ 
+
+> 2
+
+; initialize X1, Θ, X 2 by the three-step scheme of Satoh (2026c), whose k-means bases are taken as the best of 20 multistarts  
+
+> 2:
+
+repeat  
+
+> 3:
+
+Update X1 by (9); rescale each column of X1 to sum one, absorbing the scale into the rows of Θ  
+
+> 4:
+
+Update Θ by (8)  
+
+> 5:
+
+Update X2 by (10); rescale each row of X2 to sum one, absorbing the scale into the columns of Θ  
+
+> 6:
+
+until |D(t) − D(t−1) |/ max( D(t−1) , 1) < ε tol 7: return X1, Θ, X 2 and the coefficient M = X1ΘX2
+
+The auxiliary quantities (6) are refreshed from the current factors before each block update (Gauss–Seidel), and the column/row normalization is applied immediately after the X1 and X2 updates so that the columns of X1 and the rows of X2 remain probability vectors throughout. The per-iteration cost is dominated by the auxiliary products G0X = G0X⊤ 
+
+> 2
+
+and A = X⊤ 
+
+> 1
+
+G0, at O(P1P2R) and O(P1P2Q), together with 
+
+SX = X2SX ⊤ 
+
+> 2
+
+and Θ ⊤P ΘX2S, at O(RP 22 + R2P2 + QRP 2); the N -dependent work occurs only in the one-off precomputation (5), so for P2 ≪ N the method scales like ordinary NMF. When the covariate dimension P2 is itself very large (thousands of 12 variables), the P2 × P2 matrix S = Y2Y ⊤ 
+
+> 2
+
+dominates both memory and the O(P 22 )cost; one then either keeps the sample-dimension form of the updates (avoiding S) or exploits sparsity or a low-rank/landmark approximation of Y2. In the data of Section 6 we side-step this by pre-screening each block to its most variable high-prevalence variables, which also keeps the co-clustering interpretable. The method and the cross-validation of Section 4 are available in the nmfkc Rpackage (Satoh, 2026c). 
+
+# 4 Choice of the two ranks 
+
+The model has two ranks: Q response factors and R covariate factors. Because the attainable approximation has rank min( Q, R ), the in-sample fit is monotone non-decreasing in both Q and R and cannot be used to choose them; a predictive criterion is required. We use cross-validation, in two complementary forms. 
+
+## 4.1 Element-wise cross-validation 
+
+To select the ranks for approximation , we cross-validate over the entries of Y1 (in the spirit of Wold, 1978; Owen and Perry, 2009). Partition the P1N entries at random into V folds; for each fold v, set the held-out entries to “missing” through a 0 /1 weight matrix W (v) and minimize the weighted objective ∥W (v) ⊙ (Y1 − X1ΘX2Y2)∥2 
+
+> F
+
+, for which the multiplicative rules of Section 3 extend to analogous masked (weighted) updates—the weighting being carried through the sample dimension rather than the precomputation of Section 3.1—as implemented in the nmfkc package. Predicting the held-out entries and accumulating their squared errors over folds yields 
+
+σ(Q, R ) = 
+
+ 1
+
+> P1N
+
+P
+
+> v
+
+P 
+
+> (p,n )∈fold v
+
+ y(1)  
+
+> p,n
+
+− ˆy(1) 
+
+> p,n
+
+21/2
+
+, (12) and we choose the ( Q, R ) with the smallest σ, or the “elbow” beyond which σ flattens. Where a single automatic rule is needed—as in the simulations of Section 7, which repeat the selection thousands of times—we use the parsimonious one-standard-error rule, applied to the mean squared error σ2 of (12) rather than to σ itself: among the pairs whose mean squared cross-validation error lies within one standard error of its minimum—that standard error being computed across the V fold-wise mean squared errors of the minimizing pair—take the pair with the smallest Q + R, ties broken by the smaller Q. This element-wise scheme does not require held-out individuals, uses all P1N entries, and is well suited to the small samples typical of two-block data. It targets the rank of the approximation M = X1ΘX2 and follows the bi-cross-validation tradition for component-model rank selection, in which holding out sub-blocks of entries—rather than whole rows or columns—gives a criterion that penalizes an over-large rank and yields a clean minimum (Wold, 1978; Bro et al, 2008; Owen and Perry, 2009). When out-of-sample prediction is the goal, the complementary criterion is the sample-wise scheme of Section 4.2: because the response of a held-out individual 13 is predicted from its covariates alone, sample-wise cross-validation is a genuine new-individual criterion here and does not suffer the score-re-estimation dependence that undermines it in unsupervised component models. 
+
+## 4.2 Sample-wise cross-validation 
+
+Because the model also predicts , the ranks may instead be chosen for out-of-sample prediction. Partition the N individuals into folds; fit X1, Θ, X 2 on the training individ-uals; and, for each held-out individual, predict its response from its covariates through the explicit encoder, ˆ y1 = X1ΘX2y2. The ( Q, R ) maximizing the held-out R2 tar-gets the predictive rank directly and would be the criterion of choice when prediction, rather than description, is the primary goal; the analyses of Section 6 select their ranks by the element-wise scheme above. 
+
+## 4.3 The asymmetric roles of Q and R
+
+Because rank( M ) ≤ min( Q, R ) and, in our experiments, the attained fit was essentially determined by it, the larger of the two ranks adds resolution on its own side at little cost in fit. The two ranks are therefore asymmetric, and the choice between Q < R 
+
+and Q > R is a modelling decision, not a fit issue. The key fact is one of identifiability: in the non-degenerate case rank( M ) = min( Q, R ), the side carrying more factors than this rank is over-parameterized, so its basis columns span a lower-dimensional space and cease to be individually identifiable. 
+
+Q < R (more covariate than response factors). 
+
+If rank( M ) = Q (the non-degenerate case), the response basis X1 is not rank-redundant: its Q columns span a full Q-dimensional space. Under the response-separability condition of Remark 2, X1 and the combined covariate signature G = Θ X2
+
+are then identifiable up to relabelling, so the response groups—the response types we wish to name—are well defined. The surplus resolution falls on the covariate side, where each row of Θ (one response group) may load on several of the R covari-ate groups. This is exactly the cross-structure “one response group integrates several covariate drivers” (e.g. several environmental gradients jointly shaping one species guild), whose significance is assessed in Section 5; at an adequate sample size it is statistically supported (Section 6). 
+
+Q > R (more response than covariate factors). 
+
+If rank( M ) = R (the non-degenerate case, so rank( M ) < Q ), the situation is prob-lematic precisely on the side we care about. The Q columns of X1 are forced to span only an R-dimensional subspace, so they become collinear and the Q response groups are not separately identifiable ; equivalently, there are more response groups than the R-dimensional covariate bottleneck can independently drive, and the sur-plus Q − R response factors carry no new structure; their individual paths are then not uniquely interpretable, irrespective of their conditional significance. On the Doubs data of Section 6, for instance, Q=4 , R =2 attains exactly the same R2 = 0 .435 as 
+
+Q=2 , R =2: in this example the surplus response factors did not improve the fit (the 14 attainable rank being min( Q, R ) = 2). Although Q > R can be read as a dual cross-structure (“one covariate driver spreads over several response groups”), this reading is confounded with the response-factor redundancy and is rarely worthwhile. 
+
+Recommendation. 
+
+We therefore choose Q near the predictive elbow of σ(Q, R ) and then take Q ≤ R,so that the response side avoids rank-induced redundancy—separate identifiability additionally requiring the separability of Remark 2—while the covariate side is free to reveal cross-structure. Q > R is justified only when a deliberately finer description of the responses is wanted, with the understanding that the surplus response groups are neither separately identifiable nor independently predictable. The criterion σ(Q, R ) of (12) is evaluated in parallel over the V folds (we use V = 5). 
+
+Remark 2 (Identifiability of the factors) . The over-parameterization just described concerns the subspaces spanned by the bases; a sharper statement holds for the factors themselves. Beyond the scaling removed by the normalization of Section 3.5, the tri-factorization is pinned down only under a separability (anchor-variable) condition. If each response group owns a variable that loads on it alone and rank( M ) = Q, then the response profiles X1 and the covariate signatures G = Θ X2 are identifiable up to relabelling; if in addition R = Q, each covariate group owns such an anchor, and Θ
+
+is nonsingular, then Θ and X2 are separately identifiable up to independent permu-tations of the two label sets. When Q < R —the regime we recommend for exposing cross-structure—this last step fails: M fixes X1 and the product ΘX2, but not the split of G into R covariate groups and their correspondence Θ, absent a further geo-metric condition. The inference of Section 5 conditions on the estimated bases, and this conditioning does not itself remove the factorization non-uniqueness: a significant 
+
+θqr is a path of the selected factorization, not of a uniquely determined one. This is why we read the covariate-side cross-structure through the tested paths of Θ and the anchor (driver) variables rather than through the exact membership of every covariate variable. The formal statement and proof are in Appendix A. 
+
+# 5 Conditional inference for the parameter matrix 
+
+The entries of Θ quantify how strongly each covariate group drives each response group, so they are the natural targets of inference. We follow the conditional, growth-curve-model approach of Satoh (2025), extended here to condition on two esti-mated bases. The inference is therefore conditional and post-selection —not the formal selective-inference construction that conditions on the whole selection event, but a Wald test conditional on the chosen bases. Fixing these data-chosen bases makes Θ algebraically estimable within the working model (when the design ZZ ⊤ is nonsingu-lar), but does not by itself confer statistical validity; and for Q < R the null θqr = 0 is defined only relative to the selected factorization (Section 4.3), so “presence of a path” is not a decomposition-invariant hypothesis. We therefore read the test as an 
+
+exploratory screen for the presence of a path in the selected coordinate system , not a decomposition-invariant confirmatory inference; its calibration, and its limits, are examined by simulation in Section 7. 15 The multiplicative updates make no distributional assumption. To attach stan-dard errors we introduce, solely for inference and without altering the point estimate, a Gaussian working model conditional on the optimized bases ˆX1, ˆX2. Writing the estimated covariate scores Z = ˆX2Y2 ∈ RR×N ,
+
+Y1 = ˆX1 Θ Z + E, vec( E) ∼ N (0, σ 2IP1N ), (13) which is the GCM mean structure with design matrix ˆX1 and covariate matrix Z.Vectorizing, vec( Y1) = ( Z⊤ ⊗ ˆX1) vec(Θ) + vec( E) is linear in vec(Θ), with Fisher information I(Θ) = σ−2(ZZ ⊤ ⊗ ˆX⊤ 
+
+> 1
+
+ˆX1). Treating ˆX1, ˆX2 as fixed, vec( ˆΘ) ˙ ∼ N
+
+
+
+vec(Θ) , σ 2 ZZ ⊤ ⊗ ˆX⊤ 
+
+> 1
+
+ˆX1
+
+−1
+
+, ˆσ2 = ∥Y1 − ˆX1 ˆΘZ∥2
+
+> F
+
+P1N − QR , (14) Rather than rely on the working covariance I(Θ) −1 of (14)—the iid Gaussian error of (13) being only a working assumption—we report sample-wise robust (sandwich) standard errors, 
+
+dVar  vec( ˆΘ)  = ˆI−1
+
+ NN −1
+
+PNn=1 sns⊤
+
+> n
+
+ˆI−1, sn = vec  −ˆσ−2 ˆX⊤ 
+
+> 1
+
+rnz⊤
+
+> n
+
+, (15) where rn = y1,n − ˆX1 ˆΘzn is the residual of individual n, zn its covariate score, and ˆI is the information of (14) evaluated at ˆ σ2; the standard errors are the square roots of the diagonal of (15). Summing the score outer products over individuals treats individuals as independent but leaves the within-individual covariance across responses 
+
+unrestricted, so these standard errors are robust to the cross-response correlation that (13) ignores, and target the same asymptotic covariance as the model-based ˆI−1 when (13) is correctly specified. 
+
+One-sided boundary test. 
+
+Because each θqr ≥ 0, significance is assessed by the one-sided boundary test H0 :
+
+θqr = 0 against H1 : θqr > 0 using z = ˆθqr /SE, with the correspondingly one-sided interval [max(0 , ˆθqr − zαSE) , ∞) rather than a symmetric Wald interval that could fall below zero. A contrast of paths, being unconstrained in sign, takes a two-sided interval. 
+
+Wild bootstrap. 
+
+When the information is ill-conditioned—for example when R is large or an effect lies on the non-negativity boundary—we also compute a wild (multiplier) bootstrap (Wu, 1986; Liu, 1988) of the per-sample residual scores ( B = 500 centered exponential mul-tipliers, wn = ζn −1 with ζn ∼ Exp(1); cf. Mammen, 1993 for a two-point alternative), with non-negative projection of the resampled estimates. Attaching the multiplier to each individual’s whole residual score vector, it rests on the same independence-across-individuals assumption as (15), and yields bootstrap standard errors and percentile intervals as a robustness check. For numerical stability we invert ˆI + 10 −8I, falling back on a generalized inverse should that fail. Because the bootstrap re-uses the same 16 inverse, it provides a robustness check on the distributional approximation behind (14); it is not a remedy for an ill-conditioned or non-identified information matrix, which only a change of estimand or of design can cure. The z and p values reported in Section 6 use the sandwich standard errors of (15); the bootstrap supplies the interval estimates. 
+
+Conditional nature. 
+
+The inference is conditional on the data-driven bases ˆX1, ˆX2, and hence subject to post-selection effects (Taylor and Tibshirani, 2015); relative to the two-block growth curve model the only change is that the covariate Z = ˆX2Y2 is itself estimated, so the inference conditions on both bases. Satoh (2025) reported satisfactory calibration for the detection of covariate-effect paths—the contrasts of primary interest—in that setting, whereas their magnitudes (like the overall level parameters, confounded with the estimated scale of the bases) should be read with caution. In our simulations with re-estimated bases (Section 7), false-positive control was retained but became conservative rather than exactly calibrated. 
+
+# 6 Data analysis 
+
+We illustrate the method on four two-block data sets, summarized in Table 2. Three serve as archetypes, chosen because NMF-RRR is useful for a different reason in each: a permutation structure that every method recovers (Doubs), a weak cross-structure under p > n (nutrimouse), and a pronounced, biologically interpretable cross-structure in an originally p ≫ n study screened to 30 variables per block (FRAN-ZOSA gut microbiome–metabolome); a fourth example, the Wine data, illustrates the 
+
+classification special case, in which a one-hot class label makes the response basis 
+
+X1 the identity and the method reduces to a tested co-clustering of the covariates against the classes. The estimated correspondence matrices Θ for all four are shown together in Figure 1. Each variable is mapped to [0 , 1] by a per-variable min–max transform, so that sign-free covariates become non-negative; metabolite intensities are log-transformed beforehand. After these transforms the per-variable values are bounded and roughly symmetric, so the Gaussian (squared-error) loss of (4) is a rea-sonable working model for the data analysed here, the heavier skew and the zeros of the raw counts having been absorbed by the log and the rescaling (we return to this in Section 8). The fit is reported by the column-centered R2 = 1 −∥ Y1 − ˆY1∥2 
+
+> F
+
+/∥Y1 − ¯Y1∥2 
+
+> F
+
+,computed identically for every method compared, together with the mean absolute error (MAE) on the [0 , 1] scale (Table 6); the two give the same ordering. (In the comparison, RRR carries an intercept while the non-negative NMF-RRR does not, so the reported fit gap is conservative for NMF-RRR.) The two ranks are chosen by element-wise cross-validation (Section 4), and the paths Θ are tested by the inference of Section 5; in the tables, p-values below 0 .001 are reported as “ < 0.001” (the exact tiny values overstating the precision available), and estimates are starred for signifi-cance at a glance ( ∗p < 0.05, ∗∗ p < 0.01, ∗∗∗ p < 0.001). Since each fitted Θ entails 
+
+QR simultaneous path tests, we also checked the conclusions against a within-table Bonferroni correction: all substantive paths in Doubs, FRANZOSA and Wine remain 17 significant, while the single marginal nutrimouse path (Resp1 ←Cov1, p = 0 .041) is treated as exploratory. We compare with reduced-rank regression at the matched rank 
+
+r = min( Q, R ), with the unsupervised tri-NMF of the covariate–response association 
+
+Y1Y ⊤ 
+
+> 2
+
+, and with classical canonical correlation analysis. We do not include the closest non-negative competitor, nn-PRRR (Fitzgerald et al, 2022), among these empirical comparators: as a Poisson bi-factorization M = U V ⊤ that ties both blocks to a sin-gle shared rank (Table 1), it clusters both sides only jointly, at Q = R in one-to-one correspondence, and produces no separately tested block-correspondence matrix Θ— so it shares no comparable output with NMF-RRR, and a Poisson-versus-Gaussian in-sample fit comparison would not isolate the effect of this structural difference. The contrast with nn-PRRR is therefore structural, as set out in Section 2.3 and Table 1, rather than a matter of fit. The inference of Section 5 estimates the entries of Θ, but its calibration—examined by the simulation of Section 7—supports the presence of a path more than its magnitude; we therefore read the significant Θ entries primarily as tested present/absent links and interpret their sizes only qualitatively.                                                       
+
+> Table 2 The four analysis examples. P1is the number of response variables (block Y1; for Wine the one-hot class label), P2the number of covariate variables (block Y2), Nthe sample size; ( Q, R )are the response/covariate ranks chosen by element-wise cross-validation (for Wine, Qequals the number of classes and only Ris selected by cross-validation); R2is the in-sample, column-centered fit at rank = min( Q, R ). “Θ structure” classifies the estimated parameter matrix (Figure 1) as
+> permutation (a near one-to-one correspondence, no significant off-diagonal), weak cross (one significant cross-path), or cross (each response group significantly associated with two or more covariate groups).
+> Data set Response Y1(P1)Covariate Y2(P2)N(Q, R )R2Θ structure Doubs (ecology) fish species (27) environment (11) 30 (2,2) 0.44 permutation Nutrimouse fatty acids (21) gene expr. (120) 40 (2,3) 0.15 weak cross FRANZOSA (IBD) metabolome (30) microbiome (30) 220 (2,4) 0.12 cross Wine (chemistry) cultivar (3) chemistry (13) 178 (3,3) 0.38 permutation
+
+## 6.1 Doubs: fish versus environment 
+
+The Doubs data (Verneaux, 1973) record P1 = 27 fish species and P2 = 11 environmen-tal variables at N = 30 sites along a French river; they are a standard illustration of canonical (correspondence) analysis. Element-wise cross-validation selects Q = R = 2. The response basis splits the fish into a cold-water upstream guild (Resp1: 
+
+Neba , Phph , Satr =brown trout, Cogo , Thth =grayling) and a warm-water down-stream guild (Resp2: Ruru =roach, Gogo , Baba =barbel, Alal ), while the covariate basis splits the environment into an oxic upstream gradient (Cov2: dissolved oxy-gen and altitude, the two variables with non-negligible loadings) and a downstream distance/flow gradient (Cov1: distance from source 0 .567 and flow 0 .433; nitrate, BOD and the other nutrients load essentially zero, so we do not read Cov1 as a nutri-ent axis). Table 3 shows that Θ is a near-permutation: the upstream guild is driven by the oxic gradient and the downstream guild by the distance/flow gradient (both 
+
+p < 0.001), the two off-diagonal paths being exactly zero. This reproduces Huet’s classical longitudinal zonation, with R2 = 0 .435. 18 Doubs (permutation)    
+
+> Cov1 Cov2 Resp2 Resp1 covariate groups response groups  0.0 4.0*** 14.0*** 0.0
+
+Nutrimouse (weak cross)       
+
+> Cov1 Cov2 Cov3 Resp2 Resp1 covariate groups response groups  1.9* 0.0 4.4*** 0.0 6.7*** 0.0
+
+FRANZOSA (cross)          
+
+> Cov1 Cov2 Cov3 Cov4 Resp2 Resp1 covariate groups response groups  0.1 38.0*** 0.0 19.4*** 16.1*** 0.0 77.3*** 0.0
+
+Wine (permutation)         
+
+> Cov1 Cov2 Cov3 Resp3 Resp2 Resp1 covariate groups response groups  0.0 0.0 1.2*** 0.0 1.0*** 0.0 1.1*** 0.0 0.0
+
+Fig. 1 Estimated parameter matrix Θ (the block-correspondence/co-cluster network) for the four examples: rows are response groups, columns covariate groups, cells shaded by magnitude and anno-tated with the estimate and significance ( ∗p < 0.05, ∗∗ p < 0.01, ∗∗∗ p < 0.001; non-significant cells shown for transparency). Doubs and Wine are near-permutations (one covariate group per response group); FRANZOSA shows a pronounced cross-structure in which each response module is associated with two covariate groups, while nutrimouse shows a weaker cross-structure—one strong cross-path plus a marginal, exploratory one. 
+
+Table 3 Doubs ( Q=R=2): inference for Θ (one-sided boundary test). Response group Covariate gradient Estimate SE z p
+
+Resp1 (upstream guild) Cov2 (oxic) 3.97 ∗∗∗ 0.51 7.86 < 0.001 Resp2 (downstream guild) Cov1 (distance/flow) 14 .05 ∗∗∗ 1.84 7.65 < 0.001 Resp1 (upstream guild) Cov1 (distance/flow) 0.00 0.60 0.00 0.50 Resp2 (downstream guild) Cov2 (oxic) 0.00 1.00 0.00 0.50 
+
+The comparison is instructive. Reduced-rank regression fits better ( R2 = 0 .66) but its coefficient matrix is signed (about half its entries negative) and yields no clusters. Yet the two methods largely share the same low-rank subspace: their fitted values cor-relate at 0 .73 and the principal-angle cosines between their response subspaces are 0 .99 and 0 .87, so they differ mainly in the basis of that subspace—signed singular directions versus non-negative parts. The unsupervised tri-NMF of Y1Y ⊤
+
+2 recovers exactly the same guilds and gradients (adjusted Rand index 1 .00 on both sides): the longitudinal gradient is so dominant that the supervised and unsupervised co-clusterings coincide, externally validating the NMF-RRR solution—yet tri-NMF cannot predict the com-munity of a new site. Classical CCA, a factor (not clustering) method, is ill-posed 19 at N = 30 (canonical correlations 1 , 1, 1, . . . ). Here, then, the value of the proposed method over the simplest baselines is the explicit, testable path structure Θ rather than the clustering itself. 
+
+## 6.2 Nutrimouse: gene expression versus fatty acids 
+
+The nutrimouse data (Martin et al, 2007) record hepatic expression of P2 = 120 genes and concentrations of P1 = 21 fatty acids in N = 40 mice—a canonical correlation benchmark with p > n . Element-wise cross-validation selects Q = 2 response and 
+
+R = 3 covariate factors. The fatty acids split into a mono-unsaturated group (Resp1: C16:1, C18:1, C20:1, C14:0) and a saturated/long-chain PUFA group (Resp2: C16:0, C18:0, arachidonic C20:4n-6, DHA C22:6n-3), and the genes into three programs, one of which (Cov3: SR-BI, FAT, Ntcp, S14) is a lipid-transport and metabolism program. The path structure (Table 4) is now a non-permutation : besides the strong Resp2 ←Cov2 path, the mono-unsaturated group Resp1 draws on two gene programs—strongly on the lipid-handling Cov3 ( p < 0.001) and, more weakly, on Cov1 ( p = 0 .041, marginal and not surviving the within-table Bonferroni correction)—a weak, exploratory cross-path that a permutation Θ could not express ( R2 = 0 .155).                        
+
+> Table 4 Nutrimouse ( Q=2 , R =3): inference for Θ (one-sided boundary test); non-significant cells omitted. Response group Gene program Estimate SE zp
+> Resp2 (sat./PUFA) Cov2 6.75 ∗∗∗ 0.51 13.2 <0.001 Resp1 (MUFA) Cov3 (lipid transport/metab.) 4.39 ∗∗∗ 0.79 5.57 <0.001 Resp1 (MUFA) Cov1 1.94 ∗1.12 1.74 0.041
+
+Unlike Doubs, the methods now disagree , and the regime p = 120 > n = 40 is itself informative. Reduced-rank regression attains a higher in-sample fit ( R2 = 0 .62, signed), but at p > n this in-sample edge is largely what an unconstrained model with more parameters than observations attains: the regression is under-determined, so the gain need not reflect genuine shared structure or better generalization. (At p > n the RRR normal equations are singular, and we solve them with a minimal ridge—10 −3
+
+times the mean diagonal of the covariate Gram matrix—purely to make the system solvable; this is numerical stabilization, not a tuned regularizer, and a fully fair predic-tive comparison would benchmark against a tuned ridge or sparse RRR, which we do not pursue here.) Classical CCA, meanwhile, is again ill-posed. The non-negative, nor-malized, low-rank parameterization of NMF-RRR, by contrast, regularizes the problem through structural constraints—non-negativity and the column/row normalization— rather than through a smaller rank (at the matched rank r = min( Q, R ) the two carry comparable degrees of freedom), so the method remains well-behaved at p > n ,just as ordinary NMF is routinely fitted to wide matrices. The unsupervised tri-NMF clusters agree only partially with the NMF-RRR ones (adjusted Rand index 0 .24 on the response side and 0 .28 on the covariate side): the NMF-RRR clusters arise from 20 the supervised, low-rank fit and are only partly reproduced by raw association, so the sandwich-based significance of the cross-paths is what licenses their interpretation. 
+
+## 6.3 FRANZOSA: gut microbiome versus metabolome 
+
+The FRANZOSA inflammatory-bowel-disease study (Franzosa et al, 2019) measured, in N = 220 subjects (88 Crohn’s, 76 ulcerative colitis, 56 control), a gut microbiome (11 ,720 microbial features) and a metabolome (8 ,848 LC–MS features)—a strongly 
+
+p ≫ n two-block problem on which classical unregularized CCA and RRR are ill-posed without screening or regularization. For interpretability we keep the 30 most variable high-prevalence genera and metabolites; microbial relative abundances and log-metabolite intensities are then min–max scaled. Element-wise cross-validation over 
+
+Q, R ∈ { 1, . . . , 5} favours Q ≤ R throughout and never prefers Q > R ; its global minimum lies at the largest ranks ( Q=4 , R =5, σ = 0 .328), but the profile is essentially flat once a single response factor is present—at Q=2, σ moves only within 0 .342–0 .344 as R ranges over 2 , 3, 4, 5 (against 0 .362 at R=1), consistent with the fit being capped by rank( M ) = Q (Section 4.3). We therefore keep the parsimonious Q = 2, which holds the two response modules identifiable, and take R = 4 to resolve the covariate side and expose the cross-structure rather than to lower σ; like our other modelling choices, this rank is one the subsequent conditional inference conditions on. Only three of the 30 retained metabolites carry a compound annotation—the rest are unannotated LC–MS features—so we name each module by its annotated, high-loading members rather than by a metabolite class: Resp1 is the urobilin module (its two annotated features are both urobilin) and Resp2 the chenodeoxy-cholate module (its top-loading annotated feature is chenodeoxycholate, a bile acid). The four microbial groups, named by their highest-loading genera, are two commensal fibre-fermenter groups (Cov1: Bifidobacterium , Bacteroides , Prevotella ;Cov2: Alistipes , Faecalibacterium ), a mixed group led by Blautia and also carry-ing Coproplasma , Enterococcus and the Proteobacterium Escherichia (Cov3), and a 
+
+Collinsella /Ruminococcus group (Cov4). The path structure (Table 5) is a pronounced 
+
+non-permutation : each metabolite module is associated with two microbial groups— Resp2 with Cov3 and Cov1, and Resp1 with Cov4 and Cov2—all highly significant. This cross-structure is the statistical finding; the biological reading below attaches to the modules’ annotated features and is offered as a hypothesis conditional on the selected factorization, not as a characterization of the modules as chemical classes. Its top-loading feature chenodeoxycholate makes Resp2 a natural place to look for bile-acid biology: microbial transformation of bile acids—bile-salt-hydrolase deconjugation in particular—is a function distributed across many genera, including Bacteroides ,
+
+Bifidobacterium , Blautia and Enterococcus (Ridlon et al, 2014; Foley et al, 2019), so a module carrying chenodeoxycholate being jointly associated with a commensal group (Cov1) and a mixed group that includes Enterococcus and the Proteobacterium 
+
+Escherichia (Cov3, whose bloom is a hallmark of IBD dysbiosis (Shin et al, 2015)) is biologically plausible, and chenodeoxycholate is itself among the bile acids that Fran-zosa et al (2019) report elevated in IBD. We read these as co-occurrence associations, not causal claims, and—since its annotated content is only urobilin—regard Resp1 21 as more exploratory still. Because N = 220 is comparatively large, these conditional tests also rest on firmer ground than in the two small benchmarks. The screening threshold deserves a word. Some filtering is unavoidable—the raw blocks hold 11 ,720 microbial features and 8 ,848 metabolite features—and ours is unsu-pervised with respect to the covariate–response relation: prevalence and variance are computed within each block separately and never use the association between the blocks, so this is not selection of variables by their relation to the response. Keeping only 30 of them is nonetheless an aggressive cut, so we repeated the entire analysis at 50, 100, 200 and 400 variables per block, holding the ranks at ( Q, R ) = (2 , 4) so that the two changes are not confounded. At the fixed ranks the coarse two-path-per-response pattern persisted: at every threshold each metabolite module still drew significantly on exactly two microbial groups, while the fit improved monotonically (R2 = 0 .115, 0 .175, 0 .225, 0 .237, 0 .259). What does change is the composition of the covariate groups. As more variables enter, the fine separation among the four covari-ate groups gives way to coarser ones, until at 400 variables eight of the eleven genera named above share a single group. The coarse two-path pattern thus persisted across thresholds, whereas the specific group memberships remained threshold-dependent and, like everything on the covariate side, conditional on the K = 30 screening—an instance, on real data, of the covariate-side non-identifiability that Remark 2 flags for 
+
+Q < R . A comparatively large N = 220 limits sampling variation but does not by itself remove this uncertainty of the factorization. Sample-wise resampling was less stable, particularly on the covariate side; hence the exact microbial memberships and individual paths remain exploratory.                          
+
+> Table 5 FRANZOSA ( Q=2 , R =4): inference for Θ (significant paths). Each metabolite module is associated with two microbial groups. Metabolite module Microbial group Estimate zp
+> Resp2 (chenodeoxycholate) Cov3 ( Blautia /Coproplasma )77 ∗∗∗ 20.4 <0.001 Resp1 (urobilin) Cov2 ( Alistipes /Faecalibacterium )38 ∗∗∗ 6.4 <0.001 Resp1 (urobilin) Cov4 ( Collinsella /Ruminococcus )19 ∗∗∗ 7.3 <0.001 Resp2 (chenodeoxycholate) Cov1 ( Bifidobacterium /Bacteroides )16 ∗∗∗ 5.3 <0.001
+
+As in nutrimouse, reduced-rank regression fits better ( R2 = 0 .30 versus 0 .12); on the full 11 ,720 × 8,848 data CCA and RRR are ill-posed. The unsupervised tri-NMF here reaches substantial agreement with NMF-RRR on the response side (adjusted Rand index 0 .74) and only moderate agreement on the covariate side (0 .45)—note that these measure agreement between two methods, not accuracy against a known truth. The two metabolite modules are therefore largely visible in the raw association as well; what the supervised formulation adds is the covariate-side partition, which is defined by the regression rather than by the association and is where the two disagree, together with the tested paths of Θ and the ability to predict a new subject. The relation to RRR is again the one anticipated by Proposition 1: here the leading principal-angle cosine between the RRR and NMF-RRR response subspaces is 0 .97 while the second is only 0 .48. Indeed, across the three multivariate-response examples the first 22 cosine lies in [0 .90 , 0.99] and the second in [0 .11 , 0.87] (nutrimouse supplies the low ends, 0 .90 and 0 .11)—the two methods agree on the dominant response direction and diverge on the secondary ones, as the proposition predicts when the RRR fit is not itself sign-compatible with a non-negative tri-factorization. This data set is where the cross-structure the method targets is most clearly and most significantly realized.                                         
+
+> Table 6 Comparison across the three multivariate-response examples; Wine, whose response is a one-hot class label, is discussed separately in Section 6.4. NMF-RRR: proposed (non-negative, supervised). R2is in-sample, column-centered, at rank = min( Q, R ); MAE is the mean absolute error on the [0 ,1] scale. Both metrics use identical definitions for every method, and both rank RRR above NMF-RRR in fit (Proposition 1). aThe FRANZOSA study is originally p≫n(11 ,720 microbial features, 8 ,848 metabolite features); the analysis reported here screens each block to its 30 most variable high-prevalence variables, so the fitted problem has 30 <220. Nutrimouse is the one example fitted with more variables than samples. Doubs Nutrimouse FRANZOSA (Q=R=2) (Q=2 , R =3) (Q=2 , R =4) NMF-RRR R2(non-negative, co-clustering) 0.44 0.15 0.12 RRR R2(signed, no clusters) 0.66 0.62 0.30 NMF-RRR MAE 0.186 0.183 0.290 RRR MAE 0.137 0.120 0.250 tri-NMF vs NMF-RRR, ARI (resp. / cov.) 1.00 / 1.00 0.24 / 0.28 0.74 / 0.45
+> pvs n; structure 11 <30; perm. 120 >40; weak cross 30 <220 a; cross
+
+Together the three archetypes delineate when the method is needed. When a single dominant gradient aligns both blocks (Doubs), every method agrees and the contribution of NMF-RRR is the testable path structure; when within-block and cross-block structure differ—weakly in nutrimouse and, most clearly, in the FRANZOSA microbiome–metabolome data, where several microbial groups are jointly associated with each metabolite module—the supervised, non-negative formulation and the unsu-pervised baseline part company: on the covariate side in FRANZOSA, where the response modules are largely shared, and on both sides in nutrimouse. The fourth example moves to a different setting, classification, where the response is a one-hot class label and the response basis therefore degenerates to the identity. 
+
+## 6.4 Wine: chemical signatures of three cultivars (a classification example) 
+
+The Wine data (Aeberhard and Forina, 1992) record P2 = 13 chemical measurements (alcohol, phenolics, flavanoids, colour intensity, proline, etc.) on N = 178 wines from three cultivars grown in the same Italian region. Here the response is the cultivar 
+
+label , so Y1 is the 3 × N one-hot indicator and Y2 the chemical covariates. With a one-hot response and Q = 3, the response basis collapses to the identity (each cultivar is its own group; we verified X1 = I3), so the model specializes to a supervised co-clustering of the covariates against the classes —case (ii) of Section 1 made explicit: the response side is not clustered, and all of the content is in X2 (the grouping of the 23 chemical features) and Θ (which feature group characterises which cultivar). Element-wise cross-validation selects R = 3 ( σ falls from 0 .42 at R = 2 to 0 .37 at R = 3 and is flat beyond). The 13 features split into three coherent chemical groups, which we name by the features that actually carry their loading: Cov3 (proline and flavanoids), Cov2 (hue and alcalinity of ash), and Cov1 (colour intensity and malic acid). The correspondence Θ is a clean permutation (Table 7): each cultivar is characterised by exactly one chemical group—Cultivar 1 by the proline/flavanoid group, Cultivar 2 by the hue group, and Cultivar 3 by the colour/malic-acid group—all three diagonal paths highly significant (p < 0.001) and the six off-diagonal paths exactly zero. The grouping is chemically sensible: Cultivar 1 is the flavanoid- and proline-rich type, whereas Cultivar 3 is set apart by high colour intensity and malic acid. Reduced-rank regression attains a much higher fit ( R2 = 0 .85 versus 0 .38; MAE 0 .14 versus 0 .34), as Proposition 1 predicts, but returns signed loadings rather than the parts-based, named feature groups; here the contribution of NMF-RRR is exactly this interpretable, tested feature co-clustering— a permutation Θ assigning each cultivar its chemical signature. Read as a classifier in the manner of NMF-LAB (Satoh, 2026a)—with X1 = I the output scores B =ΘX2Y2 become class-membership proportions once each column is normalized to sum one, their calibration as probabilities not being examined here—the hard (argmax) assignment recovers the cultivar for 87 .6% of the wines in-sample (156 /178).                      
+
+> Table 7 Wine ( Q=3 , R =3): inference for Θ (one-sided boundary test). Each cultivar is characterised by one chemical feature group; the six off-diagonal paths are exactly zero ( p= 0 .50, omitted). Cultivar Chemical feature group Estimate zp
+> Cultivar 1 Cov3 (proline/flavanoids) 1.25 ∗∗∗ 16.0 <0.001 Cultivar 3 Cov1 (colour intensity/malic acid) 1.08 ∗∗∗ 8.9 <0.001 Cultivar 2 Cov2 (hue/alcalinity of ash) 1.04 ∗∗∗ 7.3 <0.001
+
+This classification example also delimits the method: when the response is a one-hot label and Q equals the number of classes, X1 is the identity and NMF-RRR is no longer a two-block co-clustering but a one-sided, supervised clustering of the features—a useful special case, and a reminder that genuine two-block co-clustering requires either a multivariate response (as in Sections 6.1–6.3) or Q smaller than the number of classes. 
+
+# 7 Simulation study 
+
+We run six experiments in two groups. Four concern the inference of Section 5. (i) With the bases held fixed , is the test for Θ well calibrated? (ii) When both bases are 
+
+re-estimated from each data set—the realistic, selective case—do the existence test and the path magnitudes remain reliable? (iii) When the two ranks are also chosen from each data set, so that the whole procedure of Sections 3–5 is repeated, does the existence test still control its size? (iv) When the errors are correlated across 
+
+24 responses , so that the working model (13) is misspecified, do the sandwich standard errors of (15) deliver the robustness they are meant to buy? Two further experiments concern the method rather than the test: (v) can it tell a genuine cross-structure from a permutation, and (vi) does tri-factorizing the coefficient recover the true co-clustering better than factorizing the raw association? The upshot is a clean separation. The size of the existence (significance) test depends on the regime: nominal with the bases fixed, conservative once the bases and—conditional on the true ranks being recovered—the ranks too are re-estimated, and inflated but substantially controlled when responses are correlated, where the sandwich standard errors reduce a five-fold over-rejection to a residual 0 .067–0 .075. The magnitudes of the non-zero paths become anti-conservative as soon as the bases are re-estimated; cross-structure is a detectable feature rather than a dataset artifact; and the co-clustering itself is recovered as well as, and under cross-block covariate correlation more accurately than, by the unsupervised baseline. The first two experiments are calibrated to the Doubs fit of Section 6.1 ( Q=R=2). The estimated bases ˆX1, ˆX2 and parameter matrix are taken as ground truth; the two numerically near-zero entries of Θ (displayed as 0 .00 in Table 3) are set exactly to zero, so the design has one genuine path per response group (true values 14 .05 and 3.97) and two exact boundary nulls. We draw B = 3000 data sets from the working model Y1 = ˆX1 Θ Z + E with Z = ˆX2Y2 and vec( E) ∼ N (0, ˆσ2I), ˆ σ = 0 .243 being the residual scale of the fit. Conditional on the bases —the assumption of Section 5—we estimate Θ, form the model-based standard errors of (14), and apply the one-sided boundary test. Because the data are generated from the working model (13) itself, the model-based and the sandwich standard errors of (15) target the same quantity here; what the simulation probes is therefore the calibration of the boundary test and the effect of re-estimating the bases, not the robustness that (15) buys when (13) is misspecified.                                   
+
+> Table 8 Simulation calibrated to the Doubs fit ( Q=R=2, B= 3000, ˆ σ= 0 .243), conditional on the bases. Empirical coverage of nominal 95% intervals; for the true-zero paths the last column is the size of the one-sided boundary test (target 0 .05), for the others the power. Path true θbias cov. (2-sided) cov. (1-sided) reject ( z > z .05 )Resp1 ←Cov1 0−0.005 0.944 0.949 0.051 (size) Resp2 ←Cov1 14.05 0.003 0.957 0.951 1.000 (power) Resp1 ←Cov2 3.97 0.003 0.950 0.949 1.000 (power) Resp2 ←Cov2 0−0.008 0.951 0.945 0.055 (size)
+
+With the bases fixed (Table 8) the inference is well calibrated: the bias is negligible, both the two-sided and one-sided 95% intervals attain nominal coverage, the boundary test controls its size (0 .051–0 .055 against 0 .05), and the power at the two genuine paths is 1. In practice the bases are estimated from the same data, which makes the inference selective (Taylor and Tibshirani, 2015). To probe this, we repeat the experiment but 
+
+re-estimate both bases from each simulated data set (clipping negative entries to zero 25 so that Y1 ≥ 0, as the non-negative fit requires) and align the estimated factors to the truth by correlation before applying the inference. Table 9 reports the result.                                   
+
+> Table 9 As Table 8 but with both bases re-estimated from each data set and aligned to the truth ( B= 1000). Path true θbias cov. (2-sided) cov. (1-sided) reject ( z > z .05 )Resp1 ←Cov1 00.000 1.000 1.000 0.000 (size) Resp2 ←Cov1 14.05 −1.773 0.000 0.999 1.000 (power) Resp1 ←Cov2 3.97 2.225 0.000 0.000 1.000 (power) Resp2 ←Cov2 00.000 1.000 1.000 0.000 (size)
+
+A clear dichotomy emerges. The existence test stays safe: at the two true-zero paths the boundary test does not over-reject (empirical size 0 .000, i.e. conservative in these settings), so a significant path is unlikely to be spurious in the settings examined rather than guaranteed valid in general. The magnitudes are not: the two genuine paths are biased by +2 .2 and −1.8, and their nominal two-sided 95% intervals essentially never cover the truth. A one-sided lower interval—natural for a non-negative parameter— does not rescue this; it works for the attenuated path but fails for the over-estimated one, whose lower bound itself exceeds the truth, because the failure is selection bias in the point estimate, not the sidedness of the interval. The observed pattern is consistent with double-dipping (Taylor and Tibshirani, 2015) acting under the fixed total of Proposition 2: the bases are fitted to the same data on which Θ is then tested, and where the regression pins P 
+
+> q,r
+
+θqr while leaving its allocation across the paths loose, re-estimating the bases redistributes that total rather than perturbing the entries independently. Table 9 shows the redistribution directly: the two genuine paths move in opposite directions, by +2 .225 and −1.773, so that the total rises by only 0 .452—some 2 .5% of P 
+
+> q,r
+
+θqr = 18 .02—while each individual path is off by four to five times that amount. A dedicated experiment shows that the accounting closes: taking the synthetic Q=R=3 design introduced below, adding a single weak cross path θ13 = δ and re-running the whole procedure, the deficit at that path and the surplus spread over the three dominant paths differ by 0 .02–0 .03 for every δ between 0 .1 and 4, and that residual is itself the small upward drift of P 
+
+> q,r
+
+θqr . The compensation is thus exact up to the drift of the total, which is what (11) predicts. The same pattern appeared in the growth-curve study of Satoh (2025). Two further experiments sharpen the picture. In an auxiliary simulation the upward bias increased with the fraction of latent Gaussian responses clipped at zero; that clipping experiment isolates rectification within the data-generating mechanism, and observed zeros after min–max scaling are not a direct diagnostic of the result-ing bias. Together these findings suggest a two-stage mechanism: rectification creates upward pressure on the fitted total, while the normalization identity of Proposition 2 constrains how the resulting error is redistributed across the paths. The identity does not determine which paths gain and which lose mass. Neither a full-refit bootstrap (re-estimating the bases in each resample) nor sample splitting (estimating the bases 26 on one half and testing Θ on the other) restored nominal coverage, so a valid selective-inference correction is left to future work (Section 8). We therefore read the inference of Section 5 as a test of whether a path is present—which the simulation supports—and treat the magnitudes of non-zero paths as conditional on the estimated bases. Experiments (i) and (ii) hold the two ranks fixed at their true values, whereas in practice ( Q, R ) is chosen from the same data (Section 4), which adds a further layer of selection. The third experiment therefore repeats the entire procedure in every replication: data are generated under the null, the two ranks are selected by element-wise cross-validation with the parsimonious one-standard-error rule, the model is re-fitted from twenty multistarts, the factors are aligned, and the sandwich standard errors of (15) feed the one-sided boundary test. We use two identifiable designs— the Doubs calibration above, and a synthetic block-separable design with Q=R=3, 
+
+P1 = 15, P2 = 30, N = 60, Θ = diag(10 , 8, 6) and ˆ σ = 0 .05. Identifiability here rests on the conditions of Appendix A and not on Q = R alone: in both designs every response and every covariate group owns an anchor variable loading on it alone (the purest profile is 1 .000 on both sides in both cases), and Θ is nonsingular and well conditioned—det = −55 .8 with 2-norm condition number 3 .5 for Doubs, det = 480 with condition number 1 .7 for the synthetic design. Attention is restricted to Q = R
+
+because a per-path null θqr = 0 is not invariant to the choice of factorization when 
+
+Q < R (Section 4.3, Appendix A), so the type-I error is well defined only in the identifiable case; sizes are reported conditional on the replication having recovered the true ranks.                      
+
+> Table 10 Full-pipeline null simulation: in every replication the two ranks are re-selected by cross-validation and both bases re-estimated. “Recovery” is the proportion of replications selecting the true ranks, on which the remaining columns condition; “size” is the largest rejection rate over the true-zero paths (nominal 0 .05) and FWER the probability of rejecting any of them. Design Brecovery nmax size FWER power Doubs, Q=R=2 5000 1.000 5000 0.0014 0.0014 1.000 Synthetic, Q=R=3 3000 0.746 2238 0.0000 0.0000 1.000
+
+Conditional on correct-rank recovery, rank selection did not induce over-rejection (Table 10): the empirical size never exceeds 0 .0014 against a nominal 0 .05, the family-wise error rate over the true-zero paths is at most 0 .0014 (0 .0002 after a Bonferroni adjustment), and the power at every genuine path is 1. Quadrupling the noise of the synthetic design (ˆ σ = 0 .2) leaves this intact—size ≤ 0.002, power ≥ 0.998, with the true ranks recovered in 67% of replications—so the behaviour is not an artefact of an unusually clean design. Two qualifications are essential. First, these are conditional 
+
+rates: in the synthetic design about a quarter of the replications over-select R and are excluded, so Table 10 does not report the unconditional size of the whole procedure. Second, the conditioning is forced rather than chosen for convenience: as noted above, an unconditional per-path type-I error is not even well defined when Q < R . What the experiment establishes is thus narrower than it may appear: on the replications where the hypothesis is well posed, adding rank selection on top of basis re-estimation 27 does not create over-rejection. That is consistent with the fixed total of Proposition 2, under which a null path can be declared significant only by taking coefficient mass from the dominant paths. All three experiments so far draw iid Gaussian errors, that is, exactly the working model (13); none of them can therefore speak to the robustness that the sandwich standard errors of (15) are introduced to buy. The fourth experiment supplies that evidence. Keeping the Doubs calibration and holding the bases fixed —so that nothing is confounded by basis re-estimation or rank selection—we draw errors correlated 
+
+across responses within an individual, E·n ∼ N (0, Σ) with Σ ij = σ2ρ|i−j| and ρ ∈{0, 0.5, 0.8}, and compare three standard errors computed on identical data: the model-based ˆI−1 of (14), the sandwich of (15), and the wild bootstrap of Section 5 ( B = 2000 replications, 200 multiplier draws).                                            
+
+> Table 11 Robustness to across-response correlation (Doubs calibration, bases fixed, B= 2000). Errors within an individual follow Σij =σ2ρ|i−j|;ρ= 0 is the iid control, where (13) holds. “Max size” is the largest rejection rate over the two true-zero paths (nominal 0.05); the power at both genuine paths is 1 .000 in every row and is omitted. “Mean SE” and “MC SD” are averaged over the four paths; the latter is the Monte Carlo standard deviation of ˆθitself and so is a property of the design, not of the standard error being compared.
+> ρStandard error max size FWER mean SE MC SD 0model-based 0.0525 0.0980 0.362 0.362 sandwich 0.0670 0.1255 0.343 wild bootstrap 0.0925 0.1625 0.268 0.5model-based 0.1495 0.2615 0.360 0.572 sandwich 0.0700 0.1305 0.542 wild bootstrap 0.0875 0.1570 0.423 0.8model-based 0.2665 0.4085 0.357 0.830 sandwich 0.0745 0.1330 0.792 wild bootstrap 0.0910 0.1620 0.620
+
+Table 11 exposes the mechanism as well as the outcome. At ρ = 0, where (13) holds, the model-based test is exactly nominal (0 .0525). As the correlation grows its size climbs to 0 .15 and then to 0 .27—over five times nominal—because its standard error cannot see the correlation at all: the model-based mean standard error is 0 .362, 0.360, 0 .357 across the three settings, essentially constant. The sandwich standard error instead follows the true variability: averaged over the four paths it reads 0 .343, 0.542, 0 .792 against a Monte Carlo standard deviation of ˆθ of 0 .362, 0 .572, 0 .830, so it reproduces the actual spread to within about five per cent while sitting consis-tently a little below it. That small downward bias is precisely why the size settles slightly above nominal, at 0 .067–0 .075, rather than at 0 .05; the power at both genuine paths nonetheless remains 1 .000. The wild bootstrap behaves similarly (0 .088–0 .093), as one expects since it multiplies each individual’s entire score vector and so preserves the within-individual covariance. The protection is not free. At ρ = 0 the model-based standard error, being correct there, gives the more accurate size (0 .0525 against 28 0.0670), and the bootstrap is the least accurate of the three (0 .0925) while somewhat under-estimating the standard error. With only N = 30 individuals available to esti-mate the QR × QR meat matrix, this finite-sample cost is expected; we judge it a fair price for the protection obtained at ρ = 0 .5 and 0 .8, and it is the reason the tables of Section 6 report sandwich rather than model-based standard errors. 
+
+## Detecting cross-structure 
+
+A separate concern is whether the cross-structure of Section 6.2 is a real, detectable phenomenon or an artifact of one data set. We test this with a synthetic two-block design ( P1 = 15, P2 = 30, N = 60, Q = 2, R = 3, fixed non-negative bases, B = 2000, ˆσ = 0 .05) under two ground truths: a permutation Θ =  3 0 0 0 3 0 
+
+ and a cross Θ =  3 0 2 0 3 0 
+
+
+
+in which response group 1 is driven by covariate groups 1 and 3. The one-sided test (conditional on the true bases) gives the rejection rates permutation: 
+
+.85 .05 .05 
+
+.05 .98 .05 
+
+
+
+, cross: 
+
+.85 .05 .64 
+
+.05 .98 .05 
+
+
+
+.
+
+The cross path (true value 2) is detected with power 0 .64 and, when absent, rejected at only the nominal 0 .05; the diagonal paths (true value 3) have power 0 .85 and 0 .98 while every true-zero cell stays near 0 .05. The test thus tells a true cross-structure from a permutation: cross-structure is a detectable feature, not a dataset artifact. We test each θqr separately so as to localize which covariate group forms the extra path (e.g. the chenodeoxycholate module associated with several bacterial groups in Section 6.3). The power of 0 .64 also reminds us that a non-significant path means “not detected at this power,” not evidence of absence. In a more demanding full-pipeline variant, in which the bases and the ranks are re-estimated in every replication, the δ experiment described above puts a scale on that reminder: with dominant paths of 10, 8 and 6, the weak cross path was declared significant with probability 0 .02 at δ = 0 .5, 0 .24 at δ = 1 and 0 .94 at δ = 2, so a cross path much below a fifth of the dominant path in its own row is unlikely to be found. Its magnitude stays strongly shrunk even where detection is reliable—at δ = 4 the power is 0 .998 but the mean estimate is 2 .6—which is again consistent with Proposition 2: under a fixed total, the weak path can only be paid for out of the mass held by the dominant ones. This one-fifth heuristic is design-specific rather than universal; power also depends on the sample size, the noise level and the separation of the bases, and the larger N = 220 of Section 6.3 permits substantially weaker relative paths to be detected. 
+
+## Recovering the true co-clustering 
+
+The experiments so far evaluate the inference . The object the method is built around, however, is the co-clustering itself, and the case for tri-factorizing the coefficient M
+
+rather than the raw association Y1Y ⊤ 
+
+> 2
+
+has so far been algebraic (Section 2.3) and indirect—the divergence from unsupervised tri-NMF on the real data of Section 6, where the truth is unknown. The final experiment tests it where the truth is known. 29 We reuse the identifiable block-separable design of experiment (iii) ( Q=R=3, P1 =15, P2 = 30, N = 60, Θ = diag(10 , 8, 6)) and generate non-negative covariates as 
+
+y(2)  
+
+> j,n
+
+= 0 .2 + fr(j),n + λ 1{r(j) ∈ { 1, 2}} gn + 0 .4 uj,n , where fr is a factor common to covariate block r, g a factor shared by blocks 1 and 2, and u idiosyncratic noise taken large enough that Y2 has full row rank—so that M itself, and not merely M Y 2,is identified (Appendix A). The parameter λ controls how far the association departs from the coefficient. In expectation Y1Y ⊤ 
+
+> 2
+
+∝ M (Y2Y ⊤ 
+
+> 2
+
+), so when the covariate Gram matrix is approximately block diagonal with respect to the true partition , factorizing the association preserves the co-clustering; cross-block covariance introduces off-block mixing and degrades recovery. We take λ = 0 (mean cross-block covariate correlation 0.03, within-block 0 .86) and λ = 3 (cross-block 0 .27, within-block 0 .94), with B = 400 replications each, and compare NMF-RRR against the unsupervised tri-NMF of Y1Y ⊤
+
+> 2
+
+used as the baseline in Section 6, computed with the update rules of Ding et al (2006), with column normalization to fix the scale they leave free, from a K-means start and taking the best of ten restarts.                                       
+
+> Table 12 Recovery of the true co-clustering ( Q=R=3, B= 400). The adjusted Rand index is computed against the true blocks; ARI and the two error measures are evaluated at the true ranks (3 ,3), and only the last row reports the frequency with which cross-validation recovered them. The two error measures refer to NMF-RRR, the only method here that estimates a regression coefficient. λcontrols the cross-block correlation of the covariates and hence how far the association
+> Y1Y⊤
+> 2departs from the coefficient M.
+> λ= 0 (cross-block corr. 0 .03) λ= 3 (corr. 0 .27) ARI responses, NMF-RRR 0.998 1.000 ARI responses, tri-NMF 1.000 0.823 ARI covariates, NMF-RRR 0.995 1.000 ARI covariates, tri-NMF 1.000 0.859
+> ∥ˆM−M∥F/∥M∥F0.167 0.161
+> ∥ˆM Y 2−M Y 2∥F/∥M Y 2∥F0.010 0.003 rank (3 ,3) recovered 0.945 0.980
+
+When the covariate Gram matrix is nearly block diagonal with respect to the true partition ( λ = 0) the two methods are indistinguishable: both recover the design, the baseline in fact reaching 1 .000 on both sides and agreeing with NMF-RRR in 99% of replications. Nothing is gained by supervising the factorization here—the situation of the Doubs analysis, where the two also agreed exactly. Once the covariate blocks are cross-correlated ( λ = 3) the baseline degrades while NMF-RRR does not: the mean adjusted Rand index falls from 1 .00 to 0 .823 on the response side and 0 .859 on the covariate side. The gap is small in the mean but very stable—mean difference 0 .177 and 0.141 with Monte Carlo standard errors 0 .011 and 0 .007—and it is one-sided: NMF-RRR was never worse than the baseline in any of the 400 replications, and strictly better in 44% (responses) and 69% (covariates), the remainder being ties. This is the controlled counterpart of the divergence observed on nutrimouse and FRANZOSA, and it locates the advantage precisely: the association matrix displays the coefficient seen through Y2Y ⊤ 
+
+> 2
+
+, so supervising the factorization buys nothing when the covariate 30 blocks are uncorrelated and buys accuracy, in this design, when they are not. The design deliberately isolates the distortion contributed by the covariate Gram matrix, and it is favourable to NMF-RRR in other respects—the data are generated from its own model, at the true ranks and at high signal—so it does not establish a universal superiority over tri-NMF. The two error measures also illustrate the identifiability hierarchy of Appendix A: even with Y2 of full row rank, the fitted mean M Y 2 is recovered an order of magnitude more accurately (0 .003–0 .010) than the coefficient M
+
+itself (0 .16). 
+
+# 8 Discussion and conclusion 
+
+We introduced a co-clustering of the response and covariate variables , obtained by tri-factorizing the non-negative regression coefficient matrix M = X1ΘX2 of the mul-tivariate linear regression Y1 ≈ M Y 2: X1 co-clusters the response variables, X2 the covariate variables, and Θ is an estimated, testable matrix of block correspondences. Because the bases are fitted by regressing Y1 on Y2, the co-clustering is supervised—in contrast to clustering a single matrix—and the estimator is a tri-factorized non-negative reduced-rank regression (NMF-RRR). The construction unifies two traditions that have stood apart: the co-clustering of tri-NMF, which acts on a single matrix and neither uses covariates nor predicts, and the predictive low-rank regression of RRR, CCA, and PLS, which relate two variable blocks but return signed factors rather than clusters. Three points locate the method. First, dropping non-negativity recovers reduced-rank regression exactly; NMF-RRR and RRR belong to the same low-rank class (Proposition 1), with RRR its unconstrained optimum and NMF-RRR its non-negative member, and empirically their leading fitted directions nearly coincide while the secondary directions and the basis differ—non-negative parts versus signed singular directions, as NMF relates to PCA. Second, although tri-NMF, with all three fac-tors free, is the most general factorization, fixing the covariate block Y2 as a known covariate is what broadens applicability: it admits external covariates and connects the model to the growth curve model and its relatives. Third, we developed infer-ence for Θ, conditional on the two estimated bases and reported with sample-wise sandwich standard errors—which, as Table 11 shows, substantially limit size inflation when responses are correlated, where the model-based standard error over-rejects by a factor of five—and which distinguishes a cross-structure (one response group linked to several covariate groups, exposed by taking Q < R , and read conditionally on the selected factorization since the covariate-side split is then not uniquely identified) from the permutation structure a square Θ tends to impose, and supports interpretation when the unsupervised baselines disagree. The three archetypal analyses delineated when the method is needed. On the Doubs data a single dominant gradient aligned both blocks, so unsupervised tri-NMF and NMF-RRR returned the same upstream–downstream guilds; there the contribution of NMF-RRR is the explicit, testable path structure. On the nutrimouse ( p > n )and, most clearly, the FRANZOSA microbiome–metabolome data (originally p ≫ n,screened to 30 variables per block), where within-block and cross-block structure differ, 31 the methods diverged and the supervised non-negative formulation recovered cross-structure—several covariate groups jointly associated with one response module—with the sandwich-based significance of the cross-paths providing conditional support. On FRANZOSA the unsupervised baseline reproduces much of the response grouping and the two part company mainly on the covariate side, which the supervised fit defines through the regression rather than through the raw association; on nutrimouse agreement stays low on both sides. The simulation of Table 12 locates when this matters: with the covariate blocks uncorrelated the unsupervised baseline recovers the true co-clustering just as well, so supervising the factorization gains nothing; once they are cross-correlated, so that the association Y1Y ⊤ 
+
+> 2
+
+and the coefficient M carry different block structures, the baseline degrades (mean adjusted Rand index 1 .00 → 0.82–0 .86) while factorizing the coefficient does not—a small but entirely one-sided gap. A fourth example, the Wine data, illustrates the classification special case: with a one-hot class label the response basis becomes the identity and NMF-RRR reduces to a tested, parts-based co-clustering of the chemical features against the cultivars, recovering a clean permutation in which each cultivar carries a distinct chemical signature. Reduced-rank regression remained the better in-sample fit throughout, though at p > n (nutrimouse) that edge is largely a property of the unconstrained fit rather than evidence of better structure—where CCA is outright ill-posed, the non-negative, normalized, low-rank parameterization keeps NMF-RRR well-behaved, just as ordinary NMF is fitted to wide matrices; the value of NMF-RRR is the non-negative, parts-based co-clustering with tested paths, not raw accuracy. The non-negativity constraints make it hard to improve the fit, but the covariate (predictive) structure is still useful for model selection : because the fitted model predicts held-out entries and units, the two ranks can be chosen by cross-validation (Section 4), guarding the co-clustering against over-fitting—an option unavailable to a pure single-matrix co-clustering. Several limitations point to future work. As the simulation of Section 7 showed, when the bases are re-estimated—and, conditional on the true ranks being recovered, also when the two ranks are re-selected in every replication—the existence test for a path remained conservative in our simulations, whereas the magnitudes of the non-zero paths became anti-conservative. Proposition 2 supplies an algebraic constraint consistent with this pattern: where M is identified and its grand total stable, the nor-malization ties P 
+
+> q,r
+
+θqr to that total, so the paths share a fixed budget and an error in one is offset by the others. It does not, however, predict which paths gain and which lose, and it is silent in the P2 > N regime where only M Y 2 is identified; deriving the direction of the compensation, and correcting the path-magnitude intervals for it—for example by selective-inference adjustments—remain open. So does an uncon-ditional treatment of rank selection: Table 10 conditions on recovering the true ranks, because for Q < R the per-path null is not decomposition-invariant. Both blocks were treated under a Gaussian (squared-error) loss after a per-variable min–max transform. This transform is a modelling choice with side effects. It sends each variable’s min-imum to 0, so a structural zero (a non-detect) and the smallest observed value are mapped together. For compositional or highly sparse data—abundances that live on a simplex and metabolite features with many zeros—it also distorts the relative geome-try, and it can only encode a negative covariate–response relation indirectly, through 32 membership in a different non-negative group rather than through a negative coef-ficient. We used it because it makes sign-free covariates non-negative with minimal assumptions and, after the log step, leaves variables bounded and roughly symmetric so that the Gaussian loss is adequate (Section 6); count or compositional responses would nonetheless be better served by the (generalized) Kullback–Leibler objective 
+
+D(Y1 ∥ ˆY1) = P
+
+> ij
+
+ Y1,ij log Y1,ij 
+
+> ˆY1,ij
+
+− Y1,ij + ˆY1,ij 
+
+ on the raw data, for which the multi-plicative updates extend directly, or by a compositional (log-ratio) treatment of the covariates. Re-fitting the four analyses under this loss left the significant structure intact—the Doubs paths, the FRANZOSA cross-structure and the Wine permutation all reproduced, only the already-marginal nutrimouse cross path losing significance (cf. the fragility of weak paths in Section 7). This objective corresponds to a Poisson working model; a full Poisson (count) treatment is left to future work, noting that at large response means the Poisson and Gaussian models nearly coincide—consistent with the close agreement of the two losses here. Finally, kernelizing the covariate block would lift the linear covariate–response map to a nonlinear one while retaining the non-negative co-clustering of the responses. 
+
+# Statements and Declarations 
+
+Funding. This work was partly supported by the Japan Society for the Promo-tion of Science (JSPS) KAKENHI Grant Numbers 22K11930, 25K15229, 24K03007, 25H00482, and a research grant from the Fuji Seal Foundation. 
+
+Competing Interests. The authors state that there is no conflict of interest. 
+
+Ethical Approval. This study used only publicly available, de-identified data and involved no new recruitment of participants; no additional ethical approval or informed consent was therefore required. 
+
+Author Contributions. K.S. conceived and developed the method, implemented the software (the nmfkc R package), carried out the analyses, and wrote the manuscript. Y.T., from a glass-materials-engineering perspective centred on composition–property relationships, contributed to the motivation and framing of the two-block (covariate– response) co-clustering problem, advised on the interpretation of the model and its results, and reviewed and edited the manuscript. Both authors read and approved the final manuscript. 
+
+Data Availability. The data sets analysed in this study are publicly available: the FRANZOSA gut microbiome–metabolome data from the 
+
+borenstein-lab/microbiome-metabolome-curated-data repository; the Doubs and nutrimouse data from the R package ade4 and the canonical-correlation liter-ature; and the Wine data from the UCI Machine Learning Repository (Aeberhard and Forina, 1992). Scripts that regenerate every table and figure in this paper, with their captured output, are provided as an online resource accompanying this article (Online Resource 1). 
+
+Code Availability. The R package nmfkc (Satoh, 2026c) implementing the meth-ods described in this paper is publicly available on CRAN at https://CRAN. R-project.org/package=nmfkc (https://doi.org/10.32614/CRAN.package.nmfkc); a33 package vignette ( Co-clustering two variable blocks with NMF-RRR ) reproduces the method on example data. 
+
+Use of AI Tools. The authors used Anthropic’s Claude (Anthropic, Claude Opus 4 family models, https://claude.ai/code, accessed June–July 2026) as an assistant in the revision of R scripts and for English-language editing and restructuring of this manuscript. All methodological choices, the theoretical results, the numerical exper-iments, and the data analyses were designed, verified, and approved by the authors, who take full responsibility for the content of the article. No research data, results, figures, or tables were generated by artificial intelligence. 
+
+# Appendix A Identifiability of the tri-factorization 
+
+We record conditions under which the factors of M = X1ΘX2 are identifiable from 
+
+M , at fixed ranks Q, R . Write G := Θ X2, so M = X1G. Throughout, X1 ∈ RP1×Q 
+
+> ≥0
+
+has unit column sums and X2 ∈ RR×P2 
+
+> ≥0
+
+unit row sums (Section 3.5), and identifiability is understood up to relabelling of the Q response and R covariate groups. We compare factorizations within the class obeying these constraints together with the separability condition below, which is standard in the identifiability theory of non-negative fac-torization (Donoho and Stodden, 2003; Arora et al, 2012); without it the comparison admits the usual rotational non-uniqueness of NMF. 
+
+Separability (anchor variables). 
+
+X1 is response-separable if for each response group q there are a variable i(q) and cq > 0with X1[i(q), :] = cq e⊤ 
+
+> q
+
+(an anchor loading on q alone); X2 is covariate-separable if for each covariate group r there are a variable j(r) and dr > 0 with X2[: , j (r)] = dr er .
+
+Proposition 5. Let M = X1ΘX2 with the normalization above. (a) If rank( M ) = 
+
+Q, X1 is response-separable, and Θ has no zero row, then X1 and the product G =ΘX2 are determined by M up to a permutation of the Q response labels. (b) If in addition R = Q, X2 is covariate-separable, and Θ is nonsingular, then Θ and X2 are determined up to independent permutations of the response and covariate labels. (c) 
+
+Under the assumptions of (a) , if Q < R , then rank( G) ≤ Q < R and the step in 
+
+(b) no longer applies: X1 and G are still identified as in (a) , but the factorization of G into Θ and X2 need not be uniquely determined by M ; separate identification requires further assumptions specific to overcomplete non-negative factorizations, such as suitable extreme-ray conditions on the columns of Θ.Proof. (a) Let cone( ·) denote the cone generated by the rows of a matrix. Since M =
+
+X1G with X1 ≥ 0, each row of M is a non-negative combination of rows of G, so cone( M ) ⊆ cone( G). Response-separability gives M [i(q), :] = cq G[q, :] with cq > 0, so every row of G lies on a ray of cone( M ) and cone( G) ⊆ cone( M ); the two cones therefore coincide. From rank( M ) = Q and M = X1G we get rank( G) = Q, so the rows of G are linearly independent and cone( G) is simplicial, its Q extreme rays being precisely the rays of its rows. For any admissible factorization M = ˜X1 ˜G the same argument gives cone( ˜G) = cone( M ); since ˜G consists of Q linearly independent generators of this same Q-dimensional simplicial cone, its rows must generate its Q
+
+extreme rays, and as those extreme rays are unique, ˜G = D P ⊤G for a permutation 34 matrix P and a positive diagonal D. Because G has full row rank, M = X1G = ˜X1 ˜G
+
+forces ˜X1 = X1P D −1; equating column sums and using that X1, ˜X1 have unit columns gives D = IQ, whence ˜X1 = X1P and ˜G = P ⊤G.
+
+(b) Fixing the response labelling identifies G, and G⊤ = X⊤ 
+
+> 2
+
+Θ⊤. With R = Q and Θ nonsingular, rank( G⊤) = Q; covariate-separability of X2 is response-separability of X⊤ 
+
+> 2
+
+, and unit row sums of X2 are unit column sums of X⊤ 
+
+> 2
+
+. Applying (a) to G⊤
+
+yields ˜X2 = S⊤X2 and ˜Θ = Θ S for a permutation S. Together with the response permutation P , the admissible factorizations are exactly ˜X1 = X1P , ˜Θ = P ⊤ΘS,˜X2 = S⊤X2.
+
+(c) The rank drop rank( G) = rank(Θ X2) ≤ Q < R removes the full-rank hypothesis that (a) needs for G⊤ = X⊤ 
+
+> 2
+
+Θ⊤; more than that, separability and normalization alone do not pin down the split, as the following example shows. Take Q = 1, R = 2, P2 = 3, with P1 = 1 and X1 = (1), so that M = G and the hypotheses of (a) hold trivially (rank( M ) = Q = 1, and the lone response variable anchors its group); set Θ = (0 .4, 0.6) , X2 =
+
+0.5 0 0 .50 1323
+
+
+
+; ˜Θ = (0 .5, 0.5) , ˜X2 =
+
+0.4 0 0.60 0.4 0 .6
+
+
+
+.
+
+Both X2 and ˜X2 are non-negative with unit row sums and covariate-separable (columns 1 and 2 anchor the two groups), yet Θ X2 = ˜Θ ˜X2 = (0 .2, 0.2, 0.6) while the two factorizations are not related by a permutation. Hence for Q < R the sepa-rate identifiability of Θ and X2 is not guaranteed by separability and normalization; it requires further assumptions specific to overcomplete non-negative factorizations (such as suitable extreme-ray conditions on the columns of Θ), and does not follow merely from the inapplicability of the argument in (a). □
+
+The separability hypothesis—each group owns a variable loading on it alone—is strong and may fail in practice; for full-rank factorizations, uniqueness without it needs the weaker but more intricate minimum-volume or sufficiently-scattered conditions (Lau-rberg et al, 2008; Fu et al, 2019) (the overcomplete case (c) is different, as noted above). Proposition 5 makes precise the hierarchy used in the main text: the fitted mean M Y 2
+
+is identified from the regression model, and the coefficient M additionally when Y2 has full row rank (or, under random design, when the covariate covariance is positive def-inite); the response profiles X1 and the covariate signatures Θ X2 are identified under (a); the individual covariate groups and Θ only under the balanced condition (b); and for Q < R the covariate split is conditional on the selected factorization, in line with the conditional inference of Section 5. 
+
+# References 
+
+Aeberhard S, Forina M (1992) Wine. UCI Machine Learning Repository, DOI: 10.24432/C5PC7J Anderson TW (1951) Estimating linear restrictions on regression coefficients for mul-tivariate normal distributions. Annals of Mathematical Statistics 22(3):327–351. DOI:10.1214/aoms/1177729580 35 Arora S, Ge R, Kannan R, et al (2012) Computing a nonnegative matrix factorization—provably. In: Proceedings of the 44th Annual ACM Symposium on Theory of Computing (STOC), pp 145–162, DOI:10.1145/2213977.2213994 Bro R, Kjeldahl K, Smilde AK, et al (2008) Cross-validation of component mod-els: A critical look at current methods. Analytical and Bioanalytical Chemistry 390(5):1241–1251. DOI:10.1007/s00216-007-1790-1 Bunea F, She Y, Wegkamp MH (2012) Joint variable and rank selection for parsimo-nious estimation of high-dimensional matrices. Annals of Statistics 40(5):2359–2388. DOI:10.1214/12-AOS1039 Cai D, He X, Han J, et al (2011) Graph regularized nonnegative matrix factoriza-tion for data representation. IEEE Transactions on Pattern Analysis and Machine Intelligence 33(8):1548–1560. DOI:10.1109/TPAMI.2010.231 Chen K, Chan KS, Stenseth NC (2012) Reduced rank stochastic regression with a sparse singular value decomposition. Journal of the Royal Statistical Society: Series B 74(2):203–221. DOI:10.1111/j.1467-9868.2011.01002.x Chen L, Huang JZ (2012) Sparse reduced-rank regression for simultaneous dimension reduction and variable selection. Journal of the American Statistical Association 107(500):1533–1545. DOI:10.1080/01621459.2012.734178 Cheng Y, Church GM (2000) Biclustering of expression data. In: Proceedings of the 8th International Conference on Intelligent Systems for Molecular Biology (ISMB), pp 93–103 Dhillon IS (2001) Co-clustering documents and words using bipartite spectral graph partitioning. In: Proceedings of the 7th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (KDD), pp 269–274, DOI:10.1145/502512.502550 Dhillon IS, Mallela S, Kumar R (2003a) A divisive information-theoretic feature clustering algorithm for text classification. Journal of Machine Learning Research 3:1265–1287 Dhillon IS, Mallela S, Modha DS (2003b) Information-theoretic co-clustering. In: Proceedings of the 9th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (KDD), pp 89–98, DOI:10.1145/956750.956764 Ding C, He X, Simon HD (2005) On the equivalence of nonnegative matrix factoriza-tion and spectral clustering. In: Proceedings of the SIAM International Conference on Data Mining (SDM), pp 606–610, DOI:10.1137/1.9781611972757.70 36 Ding C, Li T, Peng W, et al (2006) Orthogonal nonnegative matrix tri-factorizations for clustering. In: Proceedings of the 12th ACM SIGKDD Interna-tional Conference on Knowledge Discovery and Data Mining (KDD), pp 126–135, DOI:10.1145/1150402.1150420 Donoho D, Stodden V (2003) When does non-negative matrix factorization give a correct decomposition into parts? In: Advances in Neural Information Processing Systems (NeurIPS) Eckart C, Young G (1936) The approximation of one matrix by another of lower rank. Psychometrika 1(3):211–218. DOI:10.1007/BF02288367 Fitzgerald T, Jones A, Engelhardt BE (2022) A Poisson reduced-rank regression model for association mapping in sequencing data. BMC Bioinformatics 23:529. DOI:10.1186/s12859-022-05054-6 Foley MH, O’Flaherty S, Barrangou R, et al (2019) Bile salt hydrolases: gatekeepers of bile acid metabolism and host–microbiome crosstalk in the gastrointestinal tract. PLoS Pathogens 15(3):e1007581. DOI:10.1371/journal.ppat.1007581 Franzosa EA, Sirota-Madi A, Avila-Pacheco J, et al (2019) Gut microbiome structure and metabolic activity in inflammatory bowel disease. Nature Microbiology 4:293– 305. DOI:10.1038/s41564-018-0306-4 Fu X, Huang K, Sidiropoulos ND, et al (2019) Nonnegative matrix factorization for signal and data analytics: identifiability, algorithms, and applications. IEEE Signal Processing Magazine 36(2):59–80. DOI:10.1109/MSP.2018.2877582 Govaert G, Nadif M (2013) Co-Clustering: Models, Algorithms and Applications. Wiley-ISTE, DOI:10.1002/9781118649480 Hotelling H (1936) Relations between two sets of variates. Biometrika 28(3/4):321–377. DOI:10.1093/biomet/28.3-4.321 Izenman AJ (1975) Reduced-rank regression for the multivariate linear model. Journal of Multivariate Analysis 5(2):248–264. DOI:10.1016/0047-259X(75)90042-1 Laurberg H, Christensen MG, Plumbley MD, et al (2008) Theorems on positive data: on the uniqueness of NMF. Computational Intelligence and Neuroscience 2008:764206. DOI:10.1155/2008/764206 Lee DD, Seung HS (1999) Learning the parts of objects by non-negative matrix factorization. Nature 401(6755):788–791. DOI:10.1038/44565 Lee DD, Seung HS (2000) Algorithms for non-negative matrix factorization. In: Advances in Neural Information Processing Systems (NeurIPS), pp 556–562 37 Lee H, Yoo J, Choi S (2010) Semi-supervised nonnegative matrix factorization. IEEE Signal Processing Letters 17(1):4–7. DOI:10.1109/LSP.2009.2027163 Lin CJ (2007) On the convergence of multiplicative update algorithms for nonnegative matrix factorization. IEEE Transactions on Neural Networks 18(6):1589–1596 Liu RY (1988) Bootstrap procedures under some non-i.i.d. models. Annals of Statistics 16(4):1696–1708. DOI:10.1214/aos/1176351062 Mammen E (1993) Bootstrap and wild bootstrap for high dimensional linear models. Annals of Statistics 21(1):255–285. DOI:10.1214/aos/1176349025 Martin PGP, Guillou H, Lasserre F, et al (2007) Novel aspects of PPAR α-mediated regulation of lipid and xenobiotic metabolism revealed through a nutrigenomic study. Hepatology 45(3):767–777. DOI: 10.1002/hep.21510 Mishra A, Dey DK, Chen K (2017) Sequential co-sparse factor regres-sion. Journal of Computational and Graphical Statistics 26(4):814–825. DOI: 10.1080/10618600.2017.1340891 Owen AB, Perry PO (2009) Bi-cross-validation of the svd and the nonnegative matrix factorization. Annals of Applied Statistics 3(2):564–594. DOI:10.1214/08-AOAS227 Potthoff RF, Roy SN (1964) A generalized multivariate analysis of variance model useful especially for growth curve problems. Biometrika 51(3/4):313–326. DOI:10.1093/biomet/51.3-4.313 Reinsel GC, Velu RP (1998) Multivariate Reduced-Rank Regression: Theory and Applications. Springer, DOI:10.1007/978-1-4757-2853-8 Ridlon JM, Kang DJ, Hylemon PB, et al (2014) Bile acids and the gut microbiome. Current Opinion in Gastroenterology 30(3):332–338. DOI:10.1097/MOG.0000000000000057 Satoh K (2023) On non-negative matrix factorization using Gaussian kernels as covari-ates (in Japanese). Japanese Journal of Applied Statistics 52(2):59–74. In Japanese. DOI:10.5023/jappstat.52.59 Satoh K (2025) Applying non-negative matrix factorization with covariates to the longitudinal data as growth curve model. ArXiv:2403.05359 Satoh K (2026a) Applying non-negative matrix factorization with covariates to label matrix for classification. Japanese Journal of Statistics and Data Science DOI:10.1007/s42081-026-00349-x; arXiv:2510.10375 Satoh K (2026b) Applying non-negative matrix factorization with covariates to multi-variate time series as a vector autoregression model. Japanese Journal of Statistics and Data Science 9(1):79–97. DOI:10.1007/s42081-025-00314-0; arXiv:2501.17446 38 Satoh K (2026c) nmfkc: Non-Negative Matrix Factorization with Kernel Covariates. https://doi.org/10.32614/CRAN.package.nmfkc, URL https://CRAN.R-project. org/package=nmfkc, r package version 0.8.8 Shin NR, Whon TW, Bae JW (2015) Proteobacteria: microbial signature of dysbiosis in gut microbiota. Trends in Biotechnology 33(9):496–503. DOI:10.1016/j.tibtech.2015.06.011 Taylor J, Tibshirani RJ (2015) Statistical learning and selective infer-ence. Proceedings of the National Academy of Sciences 112(25):7629–7634. DOI:10.1073/pnas.1507583112 Tishby N, Pereira FC, Bialek W (1999) The information bottleneck method. In: Proceedings of the 37th Allerton Conference on Communication, Control and Computing, pp 368–377 Tokuda Y, Fujisawa M, Packwood DM, et al (2020) Data-driven design of glasses with desirable optical properties using statistical regression. AIP Advances 10(10):105110. DOI:10.1063/5.0022451 Tokuda Y, Fujisawa M, Ogawa J, et al (2021) A machine learning approach to the prediction of the dispersion property of oxide glass. AIP Advances 11(12):125127. DOI:10.1063/5.0075425 Trigeorgis G, Bousmalis K, Zafeiriou S, et al (2017) A deep matrix factorization method for learning attribute representations. IEEE Transactions on Pattern Anal-ysis and Machine Intelligence 39(3):417–429. DOI:10.1109/TPAMI.2016.2554555 Uematsu Y, Fan Y, Chen K, et al (2019) SOFAR: Large-scale association network learning. IEEE Transactions on Information Theory 65(8):4924–4939. ArXiv:1704.08349 Verneaux J (1973) Cours d’eau de franche-comt´ e (massif du jura): recherches ´ecologiques sur le r´ eseau hydrographique du doubs; essai de biotypologie. PhD thesis, Universit´ e de Franche-Comt´ e, Besan¸ con Wold H (1975) Soft modelling by latent variables: the non-linear iterative partial least squares (nipals) approach. In: Gani J (ed) Perspectives in Probability and Statistics. Academic Press, p 117–142, DOI:10.1017/S0021900200047604. Festschrift published as J. Appl. Probab. 12(S1) Wold S (1978) Cross-validatory estimation of the number of components in factor and principal components models. Technometrics 20(4):397–405. DOI:10.1080/00401706.1978.10489693 Wu CFJ (1986) Jackknife, bootstrap and other resampling methods in regression analysis. Annals of Statistics 14(4):1261–1295. DOI:10.1214/aos/1176350142 39 Yu M, Ramamurthy KN, Thompson A, et al (2019) Simultaneous parameter learn-ing and bi-clustering for multi-response models. Frontiers in Big Data 2:27. DOI: 10.3389/fdata.2019.00027 Zafeiriou S, Tefas A, Buciu I, et al (2006) Exploiting discriminant information in nonnegative matrix factorization with application to frontal face verification. IEEE Transactions on Neural Networks 17(3):683–695. DOI:10.1109/TNN.2006.873291 Zhang D, Zhou ZH, Chen S (2006) Non-negative matrix factorization on kernels. In: PRICAI 2006: Trends in Artificial Intelligence, pp 404–412, DOI:10.1007/978-3-540-36668-3 44 40

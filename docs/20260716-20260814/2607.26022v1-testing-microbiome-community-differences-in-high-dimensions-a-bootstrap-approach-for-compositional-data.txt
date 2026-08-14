@@ -1,0 +1,4702 @@
+Title: Testing Microbiome Community Differences in High Dimensions: A Bootstrap Approach for Compositional Data
+
+URL Source: https://arxiv.org/pdf/2607.26022v1
+
+Published Time: Wed, 29 Jul 2026 01:20:29 GMT
+
+Number of Pages: 38
+
+Markdown Content:
+# Testing Microbiome Community Differences in High Dimensions: A Bootstrap Approach for Compositional Data 
+
+Monika Bhattacharjee ∗ Nilanjan Chakraborty † Sayan Das ‡
+
+Sounak Chakraborty § Lei Liu ¶ Yiming Shi ¶ Kristine M. Wylie ‖
+
+Todd N. Wylie || Molly J. Stout ∗∗ 
+
+Abstract 
+
+Understanding differences in microbial community structure is critical for uncovering risk factors and mechanisms underlying diseases such as colorectal cancer and preterm birth. Microbiome data present unique statistical challenges because they are compositional in nature, violating assump-tions of many classical inference procedures. We propose an empirical bootstrap framework that enables robust hypothesis testing for equality of microbial community means across groups, includ-ing two-sample, paired, and multi-sample settings. The method accounts for the simplex structure of microbiome data and provides valid inference even in high-dimensional regimes. Through ap-plications to two large-scale studies, fecal microbiota in colorectal adenoma and cancer patients, and vaginal microbiota in pregnancy with preterm birth outcomes—we demonstrate that our ap-proach identifies clinically meaningful differences that conventional methods fail to detect, such as age-related differences in adenoma prevalence and race-associated disparities in vaginal microbiome composition. These results highlight the potential of resampling-based inference for advancing microbiome research, improving reproducibility, and uncovering clinically relevant microbial signa-tures. 
+
+Keywords: Conformal prediction; optimal sample allocation; asymptotic optimality; distribution-free inference. 
+
+# 1 Introduction 
+
+The human microbiome plays a critical role in health and disease, influencing conditions ranging from colorectal cancer to preterm birth. Advances in sequencing technology have led to large-scale studies, such as the Human Microbiome Project (HMP), generating high-dimensional datasets that measure the relative abundance of thousands of microbial taxa across comparatively few individuals. These datasets are compositional in nature, with all microbial proportions constrained to sum to one. This structural feature makes many conventional statistical methods (e.g., the two-sample t-test, Wilcoxon 
+
+> ∗
+
+Department of Mathematics, Indian Institute of Technology Bombay 
+
+> †
+
+Department of Mathematics and Statistics, Missouri University of Science and Technology 
+
+> ‡
+
+Department of Statistics and Data Science, Washington University in St. Louis 
+
+> §
+
+Department of Statistics and Data Science, University of Missouri 
+
+> ¶
+
+Division of Biostatistics, Washington University in St. Louis 
+
+> ‖
+
+Department of Pediatrics, Washington University in St. Louis 
+
+> ∗∗
+
+Department of Obstetrics and Gynecology, University of Michigan 
+
+1arXiv:2607.26022v1 [stat.ME] 28 Jul 2026 signed-rank test, or classical goodness-of-fit tests) inappropriate and potentially misleading. The challenges of analyzing compositional data were first formalized by Aitchison [1982], who introduced log-ratio transformations to adapt standard inferential methods, and later expanded in his monograph [Aitchison, 2003, Chapter 7]. Building on these foundations, a variety of statistical approaches have been proposed for compositional data, including multivariate analysis of variance methods [Anderson, 2017], microbiome-specific frameworks [Li, 2015], and bias-corrected differential abundance testing [Banerjee et al., 2018, Lin and Peddada, 2020a]. A comprehensive review of these techniques is provided in Greenacre [2021]. Despite these advances, much of the literature treats microbial taxa individually, leading to reduced power when the primary interest lies in detecting global differences across complex microbial communi-ties. Multivariate strategies that consider the full microbial composition are more appropriate in these settings. For example, Cao et al. [2017] proposed a max-norm based test for assessing differences in mean compositions, demonstrating asymptotic consistency under restrictive conditions such as equal covariance structures. Later, Li et al. [2022] extended these ideas to settings with unequal covariance matrices, but both approaches rely on large sample sizes for their asymptotic approximations and remain limited to two-sample comparisons. More recently, bootstrap-based procedures have been investigated for high-dimensional mean test-ing [Xue and Yao, 2020, Chakraborty and Sakhanenko, 2023, Wu and Hu, 2024]. However, most of these methods are not directly applicable to microbiome data. For example, multiplier bootstrap techniques [Xue and Yao, 2020, Chakraborty and Sakhanenko, 2023] cannot incorporate the simplex structure of compositional data, while parametric bootstrap approaches [Wu and Hu, 2024] require covariance estimation that is unstable when matrices are nearly singular in high dimensions. These limitations call for new microbiome-specific approaches. In this article, we propose EBC (Empirical Bootstrap for Compositional Data), an empirical bootstrap-based testing procedure for high-dimensional compositional data. The proposed max-norm test applies to two-sample, paired-sample, and multi-sample settings, while accounting for the compo-sitional nature of microbiome data through CLR transformation and empirical bootstrap. We establish its theoretical validity under mild regularity conditions and demonstrate through extensive simulations that EBC maintains nominal type I error while achieving competitive or improved power relative to existing methods. Finally, we illustrate its practical utility using two clinically relevant microbiome studies involving colorectal cancer and preterm birth. These case studies demonstrate the practical utility of the proposed method for reliable inference in high-dimensional microbiome studies. The remainder of this paper is organized as follows. Section 2 discusses the clinical motivation for comparing microbial communities in colorectal cancer and preterm birth studies. Section 3 intro-duces the proposed EBC framework for two-sample, paired-sample, and multi-sample testing, while Section 4 describes the empirical bootstrap algorithm used to compute the data-driven critical values. Section 5 presents the regularity assumptions, and Section 6 establishes the theoretical guarantees of the proposed procedure. Section 7 reports the results of simulation studies comparing EBC with existing methods, and Section 8 illustrates its performance using two real-world microbiome datasets. Finally, Section 9 concludes with a discussion. Theoretical proofs and additional simulation details are provided in Section 10. 
+
+# 2 Why This Matters Clinically: Microbiome Differences in Colorec-tal Cancer and Preterm Birth 
+
+Colorectal cancer (CRC) remains a major global health challenge, with more than 1.9 million new cases and approximately 904,000 deaths estimated in 2022, making CRC one of the most commonly diagnosed cancers worldwide and a leading cause of cancer mortality [Bray et al., 2024]. In the United 2States, prognosis depends strongly on stage at diagnosis: contemporary SEER estimates indicate 5-year relative survival of about 91% for localized disease, 74% for regional, and 16% for distant-stage CRC [National Cancer Institute, 2025b]. Preterm birth (PTB) likewise poses a substantial global public health burden: an estimated 13.4 million babies (1 in 10 live births) were born too soon in 2020, and PTB remains the leading cause of under-5 mortality worldwide [World Health Organization et al., 2023, World Health Organization, 2023]. In the United States, the provisional national PTB rate was 10.41% in 2023, with persistent disparities by race and ethnicity [Hamilton et al., 2024]. Cancer care imposes substantial costs on health systems and patients. In the U.S., total cancer care costs were projected at $208.9 billion in 2020, with CRC among the highest contributors to medical services spending [National Cancer Institute, 2025a]. CDC analyses similarly note that CRC accounts for about 11.6% of all cancer treatment costs, with estimated 2020 spending of $23.7 billion on medical services and $0.6 billion on prescription drugs [Centers for Disease Control and Prevention, 2024]. For PTB, the lifetime societal cost for the 2016 U.S. birth cohort was estimated at $25.2 billion (present value), averaging about $64,800 per preterm birth, driven largely by neonatal/infant medical care and longer-term developmental services [Waitzman et al., 2021]. These cost gradients worsen when prevention, risk stratification, and timely interventions are suboptimal. For CRC, tumor-associated dysbiosis provides both mechanistic insight and potential biomarkers. 
+
+Fusobacterium nucleatum is repeatedly enriched in CRC tissue and higher intratumoral loads are linked to recurrence, metastasis, and poorer outcomes; recent work identified a tumor-adapted F. nucleatum 
+
+clade with disease-relevant features [Zepeda-Rivera and others, 2024]. In parallel, colibactin-producing (pks +) Escherichia coli induces a distinctive genotoxic mutational signature that has been detected in human intestinal organoids and in patient tissues, supporting a plausible causal link between microbial genotoxins and colorectal carcinogenesis [Pleguezuelos-Manzano and others, 2020, Chen and others, 2023]. For PTB, vaginal microbiome community state types (CSTs) with low Lactobacillus , partic-ularly depletion of L. crispatus -and greater anaerobe diversity (e.g., Gardnerella ) are consistently associated with elevated spontaneous PTB risk; meta-analytic and multi-omic studies show stronger predictability of early PTB from community composition and functional potential [Huang et al., 2023, Gudnadottir and others, 2022, Liao and others, 2023]. In CRC, insufficient screening uptake (despite USPSTF grade A/B recommendations for average-risk adults 45–75 years) shifts diagnoses toward advanced stages with markedly worse survival and higher downstream costs; improving coverage and using validated biomarkers could both reduce mor-tality and lower spending [Davidson and others, 2021, National Cancer Institute, 2025a, Centers for Disease Control and Prevention, 2024]. In PTB, failure to identify and manage infection- or microbiome-linked risk early in pregnancy can increase neonatal intensive care utilization and long-term disability, amplifying the multibillion-dollar societal burden [Waitzman et al., 2021, World Health Organization et al., 2023]. Because these questions hinge on detecting multivariate differences in mi-crobial compositions between clinical groups, methods that respect compositional constraints and retain power in high dimensions are directly responsive to medical decision-making in CRC and PTB. 
+
+# 3 Empirical Bootstrap Tests for High-Dimensional Compositional Data 
+
+This section introduces a practical testing framework for comparing mean compositions in high-dimensional microbiome (and other compositional) data while respecting the zero-sum constraint induced by CLR transformation. In Subsection 3.1, we introduce the preliminaries and formulate the two-sample problem, the most common clinical comparison (e.g., cases vs. controls). We then extend it to paired designs in Subsection 3.2 to accommodate within-subject or before and after comparisons frequently encountered in longitudinal or matched clinical settings. Subsection 3.3 further generalizes 3the approach to multi-arm studies, enabling inference across more than two clinical groups. Finally, Subsection 4 details the data-driven procedure (empirical bootstrap) used to compute the test statistic and its critical value, providing readers with clear implementation steps for applied analyses. 
+
+3.1 Two-sample Test for Independent Populations 
+
+3.1.1 Some Preliminaries of Compositional Data 
+
+We define Sp−1 as the ( p − 1)-dimensional simplex where Sp−1 = {(x1, . . . , x p) ∈ Rp : xj > 0, j =1, . . . , p and Ppj=1 xj = 1 }. Let X(1) = ( X(1) 1 , . . . , X (1)  
+
+> n1
+
+)T and X(2) = ( X(2) 1 , . . . , X (2)  
+
+> n2
+
+)T be the ob-served data matrices, where X(1) and X(2) are collections of independent random vectors in Sp−1.Further, we denote W (1) = ( W (1) 1 , . . . , W (1)  
+
+> n1
+
+)T and W (2) = ( W (2) 1 , . . . , W (2)  
+
+> n2
+
+)T as the unobserved bases that generates the observed compositional data X(1) and X(2) respectively via the following normal-ization, 
+
+X(k) 
+
+> ij
+
+= W (k)
+
+> ij
+
+. pX
+
+> j=1
+
+W (k) 
+
+> ij
+
+, i = 1 , . . . , n k, j = 1 . . . , p, k = 1 , 2,
+
+where X(k) 
+
+> ij
+
+and W (k) 
+
+> ij
+
+are the j-th elements of X(k) 
+
+> i
+
+and W (k) 
+
+> i
+
+respectively. Let V (k) = ( V (k)1 , . . . , V (k) 
+
+> nk
+
+)T be the log-basis vectors, where V (k) 
+
+> ij
+
+= log W (k) 
+
+> ij
+
+, k = 1 , 2. For 
+
+k = 1 , 2, suppose that V (k)1 , . . . , V (k) 
+
+> nk
+
+are two independent samples, each from a distribution with mean μ(k) = ( μ(k)1 , . . . , μ (k) 
+
+> p
+
+)T and covariance matrix Σ (k) 
+
+> i
+
+= ( σ(k) 
+
+> i,jj ′
+
+)pjj ′=1 , i = 1 , . . . , n k. Due to the simplicial structure of the observed data, the null hypothesis 
+
+H01 : μ(1) = μ(2) vs. Ha1 : μ(1) ̸ = μ(2) (1) is not testable (cf. Cao et al. [2017]). Instead, the above hypothesis is testable up to an additive constant. Towards that, the testable hypothesis can be written as 
+
+H02 : μ(1) = μ(2) + c1p, for some c ∈ R, vs. Ha2 : μ(1) ̸ = μ(2) + c1p, for any c ∈ R. (2) Following Aitchison [1982], for the observed compositional data X(1) and X(2) , we define the centered log-ratio matrices Z(k) = ( Z(k)1 , . . . , Z (k) 
+
+> nk
+
+)T as 
+
+Z(k) 
+
+> ij
+
+= log 
+
+n
+
+X(k)
+
+> ij
+
+.
+
+g(X(k) 
+
+> i
+
+)
+
+o
+
+, i = 1 , . . . , n k, j = 1 . . . , p, k = 1 , 2, (3) where g(x) = ( Qpi=1 xi)1/p is the geometric mean of the vector x = ( x1, . . . , x p)T . The quantity in (3) can be alternatively written as 
+
+Z(k) 
+
+> i
+
+= Gp log X(k) 
+
+> i
+
+, i = 1 , . . . , n k, k = 1 , 2, (4) where Gp = Ip − 1p1Tp 
+
+> p
+
+, with Ip the p × p identity matrix and 1 p a p × 1 vector of ones. Due to the scale invariance of the centered log ratios, we can write 
+
+Z(k) 
+
+> i
+
+= GpV (k) 
+
+> i
+
+, i = 1 , . . . , n k, k = 1 , 2. (5) Let, E(Z(k) 
+
+> i
+
+) = ν(k). Then we have 
+
+ν(k) = Gpμ(k), k = 1 , 2. (6) The p × p ordered matrix Gp has rank ( p − 1) and the null space of Gp is N (Gp) = {x ∈ Rp : Gpx =0p} = {c1p : c ∈ R}, where 0 p is a p × 1 vector of zeroes. Therefore, it follows that ν(1) = ν(2) iff 
+
+μ(1) = μ(2) + c1p for some c ∈ R and an equivalent hypothesis to (2) is 
+
+H03 : ν(1) = ν(2) vs. Ha3 : ν(1) ̸ = ν(2) . (7) 43.1.2 The Two-sample Test 
+
+For k = 1 , 2, we define the normalized sample means as S(k) 
+
+> nk
+
+= n1/2 
+
+> k
+
+¯Z(k) = n−1/2
+
+> k
+
+Pnk 
+
+> i=1
+
+Z(k) 
+
+> i
+
+. Let, 
+
+λ1 = n21/2(n1 + n2)−1/2 and λ2 = n11/2(n1 + n2)−1/2. For testing the hypothesis in (7), we propose a test statistic Tn, 2 that rejects H03 : ν(1) = ν(2) at significance level α ∈ (0 , 1) , if 
+
+Tn, 2 = max  
+
+> 1≤j≤p
+
+λ1S(1)  
+
+> n1j
+
+− λ2S(2)  
+
+> n2j
+
+≥ Qα, 2,
+
+where Qα, 2 is a data-driven critical value, its exact expression will be specified later in (8). To facilitate the inference procedure, we adopt the empirical bootstrap method for high-dimensional data introduced by Chernozhukov et al. [2017] to approximate the distribution of the test statistic 
+
+Tn, 2. Suppose ( Z∗(1) 1 , . . . , Z ∗(1)  
+
+> n1
+
+) are independent and identical samples from the empirical distribution of Z(1) and ( Z∗(2) 1 , . . . , Z ∗(2)  
+
+> n2
+
+) are independent and identical samples from the empirical distribution of Z(2) . Define P∗ and E∗ as the conditional probability and conditional expectation on the data, respectively. As E∗(Z∗(k)1 ) = ¯Z(k), k = 1 , 2, we define the normalized sum for the two population as 
+
+S∗(k) 
+
+> nk
+
+= nk−1/2
+
+> nk
+
+X
+
+> i=1
+
+(Z∗(k) 
+
+> i
+
+− ¯Z(k)), k = 1 , 2.
+
+The distribution of Tn, 2 can be approximated by its empirical bootstrap version T ∗
+
+> n, 2
+
+, as 
+
+T ∗ 
+
+> n, 2
+
+= max  
+
+> 1≤j≤p
+
+λ1S∗(1)  
+
+> n1j
+
+− λ2S∗(2)  
+
+> n2j
+
+, (8) and Qα, 2 = inf {x ∈ R : P∗(T ∗ 
+
+> n, 2
+
+≤ x) ≥ 1 − α}. In the following remark, we compare it with other popular bootstrap strategies and justify the choice to adopt the empirical bootstrap method. Details of the bootstrap algorithm for Qα, 2 is discussed in Section 4. 
+
+Remark 1. : The empirical bootstrap method proposed here preserves the zero-sum constraint of the CLR transformation of the compositional data. Other popular bootstrap methods like the Gaussian multiplier bootstrap adopted for two-sample testing of means Xue and Yao [2020] and Chakraborty and Sakhanenko [2023] are not applicable here because the multiplier bootstrap fails to preserve the CLR structure of the compositional samples. This can be shown by the fact that, for standard Gaussian multipliers e1, e 2, · · · en1 , Ppj=1 ei(Z(1)  
+
+> ij
+
+− ¯Z(1)  
+
+> j
+
+)̸ = 0 , with probability one, whereas in the case of empirical bootstrap, Ppj=1 (Z∗(1)  
+
+> ij
+
+− ¯Z(1)  
+
+> j
+
+) = 0 with probability one, for all i = 1 , . . . , n 1. Wu and Hu [2024] considered a studentized version of the Tn, 2 and adopted the parametric bootstrap strategy for estimating the studentized variances. Such a strategy may not be helpful for compositional data, as these estimates of the sample covariance matrices may tend to be unstable for singular covariance matrices in high dimensions. The EBC test can be viewed as a hybrid of the max-norm CLR statistic and empirical bootstrap that preserves the zero-sum constraint induced by the CLR transformation and delivers valid, data-driven inference in microbiome studies where p ≫ n and covariances may differ across the groups. From a practical standpoint, it improves detection of clinically relevant community shifts between patient groups (e.g., cases vs. controls, age/race strata) while controlling type I error and power. 
+
+3.2 Paired-sample Test 
+
+Along with the two-sample test described in Subsection 3.1, it would be of interest for many practical scenarios to perform the test described in (2) when the data are observed in paired form. For example, 5for a group of smokers, one may be interested in analyzing the mean levels of microbiomes found in the left and right nasopharynx. Examples of such datasets can be found in Charlson et al. [2010]. Suppose {(X(1) 1 , X (2) 1 ), . . . , (X(1)  
+
+> n
+
+, X (2)  
+
+> n
+
+)} is a collection of n sets of paired data in Sp−1 that arises from the basis vectors {(W (1) 1 , W (2) 1 ), . . . , (W (1)  
+
+> n
+
+, W (2)  
+
+> n
+
+)}. We further denote the log-basis vectors as 
+
+{(V (1) 1 , V (2) 1 ), . . . , (V (1)  
+
+> n
+
+, V (2)  
+
+> n
+
+)}, where V (k) 
+
+> i
+
+is defined in Subsection 3.1. For testing (7), we propose a bootstrap-based paired-sample mean test that rejects H03 : ν(1) = ν(2) 
+
+at significance level α ∈ (0 , 1) , if 
+
+Tn,pair = max  
+
+> 1≤j≤p
+
+2−1/2 S(1)  
+
+> nj
+
+− S(2)  
+
+> nj
+
+≥ Qα,pair ,
+
+where Qα,pair can be obtained by calculating T ∗ 
+
+> n,pair
+
+analogously as in (8). Similar to the Two-sample test, the proposed paired-sample test exploits within-subject contrasts to remove inter-individual heterogeneity while preserving the compositional simplex via CLR and an empirical bootstrap. This delivers accurate, data-driven inference for high-dimensional paired microbiome comparisons (e.g., left vs. right site, pre–post intervention), improving power and type I error control. 
+
+3.3 Extension to Multi-sample Test 
+
+In this section, we extend our methodology for carrying out the test when the observations are divided into multiple independent groups. In many applications, researchers are interested in drawing infer-ences from microbiome data in more than two ecosystems. Examples of such datasets can be found in Yatsunenko et al. [2012], where the authors studied the gut microbiota data for three countries: the U.S., Malawi, and Venezuela. For compositional data in one dimension, similar problems have been explored in Lin and Peddada [2020a]. Suppose K ≥ 2 denotes the number of independent groups under study. For k = 1 , . . . , K, let 
+
+X(k) = ( X(k)1 , . . . , X (k) 
+
+> nk
+
+)T be a collection of nk independent compositions from Sp−1 for the kth pop-ulation. We denote the total sample size from the population to be N = n1 + · · · + nK . Denote 
+
+W (k) = ( W (k)1 , . . . , W (k) 
+
+> nk
+
+)T , k = 1 , . . . , K as the unobserved bases that generates the observed compo-sitional data X(k), k = 1 , . . . , K , by the normalization, for i = 1 , . . . , n k, j = 1 . . . , p, k = 1 , . . . , K X(k) 
+
+> ij
+
+= W (k)
+
+> ij
+
+. pX
+
+> j=1
+
+W (k) 
+
+> ij
+
+,
+
+where X(k) 
+
+> ij
+
+and W (k) 
+
+> ij
+
+are the j-th elements of X(k) 
+
+> i
+
+and W (k) 
+
+> i
+
+respectively. Let V (k) = ( V (k)1 , . . . , V (k) 
+
+> nk
+
+)T be the log-basis vectors, where V (k) 
+
+> ij
+
+= log W (k) 
+
+> ij
+
+, k = 1 , . . . , K. For 
+
+k = 1 , . . . , K, suppose that V (k)1 , . . . , V (k) 
+
+> nk
+
+are independent samples, each from a distribution with mean μ(k) = ( μ(k)1 , . . . , μ (k) 
+
+> p
+
+)T and covariance matrix Σ (k) 
+
+> i
+
+= ( σ(k) 
+
+> i,jj ′
+
+)pjj ′=1 , i = 1 , . . . , n k. Note that, the hypothesis 
+
+H04 : μ(1) = · · · = μ(K) vs. Ha4 : μ(k)̸ = μ(l), for some 1 ≤ k < l ≤ K, 
+
+is not testable through the observed compositional data X(k), k = 1 , . . . , K , similar to as in two-sample case. Instead, we can test the null hypothesis 
+
+H05 : μ(k) = μ(l) + ck,l 1p, for some ck,l ∈ R, and for any 1 ≤ k < l ≤ K vs. 
+
+Ha5 : μ(k)̸ = μ(l) + ck,l 1p, for any ck,l ∈ R and for some 1 ≤ k < l ≤ K, (9) by defining the compositional equivalence of log-basis vectors for K samples. 6Definition 1. A set of K log-basis vectors z1, . . . , z k are said to be compositionally equivalent if their components differ by some constants, i.e. zk = zl + ck,l 1p, k ̸ = l ∈ { 1, . . . , K }, where ck,l ∈ R.
+
+For the observed compositional data X(k), k = 1 , . . . , K , define the CLR transformed matrices 
+
+Z(k) = ( Z(k)1 , . . . , Z (k) 
+
+> nk
+
+)T as defined in (3). Using similar arguments as in (5) and (6), we can write Z(k) 
+
+> i
+
+= GpV (k) 
+
+> i
+
+, and E(Z(k) 
+
+> i
+
+) = ν(k) =
+
+Gpμ(k), i = 1 , . . . , n k, k = 1 , . . . , K . Therefore, for any 1 ≤ k < l ≤ K, ν(k) = ν(l) iff μ(k) = μ(l) +ck,l 1p
+
+for some ck,l ∈ R. An equivalent hypothesis to (9) is 
+
+H06 : ν(1) = · · · = ν(K) vs. Ha6 : ν(k)̸ = ν(l), 1 ≤ k < l ≤ K. (10) Define, for k = 1 , . . . , K, S (k) 
+
+> nk
+
+= n1/2 
+
+> k
+
+¯Z(k) = n−1/2
+
+> k
+
+Pnk 
+
+> i=1
+
+Z(k) 
+
+> i
+
+and for 1 ≤ k̸ = l ≤ K, λk,l = nl1/2(nk +
+
+nl)−1/2. Then for testing (9), we propose a K-sample test that rejects H06 : ν(1) = · · · = ν(K) at significance level α ∈ (0 , 1) , if 
+
+Tn,K = max  
+
+> 1≤k<l ≤K
+
+max  
+
+> 1≤j≤p
+
+λk,l S(k)  
+
+> nkj
+
+− λl,k S(l) 
+
+> nlj
+
+> Q α,K ,
+
+where Qα,K is a data-driven critical value and its calculation is given in Section 4. Note, that the limiting distribution of our test statistics Tn,K has unknown covariance, thus cannot be used directly for inference. Like before, we adopt the empirical bootstrap method proposed by Chernozhukov et al. (2017) for high-dimensional data to approximate the distribution of the test statistic Tn,K . Suppose for k = 1 , . . . , K, (Z∗(k)1 , . . . , Z ∗(k) 
+
+> nk
+
+) are independent and identical samples from the empirical distribution of Z(k). As E∗(Z∗(k)1 ) = ¯Z(k), k = 1 , . . . , K, we define the normalized sum for the K populations as 
+
+S∗(k) 
+
+> nk
+
+= nk−1/2
+
+> nk
+
+X
+
+> i=1
+
+(Z∗(k) 
+
+> i
+
+− ¯Z(k)), k = 1 , . . . , K. 
+
+The distribution of Tn,K can then be approximated by its bootstrap version T ∗ 
+
+> n,K
+
+, where 
+
+T ∗ 
+
+> n,K
+
+= max  
+
+> 1≤k<l ≤K
+
+max  
+
+> 1≤j≤p
+
+λk,l S∗(k)  
+
+> nkj
+
+− λl,k S∗(l) 
+
+> nlj
+
+,
+
+and Qα,K = inf {x ∈ R : P∗(T ∗ 
+
+> n,K
+
+≤ x) ≥ 1 − α}.Inference across multiple groups with compositional data is intrinsically difficult: contrasts are defined only up to additive constants, covariance structures may differ between groups, and the num-ber of pairwise comparisons grows quickly with K, often in regimes where p ≫ n and designs are unbalanced. We propose a K-sample test that aggregates the largest pairwise CLR mean differences through a max–max statistic, and calibrates a single, data-driven critical value using an empirical bootstrap that respects the zero sum constraint. The procedure controls size and achieves improved power without relying on fragile covariance estimation or extreme-value approximations, providing an ANOVA-type global test for high-dimensional compositional data. 
+
+# 4 Computation and Implementation: Data-Driven Critical Values via Empirical Bootstrap 
+
+In this subsection, we first describe the procedure for computing the critical value Qα,K using empirical bootstrap for compositional data, and then state the testing procedure for the null hypothesis in (9). 7Step 1: For the given samples X(k) = {X(k)1 , . . . , X (k) 
+
+> nk
+
+}, calculate Z(k) = {Z(k)1 , . . . , Z (k) 
+
+> nk
+
+}, using centered log-ratio (CLR) transformation Z(k) 
+
+> i
+
+= Gp log( X(k) 
+
+> i
+
+), i = 1 , . . . , n k, k = 1 , . . . , K. 
+
+Step 2: Calculate the test statistic 
+
+Tn,K = max  
+
+> 1≤k<l ≤K
+
+max  
+
+> 1≤j≤p
+
+λk,l S(k)  
+
+> nkj
+
+− λl,k S(l) 
+
+> nlj
+
+= max  
+
+> 1≤k<l ≤K
+
+max 
+
+> 1≤j≤p
+
+√nknl( ¯Z(k) 
+
+> j
+
+− ¯Z(l) 
+
+> j
+
+)
+
+√nk + nl
+
+.
+
+Step 3: For b = 1 , . . . , B and k = 1 , . . . , K, generate multinomial samples with equal probabilities, 
+
+ξ(k)(b) = ( ξ(k)1( b), . . . , ξ (k) 
+
+> nk(b)
+
+) ∼ multinomial ( nk; 1 /n k, . . . , 1/n k) and given the data calculate 
+
+S∗(k)  
+
+> nk(b)
+
+= nk−1/2
+
+> nk
+
+X
+
+> i=1
+
+ξ(k)
+
+> i(b)
+
+(Z(k) 
+
+> i
+
+− ¯Z(k)).
+
+Step 4: The empirical bootstrap version of Tn,K is, 
+
+T ∗ 
+
+> n,K (b)
+
+= max  
+
+> 1≤k<l ≤K
+
+max  
+
+> 1≤j≤p
+
+λk,l S∗(k)  
+
+> nkj(b)
+
+− λl,k S∗(l) 
+
+> nlj(b)
+
+= max  
+
+> 1≤k<l ≤K
+
+max 
+
+> 1≤j≤p
+
+√nknl( ¯Z∗(k) 
+
+> j(b)
+
+− ¯Z∗(l)
+
+> j(b)
+
+)
+
+√nk + nl
+
+,
+
+where ¯Z∗(k)(b) = nk−1/2S∗(k) 
+
+> nk(b)
+
+, k = 1 , . . . , K. 
+
+Step 5: Use the 100(1 − α)th quantile of {T ∗
+
+> n,K (1)
+
+, . . . , T ∗
+
+> n,K (B)
+
+} to approximate Qα,K .This algorithm can be seen as an adaptation of the empirical bootstrap in Efron [1979] for com-positional data in high-dimensional settings. For implementation, it is natural to compute the critical value of Qα,K via Monte Carlo simulations by ˆQα,K = inf {t ∈ R : ˆFB (t) ≥ 1 − α}, where ˆFB (t) = 
+
+B−1 PBb=1 I(T ∗ 
+
+> n,K (b)
+
+≤ t) and T ∗
+
+> n,K (1)
+
+, . . . , T ∗ 
+
+> n,K (B)
+
+are B independent realizations of T ∗ 
+
+> n,K (b)
+
+from Step 3 and I(.) denotes the indicator function.Finally, for a given significance level α ∈ (0 , 1) , we reject the null hypothesis in (9) (or (10)) if Tn,K ≥ Qα,K ; otherwise, we do not reject it. 
+
+# 5 Assumptions for Theoretical Results 
+
+In this section, we will state the assumptions which we require to prove the main theoretical results that establish the consistency of the proposed bootstrap tests. Before stating the assumptions, we define a few quantities that we need while stating the assump-tions. Let σ(k) 
+
+> jj ′
+
+be the ( j, j ′)th entry of Σ (k) = nk−1 Pnk 
+
+> i=1
+
+Σ(k) 
+
+> i
+
+, k = 1 , . . . , K . For brevity, we denote any quantity Rn1,...,n K that depends on n1, . . . , n K , by Rn. It is worthwhile mentioning that, although we allow p to diverge with n, the theoretical guarantees still continue to hold for all p ≥ 3. Consider the following assumptions: (A.1) For some universal constants 0 < c 1 < c 2 < 1, n k(nk + nl)−1 ∈ (c1, c 2), for all 1 ≤ k < l ≤ K. 
+
+(A.2) There exists a universal constant b > 0 such that for k = 1 , . . . , K, and for all p ≥ 3,
+
+min 
+
+> 1≤j≤p
+
+σ(k) 
+
+> jj
+
+> b, 
+
+and there exists a sequence of positive numbers {ap : p ≥ 1} such that ap → ∞ as p → ∞ , and universal constant δ ∈ (0 , 1) such that for all 1 ≤ j ≤ p and p ≥ 3, we have 2(1 + ap) ≤ δp and 
+
+> p
+
+X
+
+> i=1
+> i̸=j
+
+σ(k) 
+
+> ij
+
+≤ apσ(k) 
+
+> jj
+
+,
+
+for k = 1 , . . . , K. 
+
+8(A.3) There exists a sequence Bn ≥ 1 such that for ℓ = 1 , 2 and k = 1 , . . . , K 
+
+max 
+
+> 1≤j≤p
+
+nk−1
+
+> nk
+
+X
+
+> i=1
+
+E
+
+
+
+|V (k) 
+
+> ij
+
+− μ(k) 
+
+> j
+
+|2+ ℓ
+
+≤ Bℓn.
+
+(A.4) For the same sequence Bn defined in (A.3), max  
+
+> 1≤k≤K
+
+max 
+
+> 1≤i≤nk
+
+max 
+
+> 1≤j≤p
+
+E
+
+n
+
+exp 
+
+
+
+B−1 
+
+> n
+
+|V (k) 
+
+> ij
+
+− μ(k) 
+
+> j
+
+|
+
+o 
+
+≤ 2.
+
+(A.5) For the same sequence Bn defined in (A.3), max  
+
+> 1≤k≤K
+
+max 
+
+> 1≤i≤nk
+
+E
+
+
+
+max 
+
+> 1≤j≤p
+
+
+
+B−1 
+
+> n
+
+|V (k) 
+
+> ij
+
+− μ(k) 
+
+> j
+
+|
+
+q
+
+≤ 2,
+
+for q > 4.
+
+(A.6) Let ( μ(1) T , . . . , μ (K)T )T ∈ F n,p , where for some universal constant Cs,
+
+Fn,p := 
+
+(
+
+(μ(1) T , . . . , μ (K)T )T ∈ RKp : max 
+
+> 1≤k<l ≤K
+
+n
+
+max  
+
+> 1≤j≤p
+
+|μ(k) 
+
+> j
+
+− μ(l) 
+
+> j
+
+| − p−1
+
+> p
+
+X
+
+> j=1
+
+|μ(k) 
+
+> j
+
+− μ(l) 
+
+> j
+
+|
+
+o
+
+≥ Cs
+
+n
+
+N −1Bn log( N p )
+
+o1/2
+
+)
+
+.
+
+Assumption (A.1) requires the relative proportion of the sample sizes to lie in an open interval. As-sumption (A.2) says that the diagonal elements of the covariance matrices have to be bounded below by a constant, along with the fact that the scaled sum of the off-diagonal elements of the population covariance matrices is less than that of its diagonal elements. Assumption (A.2) simultaneously un-earths the correlational nature of the log-basis vectors by specifying the structural interplay between its variance and covariance components and preventing the degeneracy of the log-basis vectors. It also accounts for the dependence induced by the CLR transformation, i.e., Ppi=1 Z(k) 
+
+> ij
+
+= 0, and plays an important role for proper calibration of the bootstrap critical values. In the existing high-dimensional bootstrap literature, Chernozhukov et al. [2017], Xue and Yao [2020], Chakraborty and Sakhanenko [2023] require only the variance components to be lower bounded, which in itself is not sufficient for compositional data. For example, if we consider a common covariance matrix of the log-basis vectors across all the populations denoted by Σ p = (1 − ρ)Ip + ρ1p1Tp , with ρ = 1 − p−1, then we see that the diagonal elements of Σ p are positive. However, the diagonal elements of the covariance matrix of the centered log-ratio vectors denoted by GpΣpGpT , become zero as p increases with n. Thus, the theoretical guarantees obtained by Xue and Yao [2020], Chakraborty and Sakhanenko [2023] become invalid for the above choice of Σ. Alternatively, compared to the existing literature in Cao et al. [2017], Li et al. [2022], Assumption (A.2) is fairly relaxed in the sense that it allows for the extreme values of the off-diagonal elements of the correlation matrix. This fact would be made clearer if we consider the common covariance matrix ˘Σp =
+
+ Σd 0d×(p−d)
+
+0(p−d)×d Ip−d
+
+
+
+,
+
+with ρ = 1 − p−1, 1 ≤ d ≤ ⌊ ϵp ⌋, where ϵ ∈ (0 , 1/2) and then by choosing b = 1 , a p = ϵp − 1 and δ = 2 ϵ, 
+
+we see that ˘Σp satisfies the Assumption (A.2) and the diagonal elements of Gp ˘ΣpGpT are bounded 9away from zero. The analogous assumption in Cao et al. [2017], Li et al. [2022] requires the absolute values of all the off-diagonal elements of the correlation matrices to be bounded away from one, which excludes matrices like ˘Σp when p is increasing with n. Assumption (A.3) requires the log-basis vectors to have third and fourth moments bounded by the sequences Bn and B2
+
+> n
+
+, respectively. Finally, Assumption (A.4) and Assumption (A.5) require the tails of the distribution of the log-basis vectors to have sub-exponential or polynomial decay, thus incorporating a wide of range of distributions for practical purposes. In all of the above assumptions, the sequence Bn can diverge with n and p.
+
+# 6 Theoretical Guarantees and Practical Significances 
+
+For clarity of exposition, we summarise the main guarantees and their practical implications here, with technical assumptions and proofs deferred to Section 10. In brief, the proposed empirical bootstrap tests (i) control type I error at the nominal level under the null (Theorem 1), and (ii) attain power approaching one against relevant alternatives (Theorem 2), even when p is large relative to n, groups are unbalanced, and covariance structures differ across groups. 
+
+Theorem 1 (Valid size under the null): Under the regularity conditions stated in Assump-tions A.1–A.4 or A.1–A.3 and A.5, the K-sample max–norm CLR test with empirically bootstrapped cutoff Qα,K satisfies 
+
+P (Tn,K > Q α,K | H05 ) → α as N → ∞ .
+
+Theorem 2 (Consistency under alternatives): Under the same moment and tail conditions as in Theorem 1 along with Assumption A.6, the test Tn,K satisfies 
+
+P (Tn,K > Q α,K | Ha5) → 1 as N → ∞ .
+
+Remark 2. : The bootstrap calibration provides a data-driven way to compute calibrated p-values and hence to control the false positive rate at the nominal significance level. In the present context, this is particularly important when comparing microbial communities across clinical groups, such as case-control studies or multi-arm cohorts, where high dimensionality and compositional constraints can otherwise lead to spurious discoveries. The accompanying power result shows that clinically meaningful differences in community composition are detected with probability tending to one as the sample size increases, while maintaining type 1 error control. It is also worth emphasizing that the size and power guarantees do not require additional structural assumptions on the covariance matrix or on the sparsity pattern of the observed vectors. Consequently, the theory allows for settings in which some taxa are rarely observed and the resulting microbial abundance vectors may be highly sparse. This feature is important for rare-taxa regimes, which are examined further in Section 7. 
+
+From Theory to Practice: Implications for Clinical and Public Health Studies: Many clinical microbiome studies involve thousands of taxa and modest sample sizes, leading to challenging high-dimensional settings where p may be comparable to, or much larger than, n. Theorems 1–2 provide theoretical support for the proposed test in such regimes by establishing valid type I error control and power consistency under broad conditions. Importantly, these guarantees do not require equal covariance structures across groups and allow unbalanced sample sizes, features that are common in multi-center cohorts and pragmatic clinical studies. Because calibration is performed through an empirical bootstrap that respects the constraints of the compositional data, the resulting inference is well suited to relative-abundance data and helps reduce the risk of conclusions driven by compositional artifacts. More broadly, valid global tests across multiple clinical groups provide a principled basis for prioritizing subsequent analyses, including targeted taxon-level investigations, subgroup evaluations, 10 and follow-up studies relevant to risk stratification and intervention development in colorectal cancer, preterm birth, and related health conditions. 
+
+# 7 Simulations for Clinical-Scale Study Designs 
+
+In this section, we report the findings of finite-sample studies comparing the empirical level and power of the proposed test with those of popular tests in the existing literature for high-dimensional compositional data. We compare the performance of the proposed test, referred to as EBC, with two competitors: the tests proposed by Cao et al. [2017] and Li et al. [2022], denoted as CLL and MECAF, respectively. Both CLL and MECAF are based on the maximum norm and are designed primarily for two populations, using critical values derived from their asymptotic Gumbel distribution. 
+
+7.1 Two-Sample Scenarios 
+
+To make two–sample evaluations clinically meaningful, we designed three simulation scenarios that mirror common patterns seen in 16S rRNA datasets, where many taxa co-vary, only a subset shifts between groups, and measurements can be light or heavy-tailed due to biological heterogeneity and sequencing variability. We vary cohort sizes typical of observational studies and dimensions typical of ASV (Amplicon Sequence Variants) or OTU (Operational Taxonomic Units) level analyses, so the results are practical rather than purely theoretical. Across all settings we include both light and heavy-tailed outcomes to reflect outliers and overdis-persion, and we use realistic sample sizes with very high dimensionality. We further allow only a sparse fraction of taxa to differ between groups, reflecting the empirical reality that a few features often drive clinically relevant shifts. Together, (M.1)–(M.3) provide a practical, complementary suite that probes level, power, and robustness under conditions clinicians and biostatisticians routinely face. We per-formed 1000 bootstrap resamples to determine the cutoff values for the EBC test and performed 1000 iterations to estimate the empirical level and power of all two-sample tests. To compare the finite sample performance of the three tests viz. EBC, CLL and MECAF, we consider two distributions with differing tail behaviors: the normal distribution (light-tailed) and the t-distribution with 5 degrees of freedom (heavy-tailed). We first outline the simulation setup to compare two populations. For k = 1 , 2 and i = 1 , . . . , n k, we generate p-dimensional random vectors 
+
+Y (k) 
+
+> i
+
+where each component is either independently and identically distributed as a standard normal or a standardized t-distribution with 5 degrees of freedom. Thus, the vectors Y (k) 
+
+> i
+
+have mean vector 0p and covariance matrix Ip.
+
+Next, we generate the latent log-basis vectors 
+
+V (k) 
+
+> i
+
+= μ(k) + Σ (k)1/2Y (k) 
+
+> i
+
+,
+
+where μ(k) and Σ (k) denote the mean vector and covariance matrix respectively. The corresponding latent basis vectors are then generated as 
+
+W (k) 
+
+> ij
+
+= exp 
+
+
+
+V (k)
+
+> ij
+
+
+
+, j = 1 , . . . , p. 
+
+To mimic realistic microbiome sequencing data, we subsequently generate observed compositional count vectors from the latent basis vectors. Specifically, for each sample we define the latent compo-sition 
+
+π(k) 
+
+> ij
+
+= W (k)
+
+> ij
+
+Ppm=1 W (k)
+
+> im
+
+,
+
+11 and generate observed counts 
+
+C(k) 
+
+> i
+
+∼ Multinomial( N (k) 
+
+> i
+
+, π (k) 
+
+> i
+
+),
+
+where the sequencing depths N (k) 
+
+> i
+
+are independently generated from a negative binomial distribution to mimic the over-dispersion commonly observed in microbiome sequencing studies. Specifically, for each dimension p, the sequencing depth parameters are chosen as (μN , θ N ) = 
+
+
+
+(3 .0p, 0.05 p), p = 200 ,
+
+(1 .5p, 0.02 p), p = 500 ,
+
+(1 .5p, 0.02 p), p = 1000 ,
+
+where μN and θN denote the mean and dispersion parameters, respectively. Thus, 
+
+N (k) 
+
+> i
+
+∼ N B (μN , θ N ),
+
+allowing the simulated count data to exhibit realistic variability in sequencing depths across samples. The sequencing depths are generated independently of the latent microbial composition, reflecting variability arising from the sequencing process rather than biological differences. To further reflect the biological and technical sparsity commonly observed in microbiome sequencing studies, we randomly introduce additional zeros into the count matrix. For each entry, an observed count is set to zero independently with probability η, where η ∈ { 0.30 , 0.45 , 0.60 }. These settings correspond to moderate (45%) and high levels (75%) of zero inflation frequently encountered in practice. Since the centered log-ratio (CLR) transformation is only defined for strictly positive composi-tions, we first apply a zero-replacement procedure to the observed count matrix. In particular, we use the count-zero multiplicative (CZM) imputation method implemented in the zCompositions package [Palarea-Albaladejo and Mart´ ın-Fern´ andez, 2015] available on CRAN . We also investigated alterna-tive zero-replacement procedures, including geometric Bayesian multiplicative replacement (GBM) in Mart´ ın-Fern´ andez et al. [2015]. However, the CZM approach produced more stable finite-sample per-formance across the simulation settings considered here. We therefore report the results based on CZM. After zero replacement, we normalized to unit sum (closure) to obtain observed compositions 
+
+X(k) 
+
+> ij
+
+=
+
+eC(k)
+
+> ij
+
+Ppm=1 eC(k)
+
+> im
+
+,
+
+where eC(k) 
+
+> ij
+
+denotes the imputed counts. Finally, we compute the centered log-ratio transformed vectors 
+
+Z(k) 
+
+> i
+
+= Gp log X(k) 
+
+> i
+
+,
+
+which are subsequently used for all testing procedures. Therefore, unlike idealized latent-variable simu-lations, the proposed setup incorporates the complete practical analysis pipeline, including sequencing variability, sparsity, zero inflation, zero imputation, closure, and CLR transformation. For brevity, we denote the resulting observed compositional distributions generated from the latent Gaussian and latent t5 log-basis vectors by D1 and D2, respectively. We considered two sets of sample sizes 
+
+N1 = ( n1, n 2) = (50 , 60) and N2 = ( n1, n 2) = (100 , 120) ,
+
+for varying dimensions p = 200 , 500 , and 1000. We set s = 0 .1 as the sparsity level of the signal, so that ⌊ps ⌋ taxa exhibit differential abundance between the groups under the alternative hypothesis, 12 while the remaining taxa have identical mean components. For each simulation setting, the signal support and the corresponding nonzero mean shifts are generated once and then kept fixed across all Monte Carlo iterations. For testing the hypothesis 
+
+H03 : ν(1) = ν(2) vs. Ha3 : ν(1) ̸ = ν(2) ,
+
+the mean vector of the first population is taken as μ(1) = 0 p. For the alternative hypothesis, we use a separation parameter δ, which takes values δ = (0 , 0.25 , 0.5, 0.75 , 1) . Here, δ = 0 corresponds to empirical level calculations, while the remaining values are used to assess empirical power. Un-der the alternative hypothesis, ⌊ps ⌋ entries of the vector μ(2) are independently generated from a 
+
+U nif orm (−2δ, 2δ) distribution, while the remaining coordinates are set equal to zero. For simplicity, we take the additive constant c in the null hypothesis formulation to be zero. For d = p/ 4, we denote by 
+
+CS = CS (M1, M 2, M 3, M 4)a p × p symmetric block matrix partitioned into a 4 × 4 structure, where each block is of dimension 
+
+d × d. The diagonal blocks are given by 
+
+BlockDiag (CS ) = ( M1, M 2, M 3, M 4).
+
+We consider the following matrices: 
+
+AR ρ = ( ρ|i−j|)d×d, EQ ρ = (1 − ρ)Id + ρ1d1Td ,
+
+along with 
+
+U1 = 1
+
+d Id, U2 = 0 d, U3 = − 1
+
+d Id.
+
+The upper off-diagonal blocks are defined by (CS )l,l +1 = U1, l = 1 , 2, 3, (CS )l,l +2 = U2, l = 1 , 2, and ( CS )1,4 = U3.
+
+To account for heterogeneous dependence structures commonly observed in microbiome communi-ties, we consider the following covariance configurations: 
+
+(M.1) Clustered communities with differing cohesion: Microbiome data often contain “mod-ules” of co-occurring taxa (e.g., clades sharing niches or metabolism). Under (M.1), the covariance structure is of the form Σ(k) = CS (EQ 0.999 , EQ 0.9, EQ 0.7, EQ 0.5), k = 1 , 2.
+
+Setting M.1 recreates this by forming a few community clusters that differ in how tightly their members move together—from very strong to moderate cohesion. This setting represents comparisons like healthy vs. case cohorts where overall network architecture is similar across groups, and only a sparse subset of taxa (modules) shifts in mean abundance. It tests whether methods maintain level and detect subtle, modular signals when correlations are strong and stable. 
+
+(M.2) Smooth, local dependence with near-independent taxa: Not all co-variation is clus-tered; taxa can change together along phylogenetic or functional gradients, while other taxa vary more independently. Under (M.2), the covariance structure is of the form Σ(k) = CS (AR 0.5, AR 0.3, AR 0.1, I d), k = 1 , 2.
+
+Setting M.2 mimics this mix of short-range dependence plus near-independence, as observed when closely related genera track environmental drivers but many background taxa do not. This reflects 13 routine case–control analyses where weak, distributed correlations coexist with pockets of structure. It assesses robustness in settings where dependence is diffuse and signals are modest, conditions that often lead to inflated false positives or diminished power. 
+
+(M.3) Group-specific reorganization (heterogeneous covariance): Disease, treatment, or de-mographic factors may rewire microbial networks by strengthening certain associations and weakening others, even when the taxa present remain largely the same. Under (M.3), the covariance structure is of the form Σ(1) = CS (EQ 0.999 , EQ 0.9, EQ 0.7, EQ 0.5), and Σ (2) = CS (EQ 0.5, EQ 0.7, EQ 0.9, EQ 0.999 ).
+
+Setting M.3 captures this “dysbiosis as network reorganization,” with different co-variation patterns across the two groups. This directly parallels comparisons such as adenoma or CRC vs. controls or race-stratified pregnancy cohorts, where covariance structures differ. It examines the performance of methods under heteroscedasticity, a common violation in practice that may lead to miscalibration if not properly addressed. The setting (M.3) is specifically designed to assess robustness under heterogeneous covariance structures across populations, reflecting practical microbiome applications where disease status or demographic factors may alter microbial co-occurrence patterns. We summarize our findings for the two-sample cases in Tables 1–3. We performed 1000 bootstrap resamples to determine the cutoff values for EBC test and performed 1000 iterations to estimate the empirical level and power of all two-sample tests. Overall, the tables reveal similar patterns, though the differences within each table can vary from mild to stark, depending on the data-generating distribution, models, and sample sizes. For comparison, the nominal significance level was set to α = 0 .05. We first examine the empirical level, corresponding to the null case δ = 0. Here p denotes the dimension, N1 = (50 , 60) and N2 = (100 , 120) denote the two sample-size configurations, and the nominal significance level is set to α = 0.05. Across Tables 1–3, the EBC test generally provides the most reliable control of the empirical level. In most cases, its rejection probabilities under δ = 0 remain close to the nominal level, with only mild departures in a few low-dimensional or finite-sample settings. For example, under Setting (M.1), the empirical level of EBC ranges from 0 .040 to 0 .061 for N1 across all dimensions and distributions, and remains reasonably close to 0 .05 for N2, with moderate inflation only in a few cases. Similar behaviour is observed under Settings (M.2) and (M.3), although the empirical level is slightly inflated for some combinations when p = 200, particularly under (M.3). In contrast, CLL and MECAF are more often liberal under the null. This is especially visible when p = 500 or p = 1000, where the empirical level of CLL frequently lies around 0 .08 − 0.10, while MECAF also tends to exceed the nominal level, although usually to a lesser extent than CLL. Overall, these findings suggest that the conservative behaviour of CLL and MECAF arises from their greater sensitivity to sparsity, high dimensionality, and heterogeneous covariance structures, thereby highlighting the improved robustness of EBC to zero imputation and covariance heterogeneity. We next consider the empirical power for δ > 0. As expected, all three methods show increasing rejection probabilities as the signal strength δ increases from 0 .25 to 1. The increase is also more pronounced for the larger sample-size configuration N2 = (100 , 120), where the power often approaches one for moderate or large values of δ. Across the three simulation settings, EBC frequently turns out to be more powerful than CLL and MECAF. The advantage is most apparent for moderate and strong signals in higher dimensions. For instance, when p = 500 or p = 1000, EBC often achieves noticeably larger power than both competing methods at δ = 0 .75 and δ = 1, particularly under N2. This pattern is seen consistently across Settings (M.1)–(M.3). At smaller signal levels, such as δ = 0 .25 or δ = 0 .50, the differences among the methods are more modest, but EBC still maintains competitive power while retaining better empirical level control. Even under higher zero-inflation levels, η = 0 .45 and η = 0 .60 (Tables S1 and S2), the EBC test continues to provide reliable type I error control, whereas CLL and MECAF tend to exhibit inflated level . Overall, the results show that EBC provides a more favorable 14 Table 1: Empirical size and power under Setting (M.1) with CZM imputation and additional zero inflation level η = 0 .30. The average proportion of zeros before imputation is around 45%–55% percent. 
+
+δp Dist. Method 0 0.25 0.50 0.75 1
+
+N1 N2 N1 N2 N1 N2 N1 N2 N1 N2
+
+200 D1 EBC 0.040 0.058 0.075 0.100 0.125 0.241 0.328 0.700 0.586 0.956 CLL 0.068 0.066 0.093 0.109 0.150 0.250 0.340 0.703 0.567 0.961 MECAF 0.061 0.061 0.082 0.104 0.133 0.243 0.320 0.681 0.542 0.956 D2 EBC 0.058 0.076 0.069 0.080 0.105 0.271 0.335 0.725 0.640 0.958 CLL 0.077 0.076 0.098 0.094 0.142 0.265 0.338 0.717 0.636 0.955 MECAF 0.071 0.076 0.090 0.087 0.130 0.258 0.319 0.703 0.612 0.953 500 D1 EBC 0.055 0.075 0.052 0.088 0.135 0.343 0.413 0.906 0.825 0.998 CLL 0.099 0.089 0.092 0.106 0.178 0.331 0.378 0.842 0.739 0.997 MECAF 0.082 0.085 0.083 0.101 0.166 0.316 0.344 0.830 0.711 0.997 D2 EBC 0.061 0.067 0.063 0.089 0.144 0.380 0.444 0.899 0.855 0.998 CLL 0.092 0.071 0.101 0.112 0.191 0.381 0.437 0.853 0.784 0.997 MECAF 0.079 0.064 0.092 0.103 0.173 0.363 0.410 0.839 0.768 0.996 1000 D1 EBC 0.042 0.038 0.057 0.073 0.151 0.383 0.525 0.952 0.942 1.000 CLL 0.097 0.056 0.121 0.087 0.194 0.375 0.478 0.913 0.861 1.000 MECAF 0.088 0.051 0.104 0.081 0.179 0.357 0.444 0.905 0.836 1.000 D2 EBC 0.043 0.047 0.044 0.068 0.136 0.416 0.542 0.958 0.930 1.000 CLL 0.104 0.060 0.114 0.086 0.198 0.403 0.517 0.925 0.848 1.000 MECAF 0.092 0.053 0.097 0.082 0.180 0.390 0.484 0.917 0.818 1.000 balance between type I error control and sensitivity to alternatives than CLL and MECAF under substantial zero inflation and sparsity. 
+
+7.2 Multi-Sample Scenario 
+
+To evaluate the performance of the proposed multi-sample EBC test in high-dimensional settings, we extend the simulation study to compare three, four, and five populations. In this setup, we first generate five sets of samples from five distinct populations. For the four-sample and three-sample tests, we use the first four and first three populations, respectively. The latent distributions D1 and D2, corresponding to the Gaussian and standardized t5 settings, together with the complete compositional data generation and preprocessing pipeline described in the two-sample simulation study, remain unchanged. In particular, sequencing depths are indepen-dently generated from negative binomial distributions with dimension-dependent parameters, which are chosen as (μN , θ N ) = 
+
+
+
+(4 .0p, 0.10 p), p = 200 ,
+
+(3 .0p, 0.08 p), p = 500 ,
+
+(2 .5p, 0.06 p), p = 1000 ,
+
+and additional zeros are introduced with probability η ∈ { 0.3, 0.6} to mimic realistic sparse microbiome count data, which resulted in moderate 40% to high levels 70% of zero inflation. 15 Table 2: Empirical size and power under Setting (M.2) with CZM imputation and additional zero inflation level η = 0 .30. The average proportion of zeros before imputation is around 47%–60%. 
+
+δp Dist. Method 0 0.25 0.50 0.75 1
+
+N1 N2 N1 N2 N1 N2 N1 N2 N1 N2
+
+200 D1 EBC 0.058 0.070 0.068 0.080 0.099 0.223 0.252 0.654 0.519 0.940 CLL 0.087 0.079 0.098 0.083 0.130 0.213 0.289 0.621 0.512 0.929 MECAF 0.078 0.075 0.090 0.082 0.114 0.208 0.261 0.614 0.490 0.924 D2 EBC 0.040 0.057 0.073 0.077 0.094 0.225 0.270 0.625 0.550 0.926 CLL 0.083 0.066 0.118 0.076 0.122 0.209 0.283 0.605 0.565 0.927 MECAF 0.076 0.061 0.109 0.071 0.110 0.202 0.263 0.592 0.539 0.922 500 D1 EBC 0.042 0.068 0.045 0.074 0.097 0.293 0.323 0.806 0.707 0.997 CLL 0.078 0.086 0.107 0.094 0.169 0.290 0.330 0.739 0.630 0.983 MECAF 0.067 0.082 0.096 0.090 0.150 0.280 0.299 0.729 0.600 0.980 D2 EBC 0.038 0.060 0.060 0.087 0.085 0.294 0.332 0.790 0.744 0.990 CLL 0.080 0.066 0.105 0.114 0.143 0.294 0.317 0.736 0.610 0.986 MECAF 0.063 0.061 0.091 0.111 0.123 0.278 0.285 0.724 0.582 0.986 1000 D1 EBC 0.029 0.049 0.037 0.058 0.095 0.308 0.397 0.914 0.869 1.000 CLL 0.076 0.074 0.095 0.091 0.160 0.286 0.371 0.837 0.764 0.999 MECAF 0.066 0.067 0.080 0.085 0.145 0.274 0.345 0.820 0.733 0.998 D2 EBC 0.045 0.033 0.039 0.046 0.112 0.294 0.394 0.904 0.843 1.000 CLL 0.098 0.058 0.086 0.103 0.168 0.307 0.385 0.838 0.734 0.998 MECAF 0.083 0.055 0.079 0.099 0.149 0.297 0.353 0.825 0.693 0.998 Unlike the two-sample setting, no competing methods are currently available for direct comparison in the general high-dimensional multi-sample compositional framework considered here. Therefore, we report only the performance of the proposed EBC procedure for the three-sample, four-sample, and five-sample problems. We consider two sets of sample sizes from the five populations, namely 
+
+N3 = ( n1, n 2, n 3, n 4, n 5) = (50 , 60 , 70 , 80 , 90) , and N4 = ( n1, n 2, n 3, n 4, n 5) = (100 , 120 , 140 , 160 , 180) .
+
+As in the two-sample study, we set the sparsity level to s = 0 .1, so that only ⌊ps ⌋ taxa exhibit dif-ferential abundance across the populations under the alternative hypothesis. For −1 < a < b < 1, we denote by mp,s (a, b ) a p × 1 vector having ⌊ps ⌋ entries independently generated from a U nif orm (a, b )distribution, while the remaining coordinates are set equal to zero. The mean vectors for the five pop-ulations are defined as μ(1) = 0 p, μ (2) = mp,s (−δ/ 2, δ/ 2) , μ (3) = mp,s (−δ, δ ), μ (4) = mp,s (−3δ/ 2, 3δ/ 2) ,
+
+and μ(5) = mp,s (−2δ, 2δ). For each simulation setting, the signal support and the corresponding nonzero mean shifts are generated once and then kept fixed across all Monte Carlo iterations. The separation among the populations gradually increases from the first to the fifth population. For smaller values of δ, the populations remain relatively close to one another, thereby creating challenging alternatives that help assess the sensitivity of the proposed EBC test in detecting subtle community-level compositional differences. 
+
+Three-group comparisons (e.g., control vs. intermediate lesion vs. disease): We emulate situations where adjacent clinical groups are biologically similar. Examples include controls, patients 16 Table 3: Empirical size and power under Setting (M.3) with CZM imputation and additional zero inflation level η = 0 .30. The average proportion of zeros before imputation is around 45%–55%. 
+
+δp Dist. Method 0 0.25 0.50 0.75 1
+
+N1 N2 N1 N2 N1 N2 N1 N2 N1 N2
+
+200 D1 EBC 0.072 0.077 0.081 0.086 0.125 0.272 0.299 0.688 0.641 0.963 CLL 0.090 0.082 0.106 0.094 0.150 0.274 0.326 0.651 0.605 0.957 MECAF 0.084 0.077 0.096 0.087 0.137 0.260 0.300 0.644 0.577 0.955 D2 EBC 0.055 0.068 0.065 0.095 0.122 0.252 0.321 0.725 0.645 0.963 CLL 0.076 0.082 0.094 0.099 0.155 0.265 0.332 0.704 0.620 0.964 MECAF 0.064 0.078 0.086 0.097 0.145 0.253 0.309 0.696 0.593 0.957 500 D1 EBC 0.055 0.064 0.070 0.092 0.163 0.376 0.431 0.889 0.831 0.997 CLL 0.091 0.086 0.105 0.090 0.179 0.320 0.385 0.843 0.737 0.995 MECAF 0.075 0.077 0.097 0.084 0.168 0.309 0.360 0.833 0.709 0.994 D2 EBC 0.052 0.084 0.066 0.113 0.146 0.389 0.444 0.919 0.831 0.997 CLL 0.099 0.095 0.119 0.121 0.165 0.352 0.422 0.869 0.755 0.998 MECAF 0.084 0.092 0.099 0.116 0.156 0.335 0.394 0.864 0.731 0.998 1000 D1 EBC 0.044 0.056 0.054 0.080 0.133 0.413 0.555 0.967 0.943 1.000 CLL 0.086 0.073 0.121 0.091 0.184 0.372 0.505 0.928 0.867 1.000 MECAF 0.076 0.066 0.102 0.086 0.167 0.360 0.470 0.921 0.840 1.000 D2 EBC 0.056 0.059 0.051 0.084 0.150 0.451 0.576 0.985 0.957 1.000 CLL 0.093 0.073 0.103 0.107 0.194 0.389 0.515 0.942 0.886 1.000 MECAF 0.083 0.067 0.093 0.097 0.181 0.380 0.482 0.936 0.868 1.000 with adenomas, and patients with colorectal cancer, or successive pregnancy trimesters, so that dif-ferences are subtle and gradual. Under this setting, the three populations are assigned covariance matrices Σ(1) = CS (EQ 0.999 , EQ 0.9, EQ 0.7, EQ 0.5), Σ(2) = CS (EQ 0.5, EQ 0.999 , EQ 0.9, EQ 0.7),
+
+Σ(3) = CS (EQ 0.7, EQ 0.5, EQ 0.999 , EQ 0.9).
+
+This introduces moderate heterogeneity in microbial dependence while keeping adjacent groups rel-atively similar. The setting stresses sensitivity to small, clinically plausible shifts while maintaining realistic correlations among taxa. 
+
+Four-group comparisons (e.g., multi-center or demographic strata): Many studies compare more than two arms to assess differences across sites, age bands, or race, where group sizes are naturally unbalanced. In addition to the first three covariance structures, the fourth population is assigned Σ (4) = CS (EQ 0.9, EQ 0.7, EQ 0.5, EQ 0.999 ), allowing groups to differ not only in their average compositions but also in their co-variation patterns (community “network” structure). This probes calibration and power when designs are uneven and heterogeneous. 
+
+Five-group comparisons (e.g., multi-country cohorts or graded exposures): Large obser-vational consortia often span several locations or exposure levels (diet, antibiotics, inflammation). We mimic a smooth gradient across five populations where nearby groups are close but distant groups differ more, so that the global null can fail in nuanced ways. The fifth population is as-signed Σ (5) = Σ (1) = CS (EQ 0.999 , EQ 0.9, EQ 0.7, EQ 0.5), creating a cyclic covariance pattern while the 17 mean compositions continue to evolve across groups. This challenges a K-sample test to aggregate weak pairwise signals into a decisive global finding without inflating false positives. Across all K ∈ { 3, 4, 5}, these scenarios capture the practical hallmarks of microbiome studies: many taxa, sparse but meaningful group differences, changing co-occurrence structure across arms, and realistic variability. The result is a set of multi-sample simulations that speak directly to clinical and public-health use cases, demonstrating how the EBC test behaves under the complexities investigators routinely encounter. We performed 1000 bootstrap resamples to determine the cutoff values for the EBC test and performed 1000 iterations to estimate the empirical level and power of all multi-sample tests. The performance of our EBC test for the multi-sample case involving three, four, and five populations is provided in Table 4. We note that the empirical level of the EBC test is consistently close to the nominal level of 0.05, with deviations within 1% across nearly all tested scenarios. This indicates that the EBC test maintains robust control over the type I error rate, demonstrating its unbiasedness. Specifically, the test shows an empirical level that aligns well with the nominal significance level of 
+
+α = 0 .05 even in the context of multiple populations and varying sample sizes. Table 4: Empirical size and power for the multi-sample EBC test with CZM imputation and additional zero inflation level 0 .60. The average proportion of zeros before imputation is around 40%–47% percent. 
+
+δp Dist. K 0 0.5 1 1.5 2
+
+N3 N4 N3 N4 N3 N4 N3 N4 N3 N4
+
+200 D1 K = 3 0.040 0.042 0.055 0.069 0.110 0.278 0.322 0.780 0.684 0.984 
+
+K = 4 0.047 0.039 0.084 0.163 0.429 0.891 0.932 1.000 0.999 1.000 
+
+K = 5 0.041 0.040 0.150 0.516 0.904 1.000 1.000 1.000 1.000 1.000 D2 K = 3 0.031 0.051 0.054 0.077 0.117 0.293 0.333 0.804 0.707 0.986 
+
+K = 4 0.052 0.054 0.089 0.191 0.452 0.912 0.947 1.000 1.000 1.000 
+
+K = 5 0.048 0.051 0.161 0.557 0.915 1.000 1.000 1.000 1.000 1.000 500 D1 K = 3 0.042 0.045 0.052 0.079 0.143 0.403 0.500 0.958 0.914 1.000 
+
+K = 4 0.037 0.047 0.091 0.224 0.610 0.989 0.998 1.000 1.000 1.000 
+
+K = 5 0.034 0.049 0.220 0.669 0.992 1.000 1.000 1.000 1.000 1.000 D2 K = 3 0.046 0.054 0.059 0.094 0.152 0.449 0.541 0.968 0.936 1.000 
+
+K = 4 0.044 0.064 0.099 0.267 0.655 0.994 0.999 1.000 1.000 1.000 
+
+K = 5 0.043 0.068 0.249 0.724 0.995 1.000 1.000 1.000 1.000 1.000 1000 D1 K = 3 0.020 0.029 0.034 0.046 0.102 0.348 0.440 0.931 0.864 1.000 
+
+K = 4 0.025 0.030 0.072 0.196 0.571 0.991 0.998 1.000 1.000 1.000 
+
+K = 5 0.023 0.028 0.214 0.667 0.995 1.000 1.000 1.000 1.000 1.000 D2 K = 3 0.024 0.033 0.039 0.059 0.114 0.382 0.481 0.947 0.886 1.000 
+
+K = 4 0.026 0.039 0.083 0.224 0.624 0.997 0.999 1.000 1.000 1.000 
+
+K = 5 0.024 0.037 0.243 0.725 0.997 1.000 1.000 1.000 1.000 1.000 The power of the EBC tests Under the alternatives δ > 0, the empirical power increases mono-tonically with the signal strength δ. As expected, the larger sample-size configuration N4 yields substantially higher power than N3. The number of groups also plays an important role: for fixed (p), distribution, and sample-size configuration, the power generally increases as K increases from 3 to 5. In particular, for K = 4 and K = 5, the test attains high power even for moderate alterna-tives and reaches power close to one for larger values of δ. This pattern is consistent under both D1
+
+18 and D2, suggesting that the proposed multi-sample EBC procedure is robust to both Gaussian and heavy-tailed data-generating distributions. Taken together, Table 4 and Table S3 demonstrates that the EBC calibration remains well controlled under the null and highly sensitive under alternatives, even in the presence of substantial zero inflation. 
+
+# 8 Translational Case Studies: Evaluating Microbiome Differences in Colorectal Cancer Risk and Pregnancy 
+
+In this section, we benchmark the proposed empirical–bootstrap compositional (EBC) test against two established competitors (CLL and MECAF) using two clinically consequential 16S rRNA amplicon datasets: (i) a large fecal cohort on colorectal adenomas/CRC, a precursor state central to cancer prevention, and (ii) a pregnancy cohort on preterm birth and race-related disparities, a leading driver of neonatal morbidity and public-health burden. These complementary cohorts differing in sample size, taxon dimensionality, and biological heterogeneity, provide a rigorous, practice-relevant evaluation of level control and power. 
+
+8.1 Adenomas Dataset 
+
+This dataset examines adenomatous polyps, which are abnormal growths in the colon that resemble surrounding tissues. Adenomas are a recognized precursor to colorectal cancer (CRC), impacting over 1.8 million people annually in the U.S., Leslie et al. [2002], Fenoglio and Lane [1974]. To explore the relationship between the adenomas and the microbial communities, Hale et al. [2017] conducted a study sequencing the 16S rRNA gene from fecal samples of 229 adenoma patients, 38 colorectal cancer patients, and 534 control samples. These samples, collected during routine colonoscopies between 2001 and 2005, were processed and sequenced using standardized pipelines and technology. The resulting microbiome count data were derived from a MiSeq sequencing platform and analyzed using the IM-TORNADO bioinformatics pipeline. Given the CLL test’s sensitivity to zeros in log-ratio transformations, we removed taxa absent across all samples, resulting in 2,140 taxa and 801 samples. Table 5: Analysis of microbial abundance differences in the Adenomas dataset. Comparison Method p-value Adenoma & Cancer ( n1 = 267) vs. Control ( n2 = 534) EBC 0.993 CLL 0.510 MECAF 0.515 Young ( n1 = 232) vs. Old ( n2 = 569) EBC 0.030 CLL 0.437 MECAF 0.442 In this analysis, we first examine the differences between the abnormal group (adenoma patients and CRC patients) and the control group. The results are presented in Table 5 and all three methods yield consistent results with a p-value above the nominal level 0.05. Consequently, we fail to reject the null hypothesis, indicating that there are no significant differences between the abnormal group and the control group. Additionally, we would like to investigate the differences between the samples from 232 younger (age < 65) and 569 older (age ≥ 65) individuals. Heitman et al. [2009] conducted a systematic review and meta-analysis, revealing that cohorts with a mean age of ≥ 65 years had higher prevalence rates of advanced adenomas (8.2%) and CRC (0.7%) than those with a mean age of < 65 years, which 19 reported prevalence rates of 3.8% for advanced adenomas and 0.1% for CRC. Based on these findings, we adopted the same age stratification in our study and compared bacterial communities between the two age groups. The results are presented in Table 5 indicates that our EBC test yielded a p-value of 0.030, rejecting the null hypothesis at 5% level of significance. In contrast, CLL and MECAF provided p-values of 0.437 and 0.442, respectively, failing to detect the significance. This result is not driven by a claim that every taxon changes with age; rather, it reflects a global difference accumulated across the high-dimensional microbial community. Because the two age groups are highly unbalanced, with n1 = 232 and n2 = 569, and the data contain many sparse taxa, accurate calibration of the null distribution is essential. The empirical bootstrap calibration used by EBC accounts for these finite-sample features and compares the observed test statistic with a data-adaptive reference distribution. The substantially larger p-values produced by CLL and MECAF may be partly attributable to slower convergence of their test statistics to the limiting Gumbel distribution, as well as to reduced sensitivity to distributed community-level shifts in the presence of sparsity, compositional constraints, and zero imputation. Clinically speaking, our findings align with the conclusions of Heitman et al. [2009], supporting the notion that age is a significant factor in the prevalence and characteristics of adenomas and CRC. In the adenomas cohort, EBC reached two conclusions that align with clinical knowledge yet are hard to obtain from high–dimensional compositional data: (i) no global difference when pooling adenoma/CRC with controls, and (ii) a statistically significant difference between younger and older participants. The first protects against overinterpreting broad group contrasts; the second captures a subtle but clinically credible, age–related community shift that CLL and MECAF missed. EBC’s advantage comes from calibrating inference in a way that mirrors the data’s structure: it respects relative abundances and the strong co-variation among taxa, and it derives its cutoffs from the observed data rather than relying on large–sample approximations. Practically, this yields two benefits that reviewers care about: fewer “false alarms” in global case–control contrasts, and greater sensitivity to distributed, modest changes—exactly the pattern expected for aging microbiomes. Clinical and Public-Health Significance: Reliable detection of age–associated community differ-ences supports risk stratification (e.g., surveillance intensity with advancing age) without triggering unnecessary follow–up from spurious global findings. More broadly, a test that is both well–calibrated and sensitive to realistic microbiome shifts strengthens the evidentiary basis for translational studies, helping clinicians and public-health teams prioritize subgroups and interventions with confidence. 
+
+8.2 Analysis of the Pre-term Birth Dataset 
+
+The second dataset focuses on vaginal microbiomes from pregnancy and pre-term birth studies, where pre-term delivery is defined to occur before 37 weeks of gestation; see Stout et al. [2017] for more de-tails. Vaginal swabs were collected from 77 participants, 31% of whom delivered pre-term, with samples distributed across the three trimesters. To account for the significant changes in the microbiome com-munity environment during pregnancy, we focused on samples collected during the second trimester, selecting the first available measurement for each individual within this period. This approach ensures consistency in the sample collection timing and establishes a clear baseline for analyzing microbiome dynamics during fetal development. During data preprocessing, we removed taxa that were absent in all samples, resulting in a dataset of 88 OTUs across 53 samples. We first compared microbial abundances between the pre-term and the full-term delivery groups. Table 6 shows that none of the methods, including EBC (p-value = 0.574), CLL (p-value = 0.922), and MECAF (p-value = 0.933), identified significant differences, aligning with findings from Stout et al. [2017]. However, comparing microbial communities between Black participants and other races, our EBC test identified a significant difference (p-value = 0.001), while CLL and MECAF did not detect 20 Table 6: Analysis of microbial abundance differences in the Pre-term Birth dataset. Comparison Method p-value Pre-Term ( n1 = 20) vs. Full-Term ( n2 = 33) EBC 0.574 CLL 0.922 MECAF 0.933 Black ( n1 = 36) vs. Others ( n2 = 17) EBC 0.001 CLL 0.736 MECAF 0.774 any significant differences (p-values = 0.736 and 0.774, respectively). Our findings align with those of Stout et al. [2017] and Fettweis et al. [2019], which highlighted race-related disparities in the vaginal microbiome. They similarly found that microbial community differences in pregnant individuals were more strongly associated with race than with pre-term birth status (pre-term vs full-term). We recognize and acknowledge that the data that detects differences in race groups is complex and may be driven by many factors, including racism. Statistically, this finding is plausible because the comparison involves a small sample size, unequal group sizes, sparse OTU counts, and compositional dependence, all of which can make standard large-sample calibrations unstable or conservative. The EBC procedure uses an empirical bootstrap reference distribution that is well suited to this type of data structure, thereby improving sensitivity to broad community-level shifts distributed across multiple OTUs. In contrast, the asymptotic p-value calibrations used by CLL and MECAF may be inaccurate for a small number of samples, particularly in the presence of heterogeneity. Thus, the discrepancy between EBC and the larger p-values obtained from CLL and MECAF does not necessarily indicate inconsistency; rather, it suggests that EBC is detecting a distributed high-dimensional signal that the competing methods may fail to capture under small-sample and compositional constraints. However, our results reinforce the importance of considering race when investigating the role of the vaginal microbiome in obstetric outcomes, while demonstrating higher detection power than other competing methods. Statistically, for the preterm-birth cohort, EBC delivered two clinically coherent results: (i) no global difference between preterm and full-term deliveries in second-trimester samples, in line with prior reports, and (ii) a clear difference in vaginal community structure between Black participants and others that competing methods (CLL, MECAF) did not detect. EBC’s advantage stems from calibrating inference to the data actually observed—small n, many taxa, uneven groups, and com-positional constraints—using an empirical bootstrap that preserves relative-abundance structure and boosts sensitivity to distributed, modest shifts spread across taxa rather than relying on large-sample extremes. Clinical and Public-Health Significance: The absence of a preterm vs. term signal at this gestational window helps avoid false alarms and unnecessary interventions. The detected race-related community differences, while not a biological claim about race, point to socially patterned exposures and care environments that can shape the microbiome. This finding underscores the need for stratified analyses, targeted monitoring, and equity-focused study designs in obstetrics. More broadly, a test that is both well-calibrated and sensitive under realistic constraints strengthens the microbiome’s utility for risk assessment and for designing interventions that reduce disparities. 
+
+# 9 Conclusion and Discussion 
+
+In this paper, we have introduced an empirical bootstrap framework for hypothesis testing in high-dimensional compositional data, with a particular emphasis on microbiome research. While the 21 methodological contribution is general, its core motivation and validation arise from two pressing biomedical case studies related to microbial community differences associated with colorectal adeno-mas and cancer, and race-related disparities in pregnancy and preterm birth outcomes. Our approach provides a robust, data-driven inference tool for detecting global shifts in microbial community structure while preserving the simplex geometry inherent to compositional data. Unlike asymptotic or parametric methods, the proposed empirical bootstrap adapts to the finite-sample, high-dimensional settings typical of microbiome studies, where taxa counts vastly exceed subject numbers. The resulting tests maintain nominal type I error rates and deliver higher sensitivity to clinically meaningful, distributed signal performance that was consistently verified across simulations and two real datasets. The adenoma and colorectal cancer case study highlights how our approach prevents false discover-ies in large, heterogeneous clinical cohorts yet identifies age-associated microbial community shifts that are epidemiologically well supported. The pregnancy and preterm birth analysis shows how the same framework, applied to smaller, unevenly sampled groups, can uncover race-associated compositional differences consistent with prior clinical evidence but missed by conventional methods. Together, these applications demonstrate that our framework not only generalizes existing two and multi-sample mean tests to compositional data but also offers actionable, reproducible insights that strengthen biomedical inference. The proposed methodology is developed specifically under the CLR representation. Since the test statistic is coordinate-wise, it is generally not invariant to alternative log-ratio transformations such as ILR discussed in Lin and Peddada [2020b], whose orthonormal basis introduces a rotation of the CLR coordinates. Developing analogous procedures under other log-ratio representations remains an interesting direction for future research. From a broader data-science perspective, this work advances the use of resampling-based statis-tical inference for complex, constrained data types. The empirical bootstrap calibration employed here can extend to other domains involving compositional, relative, or normalized measures such as metabolomics, ecological surveys, and social-behavioral network data, thereby bridging methodological rigor and domain impact. 
+
+# 10 Appendix 
+
+The appendix contains proofs of the main results and additional simulations. 
+
+Appendix A: proofs of the main theorems 
+
+In this section, we provide the proofs of the main results. For brevity of notations, we denote the sup-norm or ℓ∞-norm of a vector x ∈ Rp, as ∥x∥∞ := max 1≤j≤p |xj | and ℓ1-norm as ∥x∥1 := Ppj=1 |xj |.We first state the following lemmas that are crucial for proving the main theorems and defer the proof of the lemmas to Section 10. 
+
+Lemma 2. (a) Under Assumptions (A.2), there exists a universal constant b1 > 0 that depends only on b and δ, such that for k = 1 , . . . , K, 
+
+min  
+
+> 1≤j≤p
+
+n−1
+
+> knk
+
+X
+
+> i=1
+
+E(Z(k) 
+
+> ij
+
+− ν(k) 
+
+> j
+
+)2 ≥ b1.
+
+(b) Under Assumption (A.3), we have 
+
+max  
+
+> 1≤j≤p
+
+n−1
+
+> knk
+
+X
+
+> i=1
+
+E|Z(k) 
+
+> ij
+
+− ν(k) 
+
+> j
+
+|2+ ℓ ≤ Lℓn, ℓ = 1 , 2, and k = 1 , . . . , K, 
+
+22 where Ln = 8 Bn.
+
+(c) Under Assumption (A.4), we have 
+
+max  
+
+> 1≤k≤K
+
+max 
+
+> 1≤i≤nk
+
+max  
+
+> 1≤j≤p
+
+E
+
+n
+
+exp( L−1 
+
+> n
+
+|Z(k) 
+
+> ij
+
+− ν(k) 
+
+> j
+
+|)
+
+o
+
+≤ 2.
+
+(d) Under Assumption (A.5), we have 
+
+max  
+
+> 1≤k≤K
+
+max 
+
+> 1≤i≤nk
+
+E
+
+
+
+max 
+
+> 1≤j≤p
+
+
+
+L−1 
+
+> n
+
+|Z(k) 
+
+> ij
+
+− ν(k) 
+
+> j
+
+|
+
+q
+
+≤ 2.
+
+Lemma 3. For any sequence of real numbers ∆n,p > 0, that depends on n1, . . . , n K and p if 
+
+max 
+
+> 1≤k<l ≤K
+
+n
+
+∥μ(k) − μ(l)∥∞ − p−1∥μ(k) − μ(l)∥1
+
+o
+
+≥ ∆n,p .
+
+Then we have, 
+
+max  
+
+> 1≤k<l ≤K
+
+∥ν(k) − ν(l)∥∞ ≥ ∆n,p .
+
+Lemma 4. Let P = ( Pij ) ∈ Rp×p and s ∈ R such that sup 
+
+> 1≤i≤p
+
+Ppj=1 |Pij | ≤ s. Now for any Q =(Qij ) ∈ Rp×p, we have ∥QP T ∥∞ ≤ s∥Q∥∞ and ∥P Q ∥∞ ≤ s∥Q∥∞. Additionally, we have ∥P QP T ∥∞ ≤
+
+s2∥Q∥∞.
+
+Before proceeding to the proof of theorem 1, we define the Kolmogorov distance between two random variables T (1) and T (2) as following 
+
+ρ(T (1) , T (2) ) = sup 
+
+> x≥0
+
+P
+
+
+
+T (1) ≤ x
+
+
+
+− P
+
+
+
+T (2) ≤ x
+
+
+
+,ρ∗(T (1) , T (2) ) = sup 
+
+> x≥0
+
+P
+
+
+
+T (1) ≤ x
+
+
+
+− P∗
+
+
+
+T (2) ≤ x
+
+
+
+,
+
+and 
+
+ρ∗∗ (T (1) , T (2) ) = sup 
+
+> x≥0
+
+P∗
+
+
+
+T (1) ≤ x
+
+
+
+− P∗
+
+
+
+T (2) ≤ x
+
+
+
+,
+
+where P∗(.) defines the probability conditional on the data, that is for any random variable T, P ∗(T ) ≡
+
+P (T | Z(1) , . . . , Z (K)). Now, we proceed to prove theorem 1. 
+
+Proof of Theorem 1. First, we obtain the bootstrap approximation result for the centered version of the test statistic Tn,K , say ˜Tn,K , for any μ(1) , . . . , μ (K) ∈ Rp. Then under the null hypothesis, we will determine the size of the test. Define, ˜Tn,K = max  
+
+> 1≤k<l ≤K
+
+max  
+
+> 1≤j≤p
+
+λk,l S(k)  
+
+> nkj
+
+− λl,k S(l) 
+
+> nlj
+
+− nk1/2λk,l (ν(k) 
+
+> j
+
+− ν(l) 
+
+> j
+
+) .
+
+To improve upon the readability, we write ˜Tn,K in vector notation. Define the block matrix A of order 
+
+K(K + 1) p/ 2 × Kp as 
+
+A =
+
+
+
+λ1,2Ip −λ2,1Ip 0p · · · 0p 0p
+
+λ1,3Ip 0p −λ3,1Ip · · · 0p 0p
+
+... ... ... . . . ... ...
+
+λ1,K Ip 0p 0p · · · 0p −λK, 1Ip
+
+0p λ2,3Ip −λ3,2Ip · · · 0p 0p
+
+... ... ... . . . ... ...0p 0p 0p · · · λK−1,K Ip −λK,K −1Ip
+
+
+
+,
+
+23 and a Kp × 1 vector Sn =
+
+
+
+S(1) 
+
+> n1
+> T
+
+, . . . , S (K) 
+
+> nK
+> T
+
+T
+
+. Then, we have 
+
+AS n =
+
+
+
+λ1,2S(1)  
+
+> n1
+
+− λ2,1S(2) 
+
+> n2
+
+...
+
+λ1,K S(1)  
+
+> n1
+
+− λK, 1S(K)
+
+> nK
+
+λ2,3S(2)  
+
+> n2
+
+− λ3,2S(3) 
+
+> n3
+
+...
+
+λK−1,K S(K−1)  
+
+> nK−1
+
+− λK,K −1S(K)
+
+> nK
+
+
+
+.
+
+We define another Kp × Kp matrix, DK = Diag (√n1Ip, . . . , √nK Ip). Then, 
+
+AD K ν =
+
+ 
+
+> √n1n2
+> √n1+n2
+
+(ν(1) − ν(2) )...√n1nK 
+
+> √n1+nK
+
+(ν(1) − ν(K)) 
+
+> √n2n3
+> √n2+n3
+
+(ν(2) − ν(3) )...√nK−1nK 
+
+> √nK−1+nK
+
+(ν(K−1) − ν(K))
+
+
+
+,
+
+where ν = ( ν(1) T , . . . , ν (K)T )T . Therefore, we have ˜Tn,K = ∥AS n − AD K ν∥∞ .
+
+We show that ˜Tn,K can be written as the sup-norm of sums of independent vectors, which will help find the final bound. Suppose the independent random vectors {Vt}Nt=1 ∈ RKp are defined in the following way: Consider each Vt ∈ RKp ×1 as a collection of K sub-vectors each with p entries. Now, for k = 1 , . . . , K, and i = 1 , . . . , n k, set t = i + Nk−1, where Nk = Pkl=0 nl, N 0 = 0 , and all entries of Vt are zeros except the k th sub-vector is N 1/2nk−1/2(Z(k) 
+
+> i
+
+− ν(k)), that is ( k − 1) p + 1 to kp th entries are equal to N 1/2nk−1/2(Z(k) 
+
+> i1
+
+− ν(k)1 ), . . . , N 1/2nk−1/2(Z(k) 
+
+> ip
+
+− ν(k) 
+
+> p
+
+) respectively and rest of the entries are zero. Then we can write Sn − DK ν = N −1/2 PNt=1 Vt. Define {Ut}Nt=1 ∈ RK(K+1) p/ 2 as a set of independent vectors such that Ut = AV t. Then AS n − AD K ν = N −1/2 PNt=1 Ut. Therefore, we can again rewrite ˜Tn,K , as ˜Tn,K = ∥AS n − AD K ν∥∞ = N −1/2
+
+> N
+
+X
+
+> t=1
+
+Ut
+
+> ∞
+
+. (11) Similarly, we can rewrite the empirical bootstrap version T ∗ 
+
+> n,K
+
+, as 
+
+T ∗ 
+
+> n,K
+
+= ∥AS ∗
+
+> n
+
+∥∞ = N −1/2
+
+> N
+
+X
+
+> t=1
+
+U ∗
+
+> t
+> ∞
+
+,
+
+where S∗ 
+
+> n
+
+=
+
+
+
+S∗(1) 
+
+> n1
+> T
+
+, . . . , S ∗(K) 
+
+> nK
+> T
+
+T
+
+and U ∗ 
+
+> t
+
+= AV ∗ 
+
+> t
+
+and V ∗ 
+
+> t
+
+is constructed similarly as Vt, using the sub-vectors N 1/2nk−1/2(Z∗(k) 
+
+> i
+
+− ¯Z(k)) instead of N 1/2nk−1/2(Z(k) 
+
+> i
+
+− ν(k)). Additionally, define the two random variables T (N ) 
+
+> n,K
+
+= ∥S(N ) 
+
+> n,K
+
+∥∞ and T (G) 
+
+> n,K
+
+= ∥S(G) 
+
+> n,K
+
+∥∞ such that 
+
+S(N ) 
+
+> n,K
+
+∼ N (0 , Γu), where Γ u = Cov 
+
+
+
+N −1/2 PNt=1 Ut
+
+
+
+and S(G) 
+
+> n,K
+
+| Z(1) , . . . , Z (K) ∼ N (0 , ˆΓu), where ˆΓu = Cov 
+
+
+
+N −1/2 PNt=1 U ∗ 
+
+> t
+
+| Z(1) , . . . , Z (K)
+
+
+
+.
+
+24 Then, we have 
+
+ρ∗( ˜Tn,K , T ∗ 
+
+> n,K
+
+) ≤ ρ( ˜Tn,K , T (N ) 
+
+> n,K
+
+) + ρ∗(T (N ) 
+
+> n,K
+
+, T (G) 
+
+> n,K
+
+) + ρ∗∗ (T ∗ 
+
+> n,K
+
+, T (G) 
+
+> n,K
+
+). (12) Therefore, it is enough to find bounds for the above three quantities. The following lemma provides bounds for the above three quantities. 
+
+Lemma 5. Suppose Assumptions (A.1)-(A.3) are satisfied. (a) In addition, if Assumption (A.4) holds, then 
+
+ρ( ˜Tn,K , T (N ) 
+
+> n,K
+
+) ≤ C(b1, c 1, c 2)
+
+
+
+B2 
+
+> n
+
+log 7(N p )/N 
+
+1/6
+
+,
+
+and with probability at least 1 − CN −1, we have 
+
+ρ∗(T (N ) 
+
+> n,K
+
+, T (G) 
+
+> n,K
+
+) ≤ C(b1, c 1, c 2)
+
+
+
+B2 
+
+> n
+
+log 7(N p )/N 
+
+1/6
+
+and 
+
+ρ∗∗ (T ∗ 
+
+> n,K
+
+, T (G) 
+
+> n,K
+
+) ≤ C(b1, c 1, c 2)
+
+
+
+B2 
+
+> n
+
+log 7(N p )/N 
+
+1/6
+
+.
+
+(b) In addition, if Assumption (A.5) holds, then 
+
+ρ( ˜Tn,K , T (N ) 
+
+> n,K
+
+) ≤ C(b1, q, c 1, c 2)
+
+
+
+B2 
+
+> n
+
+log 7(N p )/N 
+
+1/6
+
++
+
+
+
+B2 
+
+> n
+
+log 3(N p ) log 4/q (N )/N 1−4/q 1/3
+
+,
+
+and with probability at least 1 − CN −1, we have 
+
+ρ∗(T (N ) 
+
+> n,K
+
+, T (G) 
+
+> n,K
+
+) ≤ C(b1, q, c 1, c 2)
+
+
+
+B2 
+
+> n
+
+log 7(N p )/N 
+
+1/6
+
++
+
+
+
+B2 
+
+> n
+
+log 3(N p ) log 4/q (N )/N 1−4/q 1/3
+
+and 
+
+ρ∗∗ (T ∗ 
+
+> n,K
+
+, T (G) 
+
+> n,K
+
+) ≤ C(b1, q, c 1, c 2)
+
+
+
+B2 
+
+> n
+
+log 7(N p )/N 
+
+1/6
+
++
+
+
+
+B2 
+
+> n
+
+log 3(N p ) log 4/q (N )/N 1−4/q 1/3
+
+.
+
+By Lemma 5 and (12) with probability at least 1 − CN −1, we have 
+
+ρ∗( ˜Tn,K , T ∗ 
+
+> n,K
+
+) ≤ C(b1, c 1, c 2)
+
+
+
+B2 
+
+> n
+
+log 5(N p ) log 2(N )/N 
+
+1/4
+
+.
+
+Finally, using the definition of Qα,K , together with the condition of the theorem that 
+
+
+
+B2 
+
+> n
+
+log 7(N p )/N 
+
+1/6
+
+→ 0, and 
+
+
+
+B2 
+
+> n
+
+log 3(N p ) log 4/q (N )/N 1−4/q 1/3
+
+→ 0, as N → ∞ ,
+
+and the fact that under H00 , ˜Tn,K = Tn,K completes the proof of theorem 1. 
+
+Proof of Theorem 2. Recall (11), that is ˜Tn,K = ∥AS n − AD nν∥∞. Then, 
+
+P (Tn,K > Q α,K | HA3) = P (∥AS n∥∞ > Q α,K | HA3)
+
+≥ P
+
+ ˜Tn,K < ∥AD nν∥∞ − Qα,K | HA3
+
+
+
+≥ P∗
+
+
+
+T (G) 
+
+> n,K
+
+< ∥AD nν∥∞ − Qα,K | HA3
+
+
+
+− sup 
+
+> x≥0
+
+P
+
+ ˜Tn,K < x | HA3
+
+
+
+− P∗
+
+
+
+T (G) 
+
+> n,K
+
+< x | HA3
+
+
+
+. (13) 25 If Assumption (A.4) holds, then by Lemma 5, with probability tending to one, we have sup 
+
+> x≥0
+
+P
+
+ ˜Tn,K < x | HA3
+
+
+
+− P∗
+
+
+
+T (G) 
+
+> n,K
+
+< x | HA3
+
+
+
+≤ C Bn log 7(N p )/N 1/6 → 0, as N → ∞ . (14) Let uj be the jth unit vector in RK(K+1) p/ 2. Therefore, using union bound and Chernoff bound, for any x > 0 we have 
+
+P∗
+
+
+
+T (G) 
+
+> n,K
+
+> x 
+
+
+
+= P∗
+
+
+
+S(G)  
+
+> n,K ∞
+
+> x 
+
+
+
+≤
+
+> K(K+1) p/ 2
+
+X
+
+> m=1
+
+P∗
+
+
+
+(S(G) 
+
+> n,K
+
+)m > x 
+
+
+
+≤
+
+> K(K+1) p/ 2
+
+X
+
+> m=1
+
+exp −x2
+
+2 uTm ˆΓuum
+
+!
+
+≤ 2K2p max  
+
+> 1≤m≤K(K+1) p/ 2
+
+exp −x2
+
+2 uTm ˆΓuum
+
+!
+
+= 2 K2p exp −x2
+
+2∥ˆΓu∥∞
+
+!
+
+, (15) as max 
+
+> 1≤m≤K(K+1) p/ 2
+
+n
+
+uTm ˆΓuum
+
+o
+
+= ˆΓu ∞.
+
+Take x = Qα,K in (15), then by the definition of Qα,K , we have 
+
+α ≤ P∗
+
+
+
+T (G) 
+
+> n,K
+
+> Q α,K 
+
+
+
+≤ 2K2p exp −Q2
+
+> α,K
+
+2 ˆΓu ∞
+
+!
+
+.
+
+Then for large enough N ,
+
+Qα,K ≤
+
+h
+
+2 log(2 K2p/α ) ˆΓu ∞
+
+i1/2
+
+≤
+
+h
+
+4 log( N p ) ˆΓu ∞
+
+i1/2
+
+. (16) Using (26) and (27) from the proof of Lemma 5, with probability tending to one, we have 
+
+ˆΓu − Γu ∞ ≤ C
+
+
+
+B2 
+
+> n
+
+log( N p ) log 2(N )/N 
+
+1/2
+
+. (17) Note that, by the Assumptions (A.1) and (A.3), we have 
+
+Γu ∞ = max 
+
+> 1≤m≤K(K+1) p/ 2
+
+uTmΓuum
+
+= max  
+
+> 1≤m≤K(K+1) p/ 2
+
+N −1
+
+> N
+
+X
+
+> t=1
+
+E(U 2
+
+> tm
+
+)= max  
+
+> 1≤k<l ≤K
+
+max  
+
+> (Kk,l −1) p+1 ≤m≤Kk,l p
+
+N −1
+
+> K
+
+X
+
+> k=1
+> Nk
+
+X
+
+> t=Nk−1+1
+
+E(U 2
+
+> tm
+
+)= max  
+
+> 1≤k<l ≤K
+
+max 
+
+> 1≤j≤p
+
+(
+
+λ2
+
+> k,l
+
+n−1
+
+> knk
+
+X
+
+> i=1
+
+E(Z(k) 
+
+> ij
+
+− ν(k) 
+
+> j
+
+)2 + λ2
+
+> l,k
+
+n−1
+
+> lnl
+
+X
+
+> i=1
+
+E(Z(l) 
+
+> ij
+
+− ν(l) 
+
+> j
+
+)2
+
+)
+
+26 ≤ max  
+
+> 1≤k≤K
+
+max  
+
+> 1≤j≤p
+
+n−1
+
+> knk
+
+X
+
+> i=1
+
+E(Z(k) 
+
+> ij
+
+− ν(k) 
+
+> j
+
+)2
+
+≤ 4 max  
+
+> 1≤k≤K
+
+max  
+
+> 1≤j≤p
+
+n−1
+
+> knk
+
+X
+
+> i=1
+
+E(V (k) 
+
+> ij
+
+− μ(k) 
+
+> j
+
+)2
+
+≤ 4Bn, (18) where the second inequity can be obtained by following the similar calculation as in part b of Lemma 4 with ℓ = 0. Using (17), (18), and Assumption (A.1) and (A.6), for large enough N , with probability tending to one, we have for some universal constant C1 > 0,
+
+ˆΓu ∞ ≤ ˆΓu − Γu ∞ + Γu ∞ ≤ C1Bn. (19) From (16), we get with probability tending to 1, 
+
+Qα,K ≤ 2
+
+h
+
+C1 log( N p )Bn
+
+i1/2
+
+. (20) Recall that, for any 1 ≤ k ≤ K, using the Assumption (A.1), we have N/n k ≤ C2, where C2 =
+
+K(c2(1 − c2)−1 + (1 − c1)c−11 + 1) > 0. Take Cs = 4 C1/21 C1/22 c−1/21 as defined in the Assumption (A.6). Then using Lemma 3 with ∆ n1,n 2,p = Cs {Bn log( N p )/N }1/2 and Assumption (A.1), we have 
+
+∥AD nν∥∞ = max 
+
+> 1≤k<l ≤K
+
+pnknl/(nk + nl)∥ν(k) − ν(l)∥∞ ≥ 4
+
+h
+
+C1 log( N p )Bn
+
+i1/2
+
+. (21) Therefore from (20) and (21), with probability tending to one, we get 
+
+∥AD nν∥∞ − Qα,K ≥ 2
+
+h
+
+C1 log( N p )Bn
+
+i1/2
+
+. (22) Finally, with probability tending to one, we get 
+
+P∗
+
+
+
+T (G) 
+
+> n,K
+
+< ∥AD nν∥∞ − Qα,K | HA3
+
+
+
+≥ P∗
+
+
+
+T (G) 
+
+> n,K
+
+< (4 C2Bn log( N p )) 1/2 | HA3
+
+
+
+= 1 − P∗
+
+
+
+T (G) 
+
+> n,K
+
+≥ (4 C2Bn log( N p )) 1/2 | HA3
+
+
+
+≥ 1 − 2K2p exp − 4C2Bn log( N p )2 ˆΓu ∞
+
+!
+
+≥ 1 − 2K2/N 2 → 1, as N → ∞ , (23) where the first inequality follows from (22), the second inequality follows from (15), and the final inequality follows from (19). Combining (14) and (23), we get with probability tending to one, 
+
+P (Tn,K > Q α,K | HA3) → 1, as N → ∞ .
+
+If Assumption (A.5) holds, then by Lemma 5, with probability tending to one, we have sup 
+
+> x≥0
+
+P (Tn,K < x | HA3) − P∗
+
+
+
+T (G) 
+
+> n,K
+
+< x | HA3
+
+
+
+≤ C
+
+
+
+B2 
+
+> n
+
+log 7(N p )/N 
+
+1/6
+
++
+
+
+
+B2 
+
+> n
+
+log 3(N p ) log 4/q (N )/N 1−4/q 1/3
+
+→ 0, as N → ∞ ,
+
+27 and using (26) from the proof of Lemma 5, with probability tending to one, we have 
+
+ˆΓu − Γu ∞ ≤ C
+
+n 
+
+B2 
+
+> n
+
+log( np ) log 2(N )/N 
+
+1/2
+
++ B2 
+
+> n
+
+log( N p )(log 2(N )) 4/q /N 1−4/q o
+
+.
+
+Then following the similar steps as before that is from eqn. (13) to eqn. (23), we get with probability tending to one, 
+
+P (Tn,K > Q α,K | HA3) → 1, as N → ∞ .
+
+This completes the proof of Theorem 2. 
+
+Appendix B: proofs of the auxiliary lemmas 
+
+Here we provide the proofs of the Lemmas from Appendix A. 
+
+Proof of Lemma 2. (a) Define b1 = (1 − δ)b > 0 . For any j = 1 , . . . , p and k = 1 , . . . , K, nk−1
+
+> nk
+
+X
+
+> i=1
+
+E
+
+
+
+Z(k) 
+
+> ij
+
+− ν(k)
+
+> j
+
+2
+
+≥ (1 − 2p−1)σ(k) 
+
+> jj
+
+− 2p−1
+
+> p
+
+X
+
+> i=1
+> i̸=j
+
+σ(k)
+
+> ij
+
+≥ (1 − 2p−1)σ(k) 
+
+> jj
+
+− 2p−1apσ(k)
+
+> jj
+
+= 1 − 2p−1(1 + ap) σ(k)
+
+> jj
+
+≥ (1 − δ)σ(k)
+
+> jj
+
+= (1 − δ) n−1
+
+> knk
+
+X
+
+> i=1
+
+E(V (k) 
+
+> ij
+
+− μ(k) 
+
+> j
+
+)2
+
+≥ b1,
+
+Here, the first inequality follows from the fact that nk−1 Pnk 
+
+> i=1
+
+E
+
+
+
+Z(k) 
+
+> ij
+
+− ν(k)
+
+> j
+
+2
+
+is the jth diagonal element of GpΣ(k)GpT and Σ (k) is positive semi-definite. The second, third, and final inequalities follow from Assumption (A.2). (b) For k = 1 , . . . , K and ℓ = 1 , 2,
+
+max  
+
+> 1≤j≤p
+
+nk−1
+
+> nk
+
+X
+
+> i=1
+
+E
+
+
+
+Z(k) 
+
+> ij
+
+− ν(k)
+
+> j
+> 2+ ℓ
+
+
+
+= max  
+
+> 1≤j≤p
+
+nk−1
+
+> nk
+
+X
+
+> i=1
+
+E
+
+
+
+> p
+
+X
+
+> m=1
+
+(Gp)jm 
+
+
+
+V (k) 
+
+> im
+
+− μ(k)
+
+> m
+
+ 2+ ℓ
+
+= max  
+
+> 1≤j≤p
+
+nk−1
+
+> p
+
+X
+
+> l=1
+
+|(Gp)jl |
+
+!2+ ℓ nkX
+
+> i=1
+
+E
+
+
+
+> p
+
+X
+
+> m=1
+
+(Gp)jm 
+
+Ppl=1 |(Gp)jl |
+
+
+
+V (k) 
+
+> im
+
+− μ(k)
+
+> m
+
+ 2+ ℓ
+
+≤ 22+ ℓ max  
+
+> 1≤j≤p
+
+nk−1
+
+> nk
+
+X
+
+> i=1
+
+E
+
+
+
+> p
+
+X
+
+> m=1
+
+|(Gp)jm |
+
+Ppl=1 |(Gp)jl | V (k) 
+
+> im
+
+− μ(k)
+
+> m
+
+!2+ ℓ
+
+≤ 22+ ℓ max  
+
+> 1≤j≤p
+
+nk−1
+
+> nk
+
+X
+
+> i=1
+
+E
+
+> p
+
+X
+
+> m=1
+
+|(Gp)jm |
+
+Ppl=1 |(Gp)jl | V (k) 
+
+> im
+
+− μ(k)
+
+> m
+> 2+ ℓ
+
+!
+
+= 2 2+ ℓ max  
+
+> 1≤j≤p
+
+nk−1
+
+> p
+
+X
+
+> m=1
+
+|(Gp)jm |
+
+Ppl=1 |(Gp)jl |
+
+> nk
+
+X
+
+> i=1
+
+E
+
+
+
+V (k) 
+
+> im
+
+− μ(k)
+
+> m
+> 2+ ℓ
+
+
+
+28 ≤ 22+ ℓ max  
+
+> 1≤m≤p
+
+nk−1
+
+> nk
+
+X
+
+> i=1
+
+E
+
+
+
+V (k) 
+
+> im
+
+− μ(k)
+
+> m
+> 2+ ℓ
+
+
+
+≤ 22+ ℓBℓn
+
+≤ Lℓn,
+
+where the first inequality follows from the triangle inequality and the fact that by the definition of the matrix Gp, we have max 1≤j≤p
+
+Ppl=1 |(Gp)jl | ≤ 2. The second inequality follows from Jensen’s inequality. The third inequality follows as we have taken the maximum over m = 1 , . . . , p, and the fourth inequality follows from Assumption (A.3). The final inequality follows by taking Ln = 8 Bn.
+
+(c) We have max  
+
+> 1≤k≤K
+
+max 
+
+> 1≤i≤nk
+
+max  
+
+> 1≤j≤p
+
+E
+
+n
+
+exp 
+
+
+
+L−1 
+
+> n
+
+Z(k) 
+
+> ij
+
+− ν(k)
+
+> j
+
+o 
+
+= max  
+
+> 1≤k≤K
+
+max 
+
+> 1≤i≤nk
+
+max  
+
+> 1≤j≤p
+
+E
+
+(
+
+exp L−1
+
+> n
+> p
+
+X
+
+> m=1
+
+(Gp)jm 
+
+
+
+V (k) 
+
+> im
+
+− μ(k)
+
+> m
+
+ !) 
+
+≤ max  
+
+> 1≤k≤K
+
+max 
+
+> 1≤i≤nk
+
+max  
+
+> 1≤j≤p
+
+E
+
+(
+
+exp B−1
+
+> np
+
+X
+
+> m=1
+
+ |(Gp)jm |
+
+Ppl=1 |(Gp)jl |
+
+
+
+V (k) 
+
+> im
+
+− μ(k)
+
+> m
+
+!) 
+
+≤ max  
+
+> 1≤k≤K
+
+max 
+
+> 1≤i≤nk
+
+max 
+
+> 1≤j≤pp
+
+X
+
+> m=1
+
+ |(Gp)jm |
+
+Ppl=1 |(Gp)jl |
+
+
+
+E
+
+n
+
+exp 
+
+
+
+B−1 
+
+> n
+
+V (k) 
+
+> im
+
+− μ(k)
+
+> m
+
+o 
+
+≤ max  
+
+> 1≤k≤K
+
+max 
+
+> 1≤i≤nk
+
+max  
+
+> 1≤m≤p
+
+E
+
+n
+
+exp 
+
+
+
+B−1 
+
+> n
+
+V (k) 
+
+> im
+
+− μ(k)
+
+> m
+
+o 
+
+≤ 2,
+
+where the first inequality is due to the fact max 1≤j≤p
+
+Ppl=1 |(Gp)jl | ≤ 2 and Ln = 8 Bn. The second inequality follows from Jensen’s inequality. The third inequality follows by taking maximum over 
+
+m = 1 , . . . , p, and the final inequality follows from Assumption (A.4). (d) We have max  
+
+> 1≤k≤K
+
+max 
+
+> 1≤i≤nk
+
+E
+
+
+
+max 
+
+> 1≤j≤p
+
+
+
+L−1 
+
+> n
+
+Z(k) 
+
+> ij
+
+− ν(k)
+
+> j
+
+q
+
+= max  
+
+> 1≤k≤K
+
+max 
+
+> 1≤i≤nk
+
+E
+
+(
+
+max  
+
+> 1≤j≤p
+
+L−1
+
+> np
+
+X
+
+> m=1
+
+(Gp)jm 
+
+
+
+V (k) 
+
+> im
+
+− μ(k)
+
+> m
+
+ !q)
+
+≤ max  
+
+> 1≤k≤K
+
+max 
+
+> 1≤i≤nk
+
+E
+
+(
+
+max  
+
+> 1≤j≤p
+
+B−1
+
+> np
+
+X
+
+> m=1
+
+ |(Gp)jm |
+
+Ppl=1 |(Gp)jl |
+
+
+
+V (k) 
+
+> im
+
+− μ(k)
+
+> m
+
+!q)
+
+≤ max  
+
+> 1≤k≤K
+
+max 
+
+> 1≤i≤nk
+
+E
+
+
+
+max 
+
+> 1≤m≤p
+
+
+
+B−1 
+
+> n
+
+V (k) 
+
+> im
+
+− μ(k)
+
+> m
+
+q
+
+≤ 2,
+
+where the first inequality is due to the fact max 1≤j≤p
+
+Ppl=1 |(Gp)jl | ≤ 2 and Ln = 8 Bn. The second inequality follows by taking the maximum over m = 1 , . . . , p, and the final inequality follows from Assumption (A.5). 
+
+Proof of Lemma 3. For k = 1 , . . . , K define ¯ μ(k) = p−1 Ppj=1 μ(k) 
+
+> j
+
+. Then using triangle inequality we have max  
+
+> 1≤k<l ≤K
+
+∥ν(k) − ν(l)∥∞ = max  
+
+> 1≤k<l ≤K
+
+Gp(μ(k) − μ(l)) ∞
+
+29 = max  
+
+> 1≤k<l ≤K
+
+(μ(k) − μ(l)) − (¯ μ(k) − ¯μ(l))1 p ∞
+
+≥ max 
+
+> 1≤k<l ≤K
+
+n
+
+μ(k) − μ(l) 
+
+> ∞
+
+− ¯μ(k) − ¯μ(l) o
+
+≥ max 
+
+> 1≤k<l ≤K
+
+n
+
+∥μ(k) − μ(l)∥∞ − p−1∥μ(k) − μ(l)∥1
+
+o
+
+≥ ∆n,p .
+
+Proof of Lemma 4. Let QP T = M and Mij be the ( i, j )th element of M. Then using triangle inequality and the condition of the lemma, we have 
+
+∥QP T ∥∞ = max 
+
+> 1≤i,j ≤p
+
+|Mij | ≤ max 
+
+> 1≤i,j ≤pp
+
+X
+
+> m=1
+
+|Qim || Pjm | ≤ max 
+
+> 1≤i,k ≤p
+
+|Qik | max 
+
+> 1≤j≤pp
+
+X
+
+> m=1
+
+|Pjm | ≤ s∥Q∥∞.
+
+Similar calculation shows ∥P Q ∥∞ ≤ s∥Q∥∞. Combining these two, we get 
+
+∥P QP T ∥∞ ≤ s∥P Q ∥∞ ≤ s2∥Q∥∞.
+
+Proof of Lemma 5. (a) Recall the construction of the vector Ut from the proof of Theroem 1. For 
+
+t = 1 , . . . , N, consider Ut = AV t ∈ RK(K+1) p/ 2 as a collection of K(K + 1) /2 sub-vectors of lengths 
+
+p each. For k = 1 , . . . , K, and i = 1 , . . . , n k, set t = i + Nk−1, and we have ( K − k) sub-vectors of 
+
+Ut are equal to λk,l N 1/2nk−1/2(Z(k) 
+
+> i
+
+− ν(k)) where 1 ≤ k < l ≤ K, (k − 1) sub-vectors of Ut are equal to −λk,l N 1/2nk−1/2(Z(k) 
+
+> i
+
+− ν(k)) where 1 ≤ l < k ≤ K and the rests are all zeroes. Furthermore, for 1 ≤ k < l ≤ K and j = 1 , . . . , p set m = Kk,l p + j, where Kk,l =
+
+
+
+(k − 1) K + l − k(k + 1) /2 − 1
+
+
+
+, and we have the mth entry of N −1/2 PNt=1 Ut as N −1/2 PNt=1 Utm = λk,l S(k)  
+
+> nkj
+
+− λl,k S(l) 
+
+> nlj
+
+.
+
+Then for 1 ≤ k < l ≤ K, and m = ( Kk,l p + 1) , . . . , (Kk,l + 1) p, E (Utm ) = 0 and 
+
+N −1
+
+> N
+
+X
+
+> t=1
+
+E
+
+
+
+U 2
+
+> tm
+
+
+
+= E
+
+ AS n
+
+2
+
+> m
+
+
+
+= E
+
+
+
+λk,l S(k)  
+
+> nkj
+
+− λl,k S(l)
+
+> nlj
+
+2
+
+= λ2
+
+> k,l
+
+nk−1
+
+> nk
+
+X
+
+> i=1
+
+E
+
+
+
+Z(k) 
+
+> ij
+
+− ν(k)
+
+> j
+
+2
+
++ λ2
+
+> l,k
+
+nl−1
+
+> nl
+
+X
+
+> i=1
+
+E
+
+
+
+Z(l) 
+
+> ij
+
+− ν(l)
+
+> j
+
+2
+
+≥ b1,
+
+(24) where the final inequality follows from Assumption (A.2) and Lemma 2. Hence we get for all m =1, . . . , K (K + 1) p/ 2, N −1 PNt=1 E
+
+
+
+U 2
+
+> tm
+
+
+
+≥ b1. Note that, from the Assumption (A.1), for any 1 ≤ k ≤
+
+K, we get N/n k ≤ K(c2(1 − c2)−1 + (1 − c1)c−11 + 1). From the Assumption (A.3) and Lemma 2, we get for ℓ = 1 , 2,
+
+max 
+
+> 1≤m≤K(K+1) p/ 2
+
+N −1
+
+> N
+
+X
+
+> t=1
+
+E
+
+
+
+|Utm |2+ ℓ
+
+= max  
+
+> 1≤k<l ≤K
+
+max 
+
+> (Kk,l −1) p+1 ≤m≤Kk,l p
+
+N −1
+
+> N
+
+X
+
+> t=1
+
+E
+
+
+
+|Utm |2+ ℓ
+
+30 = max  
+
+> 1≤k<l ≤K
+
+max 
+
+> 1≤j≤p
+
+N −1
+
+" nkX
+
+> i=1
+
+E
+
+
+
+λk,l N 1/2nk−1/2 
+
+Z(k) 
+
+> ij
+
+− ν(k)
+
+> j
+
+ 2+ ℓ
+
++
+
+> nl
+
+X
+
+> i=1
+
+E
+
+
+
+λl,k N 1/2nl−1/2 
+
+Z(l) 
+
+> ij
+
+− ν(l)
+
+> j
+
+ 2+ ℓ#
+
+≤ max  
+
+> 1≤k<l ≤K
+
+max 
+
+> 1≤j≤p
+
+(N/n k)ℓ/ 2λ2+ ℓk,l nk−1
+
+> nk
+
+X
+
+> i=1
+
+E
+
+
+
+Z(k) 
+
+> ij
+
+− ν(k)
+
+> j
+> 2+ ℓ
+
+
+
++ max  
+
+> 1≤k<l ≤K
+
+max 
+
+> 1≤j≤p
+
+(N/n l)ℓ/ 2λ2+ ℓl,k nl−1
+
+> nl
+
+X
+
+> i=1
+
+E
+
+
+
+Z(l) 
+
+> ij
+
+− ν(l)
+
+> j
+> 2+ ℓ
+
+
+
+≤ CL ℓn ≤ Gℓn, (25) where Gn is a sequence that depends on Bn. If (A.4) holds, then by Lemma 2 we have max  
+
+> 1≤t≤n
+
+max  
+
+> 1≤m≤K(K+1) p/ 2
+
+E exp( G−1 
+
+> n
+
+|Utm |)
+
+≤ max  
+
+> 1≤k≤K
+
+max  
+
+> 1≤i≤n
+
+max 
+
+> 1≤j≤p
+
+h
+
+E
+
+n
+
+exp( L−1
+
+> n
+
+pn/ (Cn k) Z(k) 
+
+> ij
+
+− ν(k) 
+
+> j
+
+)
+
+o
+
+∨ 1
+
+i
+
+≤ max  
+
+> 1≤k≤K
+
+max  
+
+> 1≤t≤n
+
+max 
+
+> 1≤j≤p
+
+h
+
+E
+
+n
+
+exp( L−1 
+
+> n
+
+Z(k) 
+
+> ij
+
+− ν(k) 
+
+> j
+
+)
+
+o
+
+∨ 1
+
+i
+
+≤ 2,
+
+where the first inequality follows from the fact that for any t = 1 , . . . , N and m = 1 , . . . , K (K + 1) p/ 2,Utm is either 0 or λk,l N 1/2nk−1/2 Z(k) 
+
+> ij
+
+− ν(k) 
+
+> j
+
+for some k̸ = l = 1 , . . . , K, i = 1 , . . . , n k, and j =1, . . . , p based on t and m and λk,l ≤ 1 for any k̸ = l = 1 , . . . , K. The second inequality follows from the fact that for any k = 1 , . . . , K, N/n k ≤ C. 
+
+Therefore, by Proposition 2.1 in Chernozhukov, Chetverikov, and Kato (2017), we get 
+
+ρ( ˜Tn,K , T (N ) 
+
+> n,K
+
+) ≤ C(b1, c 1, c 2)
+
+
+
+G2 
+
+> n
+
+log 7(N p )/N 
+
+1/6
+
+≤ C
+
+
+
+B2 
+
+> N
+
+log 7(N p )/N 
+
+1/6
+
+.
+
+To bound the quantity ρ∗(T (N ) 
+
+> n,K
+
+, T (G) 
+
+> n,K
+
+), note that we can rewrite ˆΓu as ˆΓu = Cov ∗(AS ∗
+
+> n
+
+) = ACov ∗(S∗
+
+> n
+
+)AT = AˆΓAT ,
+
+where Cov ∗(.) is the covariance matrix computed conditional on the data and ˆΓ = Cov ∗(S∗
+
+> n
+
+) = 
+
+diag (ˆΓ(1) , . . . , ˆΓ(K)), and ˆΓ(k) = Cov ∗(Z∗(k)1 ) = nk−1 Pnk
+
+> i=1
+
+(Z(k) 
+
+> i
+
+− ¯Z(k)) ( Z(k) 
+
+> i
+
+− ¯Z(k))T , for k = 1 , . . . , K .Similarly, we can rewrite Γ u as Γu = N −1
+
+> N
+
+X
+
+> t=1
+
+E(UtU Tt ) = N −1
+
+> N
+
+X
+
+> t=1
+
+AE (VtV Tt )AT = AΓAT ,
+
+where Γ = N −1 PNt=1 E(VtV Tt ) = Diag (Γ (1) , . . . , Γ(K)) and Γ (k) = GpΣ(k)Gp for k = 1 , . . . , K . For 
+
+k = 1 , . . . , K , define ˆ∆(2 k−1)  
+
+> n
+
+= max  
+
+> 1≤j,k ≤p
+
+nk−1
+
+> nk
+
+X
+
+> i=1
+
+n
+
+(Z(k) 
+
+> ij
+
+− ν(k) 
+
+> j
+
+)( Z(k) 
+
+> ik
+
+− ν(k) 
+
+> k
+
+) − E(Z(k) 
+
+> ij
+
+− ν(k) 
+
+> j
+
+)( Z(k) 
+
+> ik
+
+− ν(k) 
+
+> k
+
+)
+
+o
+
+,
+
+ˆ∆(2 k) 
+
+> n
+
+= max 
+
+> 1≤j≤p
+
+¯Z(k) 
+
+> j
+
+− ν(k) 
+
+> j
+
+.
+
+31 Then, for any k = 1 , . . . , K, we have 
+
+∥ˆΓ(k) − Γ(k)∥∞ ≤ ˆ∆(2 k−1)  
+
+> n
+
++ ( ˆ∆(2 k) 
+
+> n
+
+)2.
+
+Define, ˆ∆n = max 
+
+> 1≤k≤K
+
+{ ˆ∆(k) 
+
+> n
+
++ ( ˆ∆(k+2)  
+
+> n
+
+)2}.
+
+Note that, max 
+
+> 1≤m≤K(K+1) p/ 2
+> Kp
+
+X
+
+> k=1
+
+|Amk | = max 
+
+> 1≤k<l ≤K
+
+(λk,l + λl,k ) ≤ 2.
+
+Then, by Lemma 4, it follows that 
+
+∥ˆΓu − Γu∥∞ ≤ ∥ A(ˆΓ − Γ) AT ∥∞ ≤ 4∥ˆΓ − Γ∥∞ ≤ 4 max  
+
+> 1≤k≤K
+
+∥ˆΓ(k) − Γ(k)∥∞ ≤ C ˆ∆n. (26) Let, ¯∆n be a positive real number. By Proposition 2.1 in Chernozhukov et al. [2022], on the event 
+
+E = { ˆ∆n ≤ ¯∆n}, we get 
+
+ρ∗(T (N ) 
+
+> n,K
+
+, T (G) 
+
+> n,K
+
+) ≤ C(b1, c 1, c 2) ¯∆1/2 
+
+> n
+
+log( p),
+
+If Assumption (A.4) holds, then we take ¯∆n =
+
+
+
+G2 
+
+> n
+
+log( N p ) log 2(N )/N 
+
+1/2
+
+. By Proposition 4.1 in Chernozhukov et al. [2017], we have P (E) ≥ 1 − CN −1. Therefore with probability at least 1 − CN −1,
+
+we get 
+
+ρ∗(T (N ) 
+
+> n,K
+
+, T (G) 
+
+> n,K
+
+) ≤ C(b1, c 1, c 2)
+
+
+
+G2 
+
+> n
+
+log 5(N p ) log 2(N )/N 
+
+1/4
+
+≤ C
+
+
+
+B2 
+
+> n
+
+log 5(N p ) log 2(N )/N 
+
+1/4
+
+.
+
+(27) Next, we find a bound for the quantity ρ∗∗ (T ∗ 
+
+> n,K
+
+, T (G) 
+
+> n,K
+
+). For ϕ ≥ 1, define 
+
+bLn = max  
+
+> 1≤m≤K(K+1) p/ 2
+
+N −1
+
+> N
+
+X
+
+> t=1
+
+E∗|U ∗
+
+> tm
+
+|3,
+
+cMn,U (ϕ) = N −1
+
+> N
+
+X
+
+> t=1
+
+E∗
+
+
+
+max  
+
+> 1≤m≤K(K+1) p/ 2
+
+|U ∗
+
+> tm
+
+|3I
+
+
+
+max  
+
+> 1≤m≤K(K+1) p/ 2
+
+|U ∗
+
+> tm
+
+| > n 1/2(4 ϕ log( p)) −1
+
+ 
+
+,
+
+cMn,G (ϕ) = E∗
+
+
+
+max  
+
+> 1≤m≤K(K+1) p/ 2
+
+|S(G) 
+
+> n,K
+
+|3I
+
+
+
+max  
+
+> 1≤m≤K(K+1) p/ 2
+
+|S(G) 
+
+> n,K
+
+| > n 1/2(4 ϕ log( p)) −1
+
+ 
+
+,
+
+cMn(ϕ) = cMn,U (ϕ) + cMn,G (ϕ).
+
+Then, applying Theorem 2.1 of Chernozhukov et al. [2017], conditional on the data, we can find constants bLn and cMn, such that 
+
+ρ∗∗ (T ∗ 
+
+> n,K
+
+, T (G) 
+
+> n,K
+
+) ≤ C(b1)
+
+n bL2 
+
+> n
+
+log 7(p)N −11/6
+
++ cMn bL−1
+
+> n
+
+o
+
+, (28) on the set F =
+
+n
+
+N −1 PNt=1 (Utm − ¯UN m )2 ≥ b1, for all m = 1 , . . . , K (K + 1) p/ 2
+
+o
+
+∩
+
+nbLn ≤ Ln
+
+o
+
+∩
+
+n cMn
+
+
+
+C(b1)( L2 
+
+> n
+
+log 4(p)N −1)−1/6
+
+
+
+≤ M n
+
+o
+
+.
+
+32 From (26), it follows that for large enough N, P (∥ˆΓu − Γu∥∞ ≤ b1/2) ≥ 1 − CN −1. Furthermore, following similar calculations in (25) with ℓ = 0 , it is straightforward to show that N −1 PNt=1 E(U 2
+
+> tm
+
+) ≤
+
+Gn ≤ CB n, for all m = 1 , . . . , K (K + 1) p/ 2. Consequently from (24) and (26), it follows that 
+
+b1/2 ≤ N −1 PNt=1 (Utm − ¯UN m )2 ≤ CB n with probability at least 1 − CN −1.
+
+Therefore to quantify (28), it is enough to find bounds for the quantities bLn and cMn or find a value for Ln and M n such that the probability of the set F tends to one. To find bounds for bLn and 
+
+cMn, we define 
+
+bL(k) 
+
+> n
+
+= max  
+
+> 1≤j≤p
+
+nk−1
+
+> nk
+
+X
+
+> i=1
+
+|Z(k) 
+
+> ij
+
+− ¯Z(k)|3,
+
+cM (k) 
+
+> n,Z
+
+(ϕ) = max  
+
+> 1≤j≤p
+
+nk−1
+
+> nk
+
+X
+
+> i=1
+
+|Z(k) 
+
+> ij
+
+− ¯Z(k)|3I
+
+
+
+max 
+
+> 1≤j≤pnk
+
+X
+
+> i=1
+
+|Z(k) 
+
+> ij
+
+− ¯Z(k)| > n 1/2(4 ϕ log( p)) −1
+
+
+
+,
+
+for k = 1 , . . . , K and ϕ ≥ 1. Following the similar calculations as in (25) and the fact that for 
+
+k = 1 , . . . , K, Z ∗(k)1 , . . . , Z ∗(k) 
+
+> nk
+
+are independent and identical samples from the empirical distribution of Z(k), we get 
+
+bLn = max  
+
+> 1≤m≤K(K+1) p/ 2
+
+N −1
+
+> N
+
+X
+
+> t=1
+
+E∗|U ∗
+
+> tm
+
+|3,
+
+= max  
+
+> 1≤k<l ≤K
+
+max  
+
+> 1≤j≤p
+
+N 1/2
+
+
+
+nk−3/2λ3
+
+> k,l nk
+
+X
+
+> i=1
+
+|Z(k) 
+
+> ij
+
+− ¯Z(k)|3 + nl−3/2λ3
+
+> l,k nl
+
+X
+
+> i=1
+
+|Z(l) 
+
+> ij
+
+− ¯Z(l)|3
+
+
+
+≤ 2C1/2 max  
+
+> 1≤k≤K
+
+max  
+
+> 1≤j≤p
+
+nk−1
+
+> nk
+
+X
+
+> i=1
+
+|Z(k) 
+
+> ij
+
+− ¯Z(k)|3
+
+= 2 C1/2 max 
+
+> 1≤k≤K
+
+bL(k) 
+
+> n
+
+.
+
+Following similar arguments, we get 
+
+cMn,U (ϕ) = N −1
+
+> N
+
+X
+
+> t=1
+
+E∗
+
+
+
+max  
+
+> 1≤m≤K(K+1) p/ 2
+
+|U ∗
+
+> tm
+
+|3I
+
+
+
+max  
+
+> 1≤m≤K(K+1) p/ 2
+
+|U ∗
+
+> tm
+
+| > n 1/2(4 ϕ log( p)) −1
+
+ 
+
+= N −1
+
+> K
+
+X
+
+> k=1
+> Nk
+
+X
+
+> t=Nk−1+1
+
+E∗
+
+
+
+max  
+
+> 1≤m≤K(K+1) p/ 2
+
+|U ∗
+
+> tm
+
+|3I
+
+
+
+max  
+
+> 1≤m≤K(K+1) p/ 2
+
+|U ∗
+
+> tm
+
+| > n 1/2(4 ϕ log( p)) −1
+
+ 
+
+= N 1/2
+
+> K
+
+X
+
+> k=1
+> nk
+
+X
+
+> i=1
+
+max  
+
+> 1≤l≤Kl̸=k
+
+max  
+
+> 1≤j≤p
+
+nk−3/2λ3
+
+> k,l nk
+
+X
+
+> i=1
+
+|Z(k) 
+
+> ij
+
+− ¯Z(k)|3
+
+I
+
+
+
+max  
+
+> 1≤l≤Kl̸=k
+
+max  
+
+> 1≤j≤p
+
+N n k−1λk,l nkX
+
+> i=1
+
+|Z(k) 
+
+> ij
+
+− ¯Z(k)| > n 1/2(4 ϕ log( p)) −1
+
+
+
+≤ KC 1/2c34 max  
+
+> 1≤k≤K
+
+max  
+
+> 1≤j≤p
+
+nk−1
+
+> nk
+
+X
+
+> i=1
+
+|Z(k) 
+
+> ij
+
+− ¯Z(k)|3I
+
+
+
+max 
+
+> 1≤j≤pnk
+
+X
+
+> i=1
+
+|Z(k) 
+
+> ij
+
+− ¯Z(k)| > n 1/2(4 ϕ′ log( p)) −1
+
+
+
+= KC 1/2c34 max 
+
+> 1≤k≤K
+
+cM (k) 
+
+> n,Z
+
+(ϕ),
+
+where c4 = max {c1/22 , (1 − c1)1/2} and ϕ′ = Cc 3ϕ. Following the proof of Proposition 4.3 of Cher-33 nozhukov et al. [2017], for k = 1 , . . . , K, we can obtain 
+
+P
+
+bL(k) 
+
+> n
+
+> CB n
+
+
+
+≤ CN −1,P cM (k)
+
+> n,Z
+
+
+
+C(L2 
+
+> n
+
+log 4(p)N −1)−1/6
+
+> 0
+
+!
+
+≤ CN −1,
+
+and 
+
+P cMn,G 
+
+
+
+C(L2 
+
+> n
+
+log 4(p)N −1)−1/6
+
+> 0
+
+!
+
+≤ CN −1.
+
+Therefore, using union bound, it follows that 
+
+P
+
+bLn ≤ CB n
+
+
+
+≥ 1 − CN −1,P cMn,U 
+
+
+
+C(L2 
+
+> n
+
+log 4(p)N −1)−1/6
+
+= 0 
+
+!
+
+≥ 1 − CN −1.
+
+Finally, from (28), with probability at least 1 − CN −1, we get 
+
+ρ∗∗ (T ∗ 
+
+> n,K
+
+, T (G) 
+
+> n,K
+
+) ≤ C
+
+
+
+B2 
+
+> n
+
+log 7(N p )/N 
+
+1/6
+
+.
+
+(b) The proof of this part follows by using Assumption (A.5) instead of Assumption (A.4) in the calculations of part a of this proof. 
+
+Appendix C: additional simulation results 
+
+Table 7: Empirical size and power under Setting (M.3) with CZM imputation and additional zero inflation level η = 0 .45. The average proportion of zeros before imputation is around 55%–65%. 
+
+δp Dist. Method 0 0.25 0.50 0.75 1
+
+N1 N2 N1 N2 N1 N2 N1 N2 N1 N2
+
+200 D1 EBC 0.045 0.059 0.068 0.076 0.095 0.165 0.190 0.471 0.366 0.804 CLL 0.084 0.062 0.092 0.083 0.118 0.173 0.179 0.418 0.366 0.755 MECAF 0.074 0.060 0.086 0.079 0.101 0.167 0.162 0.404 0.348 0.741 D2 EBC 0.049 0.064 0.057 0.075 0.084 0.195 0.168 0.480 0.403 0.843 CLL 0.081 0.077 0.081 0.088 0.108 0.197 0.177 0.453 0.382 0.793 MECAF 0.074 0.072 0.075 0.084 0.098 0.190 0.162 0.444 0.363 0.786 500 D1 EBC 0.047 0.088 0.049 0.111 0.094 0.225 0.248 0.667 0.629 0.970 CLL 0.076 0.097 0.082 0.122 0.116 0.209 0.233 0.561 0.460 0.934 MECAF 0.070 0.092 0.075 0.115 0.104 0.202 0.210 0.547 0.431 0.928 D2 EBC 0.036 0.090 0.054 0.101 0.092 0.285 0.286 0.715 0.608 0.980 CLL 0.081 0.095 0.093 0.109 0.134 0.247 0.232 0.592 0.472 0.943 MECAF 0.073 0.090 0.082 0.101 0.123 0.233 0.204 0.581 0.448 0.941 1000 D1 EBC 0.041 0.047 0.041 0.077 0.089 0.272 0.322 0.809 0.743 0.996 CLL 0.085 0.056 0.103 0.094 0.124 0.225 0.251 0.659 0.531 0.980 MECAF 0.077 0.050 0.085 0.087 0.105 0.209 0.226 0.639 0.494 0.976 D2 EBC 0.045 0.057 0.050 0.064 0.104 0.258 0.330 0.827 0.754 1.000 CLL 0.074 0.074 0.100 0.069 0.130 0.224 0.248 0.703 0.525 0.979 MECAF 0.067 0.068 0.081 0.065 0.113 0.208 0.218 0.685 0.493 0.976 
+
+34 Table 8: Empirical size and power under Setting (M.3) with CZM imputation and additional zero inflation level η = 0 .60. The average proportion of zeros before imputation is around 68%–75%. 
+
+δp Dist. Method 0 0.25 0.50 0.75 1
+
+N1 N2 N1 N2 N1 N2 N1 N2 N1 N2
+
+200 D1 EBC 0.064 0.085 0.060 0.091 0.065 0.145 0.119 0.262 0.226 0.536 CLL 0.088 0.091 0.088 0.098 0.095 0.140 0.135 0.245 0.199 0.451 MECAF 0.078 0.086 0.076 0.092 0.083 0.136 0.118 0.235 0.188 0.435 D2 EBC 0.059 0.089 0.052 0.091 0.075 0.131 0.119 0.292 0.211 0.577 CLL 0.077 0.096 0.082 0.094 0.095 0.142 0.137 0.276 0.211 0.508 MECAF 0.070 0.093 0.071 0.090 0.093 0.133 0.125 0.266 0.197 0.494 500 D1 EBC 0.048 0.109 0.031 0.111 0.062 0.201 0.171 0.491 0.346 0.868 CLL 0.076 0.129 0.062 0.141 0.083 0.201 0.126 0.389 0.181 0.656 MECAF 0.065 0.126 0.054 0.132 0.074 0.194 0.104 0.376 0.163 0.640 D2 EBC 0.034 0.119 0.042 0.117 0.054 0.249 0.146 0.507 0.378 0.862 CLL 0.064 0.134 0.071 0.151 0.101 0.224 0.122 0.379 0.200 0.644 MECAF 0.053 0.129 0.065 0.141 0.093 0.212 0.111 0.366 0.185 0.628 1000 D1 EBC 0.024 0.035 0.034 0.047 0.041 0.134 0.152 0.526 0.479 0.930 CLL 0.053 0.043 0.053 0.058 0.066 0.104 0.088 0.291 0.191 0.696 MECAF 0.046 0.038 0.048 0.054 0.054 0.101 0.076 0.281 0.175 0.678 D2 EBC 0.024 0.049 0.028 0.054 0.056 0.146 0.184 0.546 0.466 0.944 CLL 0.043 0.049 0.051 0.063 0.072 0.116 0.107 0.307 0.218 0.693 MECAF 0.037 0.047 0.041 0.059 0.065 0.110 0.100 0.289 0.190 0.675 Table 9: Empirical size and power for the multi-sample EBC test with CZM imputation and additional zero inflation level η = 0 .60. The average proportion of zeros before imputation is around 65%–70% percent. 
+
+δp Dist. K 0 0.5 1 1.5 2
+
+N3 N4 N3 N4 N3 N4 N3 N4 N3 N4
+
+200 D1 K = 3 0.036 0.039 0.052 0.037 0.061 0.066 0.098 0.234 0.197 0.540 
+
+K = 4 0.037 0.041 0.046 0.053 0.112 0.267 0.347 0.811 0.695 0.988 
+
+K = 5 0.029 0.041 0.057 0.104 0.287 0.773 0.805 1.000 0.984 1.000 200 D2 K = 3 0.038 0.038 0.046 0.051 0.060 0.071 0.096 0.243 0.182 0.543 
+
+K = 4 0.029 0.045 0.048 0.063 0.107 0.286 0.344 0.810 0.715 0.994 
+
+K = 5 0.032 0.046 0.066 0.110 0.306 0.763 0.802 0.997 0.987 1.000 500 D1 K = 3 0.050 0.048 0.046 0.050 0.047 0.095 0.125 0.368 0.313 0.792 
+
+K = 4 0.057 0.042 0.054 0.067 0.132 0.477 0.563 0.977 0.935 1.000 
+
+K = 5 0.044 0.037 0.060 0.135 0.472 0.957 0.983 1.000 1.000 1.000 500 D2 K = 3 0.034 0.042 0.031 0.051 0.048 0.106 0.118 0.374 0.323 0.799 
+
+K = 4 0.035 0.036 0.037 0.065 0.143 0.508 0.557 0.978 0.944 1.000 
+
+K = 5 0.030 0.035 0.055 0.152 0.498 0.969 0.976 1.000 1.000 1.000 1000 D1 K = 3 0.015 0.037 0.023 0.035 0.063 0.122 0.150 0.522 0.443 0.935 
+
+K = 4 0.019 0.032 0.036 0.061 0.180 0.634 0.734 0.997 0.991 1.000 
+
+K = 5 0.029 0.031 0.061 0.176 0.652 0.996 0.999 1.000 1.000 1.000 1000 D2 K = 3 0.027 0.044 0.039 0.054 0.046 0.136 0.131 0.508 0.459 0.942 
+
+K = 4 0.028 0.038 0.048 0.076 0.187 0.621 0.741 0.998 0.995 1.000 
+
+K = 5 0.027 0.044 0.060 0.185 0.652 1.000 0.999 1.000 1.000 1.000 
+
+35 Acknowledgements 
+
+This research is supported by funding from NIH UL1 TR002345 and R01 HD095986. 
+
+# References 
+
+John Aitchison. The statistical analysis of compositional data. Journal of the Royal Statistical Society: Series B (Methodological) , 44(2):139–160, 1982. John Aitchison. The Statistical Analysis of Compositional Data . Blackburn Press, 2003. Marti J. Anderson. Permutational multivariate analysis of variance (permanova). Wiley StatsRef: Statistics Reference Online , 2017. Samiran Banerjee, Klaus Schlaeppi, and Marcel G.A. van der Heijden. Keystone taxa as drivers of microbiome structure and functioning. Nature Reviews Microbiology , 16(9):567–576, 2018. Freddie Bray, Mathieu Laversanne, Hyuna Sung, Jacques Ferlay, Isabelle Soerjomataram, and Ahmed Jemal. Global cancer statistics 2022: GLOBOCAN estimates of incidence and mortality worldwide for 36 cancers in 185 countries. CA: A Cancer Journal for Clinicians , 74(2):134–155, 2024. Yuanpei Cao, Wei Lin, and Hongzhe Li. Two-sample tests of high-dimensional means for compositional data. Biometrika , 105(1):115–132, 2017. Centers for Disease Control and Prevention. Health and economic benefits of colorectal cancer inter-ventions. https://www.cdc.gov/nccdphp/priorities/colorectal-cancer.html , 2024. Nilanjan Chakraborty and Lyudmila Sakhanenko. Novel multiplier bootstrap tests for high-dimensional data with applications to manova. Computational Statistics & Data Analysis , 178: 107619, 2023. Emily S. Charlson, Jun Chen, Rebecca Custers-Allen, Kyle Bittinger, Hongzhe Li, Rohini Sinha, Jennifer Hwang, Frederic D. Bushman, and Ronald G. Collman. Disordered microbial communities in the upper respiratory tract of cigarette smokers. PLoS One , 5(12):e15216, 2010. Bo Chen and others. Contribution of pks + E. coli mutations to colorectal tumorigenesis in normal crypts. Nature Communications , 14:7828, 2023. Victor Chernozhukov, Denis Chetverikov, and Kengo Kato. Central limit theorems and bootstrap in high dimensions. The Annals of Probability , 45(4):2309–2352, 2017. Victor Chernozhukov, Denis Chetverikov, Kengo Kato, and Yuta Koike. Improved central limit theo-rem and bootstrap approximations in high dimensions. The Annals of Statistics , 50(5):2562–2586, 2022. Katharine W. Davidson and others. Screening for colorectal cancer: US preventive services task force recommendation statement. Journal of the American Medical Association. , 325(19):1965–1977, 2021. Bradley Efron. Bootstrap methods: Another look at the jackknife. The Annals of Statistics , 7(1): 1–26, 1979. Cecilia M. Fenoglio and Nathan Lane. The anatomical precursor of colorectal carcinoma. Cancer , 34 (S3):819–823, 1974. 36 Jennifer M. Fettweis et al. The vaginal microbiome and preterm birth. Nature Medicine , 25(6): 1012–1021, 2019. Michael Greenacre. Compositional data analysis. Annual Review of Statistics and Its Application , 8 (1):271–299, 2021. Unnur Gudnadottir and others. The vaginal microbiome and the risk of preterm birth: A network meta-analysis. Scientific Reports , 12:7926, 2022. Vanessa L. Hale et al. Shifts in the fecal microbiota associated with adenomatous polyps. Cancer Epidemiology, Biomarkers & Prevention , 26(1):85–94, 2017. Brady E. Hamilton, Joyce A. Martin, and Michelle J.K. Osterman. Births: Provisional data for 2023. NCHS vital statistics rapid release report no. 35, 2024. S.J. Heitman, P.E. Ronksley, R.J. Hilsden, B.J. Manns, A. Rostom, and B.R. Hemmelgarn. Prevalence of adenomas and colorectal cancer in average risk individuals: A systematic review and meta-analysis. Clinical Gastroenterology and Hepatology , 7(12):1272–1278, 2009. Chaoran Huang, C. Gin, J. Fettweis, and others. Meta-analysis reveals the vaginal microbiome is a better predictor of early than late preterm birth. BMC Biology , 21(1):199, 2023. A. Leslie, F. A. Carey, N. R. Pratt, and R. J. Steele. The colorectal adenoma-carcinoma sequence. 
+
+British Journal of Surgery , 89(7):845–860, 2002. Hongzhe Li. Microbiome, metagenomics, and high-dimensional compositional data analysis. Annual Review of Statistics and Its Application , 2(1):73–94, 2015. Zhengbang Li, Xiaochen Yu, Hongping Guo, Tingfang Lee, and Jiyuan Hu. A maximum-type microbial differential abundance test with application to high-dimensional microbiome data analyses. Frontiers in Cellular and Infection Microbiology , 12, 2022. Jingwen Liao and others. Microdiversity of the vaginal microbiome is associated with preterm birth. 
+
+Nature Communications , 14:5404, 2023. Huang Lin and Shyamal D. Peddada. Analysis of compositions of microbiomes with bias correction. 
+
+Nature Communications , 11:3514, 2020a. Huang Lin and Shyamal Das Peddada. Analysis of microbial compositions: a review of normalization and differential abundance analysis. NPJ biofilms and microbiomes , 6(1):60, 2020b. Josep Antoni Mart´ ın-Fern´ andez, Karel Hron, Matthias Templ, Peter Filzmoser, and Javier Palarea-Albaladejo. Bayesian-multiplicative treatment of count zeros in compositional data sets. Statistical Modelling , 15:134 – 158, 2015. National Cancer Institute. Financial burden of cancer care — cancer trends progress report. https: //progressreport.cancer.gov/after/economic_burden , 2025a. National Cancer Institute. Cancer stat facts: Colorectal cancer. https://seer.cancer.gov/ statfacts/html/colorect.html , 2025b. J. Palarea-Albaladejo and J. A. Mart´ ın-Fern´ andez. zcompositions – r package for multivariate imputa-tion of left-censored data under a compositional approach. Chemometrics and Intelligent Laboratory Systems , 143:85–96, 2015. 37 Cristina Pleguezuelos-Manzano and others. Mutational signature in colorectal cancer caused by geno-toxic pks + E. coli . Nature , 580:269–273, 2020. Molly J. Stout, Y Zhou, KM Wylie, PI Tarr, GA Macones, and MG Tuuli. Early pregnancy vaginal microbiome trends and preterm birth. American Journal of Obstetrics and Gynecology , 217(3): 356.e1–356.e18, 2017. Norman J. Waitzman, Amir Jalali, and Scott D. Grosse. Preterm birth lifetime costs in the united states in 2016: An update. Journal of Perinatology , 41:1914–1921, 2021. World Health Organization. Preterm birth: Fact sheet. https://www.who.int/news-room/ fact-sheets/detail/preterm-birth , 2023. World Health Organization, UNICEF, and PMNCH. Born too soon: Decade of action on preterm birth. https://www.who.int/publications/i/item/9789240073890 , 2023. Lixiu Wu and Jiang Hu. Multi-sample hypothesis testing of high-dimensional mean vectors under covariance heterogeneity. Annals of the Institute of Statistical Mathematics , 76:579–615, 2024. Kaijie Xue and Fang Yao. Distribution and correlation-free two-sample test of high-dimensional means. 
+
+The Annals of Statistics , 48(3):1304–1328, 2020. Tanya Yatsunenko et al. Human gut microbiome viewed across age and geography. Nature , 486(7402): 222–227, 2012. Miguel Zepeda-Rivera and others. A distinct Fusobacterium nucleatum clade dominates the colorectal cancer microbiome and is linked to poor outcomes. Nature , 628:424–432, 2024. 38

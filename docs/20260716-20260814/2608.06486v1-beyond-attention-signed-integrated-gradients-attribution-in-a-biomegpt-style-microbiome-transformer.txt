@@ -1,0 +1,392 @@
+Title: Beyond Attention: Signed Integrated Gradients Attribution in a BiomeGPT-Style Microbiome Transformer
+
+URL Source: https://arxiv.org/pdf/2608.06486v1
+
+Published Time: Mon, 10 Aug 2026 00:05:22 GMT
+
+Number of Pages: 15
+
+Markdown Content:
+# Beyond Attention: Signed Integrated Gradients Attribution in a BiomeGPT-Style Microbiome Transformer 
+
+Oren Nelson 
+
+Department of Computer Science University of California, San Diego San Diego, CA 92122 
+
+onelson@ucsd.edu 
+
+# Abstract 
+
+In a feature-tokenized [5] transformer like BiomeGPT [10], input tokens are constructed by fusing a fixed identity with a sample specific measurement. In BiomeGPT it is a fixed species and a variable abundance ( T = S + A). This biolog-ical token serves as a unique atomic unit of information within the sample sequence. In order to understand downstream model classification tasks in feature-tokenized transformers, authors suggest to use the special classification token [CLS] attention weights [5][4][10] to rank sample tokens and understand their importance within the sample. However, using [CLS] attention weights suffers from two critical limitations: (1) they are nonnegative, making it impossible to distinguish disease supporting evidence from health supporting evidence [9], and (2) they are post token fusion, obscuring the impact on the output of the input sources, i.e., S and A.To address these limitations, we propose to use a signed, fusion-aware attribu-tion method called Integrated Gradients (IG) [14]. We further propose a source derived baseline ( T ′ = S + A0) for tabular models [5] such as BiomeGPT that preserves species identity as a fixed biological coordinate while isolating the spe-cific effect of abundance variation. Applied to a disease – health decision margin, this approach yields polarity that explicitly separates pathogenic from protective microbial signals. We demonstrate that this gradient based approach uncovers species-abundance directional relationships on the outcome and sensitivity diagnos-tics entirely obscured by unsigned [CLS] attention weights. We further recommend second order Integrated Hessians [7] in order to understand microbiome commu-nity member interaction rules that show how a perturbation in one member affects the derivative with respect to the outcome in another member. For species that produce ambiguous outcomes, this can show which other species drive them toward disease or health along a given abundance level. This work provides a principled approach to explainability in BiomeGPT that is generalizable to other smooth and differentiable feature-tokenized transformer architectures. Code is available at 
+
+https://github.com/nohren/token-source-attribution .
+
+# 1 Introduction 
+
+BiomeGPT is a feature-tokenized transformer foundation model for microbiome data [10]. For each microbial species, a learned species embedding ( S) is added to an embedding ( A) of its binned abundance: 
+
+T = S + A. 
+
+> Preprint. arXiv:2608.06486v1 [cs.LG] 6 Aug 2026
+
+The resulting species–abundance tokens are processed by the transformer, and as in BERT [4] a learned [CLS] token ∈ Rd provides a sample level representation for downstream tasks such as inflammatory bowel disease (IBD) classification. During classification fine-tuning, the classifier directly consumes the learned [CLS] token, so the classification loss explicitly trains the encoder to route label relevant sample information into that position. In a fully trained classification model, its 
+
+[CLS] attention weights αcls ∈ Rs where s is sequence length are often inspected to identify which input tokens are most relevant to the classification decision. However, relying solely on these raw attention magnitudes to explain model predictions presents a fundamental limitation: the inability to capture impact polarity [9]. Attention weights are nonnegative and normalized: 
+
+αi ∈ [0 , 1] , X
+
+> i
+
+αi = 1 .
+
+Because raw attention weights are strictly positive, they only indicate the magnitude of the model’s focus but cannot differentiate between a species token that positively contributes to a prediction and one that actively suppresses it. Consequently, a microbiome feature receiving a massive attention weight might actually be pushing the model away from its final IBD classification. Assuming that high attention inherently equates to a positive contribution can lead to a "faithfulness violation," where the derived explanation contradicts the model’s true logic [9]. This disconnect ultimately motivates our use of signed integrated gradients to resolve the issue by providing directional polarity of feature impacts within BiomeGPT classification decisions. This work studies Integrated Gradients (IG) as a signed, output directed alternative to [CLS] attention weights in BiomeGPT. IG integrates input gradients along a path from a baseline to the observed input [14]. Its attributions are signed and satisfy completeness: up to numerical integration error, their sum equals the corresponding change in model output. We attribute the IBD–healthy logit margin: 
+
+F (S, A ) = zIBD (S, A ) − zHealthy (S, A ).
+
+Positive attribution indicates that an observed abundance increases the IBD margin, whereas negative attribution indicates support for healthy classification. IG therefore connects each species–abundance observation to a directional change in the decision being explained, rather than merely reporting its prominence within an internal attention pattern. Applying IG to fused tokens requires a meaningful baseline. An all-zero token would remove both the abundance measurement and the species identity through which the model interprets that measurement. We instead treat species identity as a fixed biological coordinate and abundance as the sample-dependent signal. Let 
+
+A0 = MLP AB (0) 
+
+denote the learned zero-abundance embedding. We define the fused-token baseline as 
+
+T ′ = S + A0,
+
+which gives 
+
+T − T ′ = ( S + A) − (S + A0) = A − A0.
+
+The resulting attribution explains how moving from zero abundance to the observed abundance changes the IBD–healthy margin while preserving species identity throughout the integration path. For additive fusion, this is equivalent to applying IG directly to the fused token with the source-derived baseline ( T ′ = S + A0). More generally, the construction suggests that feature-tokenized models should preserve the feature-identity component while interpolating the component that encodes the observed value. The main contributions of this work are as follows: 1. We show that [CLS] attention weights provide unsigned, post-fusion token rankings and therefore cannot distinguish evidence supporting IBD from evidence supporting healthy classification. 2. We formulate explainability as signed attribution of the IBD–healthy decision margin, connecting each observed abundance to its directional effect on the model output. 3. We derive a fusion-aware IG baseline, T ′ = S + A0, that attributes abundance variation while preserving species identity as biological context. 4. We empirically compare IG with [CLS] attention weights in a BiomeGPT-style IBD classifier and analyze path-averaged gradients as a complementary sensitivity diagnostic. 22 Related Work 
+
+Microbiome foundation models and attention-based interpretation. Foundation models have recently been adapted across biological domains, including single-cell transcriptomics with models such as scBERT [17], Geneformer [15], and scGPT [3]. These models illustrate how large scale pretraining can learn reusable biological representations for downstream prediction tasks. Microbiome foundation models extend this idea from molecules or cells to community scale microbial ecosystems. Prior microbiome-specific models have explored language-model-style pretraining over microbial communities [12], while BiomeGPT [10] introduced a species level gut microbiome foundation model pretrained on shotgun sequenced MetaPhlAn [2] species-abundance profiles. BiomeGPT’s input representation combines microbial species identity with binned abundance, making it a natural example of a feature-tokenized biological transformer. Its interpretation analysis uses 
+
+[CLS] attention scores to identify microbial taxa associated with health and disease. This work builds on that interpretation goal, but argues that attention rankings are insufficient for signed model output interpretation: attention is nonnegative and post-fusion, so it cannot indicate whether a species-abundance token supports IBD or healthy classification. 
+
+Attention as explanation. Transformer explainability often begins with attention weights, especially attention from a final [CLS] token. Prior work has debated whether attention weights should be interpreted as explanations [6, 16]. This paper does not attempt to resolve that broader debate. Instead, it makes a narrower claim for microbiome transformers: [CLS] attention can rank fused species-abundance tokens, but it cannot provide signed evidence for a disease–health decision margin. Attention can indicate which tokens receive high attention mass, but the attention weight itself does not encode whether a token increases or decreases the target logit contrast. 
+
+Integrated Gradients and signed attribution. Integrated Gradients (IG) was introduced by Sun-dararajan et al. [14] as an axiomatic attribution method satisfying sensitivity, implementation invariance, and completeness. IG attributes a scalar model output by integrating gradients along a path from a baseline input to the observed input. This makes IG attractive for interpreting the IBD–Healthy logit contrast, because positive and negative attributions can be tied to changes in the model’s decision margin. Completeness is also useful in this setting: the sum of IG attributions equals the change in model output from baseline to input, up to numerical integration error. The IG computations in this study are implemented using Captum [8]. 
+
+Feature-tokenized transformers and fused-token baselines. Feature-tokenized transformers map structured inputs into token embeddings before self-attention. FT-Transformer [5], for example, uses a feature tokenizer to map numerical and categorical columns into embeddings, producing one token per feature. These tokens may combine fixed feature identity with sample-specific value information. In a BiomeGPT-style encoder, each token similarly corresponds to a species-abundance pair, with a fixed species embedding and a dynamic abundance embedding composed before the transformer. This token structure creates a baseline-design problem for IG. Sundararajan et al. argue that a useful baseline should represent an “absence of signal” [14], but for a composed token it is ambiguous what should be absent. In additive species-abundance tokenization, each token is T = S + A, where S
+
+identifies the species coordinate and A encodes the sample-specific abundance. A naive all-zero fused baseline would remove both the abundance signal and the species identity needed to interpret that signal. Therefore, this work derives the fused-token baseline from the token sources: 
+
+T ′ = S + A0,
+
+where A0 is the learned zero-abundance embedding. 
+
+Attribution paths in tokenized models. Recent work on Uniform Discretized Integrated Gradients (UDIG) [13] highlights that straight-line interpolation in embedding space may be poorly matched to tokenized models, where intermediate points may not correspond to valid inputs. Although this work performs IG in abundance-embedding space, a future extension is to integrate through the learned abundance encoder rather than linearly between endpoint embeddings. This would make the integration path better aligned with the feature tokenizer that maps abundance values into transformer input embeddings. 
+
+Integrated Hessians and feature interactions. Integrated Hessians extend Integrated Gradients from first-order feature attribution to pairwise feature interaction attribution [7]. Rather than asking only how much a feature contributes to the output, Integrated Hessians ask whether one feature 3changes the model’s sensitivity to another. This is relevant to microbiome transformers because disease evidence may depend not only on individual species abundances, but also on model-learned abundance-abundance interactions. This work focuses on first-order signed attribution; second-order interaction attribution is left for future work. 
+
+# 3 Problem Setup 
+
+3.1 Feature tokenizer. 
+
+Given a species ID si and a discrete binned abundance value ai, the fused token for species i is 
+
+ti = Embed ID (si) + MLP AB (ai). (1) The dataset comes from the curated metagenomic data repository [11] and consists of discrete binned 
+
+ai values for every species si. The input sequence is constructed by prepending a learned [CLS] 
+
+token: 
+
+T = ( t[CLS] , t1, . . . , t1662 ).
+
+Each sequence T ∈ R1663 ×512 represents one microbiome sample. The zero-abundance embedding represents the absence of a species in the sample. No positional encodings are added, since the microbiome is treated as invariant to species order. 
+
+3.2 Model forward pass. 
+
+The transformer encoder maps the fused species-abundance token sequence to contextualized repre-sentations: 
+
+H = Φ( T ).
+
+The final [CLS] representation is used for classification: 
+
+h[CLS] = H0, z = g(h[CLS] ),
+
+where z ∈ R2 contains the logits for the IBD and Healthy classes. The model is trained with cross-entropy loss on these logits. 
+
+3.3 Integrated Gradients attribution. 
+
+Let S denote the species embedding sequence and A denote the abundance embedding sequence, so that the fused input is 
+
+T = S + A. 
+
+Let S′ and A′ denote the corresponding baseline embeddings. Integrated Gradients defines a path from baseline to input: 
+
+Sα = S′ + α(S − S′), Aα = A′ + α(A − A′), α ∈ [0 , 1] ,
+
+with fused path 
+
+Tα = Sα + Aα.
+
+To obtain signed clinical evidence, the scalar attribution target is the IBD–Healthy logit contrast: 
+
+F (Sα, A α) = zIBD (Sα, A α) − zHealthy (Sα, A α).
+
+Positive attribution values therefore increase the IBD–Healthy margin, while negative values decrease it and support the healthy class. The forward function receives Sα and Aα as separate differentiable inputs, then fuses them before the transformer encoder. The source-wise IG terms are 
+
+IG S = ( S − S′) ⊙
+
+Z 10
+
+∂F (Sα, A α)
+
+∂S dα, IG A = ( A − A′) ⊙
+
+Z 10
+
+∂F (Sα, A α)
+
+∂A dα. 
+
+Here, ⊙ denotes elementwise multiplication by the baseline-to-input displacement. This formulation matches the multi-input Integrated Gradients implementation used in Captum [8]. 4Integrated Gradients satisfies completeness: the sum of the attributions equals the change in model output from baseline to input, up to numerical integration error: 
+
+X
+
+> k
+
+IG k(x) = F (x) − F (x′).
+
+In this setting, completeness links the attribution scores directly to the model’s IBD–Healthy logit difference. 
+
+3.4 Token-fusion baseline for signed Integrated Gradients attribution 
+
+The previous sections motivate Integrated Gradients (IG) as a signed alternative to [CLS] attention. Applying IG to BiomeGPT-style species–abundance tokens, however, requires a meaningful baseline. Sundararajan et al. recommend choosing a baseline that represents an “absence of signal” [14]. For a fused BiomeGPT token, the central question is therefore: which component(s) constitutes the signal to be removed? BiomeGPT constructs each token through additive fusion: 
+
+T = S + A, 
+
+where 
+
+S = Embed ID (si), A = MLP AB (ai).
+
+The species embedding ( S) identifies the biological feature, whereas the abundance embedding ( A)encodes its sample-specific value. This decomposition is analogous to feature tokenization in tabular Transformers. Gorishniy et al., for example, construct numerical feature tokens as [5] 
+
+Tj = bj + fj (xj ),
+
+where bj is a learned feature-specific term and fj (xj ) encodes the observed value. The first term identifies the tabular coordinate being measured, while the second specifies the observation at that coordinate. In the BiomeGPT-style architecture, S = Embed ID (si) similarly defines a fixed biological coordi-nate, while A = MLP AB (ai) represents the observed abundance. Because samples share a fixed species vocabulary, the species identities remain constant across samples while their abundance values vary. The abundance embedding is therefore the dynamic, sample specific signal, and the species embedding provides the fixed context in which that signal is interpreted. 
+
+Figure 1: The species embedding remains fixed, while the abundance embedding varies across samples. An all-zero fused-token baseline, 
+
+T ′ = 0 ∈ R512 ,
+
+is mathematically valid and is evaluated in Section 4. However, it removes both the observed abundance and the identity of the biological feature being measured forcing the model to potentially evaluate out of distribution. We instead derive the baseline from the model’s tokenization function 5by preserving species identity and replacing only the abundance component with its learned zero-abundance embedding: 
+
+A0 = MLP AB (0) ,S′ = S, A′ = A0.
+
+The observed and baseline fused tokens are therefore 
+
+T = S + A, T ′ = S′ + A′ = S + A0.
+
+Their displacement is 
+
+T − T ′ = ( S + A) − (S + A0) = A − A0.
+
+Species identity cancels from the displacement but remains present in the model computation. The fused-token interpolation path is 
+
+Tα = T ′ + α(T − T ′) = S + A0 + α(A − A0).
+
+Equivalently, the source-wise paths are 
+
+Sα = S′ + α(S − S′) = S, Aα = A0 + α(A − A0).
+
+Thus, the species embedding remains fixed throughout the forward path, while the abundance embedding moves from its learned zero-abundance state to its observed value. 
+
+Figure 2: The yellow dotted line represents the integration steps from A0 to A. Species identity remains throughout the path, providing fixed biological context during gradient attribution. The corresponding source-specific IG terms are 
+
+IG S = ( S − S′) ⊙
+
+Z 10
+
+∂F (Sα, A α)
+
+∂S dα, IG A = ( A − A′) ⊙
+
+Z 10
+
+∂F (Sα, A α)
+
+∂A dα. 
+
+6Because S′ = S, species attribution is zero by construction: 
+
+IG S = 0 .
+
+This does not imply that the model ignores species identity. The species embedding remains in every forward pass and conditions the gradients at each point along the path. Rather, the attribution assigns displacement-weighted evidence to the abundance component while treating species identity as fixed context. One might nevertheless ask whether setting IG S = 0 discards a distinct path-integrated gradient signal. Under additive fusion, 
+
+T = S + A, 
+
+both sources enter the fused representation through the identity map: 
+
+∂T ∂S = I, ∂T ∂A = I. 
+
+The chain rule therefore gives 
+
+∂F ∂S = ∂F ∂T , ∂F ∂A = ∂F ∂T .
+
+When evaluated along the same interpolation path, the path-averaged source gradients are conse-quently identical: 
+
+GS =
+
+Z 10
+
+∂F (Sα, A α)
+
+∂S dα, GA =
+
+Z 10
+
+∂F (Sα, A α)
+
+∂A dα, 
+
+with 
+
+GS = GA.
+
+The source-specific IG terms differ only through their displacement factors: 
+
+IG S = ( S − S′) ⊙ GS , IG A = ( A − A′) ⊙ GA.
+
+Thus, the zero species attribution follows from holding species identity fixed, not from the absence of species-conditioned gradient information. IG may equivalently be applied directly to the fused token, provided that its baseline is derived from the underlying sources. Using T ′ = S + A0, fused-token IG becomes 
+
+IG T = ( T − T ′) ⊙
+
+Z 10
+
+∂F (Tα)
+
+∂T dα 
+
+= ( A − A0) ⊙
+
+Z 10
+
+∂F (S, A α)
+
+∂A dα 
+
+= IG A.
+
+Therefore, under additive fusion, fused-token IG and abundance-source IG are equivalent when the fused-token baseline is T ′ = S + A0. The source-level decomposition remains important because it establishes the semantic meaning of the baseline: the resulting attribution explains the effect of moving abundance from its zero state to its observed value while preserving species identity as context. This construction is not specific to BiomeGPT. It generalizes to feature-tokenized tabular transformers [5] in which a fixed feature identity embedding is additively fused with a sample dependent value embedding. The chosen baseline preserves the fixed identity feature coordinate component and interpolate only the component encoding the observed value. To the best of our knowledge, prior applications of IG to such architectures have not been explicitly derived or documented. More generally, additive fusion causes the source wise gradients to share the same adjoint, leaving displacement as the only distinction between IG S and IG A. In architectures based on concatenation, gating, FiLM conditioning, or other nonlinear fusion mechanisms, both the source-wise gradients and their appropriate baselines may differ. Source-specific IG must therefore be defined and interpreted relative to the model’s token-fusion equation and architecture. 74 Experiments 
+
+To evaluate signed attribution as an alternative to [CLS] attention, this work reimplements a BiomeGPT-style microbiome transformer encoder and applies fusion-aware Integrated Gradients to its species-abundance tokens. The experimental goal is not to establish state-of-the-art IBD classi-fication performance. Instead, the goal is to test whether Integrated Gradients can recover signed disease-versus-health evidence from a trained microbiome transformer, and whether this evidence provides information unavailable from standard [CLS] attention rankings. The model was pretrained with a masked abundance reconstruction objective on approximately 27,000 MetaPhlAn-profiled [2] stool samples from the curated metagenomic data repository [11]. A downstream classification head was then fine-tuned on a balanced IBD-versus-healthy cohort of 8,000 samples, with 4,000 IBD samples and 4,000 healthy samples. The classifier achieved a validation accuracy of approximately 0.93, indicating that the model learned an IBD-discriminative signal suitable for attribution analysis. Two choices of baseline were compared: the source derived baseline T ′ = S+A0 and an experimental all-zero "absence of signal" baseline T ′ = 0 ∈ R512 . For each batch, I monitored the Integrated Gradients convergence delta returned by Captum, which measures the numerical gap between the sum of attributions and the model-output difference F (x) − F (x′). In preliminary runs, the source derived baseline produced substantially smaller Captum convergence deltas than an all-zero fused baseline under the same integration settings. This suggests that the source derived path is both semantically better aligned with the tokenization and also numerically easier to integrate in this model. A systematic comparison of convergence error across baselines is left for future work. All training and attribution experiments were run on NVIDIA H100 GPUs. Because this study is a proof of concept, I do not evaluate generalization on an external held-out dataset. Instead, the experiments focus on explainability: whether the proposed IG baseline produces signed abundance evidence from the model’s latent representation, and how that evidence differs from unsigned [CLS] 
+
+attention. 
+
+# 5 Results 
+
+Across 7,382 evaluated samples, abundance source attribution values had mean −0.0011 and ranged from −32 .77 to 36 .83 . True Positive samples had a positive mean attribution value of 0.0027 , while True Negative samples had a negative mean attribution value of −0.0045 . These aggregate signs are consistent with the chosen logit contrast target: positive attribution corresponds to model evidence increasing the IBD margin, while negative attribution corresponds to model evidence decreasing the margin. The attribution analysis shows a clear contrast between [CLS] attention and signed Integrated Gradients. Standard attention assigns each unmasked token a nonnegative weight αi ∈ [0 , 1] , with P 
+
+> i
+
+αi = 1 . Thus, attention can rank which fused species-abundance tokens the model attends to, but the attention weight itself does not indicate whether a token supports IBD or healthy classification. In contrast, Integrated Gradients is applied to the scalar logit contrast 
+
+F (S, A ) = zIBD (S, A ) − zHealthy (S, A ),
+
+so positive attribution increases the IBD–Healthy margin, while negative attribution decreases it. This distinction is especially visible for zero-abundance tokens. [CLS] attention weights can remain nonzero for unmasked tokens even when abundance is zero, because softmax attention assigns positive mass to every unmasked token. IG with the source-derived baseline assigns zero attribution when the observed abundance source equals the zero-abundance baseline A0, because the displacement term A − A0 is zero. Thus, attention can indicate participation in the transformer computation, but it cannot by itself identify signed abundance evidence. 8Figure 3: Comparison of [CLS] attention weights and Integrated Gradients for species–abundance tokens on a single inference: one true positive sample ( CSM79HM9_P , IBDMDB cohort) classified as IBD with pIBD = 0 .999 . Tokens are annotated (species, binned abundance). In the IG panels, red denotes positive attribution, increasing the IBD–Healthy logit margin; green denotes negative attribution, supporting the healthy class; uncoloured tokens carry zero attribution. Attention (blue) is unsigned. Shade indicates magnitude in all panels. In Chart 1 (low-abundance tokens), attention peaks on Anaerotruncus colihominis (abundance 1), whereas the largest attribution driving this prediction belongs to Clostridium sp. CAG 58 (abundance 2); the most attended token is not the largest contributor to the decision. Zero-abundance tokens retain nonzero attention mass, as softmax assigns positive weight to every unmasked token, but receive exactly zero IG attribution, since the displacement A − A0 vanishes. In Chart 2 (high-abundance tokens), species attribution is zero by construction under the baseline S′ = S; all signed evidence therefore resides in the abundance source, which separates these species into IBD-supporting and health-supporting contributions. Figure 4 compares top species rankings after excluding species in the bottom 5% of observed abundance. The remaining species scores are aggregated across all true positive and true negative samples showing [CLS] attention weights and IG. This shows species that consistently receive the highest attention mass, as well as species that consistently have the largest positive or negative IG aggregated. 9Figure 4: Top species rankings for IBD classification. Left: species receiving the highest [CLS] 
+
+attention. Center: species with the largest positive mean IG attribution, increasing the IBD–Healthy logit margin. Right: species with the largest negative mean IG attribution, decreasing that margin and supporting the healthy class. The two species receiving the most attention mass, Staphylococcus epidermidis and Collinsella massiliensis , both carry negative IG attribution, placing them among the strongest health-supporting species rather than among the IBD drivers. This pattern is not confined to those two: four of the fifteen highest-attention species also rank among the fifteen strongest health drivers, while only one ranks among the strongest IBD drivers. The classifier emits a logit for each class and IG attributes their difference, so the sign of an IG score states which class a species’ abundance supports. [CLS] attention is nonnegative and normalized, so a large weight establishes only that the model uses a token, not which of the two classes that use favors. 
+
+5.1 Path-Averaged Abundance Sensitivity 
+
+The main comparison in this work is between [CLS] attention and full Integrated Gradients attribution. Attention ranks fused tokens by unsigned attention mass, while IG assigns signed, displacement-weighted evidence to abundance movement along a baseline to input path. Once this IG path is defined, we can also inspect the non-displacement-weighted term inside IG as a complementary sensitivity diagnostic. For the abundance source, 
+
+IG A = ( A − A0) ⊙ GA, GA =
+
+Z 10
+
+∂F (S, A α)
+
+∂A dα, 
+
+where 
+
+Aα = A0 + α(A − A0).
+
+The full IG score IG A measures displacement-weighted contribution and satisfies completeness up to numerical integration error. The term GA, by contrast, omits the displacement multiplier and therefore should not be interpreted as a complete attribution score. This distinction follows the local/global 10 distinction in gradient-based attribution methods discussed by Ancona et al. [1]: Integrated Gradients averages gradients along a baseline to input path, while completeness depends on the full attribution summing to the output difference F (S, A ) − F (S′, A 0).I report GA as a complementary abundance-sensitivity diagnostic. Unlike endpoint saliency, GA is still averaged along the same baseline-to-input path used by IG. However, because it is not multiplied by A − A0, it asks a different question: which abundance sources is the model most sensitive to per unit movement in abundance-embedding space? This can highlight species whose abundance branch has high signed model sensitivity even when their observed abundance displacement is small. In this sense, GA provides another source-level signal unavailable from [CLS] attention: attention can rank fused tokens, but it does not measure signed sensitivity to abundance movement. 
+
+Figure 5: Top species ranked by path-averaged abundance sensitivity GA. Full IG attribution is the product (A − A0) ⊙ GA, so a species can rank highly simply because its observed abundance lies far from baseline: the displacement factor scales attribution with abundance, and abundant species are favoured accordingly. GA removes that factor and retains only the gradient averaged along the same baseline-to-input path, measuring the change in the IBD–Healthy logit margin per unit of abundance movement. Left: species with the largest positive sensitivity, increasing the margin per unit moved. Right: species with the largest negative sensitivity, decreasing it. Because this ranking is independent of observed abundance, it identifies species to whose abundance the model is highly sensitive but which are present in small quantity, and which full IG therefore ranks lower or omits entirely (Figure 4). These are diagnostics rather than attributions: lacking the displacement factor, they do not satisfy completeness. 11 5.2 Abundance–Attribution Response Profiles 
+
+Beyond producing signed species rankings, IG allows attribution to be examined as a function of observed abundance. This provides a second advantage over [CLS] attention: attention ranks fused tokens, but it does not directly show how increasing or decreasing abundance changes the model’s disease–health evidence for a given species. Figure 6 plots IG A attribution against observed abundance for individual species. The x-axis is the discrete binned abundance value, and the y-axis is the IG A score for the IBD–Healthy logit contrast. Positive values increase the IBD margin, while negative values decrease it and support the healthy class. 
+
+Figure 6: Abundance–attribution response profiles for four species. Each point represents one true positive or true negative sample. Larger attribution magnitudes at higher abundance levels are expected from the IG displacement factor A − A0: larger movement from baseline permits larger positive or negative attribution. Variation within the same abundance bin reflects sample level differences in path-averaged sensitivity, suggesting that the model’s response to a species can depend on the surrounding microbiome context. The profiles show that abundance is not always treated as a linear or monotonic signal. Some species have consistently positive or negative attribution across abundance levels, while others show mixed behavior. This is information that a single unsigned attention score cannot provide: IG separates whether the model uses abundance as evidence for IBD or as evidence for healthy classification, and how that evidence changes across abundance regimes. First-order IG identifies abundance regimes where a species contributes strongly to the model’s IBD–Healthy margin, but it does not identify which other species may be modulating that response. The variation within abundance bins suggests that the attribution assigned to one species may depend on the broader microbiome context. This motivates a second-order extension for studying abundance–abundance interactions. A natural second-order extension is grouped abundance–abundance interaction attribution exposing community rules. Let Ai ∈ RH denote the abundance embedding for species i, let A′ be the abundance baseline, and let 
+
+∆Ai = Ai − A′
+
+> i
+
+.
+
+12 Following Integrated Hessians [7], for i̸ = j, a token-level interaction score between species i and species j can be written as 
+
+ΓAi,j = ∆ A⊤
+
+> i
+
+Z 10
+
+Z 10
+
+αβ ∂2F (S, A ′ + αβ (A − A′)) 
+
+∂A i∂A j
+
+dα dβ 
+
+
+
+∆Aj .
+
+Here, ∂2F/∂A i∂A j is the Hessian block between the abundance embeddings of species i and j. This block measures how the model’s sensitivity to the abundance of species i changes under infinitesimal changes to the abundance of species j, and equivalently how species i modulates sensitivity to species 
+
+j when the Hessian is symmetric. The left and right multiplication by ∆Ai and ∆Aj converts this coordinate-level Hessian block into a displacement-weighted token-level interaction score. Thus, ΓAi,j 
+
+estimates the net interaction between moving species i and species j from their baseline abundances to their observed abundances along the IG path. Because the Hessian can vary along the path, ΓAi,j should be interpreted as a path-averaged net interaction. A positive score indicates that the joint abundance movement tends to increase the IBD–Healthy logit contrast beyond the corresponding first-order effects, while a negative score indicates suppressive or health-supporting interaction. As in first-order interactions, if the interaction changes sign across abundance regimes, these effects may partially cancel in the integrated score; abundance-abundance interaction profiles are left as future work. 
+
+# 6 Discussion and Limitations 
+
+This study is not a clinical generalization benchmark. The reported validation accuracy establishes only that the model learned an IBD-discriminative signal suitable for attribution analysis; it should not be interpreted as evidence of clinical generalization. Evaluating broader microbiome generalization would require study-level holdout splits, as in Medearis et al. [10], as well as downstream validation through in silico and in vivo experiments. Attribution should also not be interpreted as biological causality. The scores reported here are model-inferred evidence: they describe how the trained model uses species-abundance tokens to distinguish IBD from healthy samples. These patterns may suggest candidate disease-associated or health-associated species-abundance regimes, but causal claims require external validation through independent cohorts, perturbation experiments, and biological follow-up. A limitation of standard IG is that it collapses the entire baseline to input path into one net attribution score. This is useful for completeness, but it can obscure conditional abundance-sensitivity structure. If the model’s sensitivity to a species changes sign along the path from zero abundance to observed abundance, positive and negative regions may partially cancel in the final IG value. This does not invalidate the attribution; it means the score should be interpreted as net signed evidence over the chosen path. The abundance–attribution response profiles partly address this issue by showing how attribution varies across observed abundance bins. Species with wide variation within the same abundance may indicate modulation by the surrounding sample-specific microbiome context. A natural extension is path-resolved attribution: instead of immediately integrating over all α, one can retain the sequence of path gradients 
+
+gA(α) = ∂F (S, A α)
+
+∂A 
+
+or compute segmented IG over subintervals [u, v ]:
+
+IG [u,v ] 
+
+> A
+
+= ( Av − Au) ⊙
+
+Z vu
+
+∂F (S, A α)
+
+∂A dα. 
+
+This would allow the model’s signed abundance response to be studied across abundance levels, identifying where a species switches from IBD supporting to health supporting evidence, or where its effect is concentrated. Such path-resolved profiles may be useful for discovering conditional abundance rules, but they should be interpreted as diagnostics rather than replacements for full IG completeness over the baseline to input path. This work studies only first-order attribution. First-order IG identifies species-abundance contribu-tions to the IBD–Healthy margin, but it does not identify whether one species-abundance changes the 13 model’s sensitivity to another. Grouped Integrated Hessians [7] provide a natural future direction: instead of materializing an infeasible (SH ) × (SH ) Hessian over all species and embedding coor-dinates, coordinate-level interactions could be contracted into species-level abundance–abundance scores. This would allow analysis of whether the abundance of species j modulates the model’s response to species i. As in first-order IG, if the interaction changes sign across abundance regimes, these effects may partially cancel in the integrated score; abundance-conditioned interaction profiles are left as future work. Finally, the current implementation computes IG in abundance-embedding space. A tokenizer-aware path through the learned abundance encoder may be worth exploring in future work, but the present study focuses on comparing signed IG attribution against unsigned [CLS] attention. 
+
+# 7 Conclusion 
+
+This work shows that [CLS] attention weights are insufficient for explaining BiomeGPT-style microbiome decisions. It ranks fused species–abundance tokens, but cannot distinguish polarity [9] between evidence supporting IBD from evidence supporting health. It cannot isolate the effects of source inputs that compose a token on the model output prediction. Integrated Gradients addresses this limitation by attributing the logit contrast 
+
+zIBD − zHealthy .
+
+Positive attribution supports IBD, while negative attribution supports healthy classification. The source-derived baseline 
+
+T ′ = S + A0
+
+preserves species identity and attributes the change from zero to observed abundance, giving fused-token IG a direct biological interpretation. Empirically, IG reveals directional evidence and abundance–attribution response patterns unavailable from attention rankings alone. Because BiomeGPT is pretrained on large microbiome datasets and then adapted to disease-specific tasks, these attributions may also help probe how reusable microbial structure learned during pretraining is expressed and specialized during fine-tuning. Overall, [CLS] attention weights remain useful for describing internal representation structure, but fusion-aware IG provides a stronger basis for understanding how observed microbial abundances influence the model’s disease–health decision. 
+
+# References 
+
+[1] Marco Ancona, Enea Ceolini, Cengiz Öztireli, and Markus Gross. Towards better understanding of gradient-based attribution methods for deep neural networks. In International Conference on Learning Representations , 2018. URL https://arxiv.org/abs/1711.06104 . arXiv:1711.06104. [2] Aitor Blanco-Míguez, Francesco Beghini, Fabio Cumbo, Lauren J. McIver, Kelsey N. Thompson, Moreno Zolfo, Paolo Manghi, Leonard Dubois, Kun D. Huang, Andrew Maltez Thomas, William A. Nickols, Gianmarco Piccinno, Elisa Piperni, Michal Punˇ cocháˇ r, Mireia Valles-Colomer, Adrian Tett, Francesca Gior-dano, Richard Davies, Jonathan Wolf, Sarah E. Berry, Tim D. Spector, Eric A. Franzosa, Edoardo Pasolli, Francesco Asnicar, Curtis Huttenhower, and Nicola Segata. Extending and improving metagenomic taxo-nomic profiling with uncharacterized species using MetaPhlAn 4. Nature Biotechnology , 41:1633–1644, 2023. doi: 10.1038/s41587-023-01688-w. URL https://doi.org/10.1038/s41587-023-01688-w .[3] Haotian Cui, Chloe Wang, Hassaan Maan, Kuan Pang, Fengning Luo, Nan Duan, and Bo Wang. scGPT: toward building a foundation model for single-cell multi-omics using generative AI. Nature Meth-ods , 21:1470–1480, 2024. doi: 10.1038/s41592-024-02201-0. URL https://doi.org/10.1038/ s41592-024-02201-0 .[4] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. Bert: Pre-training of deep bidi-rectional transformers for language understanding. In Proceedings of the 2019 conference of the North American chapter of the association for computational linguistics: human language technologies, volume 1 (long and short papers) , pages 4171–4186, 2019. [5] Yury Gorishniy, Ivan Rubachev, Valentin Khrulkov, and Artem Babenko. Revisiting deep learning models for tabular data. In Advances in Neural Information Processing Systems (NeurIPS) , vol-ume 34, pages 18932–18943, 2021. URL https://proceedings.neurips.cc/paper/2021/hash/ 9d86d83f925f2149e9edb0ac3b49229c-Abstract.html .
+
+14 [6] Sarthak Jain and Byron C. Wallace. Attention is not explanation. In Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics , pages 3543–3556, 2019. URL https://arxiv.org/abs/1902.10186 . arXiv:1902.10186. [7] Joseph D. Janizek, Pascal Sturmfels, and Su-In Lee. Explaining explanations: Axiomatic feature interac-tions for deep networks. arXiv preprint arXiv:2002.04138 , 2020. doi: 10.48550/arXiv.2002.04138. URL 
+
+https://arxiv.org/abs/2002.04138 . arXiv:2002.04138. [8] Narine Kokhlikyan, Vivek Miglani, Miguel Martin, Edward Wang, Bilal Alsallakh, Jonathan Reynolds, Alexander Melnikov, Natalia Kliushkina, Carlos Araya, Siqi Yan, and Orion Reblitz-Richardson. Captum: A unified and generic model interpretability library for pytorch, 2020. URL https://arxiv.org/abs/ 2009.07896 . arXiv:2009.07896. [9] Yibing Liu, Haoliang Li, Yangyang Guo, Chenqi Kong, Jing Li, and Shiqi Wang. Rethinking attention-model explainability through faithfulness violation test. In Proceedings of the 39th International Conference on Machine Learning , pages 13858–13871. PMLR, 2022. [10] Nicholas A. Medearis, Siyao Zhu, and Ali R. Zomorrodi. Biomegpt: A foundation model for the human gut microbiome. bioRxiv , 2026. doi: 10.64898/2026.01.05.697599. URL https://doi.org/10.64898/ 2026.01.05.697599 .[11] Edoardo Pasolli, Lucas Schiffer, Paolo Manghi, Audrey Renson, Valerie Obenchain, Duy Tin Truong, Francesco Beghini, Faizan Malik, Marcel Ramos, Jennifer B. Dowd, Curtis Huttenhower, Martin Morgan, Nicola Segata, and Levi Waldron. Accessible, curated metagenomic data through ExperimentHub. Nature Methods , 14:1023–1024, 2017. doi: 10.1038/nmeth.4468. URL https://doi.org/10.1038/nmeth. 4468 .[12] Quintin Pope, Rohan Varma, Christine Tataru, Maude M. David, and Xiaoli Fern. Learning a deep language model for microbiomes: The power of large scale unlabeled microbiome data. PLOS Computational Biology , 21(5):e1011353, 2025. doi: 10.1371/journal.pcbi.1011353. URL https://doi.org/10.1371/ journal.pcbi.1011353 .[13] Swarnava Sinha Roy and Ayan Kundu. Uniform discretized integrated gradients: An effective attribution based method for explaining large language models, 2024. URL https://arxiv.org/abs/2412.03886 .arXiv:2412.03886. [14] Mukund Sundararajan, Ankur Taly, and Qiqi Yan. Axiomatic attribution for deep networks. In International Conference on Machine Learning , pages 3319–3328, 2017. URL https://arxiv.org/abs/1703. 01365 . arXiv:1703.01365. [15] Christina V. Theodoris, Ling Xiao, Anant Chopra, Mark D. Chaffin, Zeina R. Al Sayed, Matthew C. Hill, Helene Mantineo, Elizabeth M. Brydon, Zexian Zeng, X. Shirley Liu, and Patrick T. Ellinor. Transfer learning enables predictions in network biology. Nature , 618(7965):616–624, 2023. doi: 10.1038/ s41586-023-06139-9. URL https://doi.org/10.1038/s41586-023-06139-9 .[16] Sarah Wiegreffe and Yuval Pinter. Attention is not not explanation. In Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing , pages 11–20, 2019. URL https://arxiv.org/ abs/1908.04626 . arXiv:1908.04626. [17] Fan Yang, Wenchuan Wang, Fang Wang, Yuan Fang, Duyu Tang, Junzhou Huang, Hui Lu, and Jianhua Yao. scBERT as a large-scale pretrained deep language model for cell type annotation of single-cell RNA-seq data. Nature Machine Intelligence , 4:852–866, 2022. doi: 10.1038/s42256-022-00534-z. URL 
+
+https://doi.org/10.1038/s42256-022-00534-z .
+
+15
