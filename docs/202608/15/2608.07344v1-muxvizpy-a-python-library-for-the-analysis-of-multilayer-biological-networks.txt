@@ -1,0 +1,1754 @@
+muxvizpy: a Python library for the analysis of multilayer
+biological networks
+Matteo Baldan1,†,∗, Francesco Zambelli2,†, Andrea Valsecchi3, Giacomo Baruzzo1, Giulia
+Cesaro1, Manlio De Domenico2,5, Barbara Di Camillo1,4,5,∗
+1Department of Information Engineering, University of Padova, Italy
+2Department of Physics and Astronomy, University of Padova, Padova
+3Department of Mathematics, University of Padova, Padova
+4Department of Comparative Biomedicine and Food Science, University of Padova, Padova
+5Padua Center for Network Medicine, University of Padova, Padova
+Corresponding author: barbara.dicamillo@unipd.it; †: authors share contribution
+Abstract
+Biological systems are inherently multilayered: the same entities—genes, cells, or bacterial
+species—participate simultaneously in qualitatively distinct types of interactions, each carrying
+complementary information that no single relational view can capture. Analysing such systems
+with single-layer tools, or by collapsing layers into a monoplex projection, systematically dis-
+cards inter-layer dependencies and can yield misleading conclusions about centrality, community
+structure, and robustness. The multilayer network formalism addresses, and muxViz established
+one of the first comprehensive toolkits for its structural analysis, but its R-only interface and
+dense data structures limit applicability to large biological networks. We introduce muxvizpy,
+a Python library that reimplements and extends the muxViz analytical catalogue with a sparse
+linear-algebra stack built on SciPy and PyTorch. Muxvizpy exposes seven categories through a
+unified, composable API and is numerically validated against muxViz on synthetic Erdős–Rényi
+and Barabási–Albert multiplex networks while substantially reducing peak memory and wall-clock
+time at scale. We illustrate its applicability on a virus–human protein-interaction multiplex in
+which computing some structural analysis was unfeasible.
+muxvizpy is freely available under the MIT licence at https://github.com/CoMuNeLab/MuxVizPy.
+Mathematical definitions of all implemented metrics are provided in the Additional File.
+Keywords: multilayer networks; network analysis; biological networks; complex systems; scientific
+computing
+Graphical abstract
+Single layer: multiple sources 
+of information are mixed
+Multilayer: clear separation of 
+sources and interdependencies
+Dual Representation
+N
+N
+L
+N x L
+N x L
+Analysis 
+Classes
+Global 
+Descriptors
+Topology
+Decomposition
+Versatility
+Mesoscale
+Percolation
+Information 
+Theory
+/
+Networks 
+generation: PPI 
+networks as proxies 
+for virus-human 
+interaction
+Multilayer ensemble 
+deﬁnition: networks 
+associated to different 
+viruses are combined as 
+different attacks to the 
+same system
+Analysis 
+performing 
+large-multilayer 
+networks 
+analysis using 
+muxvizpy
+Result: 
+classiﬁcation of 
+oncogenic vs 
+non-oncogenic 
+viruses, possible 
+target genes 
+identiﬁcation
+muxviz
+muxvizpy
+Data Representation
+Dense
+Sparse
+Scalability
+Limited on large 
+networks
+High (Handles 105+ 
+edges)
+Interoperability
+R-only
+Python stack
+Ecosystems
+Tensor formalism: native 
+representation of multilayer 
+network, in sparse format to 
+reduce memory usage
+Supra-Adjacency Matrix: 
+computationally more 
+convenient for some kind of 
+analysis
+Performance 
+Comparison
+Use case: 
+Virus-Human PPI 
+networks
+Introduction
+The study of complex systems has evolved from analyzing isolated networks to a multilayer formal-
+ism that captures the interdependent interactions inherent in social, technological and biological
+systems (Kivelä et al., 2014; De Domenico, 2023; Aleta et al., 2026). The foundational work of
+Watts and Strogatz on small-world properties and Barabási and Albert on scale-free distributions
+established a robust mathematical basis for network science; however, it has since become clear
+that real-world entities rarely interact through single channels or in single contexts. The multilayer
+1
+arXiv:2608.07344v1  [q-bio.QM]  7 Aug 2026
+
+
+framework addresses this directly, representing a system as a collection of layers, each encoding a
+distinct mode of interaction among a set of entities (nodes) (Kivelä et al., 2014; De Domenico,
+2023). The utility of this formalism has been demonstrated across a broad range of domains, from
+social, biological systems and power grids to multimodal transportation networks and communication
+infrastructure (Aleta et al., 2026).
+Biological systems are a particularly natural fit for this framework. At the cellular scale, the
+same gene can be involved in multiple biological processes and can be observed across qualitatively
+distinct interaction modalities that naturally map to different layers: its expression captured by
+the transcriptomic layer, its regulatory state by the epigenomic layer, the physical interactions of
+its protein product by the protein–protein interaction (PPI) layer, and its metabolic activity by
+the metabolic layer (Aleta et al., 2026). Each layer derives from a different omic technology and
+carries complementary biological information; their joint analysis can reveal disease modules, pathway
+cross-talk, and regulatory feedback loops that remain invisible when any single layer is examined in
+isolation. The same logic extends to larger scales, from synaptic and neuromodulatory coupling in
+neural circuits to trophic and competitive layers in ecosystems.
+The increasing availability of high-throughput data and the growth of computational capacity have
+since elevated this framework from a theoretical convenience to a practical necessity for systems-level
+analysis at scale (Aleta et al., 2026). However, a significant software gap remains: while R-based tools
+like muxViz (De Domenico et al., 2015a) offer comprehensive metrics, they lack native interoperability
+with the dominant Python-based bioinformatics stack (e.g., Scanpy, PyTorch) and often fail to scale
+due to dense data representations (Kjellström and others, 2023; Büth et al., 2025).
+The multilayer analytical toolkit is currently distributed across a fragmented ecosystem: in R,
+muxViz (De Domenico et al., 2015a) offers comprehensive structural metrics and 3D visualization,
+while multinet offers efficient C++ backed routines for actor-based measures and layer comparison.
+In Python, Pymnet and multiNetX support general multilayer and multiplex structures and Multilay-
+erGraphs.jl Kjellström and others (2023) extends the ecosystem to Julia. General-purpose libraries
+such as graph-tool (Peixoto, 2023) deliver excellent performance on monoplex graphs, but lack native
+multilayer data structures. Despite this breadth, no single tool covers the full analytical catalogue
+needed in bioinformatics while addressing two practical constraints: Python interoperability, where
+the dominant pipelines for single-cell analysis (Scanpy/AnnData), graph deep learning (PyTorch
+Geometric), and multi-omics integration (MOFA+, MuData) are native, and scalability, where
+existing multilayer libraries fail on large networks due to usage of dense representations (Kjellström
+and others, 2023).
+To address these constraints, we introduce muxvizpy, a Python library that not only re-implements
+the analytical catalogue of muxViz but also redesigns multilayer network analysis around sparse tensor
+algebra and native interoperability with the modern Python scientific ecosystem. Unlike existing
+multilayer software,muxvizpy combines (i) sparse-native representations for large-scale networks,
+(ii) exact and approximate solvers for computationally demanding centrality measures, (iii) tensor
+decomposition methods for multilayer structure discovery, and (iv) integration with tools such as
+SciPy, PyTorch, graph-tool and Scanpy. These features enable analyses that are computationally
+prohibitive in existing implementations while preserving compatibility with multilayer network
+methodologies. All metrics are numerically validated against muxViz on synthetic benchmarks, while
+its usage is highlighted by a biological use case related to the study of interactions between viruses
+and their human host with PPI networks.
+The muxvizpy package
+Design principles
+muxvizpy is built around three design principles that together address the limitations of existing
+tools. Sparse-first. All supra-adjacency matrices and tensors are stored as SciPy CSR sparse matrices
+or PyTorch COO sparse tensors; inter-layer coupling blocks are either generated when not explicitly
+provided or read from edge lists. Composable. The library exposes a small set of fundamental
+2
+
+
+data-structure constructors implemented in the parsing and i/o utilities, from which all higher-level
+metrics are derived; users can supply their own supra-adjacency matrix or use the mode-1 unfolding
+procedure to convert the tensor and call any metric directly. Validated. Every metric ships with a
+numerical test against the corresponding muxViz output on a shared synthetic network, ensuring
+cross-platform reproducibility with some numerical precision threshold.
+Data structures and structural metrics
+The central object in muxvizpy is the adjacency tensor M ∈RN×N×L×L, stored as a PyTorch COO
+sparse tensor, where N is the number of nodes and L the number of layers. This representation is
+preferred over the supra-adjacency matrix because it preserves the dimensions of the network—namely
+N and L—which are lost when the tensor is flattened into a single (NL×NL) matrix. For the majority
+of structural metrics, the tensor is efficiently parsed via mode-1 unfolding into the supra-adjacency
+matrix A ∈RNL×NL, stored as a SciPy CSR sparse matrix, whose diagonal blocks of size N × N
+encode intra-layer adjacencies and whose off-diagonal blocks encode inter-layer couplings. For spectral
+decomposition and tensor-native analyses, the adjacency tensor is used directly without unfolding. For
+node-aligned multiplex networks with categorical couplings (the most common case in practice), the
+coupling blocks reduce to scalar-weighted identity matrices, which muxvizpy stores implicitly. Input is
+accepted as a five-column edge-list CSV (node.from, layer.from, node.to, layer.to, weight),
+compatible with the muxViz edge-list format. The structural metrics implemented in muxvizpy are
+classified as versatility, mesoscale, topology, information theory, decomposition, global descriptors
+and percolation and are defined in the Extended table 1. Mathematical definitions are provided in
+the Additional File 1.
+Approximate against exact algorithms
+A central computational contribution of muxvizpy is
+the integration of alternative solution strategies for centrality measures whose evaluation becomes
+increasingly demanding as the number of node and layers grows. Many reduce either to solving a
+large sparse linear system or to identifying the dominant eigenvector of a supra-network operator.
+muxvizpy exposes exact and approximate computational paths within the same framework, allowing
+the numerical strategy to be selected according to network size, conditioning, and the desired balance
+between accuracy and computational cost (Luo et al., 2024; Saad, 2003).
+For Katz and eigenvector centralities, muxvizpy provides an exact sparse-LU solution and two
+approximate alternatives. Approximate alternatives involve the Neumann-series method, yielding a
+matrix-free fixed-point iteration that converges below the spectral limit and a ILU-preconditioned
+GMRES and BiCGSTAB series that offer a scalable compromise, accelerating convergence while
+avoiding the memory cost of a complete LU factorisation.
+PageRank and random-walk centralities are instead formulated as dominant-eigenvector problems
+for a stochastic transition operator, where the Perron-Frobenius theorem holds. Their stationary
+node–layer distribution can be obtained either with a sparse eigensolver or through power iteration.
+The contribution is therefore a unified computational framework that provides direct, matrix-free, and
+preconditioned iterative methods for the same multilayer centralities, extending their applicability
+to supra-adjacency matrices for which exact methods become limited by time or memory. Further
+details are provided in Additional File 1.
+Tensor decomposition
+muxvizpy implements the Canonical Polyadic decomposition by reimple-
+menting the Alternative Least Squares minimization algorithm with sparse operations (Kolda and
+Bader, 2009). The algorithm involves the Matricized tensor times Khatri-Rao product (MTTKRP)
+and is validated against the python package tensorly (Kossaifi et al., 2019) using pearson correlation
+or spearman correlation of the factors. The pseudocode and details are reported in Additional File
+1.
+3
+
+
+Benchmark setup
+Computational benchmarks compare muxvizpy and muxViz on multiplex networks generated using two
+standard random graph models: Erdős–Rényi (ER) and Barabási–Albert (BA). Detailed descriptions
+of network generation procedures and benchmark settings are provided in the Supplementary Material.
+Benchmark experiments were performed for all metrics implemented in both muxvizpy and
+muxViz. Network sizes ranged from 105 to 109 edges, covering a broad spectrum of multilayer network
+dimensions. Each experiment was repeated three times on identical network instances to account for
+runtime variability.
+For each run, wall-clock execution time and peak resident set size (RSS) memory were measured
+independently. Resource usage was collected through Slurm jobacct-gather utilities, while software-
+specific profiling tools were used to obtain fine-grained measurements: bench (Hester and Vaughan,
+2025) for muxViz(R) and tracemalloc for muxvizpy(Python).
+Results
+Computational benchmarks
+muxvizpy substantially extends the size of multiplex networks that can be analysed while preserving
+numerical agreement with muxViz. Although runtime does not increase strictly linearly with the
+number of edges, because it also depends on the convergence properties of the underlying spectral
+algorithms and on network topology, the observed scaling remains sufficiently favourable to extend
+the feasible network size by more than one order of magnitude. Accordingly, muxvizpy computed
+versatility measures on networks with up to approximately 108 −109 edges, whereas muxViz reached
+its time or memory limits near 107 edges, as summarised in Fig 1. Eigenvector, PageRank, hub and
+authority centrality, completed the largest networks within seconds using sparse iterative eigensolvers.
+Katz centrality was more sensitive to network topology: the exact LU solver remained competitive up
+to approximately 107 edges on ER networks but exceeded the memory limit beyond approximately
+106 edges on BA networks because of factorisation fill-in. In contrast, the ILU-preconditioned Krylov
+solvers continued to scale while retaining agreement with the exact solution. Across the shared
+versatility measures, muxvizpy achieved Pearson r = 1.0000, with median mean absolute relative
+errors between 1.3 × 10−4 and 8.0 × 10−4. Computational results for the remaining metric categories
+are reported in Additional File 1.
+Use case: Virus-Human interaction multilayer PPI network
+As a representative biological application, we highlight a recent study by Zambelli et al. (2025), in
+which the core functionalities of muxvizpy were used to analyse multilayer virus–human protein–
+protein interaction networks. In this framework, each layer represented the interaction network
+associated with a different virus, while human proteins constituted the common substrate connecting
+layers. The resulting multiplexes contained approximately 104 nodes and 105 edges, placing them
+beyond the practical limits of several analyses available in existing multilayer software. The workflow
+is summarised in 1. First, virus-host PPI networks were reconstructed from curated interaction
+datasets and grouped according to the oncogenic or non-oncogenic nature of the corresponding
+viruses. These networks were then combined into multilayer ensembles, allowing the investigation
+of structural properties emerging from the joint organisation of multiple virus-specific interaction
+patterns. Finally, multilayer analyses including versatility measures, largest viable component (LVC)
+estimation, community detection, and vertex percolation were applied to characterise the resilience
+and mesoscale organisation of the system.
+This application illustrates two practical advantages of muxvizpy. First, sparse data structures
+and iterative solvers enabled the computation of scalability-demanding metrics such as multilayer
+PageRank and other versatility measures on networks that could not be analysed efficiently with
+muxViz. Second, muxvizpy provided access to additional analyses, including percolation and tensor-
+based methods, that are not available in the original software. The resulting multilayer descriptors
+4
+
+
+A
+B
+C
+Virus-host PPI networks production
+C.1
+C.2
+Multiplexes composition
+C.3
+Analysis
+Figure 1:
+Computational cost comparison and usage application of muxvizpy.
+Panel A-B show the
+performances as a function of the number of edges N for Erdős–Rényi (ER) on the first column and Barabási–
+Albert (BA) on the second column for multiplex networks with L layers. Panel A displays versatility measures,
+while Panel B displays comparison between approximate and exact path to compute katz centrality. Colors
+refer to different metrics, while shape to the software. Each data point reflects the average of 3 replicates,
+with +- the standard deviation; markers for "timeout" and "out of memory" indicate instances where muxViz
+failed to complete the computation. Markers on the xaxis means that the run failed because of exceeding
+the costs of the other metric (so markers on time plots failed on oom and viceversa). Results were obtained
+on a Intel Xeon Platinum 8260 CPU @ 2.40/3.90GHz on an HPC cluster. (C) Workflow describing the
+biological use-case. C.1: Generation of protein-protein interaction (PPI) networks from curated datasets as
+proxies for human-virus interactions. C.2: Classification of viruses by oncogenic potential and generation of
+multiplex ensembles using varying proportions of oncogenic and non-oncogenic networks. C.3: Multilayer
+network analysis using muxvizpy functions (e.g., get_LVC(), vertex_percolation(), and get_modules())
+to extract metrics that provide a clear distinction between the two virus classes.
+were sufficient to distinguish oncogenic from non-oncogenic viruses and helped identify candidate
+host genes associated with oncogenicity signatures, demonstrating the utility of large-scale multilayer
+network analysis for biological discovery.
+Discussion
+We presented muxvizpy, a Python library for multilayer network analysis that combines the analytical
+framework ofmuxVizwith sparse tensor representations. By representing the multilayer network as
+a four-dimensional sparse tensor and unfolding it on demand into a CSR supra-adjacency matrix,
+muxvizpy preserves the dimensional structure of the network and allows memory-efficient computation
+across seven feature categories spanning versatility, mesoscale, topology, information theory, tensor
+decomposition, global descriptors, and percolation.
+Benchmark experiments on Erdős–Rényi and Barabási–Albert multiplex networks indicate numer-
+ical agreement with muxViz on shared metrics and show consistent reductions in wall-clock execution
+time and peak memory consumption across a range of network sizes. These results address limitations
+associated with dense network representations that have been previously reported for multilayer
+network software (Kjellström and others, 2023; Büth et al., 2025).
+The virus–human PPI case study (Zambelli et al., 2025) further demonstrates the applicability
+5
+
+
+of muxvizpy to biologically relevant multilayer networks comprising approximately 104 nodes and
+105 edges. In this setting, analyses based on PageRank versatility, percolation, and block-structure
+detection could be performed on networks for which equivalent analyses were either unavailable or
+computationally difficult to execute with muxViz because of memory requirements.
+Two limitations should be noted. First, exact spectral and decomposition routines remain bounded
+by the cost of sparse eigensolvers; the approximate iterative paths exposed by muxvizpy mitigate
+but do not eliminate this constraint. Second, validation against muxViz is necessarily restricted to
+metrics implemented in both packages and to network sizes that muxViz can handle.
+Future work will extend the decomposition module beyond CP to Tucker and block-term fac-
+torisations, add support to PyTorch Geometric, and develop bioinformatics-specific wrappers for
+AnnData and MuData so that multi-omics pipelines can invoke multilayer analyses without leaving
+the Scanpy ecosystem. By integrating natively with the Python scientific stack muxvizpy lowers the
+barrier to rigorous multilayer analysis of biological systems in which multiple interaction modalities
+must be modelled jointly.
+Funding
+MB is funded by the European Union - Next Generation EU, Mission 4, Component 2, CUP
+B93D21010860004; F.Z. is supported by a Decreto Ministeriale n. 118 del 02/03/2023, M4C1 I. 4.1
+from Piano Nazionale di Ripresa e Resilienza (PNRR).
+Acknowledgements
+This work was supported in part by the high-performance computing infrastructure developed under
+the project “CONVECS”, funded by the PR Veneto FESR 2021-2027 program, Priority 1 – Specific
+Objective 1.1 – Action 1.1.2.
+Conflict of interest
+None declared.
+6
+
+
+Additional File 1 — Supplementary Information
+muxvizpy: a Python library for the analysis of multilayer biological networks
+Matteo Baldan, Francesco Zambelli, Andrea Valsecchi, Giulia Cesaro,
+Giacomo Baruzzo, Manlio De Domenico, Barbara Di Camillo
+Contents
+S1 Notation and data structures
+7
+S2 Formal definition of the implemented metrics
+8
+S2.1 Versatility . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+8
+S2.2 Mesoscale . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+9
+S2.3 Topology . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+9
+S2.4 Information theory . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+10
+S2.5 Decomposition
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+10
+S2.6 Global descriptors
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+10
+S2.7 Percolation
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+11
+S3 Exact and approximate algorithms
+11
+S3.1 Katz centrality . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+11
+S3.2 PageRank and random-walk centrality . . . . . . . . . . . . . . . . . . . . . . . . . .
+11
+S3.3 Sparse CP/PARAFAC decomposition . . . . . . . . . . . . . . . . . . . . . . . . . . .
+12
+S4 Extended benchmark analysis
+13
+S4.1 Network generation and profiling protocol . . . . . . . . . . . . . . . . . . . . . . . .
+13
+S4.2 Versatility centralities
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+14
+S4.3 Topology . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+14
+S4.4 Global descriptors
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+14
+S4.5 Mesoscale . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+14
+S4.6 Information theory . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+14
+S4.7 Decomposition
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+15
+S4.8 Percolation
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+15
+S4.9 Exact versus approximate Katz solvers . . . . . . . . . . . . . . . . . . . . . . . . . .
+15
+S5 Numerical accuracy
+20
+S5.1 Accuracy of the information-theoretic metrics . . . . . . . . . . . . . . . . . . . . . .
+20
+S5.2 Accuracy of the approximate Katz solvers . . . . . . . . . . . . . . . . . . . . . . . .
+20
+S5.3 Validation of the CP decomposition . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+20
+S6 Function-name correspondence (Extended Table 1)
+24
+S1
+Notation and data structures
+We consider a multilayer network with N nodes and L layers. Following the tensorial formalism of
+De Domenico et al. (2013), the fundamental object is the adjacency tensor
+M ∈RN×N×L×L
+(S1)
+whose entry Mijαβ is the weight of the directed edge from node i in layer α to node j in layer β.
+Intra-layer edges have α = β and inter-layer couplings have α̸ = β. muxvizpy stores M as a PyTorch
+COO sparse tensor, preserving the node and layer dimensions explicitly.
+7
+
+
+For most structural metrics the tensor is flattened by a mode-1 unfolding into the supra-adjacency
+matrix
+A ∈RNL×NL,
+A(α−1)N+i, (β−1)N+j = Mijαβ,
+(S2)
+stored as a SciPy CSR sparse matrix. A is a block matrix whose L diagonal blocks A(α) ∈RN×N
+hold the intra-layer adjacencies and whose off-diagonal blocks hold the inter-layer couplings. For a
+node-aligned multiplex network with categorical couplings, the off-diagonal blocks reduce to ω IN for
+a scalar coupling weight ω ≥0, which muxvizpy stores implicitly.
+We write I for the identity, 1 for the all-ones vector, ρ(·) for the spectral radius, and λmax(A) for
+the leading eigenvalue of A. A per-node versatility score is obtained from a supra-vector x ∈RNL by
+aggregating its layer replicas De Domenico et al. (2015b) and max-normalising the result so that the
+largest score equals 1:
+vi =
+si
+max1≤j≤N sj
+,
+si =
+L
+X
+α=1
+x(α−1)N+i,
+i = 1, . . . , N.
+(S3)
+S2
+Formal definition of the implemented metrics
+We group the metrics by the seven categories of Table 1 in the main text and give each a self-contained
+definition. Unless we say otherwise, a definition acts on the supra-adjacency matrix A of Eq. (S2),
+and a per-node score is recovered from a node’s layer replicas through Eq. (S3).
+S2.1
+Versatility
+Definition S1 (Eigenvector versatility). Eigenvector centrality calls a node important when its
+neighbours are important. Carried over to the supra-adjacency matrix, the score is its leading
+(Perron) eigenvector π ∈RNL, solving A π = λmax(A) π with π ≥0. The Perron–Frobenius theorem
+guarantees that such an eigenvector exists and can be chosen non-negative whenever A is non-negative
+and irreducible.
+Definition S2 (Katz versatility). Katz versatility (Katz, 1953; De Domenico et al., 2015b) rewards
+a node for every walk that reaches it while discounting longer walks. It is also described as the
+generalisation of the eigenvector centrality for directed networks. In muxvizpy we use the form that
+includes the length-zero baseline term,
+x =
+∞
+X
+k=0
+αk A⊤k1 = (I −αA⊤)−11,
+α ∈(0, 1/λmax(A)).
+(S4)
+The series converges precisely when α ρ(A) < 1, so muxvizpy pushes α as close to that limit as is
+safe, α = (1 −ε)/λmax(A) for a small ε > 0. If a baseline-free Katz score is required, one subtracts 1
+from Eq. (S4); this constant shift does not affect node rankings in node-aligned multiplexes.
+Definition S3 (PageRank versatility). Picture a random surfer who at each step either follows
+an out-edge or, with probability 1 −α, teleports to a node drawn from a personalisation vector v.
+Writing T = D−1A for the row-stochastic transition matrix on non-dangling node-layers (D the
+diagonal out-strength matrix), with damping α ∈(0, 1) (default 0.85) and v uniform by default,
+the surfer moves under the Pagerank transition operator G = αT + (1 −α)1v⊤, also called Google
+operator. Node-layers with zero out-strength are treated as dangling: their mass is redistributed
+according to v, and the dangling indicator is denoted by d ∈{0, 1}NL in Section S3.2. PageRank
+versatility is the share of time it spends at each node-layer pair in the long run, i.e. the stationary
+distribution π with G⊤π = π, π ≥0, 1⊤π = 1.
+Definition S4 (Random-walk (classical) versatility). The same stationary idea without teleportation:
+π is the dominant left eigenvector of T at eigenvalue 1, T⊤π = π. Dropping the damping term
+also drops the guarantee of uniqueness — on a multiplex that is not strongly connected the unit
+eigenvalue can be degenerate — so we report this quantity for cost comparison only.
+8
+
+
+Definition S5 (Hub and authority versatility). Following the HITS scheme, a good hub points to
+good authorities and a good authority is pointed to by good hubs. The two scores are the leading
+eigenvectors of AA⊤and A⊤A respectively, the leading left and right singular vectors of A at its
+largest singular value σ1. Each score is aggregated to physical nodes by Eq. (S3).
+Definition S6 (Multi-degree and multi-strength). For a directed multiplex, degree is computed on
+the binary support of each intra-layer adjacency block, whereas strength keeps the edge weights.
+Unless stated otherwise, categorical inter-layer couplings are excluded from these per-layer degree
+and strength summaries. Thus, for layer α,
+kin,(α)
+i
+=
+X
+j
+1{A(α)
+ji̸
+= 0},
+kout,(α)
+i
+=
+X
+j
+1{A(α)
+ij̸
+= 0},
+(S5)
+and the corresponding strengths replace the indicators by the weights A(α)
+ji
+and A(α)
+ij . Aggregated in-,
+out- and total quantities are obtained by summing these layer-wise values over α, with ki = kin
+i +kout
+i
+.
+Definition S7 (Multilayer k-core). We compute the k-core on the unweighted support of the
+supra-adjacency graph: every non-zero intra- or inter-layer edge contributes one adjacency relation,
+irrespective of its weight. The algorithm repeatedly deletes node-layers of degree below k; what
+remains once the peeling stabilises is the k-core, the maximal sub-network in which every surviving
+node-layer keeps degree at least k. A node’s k-core centrality (coreness) is the largest k for which
+one of its layer replicas survives the peeling.
+S2.2
+Mesoscale
+Definition S8 (Multislice modularity). Given a partition {giα} of the node-layers, the multislice
+modularity of Mucha et al. (2010) scores how much more weight falls inside communities than a
+degree-preserving null model would put there,
+Q = 1
+2µ
+X
+ijαβ
+h A(α)
+ij −γα
+kiαkjα
+2mα
+
+δαβ + δij Cjαβ
+i
+δ
+ giα, gjβ
+
+,
+(S6)
+where mα is the edge count of layer α, kiα the degree of i in α, γα the resolution, Cjαβ the coupling,
+and 2µ = P
+jα(kjα + P
+β Cjαβ). Alongside modularity maximisation, muxvizpy exposes stochastic
+block model inference through graph-tool (Peixoto, 2023).
+Definition S9 (Inter-layer degree assortativity). For a pair of layers α, β, let k(α)
+i
+= kin,(α)
+i
++ kout,(α)
+i
+be the total intra-layer degree of node i in layer α (or the analogous strength if weighted assortativity
+is requested). The inter-layer degree assortativity is the Pearson correlation of the two node-aligned
+sequences, rαβ = cov(k(α), k(β))/(σk(α)σk(β)). A value near 1 means a node that is a hub in α tends
+to be a hub in β too, whereas a negative value signals the opposite, anti-correlated arrangement.
+Definition S10 (Local clustering coefficient). Cozzo et al. (2015) lift triadic closure to the multiplex
+by letting the three edges of a triangle live in different layers. Let qi be the number of connected
+multilayer triples centred on node i, counted over admissible layer assignments of the incident edges,
+and let τi be the subset of those triples that close into multilayer triangles. The local clustering
+coefficient is
+Ci =
+(
+τi/qi,
+qi > 0,
+0,
+qi = 0.
+(S7)
+S2.3
+Topology
+Definition S11 (Largest connected component, LCC). The size, as a count or a fraction of node-
+layers, of the largest weakly connected component of the supra-adjacency graph.
+9
+
+
+Definition S12 (Largest intersection / viable component, LIC / LVC). The intersection graph keeps
+an edge (i, j) only when it appears in every layer, and the LIC is its largest connected component.
+The largest viable component (LVC) is the maximal set of nodes that remain mutually reachable
+through within-layer paths in every layer after the iterative pruning of Baxter et al. (2012).
+Definition S13 (Path statistics and shortest-path similarity). We summarise the distribution of
+multilayer shortest-path lengths d(iα, jβ) measured on A through the mean path length, efficiency
+and diameter. For node-level summaries we collapse layer replicas by the shortest available replica-
+to-replica path,
+d(i, j) = min
+α,β d(iα, jβ),
+(S8)
+with unreachable pairs omitted from path-length averages and assigned zero efficiency. The shortest-
+path similarity matrix then uses the bounded monotone transform Sij = 1/(1 + d(i, j)), with Sij = 0
+when i and j are disconnected.
+S2.4
+Information theory
+Definition S14 (Von Neumann entropy). The construction borrows the density-matrix formalism of
+quantum mechanics. From the combinatorial Laplacian L = D −A one forms ρ = L/ tr(L), which is
+positive-semidefinite and has unit trace, so it carries a von Neumann entropy
+S(ρ) = −tr(ρ log ρ) = −
+X
+k
+λk log λk,
+(S9)
+taken over the eigenvalues {λk} of ρ (De Domenico and Biamonte, 2016). This is the Q→1 limit of
+the Rényi spectral entropy, and muxvizpy reproduces the muxViz value at Q = 1 exactly.
+Definition S15 (Jensen–Shannon divergence). Given two density matrices ρ, σ, the Jensen-Shannon
+divergence would be
+JSD(ρ, σ) = S
+  ρ+σ
+2
+
+−1
+2
+
+S(ρ) + S(σ)
+
+(S10)
+The Jensen-Shannon divergence is a symmetric, bounded measure of how differently the two are organ-
+ised. Applied to every layer pair it fills an L×L matrix, at a cost of O(L2) dense eigendecompositions
+of N × N density matrices.
+S2.5
+Decomposition
+Definition S16 (Canonical Polyadic (CP/PARAFAC) decomposition). The rank-R CP decompo-
+sition summarises the adjacency tensor as a sum of R rank-one terms, each with a single coherent
+pattern across nodes and layers:
+M ≈
+R
+X
+r=1
+λr ar ◦br ◦cr ◦dr,
+(S11)
+where ◦is the outer product, λr is the component weight, and ar, br ∈RN, cr, dr ∈RL describe the
+source-node, target-node, source-layer and target-layer factors, respectively (Kolda and Bader, 2009).
+The sparse ALS algorithm used to fit these factors is defined in Section S3.3.
+S2.6
+Global descriptors
+Definition S17 (Average global clustering coefficient). A single scalar summarising triadic closure
+across the whole system: the mean of the local clustering coefficient (Section S2.2) over all node-layers.
+Definition S18 (Global edge overlap and overlap matrices). Two layers overlap to the extent that
+they share edges, which we quantify by the Jaccard index of their edge sets, oαβ = |Eα∩Eβ|/|Eα∪Eβ|
+(Eα the edge set of layer α). Collected over all pairs these values form the L × L edge overlap matrix,
+and averaging its off-diagonal entries gives the average global overlap. The node overlap matrix is
+built the same way from node participation across layer pairs.
+10
+
+
+S2.7
+Percolation
+Definition S19 (Vertex percolation). Site percolation keeps each node independently with probability
+p and asks how much of the multiplex still holds together. The order parameter is the relative size
+P∞(p) of the largest viable component of the survivors; sweeping p downward traces a robustness
+curve whose sharp drop locates the percolation threshold pc. muxvizpy estimates P∞(p) by repeatedly
+extracting the LVC over ensembles of random node removals.
+S3
+Exact and approximate algorithms
+Underneath their different definitions, several versatility measures come down to one of two linear-
+algebra problems: solving a linear system of the form (I −αA⊤)x = 1, or finding the dominant
+eigenvalue and related eigenvector. muxvizpy offers an exact route, a sparse direct factorisation or
+a Krylov eigensolver with different possible preconditioning of the eigendecomposition. The bet is
+that past a certain size the exact route runs out of time or memory, while a well-chosen iterative
+scheme holds essentially the same accuracy for a fraction of the cost(Luo et al., 2024; Saad, 2003),
+but without guarantees of exact solution, only guarantees on asymptotic convergence to the solution.
+S3.1
+Katz centrality
+From Eq. (S4), Katz centrality solves
+(I −αA⊤)x = 1,
+α =
+1 −ε
+λmax(A).
+(S12)
+Exact path (direct LU).
+spsolve forms a sparse Lower-Upper (LU) factorisation of I −αA⊤
+with back-substitutes (Gauss factorisation), returning the exact solution. What makes it expensive is
+not the number of non-zeros in A but the fill-in that the factorisation introduces in L and U.
+Approximate paths.
+(i) Neumann series. Since α ρ(A) = 1 −ε < 1, the matrix B = I −αA⊤is
+nonsingular and its inverse admits the convergent Neumann expansion P
+k≥0(αA⊤)k. This gives a
+matrix-free fixed-point scheme, x ←1 + αA⊤x, requiring only sparse matrix–vector products and no
+factorisation. Its convergence, however, is geometric with rate controlled by α ρ(A) = 1 −ε; therefore,
+as α approaches the spectral limit 1/ρ(A), the iteration remains valid but becomes progressively
+slower. (ii) Krylov methods with Incomplete LU (ILU) preconditioning, which is a technique in
+numerical linear algebra used to accelerate the convergence of iterative solvers for large, sparse
+linear systems. It works by approximating the coefficient matrix A with a product of lower and
+upper triangular matrices, M ≈LU, where fill-in elements are dropped to maintain sparsity.ILU
+preconditioning. In the same near-critical regime, B = I −αA⊤becomes increasingly ill-conditioned,
+since eigenvalues of αA⊤close to one are mapped close to zero. Krylov solvers such as GMRES
+and BiCGSTAB Saad (1985); Van der Vorst (1992) address this system by building approximations
+from residual-generated subspaces, rather than by explicitly accumulating the Neumann powers.
+Their convergence is improved by an ILU preconditinoer M ≈B, which replaces the original system
+by the preconditioned one M−1Bx = M−11. When the ILU factors provide a sparse but effective
+approximation of B, the preconditioned operator has a more favourable spectrum and the residual
+typically decreases in far fewer iterations. This adds a one-time setup cost and extra memory for the
+incomplete factors, controlled by the fill level or drop tolerance, but substantially reduces the number
+of sparse matrix–vector products in the ill-conditioned regime. For this reason, ILU-preconditioned
+Krylov solvers are the preferred scalable option when α is chosen close to the spectral limit.
+S3.2
+PageRank and random-walk centrality
+Both scores are stationary distributions of a walk on the row-stochastic transition matrix T. Given
+the properties of such transition matrix, the Perron–Frobenius (Langville and Meyer, 2006) theorem
+11
+
+
+Algorithm S1 Katz centrality — exact and approximate paths
+Require: supra-adjacency A, attenuation gap ε, residual tolerance tol, maxiter, mode ∈
+{direct, neumann, gmres, bicgstab}
+1: λmax ←LeadingEigenvalue(A)
+▷ARPACK, k=1
+2: α ←(1 −ε)/λmax;
+B ←I −α A⊤
+3: if mode = direct then
+▷exact
+4:
+x ←SparseLUSolve(B, 1)
+5: else if mode = neumann then
+▷approximate, unconditional
+6:
+x ←1
+7:
+repeat
+8:
+x ←1 + α A⊤x
+9:
+until ∥Bx −1∥< tol or maxiter
+10: else
+▷approximate, Krylov + ILU
+11:
+P ←ILU(B);
+x ←Krylov(B, 1, P)
+▷GMRES or BiCGSTAB
+12: end if
+13: return per-node aggregation of x
+▷Eq. (S3)
+holds and guarantees that a non-negative irreducible stochastic matrix has a unique such distribution
+π, namely the dominant eigenvector of T⊤at λ0 = 1; the two metrics differ only in how they reach
+it. Therefore, solving an asymptotic series by power iteration of the dynamic phenomenon of random
+walkers or decomposing in the spectral properties of the transition matrix yields the same stationary
+distribution.
+Exact path (eigensolver).
+The classical random-walk centrality reads π straight off a sparse
+eigendecomposition (eigs with k = 1): internally this builds an Krylov factorisation and returns
+the dominant eigenpair, without ever iterating the walk explicitly. Again, we can precondition the
+eigensolver since the transition matrix has similar properties to the ones described above.
+Approximate path (power iteration).
+PageRank regularises the operator by teleportation,
+G = αT + (1 −α)1v⊤, which makes every entry strictly positive so that Perron–Frobenius applies
+even when the graph is reducible or carries dangling node-layers. The stationary vector is then the
+limit of the power iteration
+xk+1 = α T⊤xk +
+ α d⊤xk + 1 −α
+
+v,
+(S13)
+with d the dangling-node indicator and an ℓ1 renormalisation after each step. Convergence is
+geometric at ratio α: teleportation widens the spectral gap 1 −|λ1|, so even α = 0.85 already yields
+fast, robust convergence.
+S3.3
+Sparse CP/PARAFAC decomposition
+The rank-R CP decomposition of Section S2.5 factorises the four-way adjacency tensor M ∈
+RN×L×N×L into factor matrices A ∈RN×R, B ∈RL×R, C ∈RN×R, D ∈RL×R and weights λ ∈RR
+such that M ≈PR
+r=1 λr ar ◦br ◦cr ◦dr. Fitting all four factors at once is non-convex, but it
+has a redeeming structure that alternating least squares (ALS) exploits: with any three factors
+held fixed, the objective ∥M −ˆ
+M∥2
+F is merely quadratic in the fourth (Kolda and Bader, 2009).
+muxvizpy therefore cycles through the four modes, and each sub-step collapses to an ordinary linear
+least-squares solve.
+Mode-n update.
+Writing the four factor matrices as A(1) = A, A(2) = B, A(3) = C and A(4) = D,
+the least-squares-optimal update of the mode-n factor with the rest held fixed is
+A(n) ←M(n) Kn
+ Vn
+†,
+Vn = ∗
+m̸=n
+ A(m)⊤A(m)
+,
+(S14)
+12
+
+
+Algorithm S2 PageRank / random-walk centrality — exact and approximate paths
+Require: supra-adjacency A, damping α, personalisation v, mode
+1: T ←D−1A;
+d ←dangling-node mask
+2: if mode = exact then
+▷eigensolver
+3:
+π ←Eigs(T⊤, k=1)
+▷dominant eigenpair, λ0=1
+4: else
+▷approximate, power iteration
+5:
+x ←v
+6:
+repeat
+7:
+x ←α T⊤x + (α d⊤x + 1 −α) v;
+x ←x/∥x∥1
+8:
+until ∥xk+1 −xk∥1 < tol or maxiter
+9:
+π ←x
+10: end if
+11: return per-node aggregation of π
+where M(n) is the mode-n unfolding, Kn the Khatri–Rao product, also called Kronecker product, of
+the remaining factors in descending mode order, ∗the Hadamard product, (·)† the Moore–Penrose
+pseudo-inverse of the R×R Gram matrix Vn, and M(n)Kn is the matricised-tensor-times-Khatri–Rao
+product (MTTKRP). The dense Khatri–Rao factor Kn is never formed: because M is stored as
+a COO sparse tensor, the MTTKRP is evaluated directly from its non-zeros, so the per-iteration
+ost scales with nnz(M) R rather than with the tensor volume. After each solve we normalise
+the columns of A(n) and push their norms into λ, tracking convergence through the relative fit
+1 −∥M −ˆ
+M∥F /∥M∥F .
+Algorithm S3 Sparse CP/PARAFAC decomposition by alternating least squares
+Require: adjacency tensor M (COO sparse), rank R, tolerance tol, maxiter
+1: initialise factors {A(1), A(2), A(3), A(4)}
+▷random or higher-order SVD (HOSVD), columns
+ℓ2-normalised
+2: fit ←0
+3: repeat
+4:
+fitold ←fit
+5:
+for n ∈{1, 2, 3, 4} do
+▷one mode at a time
+6:
+Vn ←∗m̸=n
+ A(m)⊤A(m)
+▷Hadamard of R × R Gram matrices
+7:
+Gn ←SparseMTTKRP(M, {A(m)}m̸=n)
+▷M(n)Kn from non-zeros
+8:
+A(n) ←Gn V†
+n
+9:
+λ ←column norms of A(n);
+normalise columns of A(n)
+10:
+end for
+11:
+fit ←1 −∥M −ˆ
+M∥F /∥M∥F
+▷ˆ
+M = P
+r λr ar◦br◦cr◦dr
+12: until |fit −fitold| < tol or maxiter
+13: return weights λ and factors {A(1), A(2), A(3), A(4)}
+S4
+Extended benchmark analysis
+S4.1
+Network generation and profiling protocol
+Benchmarks compare muxvizpy and muxViz on synthetic multiplex networks whose L layers are
+independent realisations of two random-graph models: Erdős–Rényi (ER), with connection prob-
+ability p controlling a homogeneous Poisson degree distribution, and Barabási–Albert (BA), with
+attachment parameter m giving a scale-free, heavy-tailed degree distribution. Networks are node-
+aligned multiplexes with categorical inter-layer coupling. Edge lists are 0-indexed, directed CSV files
+(node.from, layer.from, node.to, layer.to, weight) shared byte-for-byte by both tools.
+13
+
+
+For each metric we sweep the number of nodes N and the number of layers L ∈{5, 7, 10},
+spanning roughly 104 to 2.5 × 108 edges. Each (software, metric, network, replicate) run is dispatched
+as an isolated SLURM job and repeated three times. Compute time (excluding network loading)
+and peak resident set size (RSS) are recorded independently: through tracemalloc and a dedicated
+profiler for muxvizpy, and through bench (Hester and Vaughan, 2025) and /proc/self/status for
+muxViz. Runs exceeding the job time or memory limits are retained as scalability ceilings. All results
+were obtained on Intel Xeon Platinum 8260 CPUs (2.40/3.90 GHz).
+In every cost figure, filled squares denote muxvizpy and open circles denote muxViz; one colour
+is used per metric. Horizontal dashed lines mark wall-clock thresholds (1 min to 12 h) and memory
+thresholds; the solid red line marks the per-job memory ceiling (OOM). Reference lines are shown only
+within each panel’s data range, so the vertical resolution adapts to the cost regime of each metric
+category.
+S4.2
+Versatility centralities
+Figure S1 reports the eight versatility measures. The spectral centralities (eigenvector, PageRank,
+hub, authority) are solved with sparse iterative eigensolvers and complete ER multiplexes up to
+∼2.5 × 108 edges in seconds, whereas muxViz exceeds time or memory limits already around 107
+edges. Katz is the most expensive versatility metric because of the resolvent solve (Section S4.9);
+in-degree, out-degree and the random walk (shown where available) follow the cheap-kernel and
+spectral regimes respectively.
+S4.3
+Topology
+Figure S2 shows the combinatorial topology metrics (multidegree, k-core, in/out-degree). These are
+inexpensive in both tools (sub-second across the tested range); muxvizpy extends the feasible range
+by roughly one order of magnitude in edges. The apparent memory disadvantage of muxvizpy at the
+smallest sizes is the fixed ∼0.4 GB Python/PyTorch import baseline, not worse scaling.
+S4.4
+Global descriptors
+Figure S3 contrasts the two global descriptors. Global clustering, which requires a sparse A3-type
+triangle count on the (NL) × (NL) supra-matrix, is the dominant cost and shows the widest gap:
+muxViz approaches its ∼45 GB memory ceiling already at ∼105 (BA) to ∼2 × 106 (ER) edges, while
+muxvizpy stays one-to-two orders of magnitude lower in memory. Global edge overlap is near-free.
+S4.5
+Mesoscale
+Figure S4 reports the local clustering coefficient, the mesoscale metric exercised in the benchmark.
+Like global clustering it is triangle-bound; muxvizpy completes ER multiplexes up to 4 × 106 edges
+before approaching the memory ceiling. Community detection and inter-layer assortativity are defined
+in Section S2.2 but are exercised in the biological use case of the main text rather than in this
+synthetic sweep, as they require a graph-tool graph and a per-layer dictionary output, respectively,
+that fall outside the uniform benchmark harness.
+S4.6
+Information theory
+Figure S5 reports von Neumann entropy and layer-pairwise Jensen–Shannon divergence. Their cost
+is set by dense eigendecompositions of N × N density matrices (O(L2) of them for JSD), making
+this a small/medium-size category in both tools. The advantage of muxvizpy here is concentrated
+in memory: on BA the pairwise JSD stays near 0.5 GB versus ∼15 GB for muxViz (∼30× less), at
+comparable wall-clock time.
+14
+
+
+S4.7
+Decomposition
+Figure S6 compares the cost of the sparse CP/PARAFAC decomposition (Section S3.3) with the
+dense reference implementation in tensorly (Kossaifi et al., 2019)—the same reference used for
+the factor validation of Section S5.3—both at fixed rank R = 10 and the same stopping criterion
+(tol = 10−6, at most 100 ALS sweeps). The two solve the identical optimisation problem but pay very
+different costs. muxvizpy evaluates the MTTKRP directly from the non-zeros, so each sweep costs
+nnz(M) R; its peak memory grows smoothly with the edge count—from ∼0.4 GB to ∼16 GB across
+the ER range—and it completes even the densest ∼2.7 × 107-edge multiplexes within the per-job
+budget. tensorly’s parafac, by contrast, must materialise the dense N × L × N × L tensor and its
+mode unfoldings, so its cost tracks the tensor volume N 2L2 regardless of sparsity: it is competitive
+only on the smallest networks and then runs into the time and memory limits at moderate sizes,
+well before muxvizpy shows any strain. Neither wall-clock curve is a pure function of size, since the
+number of sweeps to reach the tolerance is data-dependent. Each point is the median over replicates;
+this metric has no muxViz counterpart.
+S4.8
+Percolation
+Figure S7 reports the cost of vertex percolation (Section S2.7). Since the order parameter P∞(p) is
+estimated by repeated LVC extraction over random node-removal ensembles, the cost is set by the
+length of the p-sweep times the price of a single viable-component computation, making it the most
+expensive topology-side metric per network.
+100 ms
+1 s
+1 min
+30 min
+1 h
+4 h
+8 h
+Compute time [s]
+Erd˝os–R´enyi
+Barab´asi–Albert
+104
+105
+106
+107
+108
+109
+Number of edges
+1 GB
+4 GB
+8 GB
+16 GB
+32 GB
+OOM
+Peak memory [GB]
+104
+105
+106
+107
+108
+109
+Number of edges
+Eigenvector
+Katz
+PageRank
+Hub
+Authority
+Random walk
+Eigenvector
+Katz
+PageRank
+Hub
+Authority
+Random walk
+muxvizpy
+muxViz
+Figure S1: Cost of the versatility centralities on ER (left) and BA (right). Top: compute time; bottom:
+peak memory, versus number of edges (log–log). Filled squares: muxvizpy; open circles: muxViz.
+S4.9
+Exact versus approximate Katz solvers
+Figure S8 contrasts the four Katz solver paths of Algorithm S1. The choice of solver, not the
+algorithm, governs scalability, and the exact direct path degrades sharply on scale-free topologies.
+15
+
+
+100 ms
+1 s
+Compute time [s]
+Erd˝os–R´enyi
+Barab´asi–Albert
+104
+105
+106
+107
+108
+109
+Number of edges
+1 GB
+4 GB
+Peak memory [GB]
+104
+105
+106
+107
+108
+109
+Number of edges
+Multidegree
+K-core
+In-degree
+Out-degree
+Multidegree
+K-core
+In-degree
+Out-degree
+muxvizpy
+muxViz
+Figure S2: Cost of the topology metrics on ER (left) and BA (right). Note the sub-second time axis: these
+metrics never approach the 1-minute reference, so no wall-clock reference line falls within range.
+100 ms
+1 s
+1 min
+Compute time [s]
+Erd˝os–R´enyi
+Barab´asi–Albert
+104
+105
+106
+107
+108
+109
+Number of edges
+1 GB
+4 GB
+8 GB
+16 GB
+32 GB
+OOM
+Peak memory [GB]
+104
+105
+106
+107
+108
+109
+Number of edges
+Global clustering
+Global overlap
+Global clustering
+Global overlap
+muxvizpy
+muxViz
+Figure S3: Cost of the global descriptors on ER (left) and BA (right).
+16
+
+
+100 ms
+1 s
+1 min
+Compute time [s]
+Erd˝os–R´enyi
+Barab´asi–Albert
+104
+105
+106
+107
+108
+109
+Number of edges
+1 GB
+4 GB
+8 GB
+16 GB
+32 GB
+OOM
+Peak memory [GB]
+104
+105
+106
+107
+108
+109
+Number of edges
+Local clustering
+Local clustering
+muxvizpy
+muxViz
+Figure S4: Cost of the mesoscale local clustering coefficient on ER (left) and BA (right). muxvizpy-only
+(muxViz values were not retained for this metric).
+100 ms
+1 s
+1 min
+30 min
+1 h
+4 h
+8 h
+12 h
+Compute time [s]
+Erd˝os–R´enyi
+Barab´asi–Albert
+104
+105
+106
+107
+108
+109
+Number of edges
+1 GB
+4 GB
+8 GB
+16 GB
+32 GB
+64 GB
+OOM
+Peak memory [GB]
+104
+105
+106
+107
+108
+109
+Number of edges
+Von Neumann entropy
+Jensen–Shannon div.
+Von Neumann entropy
+Jensen–Shannon div.
+muxvizpy
+muxViz
+Figure S5: Cost of the information-theoretic metrics on ER (left) and BA (right).
+17
+
+
+100 ms
+1 s
+1 min
+30 min
+Compute time [s]
+Erd˝os–R´enyi
+Barab´asi–Albert
+104
+105
+106
+107
+108
+109
+Number of edges
+1 GB
+4 GB
+8 GB
+16 GB
+32 GB
+OOM
+Peak memory [GB]
+104
+105
+106
+107
+108
+109
+Number of edges
+muxvizpy (sparse)
+tensorly (dense)
+Figure S6: Cost of the CP/PARAFAC decomposition (rank R = 10) on ER (left) and BA (right): muxvizpy’s
+sparse ALS versus tensorly’s dense parafac. Top: compute time; bottom: peak memory, versus number of
+edges (log–log). muxvizpy’s cost tracks nnz(M), whereas tensorly densifies the N 2L2 tensor and reaches
+the time/memory ceilings at moderate sizes. Points are medians over replicates.
+100 ms
+1 s
+1 min
+Compute time [s]
+Erd˝os–R´enyi
+Barab´asi–Albert
+104
+105
+106
+107
+108
+109
+Number of edges
+1 GB
+4 GB
+8 GB
+Peak memory [GB]
+104
+105
+106
+107
+108
+109
+Number of edges
+Vertex percolation
+Vertex percolation
+muxvizpy
+muxViz
+Figure S7: Cost of vertex percolation on ER (left) and BA (right). Top: compute time; bottom: peak
+memory, versus number of edges (log–log). muxvizpy-only (no muxViz counterpart).
+18
+
+
+100 ms
+1 s
+1 min
+30 min
+1 h
+4 h
+Compute time [s]
+Erd˝os–R´enyi
+Barab´asi–Albert
+104
+105
+106
+107
+108
+109
+Number of edges
+1 GB
+4 GB
+8 GB
+16 GB
+32 GB
+Peak memory [GB]
+104
+105
+106
+107
+108
+109
+Number of edges
+Direct (LU) – exact
+Neumann series
+GMRES + ILU
+BiCGSTAB + ILU
+Figure S8: Exact (direct LU) versus approximate (Neumann, GMRES+ILU, BiCGSTAB+ILU) Katz solvers.
+On ER the direct solver is competitive up to ∼107 edges before Krylov solvers overtake it; on BA the direct
+solver suffers catastrophic hub-induced LU fill-in and runs out of memory beyond ∼106 edges, whereas the
+preconditioned Krylov and Neumann paths continue to scale.
+19
+
+
+S5
+Numerical accuracy
+muxViz is treated as ground truth; accuracy is therefore evaluated only for metrics computed by both
+tools and for network sizes muxViz can handle. For each shared metric and each benchmark network we
+pair per-node values (or the scalar, for global metrics) and report the Pearson correlation r, together
+with the mean absolute relative error (MARE). Table S1 summarises the results: all versatility
+centralities agree with muxViz to machine precision (r = 1.0000; MARE ∼10−4), multidegree is
+exact, the global clustering scalar agrees to ∼10−3, and the information-theoretic metrics agree to
+∼10−4 or better (BA only; Section S5.1). Figures S9 and S10 show the corresponding node- and
+network-level scatter at the largest shared networks.
+Table S1: Numerical agreement with muxViz across all benchmark networks. r is Pearson correlation of paired
+per-node values (n/a for the single-scalar global clustering and von Neumann entropy); MARE is the mean
+absolute relative error. Ranges are over the benchmark network sizes (n networks). †The information-theoretic
+metrics are compared on the BA multiplexes only, since muxViz fails on the ER instances.
+Category
+Metric
+n
+r (min)
+MARE (median / max)
+Versatility
+Eigenvector
+12
+1.0000
+3.9 × 10−4 / 5.8 × 10−3
+Versatility
+Katz
+12
+1.0000
+8.0 × 10−4 / 5.7 × 10−3
+Versatility
+PageRank
+12
+1.0000
+1.3 × 10−4 / 6.9 × 10−4
+Versatility
+Hub
+12
+1.0000
+3.2 × 10−4 / 5.8 × 10−3
+Versatility
+Authority
+12
+1.0000
+2.6 × 10−4 / 5.8 × 10−3
+Topology
+Multidegree
+12
+1.0000
+0 / 0 (exact)
+Global
+Global clustering
+12
+n/a
+1.0 × 10−3 / 7.4 × 10−3
+Info. theory
+Von Neumann entropy†
+4
+n/a
+2.7 × 10−6 / 6.7 × 10−6
+Info. theory
+Jensen–Shannon div.†
+4
+0.9999
+3.6 × 10−4 / 3.7 × 10−4
+S5.1
+Accuracy of the information-theoretic metrics
+Von Neumann entropy and Jensen–Shannon divergence are the two information-theoretic metrics
+computed by both tools (Table S2), so unlike the CP, percolation and component metrics they do
+admit a direct comparison against muxViz. Figure S11 reports this agreement on the BA multiplexes
+(muxViz fails on the ER instances): the Q = 1 von Neumann entropy reproduces the muxViz value to
+machine precision (MARE ∼10−6; Section S2.4) and the layer-pairwise Jensen–Shannon divergence
+agrees to ∼10−4 (r = 0.9999), consistent with Table S1.
+S5.2
+Accuracy of the approximate Katz solvers
+Taking the exact direct solver as reference, the preconditioned Krylov methods reproduce Katz
+centrality essentially exactly (GMRES: MARE median 2.0×10−4; BiCGSTAB: 3.4×10−4; r = 1.0000
+throughout). The Neumann series preserves the node ranking (r median 0.9999) but its value-level
+error grows on the largest, most ill-conditioned instances (MARE up to 0.13, r as low as 0.81) because
+a fixed iteration budget is insufficient for its slow, ε-limited convergence rate. Figure S12 shows
+this contrast. In practice the preconditioned Krylov path is therefore the recommended default: it
+matches the exact solver while scaling like the approximate ones.
+S5.3
+Validation of the CP decomposition
+The sparse CP/PARAFAC decomposition has no muxViz counterpart, so we validate it against the
+reference implementation in tensorly (Kossaifi et al., 2019). We assemble a synthetic four-way
+tensor M ∈RN×L×N×L (N = 80, L = 5) from R = 4 planted rank-one terms in the CP form of
+Eq. (S11), with factor columns normalised to unit Euclidean norm, so that the exact decomposition
+is essentially unique. Both muxvizpy’s sparse ALS and tensorly’s parafac are run at rank R. Write
+20
+
+
+the reference factor matrices as U(n) and the muxvizpy factors as ˆU(n) for the four modes n = 1, . . . , 4
+(source/target node and source/target layer), with u(n)
+r
+and ˆu(n)
+s
+their r-th and s-th columns.
+CP factors are identifiable only up to a common permutation of the R components and, within
+each component, a per-mode sign and scale whose product reproduces the weight λr; we normalise
+these ambiguities away before comparing. Scale is fixed by rescaling every factor column to unit
+norm, u(n)
+r
+←u(n)
+r /∥u(n)
+r ∥2. Permutation is resolved through the cross-mode congruence between a
+reference component r and a test component s,
+Φrs =
+4
+Y
+n=1
+ ⟨u(n)
+r , ˆu(n)
+s ⟩
+
+∥u(n)
+r ∥2 ∥ˆu(n)
+s ∥2
+,
+(S15)
+the product of the per-mode cosine similarities (the Tucker congruence coefficient for the CP model).
+The optimal matching π maximises the total congruence P
+r Φrπ(r) and is obtained as a linear-sum
+(Hungarian) BYJU’S assignment on the cost matrix 1 −Φrs. Sign is then fixed for each matched pair
+by choosing ε(n)
+r
+∈{±1}, with Q
+n ε(n)
+r
+= 1, so that every per-mode inner product ⟨u(n)
+r , ε(n)
+r
+ˆu(n)
+π(r)⟩is
+non-negative.
+Agreement is then quantified at the entry level. Stacking all aligned factor entries across the four
+modes and R components into paired samples {(xi, yi)}M
+i=1—xi from tensorly, yi from muxvizpy—we
+report their Pearson correlation
+r =
+P
+i(xi −¯x)(yi −¯y)
+pP
+i(xi −¯x)2 pP
+i(yi −¯y)2 ,
+(S16)
+together with the mean matched congruence ¯Φ = 1
+R
+P
+r Φrπ(r). The two factorisations coincide across
+all four modes (Figure S13).
+Remark S1 (Metrics without a muxViz accuracy reference). k-core, global edge overlap, local clustering,
+CP decomposition, vertex percolation, and the largest viable/intersection components are either
+absent from the standard muxViz API or return values not retained by the benchmark harness. They
+are validated differently: CP factors against tensorly (Section S5.3, Figure S13); the remaining
+metrics through unit tests on small networks with analytically known values, and, for LVC, percolation
+and community structure, through the biological use case of the main text.
+0.00
+0.25
+0.50
+0.75
+1.00
+muxViz
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+muxvizpy
+r = 1.0000
+MARE = 2.6e −03
+Eigenvector
+0.00
+0.25
+0.50
+0.75
+1.00
+muxViz
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+r = 1.0000
+MARE = 2.6e −03
+Katz
+0.25
+0.50
+0.75
+1.00
+muxViz
+0.2
+0.4
+0.6
+0.8
+1.0
+r = 1.0000
+MARE = 4.5e −04
+PageRank
+0.00
+0.25
+0.50
+0.75
+1.00
+muxViz
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+r = 1.0000
+MARE = 2.6e −03
+Hub
+0.00
+0.25
+0.50
+0.75
+1.00
+muxViz
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+r = 1.0000
+MARE = 2.6e −03
+Authority
+Figure S9: Node-level agreement between muxvizpy (y) and muxViz (x) for the versatility centralities at the
+largest shared network. The dashed line is the identity; the box reports Pearson r and MARE.
+21
+
+
+0
+500
+1000
+1500
+muxViz
+0
+200
+400
+600
+800
+1000
+1200
+1400
+muxvizpy
+r = 1.0000
+MARE = 0.0e + 00
+Multidegree
+0.02
+0.04
+0.06
+0.08
+muxViz
+0.02
+0.04
+0.06
+0.08
+r = 1.0000
+MARE = 1.6e −03
+Global clustering
+Figure S10: Agreement between muxvizpy (y) and muxViz (x) for the remaining paired metrics. Left:
+per-node multidegree at the largest shared network, which matches exactly (r = 1.0000, MARE 0). Right: the
+global clustering coefficient, one scalar per network, across all 12 benchmark networks (r = 1.0000, MARE
+∼10−3). The dashed line is the identity.
+6.6
+6.8
+7.0
+7.2
+muxViz
+6.6
+6.7
+6.8
+6.9
+7.0
+7.1
+7.2
+7.3
+muxvizpy
+r = 1.0000
+MARE = 3.2e −06
+Von Neumann entropy
+0.066 0.068 0.070 0.072 0.074 0.076
+muxViz
+0.066
+0.068
+0.070
+0.072
+0.074
+0.076
+r = 0.9999
+MARE = 3.6e −04
+Jensen--Shannon div.
+Figure S11: Numerical agreement between muxvizpy (y) and muxViz (x) for the information-theoretic
+metrics at the largest shared network. The dashed line is the identity; the box reports Pearson r and MARE.
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Direct (exact)
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Approximate
+r = 1.0000
+MARE = 1.3e −01
+Neumann series
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Direct (exact)
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+r = 1.0000
+MARE = 1.4e −03
+GMRES + ILU
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Direct (exact)
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+r = 1.0000
+MARE = 1.1e −03
+BiCGSTAB + ILU
+Figure S12: Agreement of the approximate Katz solvers (y) with the exact direct solver (x) at the largest
+shared network. GMRES and BiCGSTAB lie on the identity line; the Neumann series shows value-level
+deviation on this large, ill-conditioned instance despite preserving rank.
+22
+
+
+0.0
+0.2
+0.4
+0.6
+tensorly factor
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+muxvizpy factor
+r = 1.0000
+congr. = 1.0000
+A (src node)
+B (src layer)
+C (tgt node)
+D (tgt layer)
+Figure S13: CP factor agreement between muxvizpy’s sparse ALS (y) and tensorly’s parafac (x) on a
+planted rank-R tensor, after Hungarian component alignment and sign/scale normalisation. Each point is one
+entry of a recovered factor column, coloured by tensor mode; the dashed line is the identity.
+23
+
+
+S6
+Function-name correspondence (Extended Table 1)
+Table S2 gives the full mapping between muxvizpy functions and their muxViz equivalents, extending
+the abbreviated Table 1 of the main text. A dash denotes a metric with no direct muxViz counterpart
+in the standard API.
+Table S2: Correspondence between muxvizpy functions and muxViz equivalents. “Cost-only” marks a metric
+benchmarked for computational cost but not numerical agreement.
+muxvizpy
+muxViz
+Category
+compute_eigenvector_centrality
+GetMultiEigenvectorCentrality
+Versatility
+compute_katz_centrality
+GetMultiKatzCentrality
+Versatility
+compute_multipagerank_centrality
+GetMultiPageRankCentrality
+Versatility
+compute_multi_rw_centrality
+GetMultiRWCentrality (cost-only)
+Versatility
+compute_multi_hub_centrality
+GetMultiHubCentrality
+Versatility
+compute_multi_authority_centrality
+GetMultiAuthCentrality
+Versatility
+get_multi_Kcore_centrality
+—
+Topology
+compute_aggregated_multidegree
+GetMultiDegreeSum
+Topology
+compute_aggregated_indegree
+GetMultiInDegreeSum
+Topology
+compute_aggregated_outdegree
+GetMultiOutDegreeSum
+Topology
+get_modules
+GetMultiCommunity
+Mesoscale
+compute_local_clustering_coefficient
+GetLocalClustering
+Mesoscale
+get_LVC / get_LIC
+—
+Topology
+compute_average_global_clustering_coefficient
+GetAverageGlobalClustering
+Global
+compute_average_global_overlap
+—
+Global
+compute_vn_entropy
+GetRenyiEntropyFromAdjacencyMatrix
+Info. theory
+compute_js_divergence
+GetJensenShannonDivergence
+Info. theory
+cp_als (PARAFAC)
+—
+Decomposition
+vertex_percolation
+—
+Percolation
+24
+
+
+References
+A. Aleta, A. S. Teixeira, G. Ferraz de Arruda, A. Baronchelli, A. Barrat, J. Kertész, A. Díaz-
+Guilera, O. Artime, M. Starnini, G. Petri, et al. Multilayer network science: theory, methods, and
+applications. Journal of Complex Networks, 14(2):cnag007, 2026.
+G. Baxter, S. Dorogovtsev, A. Goltsev, and J. Mendes. Avalanche collapse of interdependent networks.
+Physical review letters, 109(24):248701, 2012.
+C. M. Büth, K. Acharya, and M. Zanin. infomeasure: A comprehensive Python package for information
+theory measures and estimators. arXiv preprint arXiv:2505.14696, 2025.
+BYJU’S. Hungarian method. URL https://byjus.com/maths/hungarian-method/.
+E. Cozzo, M. Kivelä, M. D. Domenico, A. Solé-Ribalta, A. Arenas, S. Gómez, M. A. Porter, and
+Y. Moreno. Structure of triadic relations in multiplex networks. New Journal of Physics, 17(7):
+073029, 2015.
+M. De Domenico. More is different in real-world multilayer networks. Nature Physics, 19:1247–1262,
+2023. doi: 10.1038/s41567-023-02132-1.
+M. De Domenico and J. Biamonte. Spectral entropies as information-theoretic tools for complex
+network comparison. Physical Review X, 6(4):041062, 2016.
+M. De Domenico, A. Solé-Ribalta, E. Cozzo, M. Kivelä, Y. Moreno, M. A. Porter, S. Gómez, and
+A. Arenas. Mathematical formulation of multilayer networks. Physical Review X, 3(4):041022,
+2013.
+M. De Domenico, M. A. Porter, and A. Arenas. MuxViz: a tool for multilayer analysis and visualization
+of networks. Journal of Complex Networks, 3(2):159–176, 2015a. doi: 10.1093/comnet/cnu038.
+M. De Domenico, A. Solé-Ribalta, E. Omodei, S. Gómez, and A. Arenas. Ranking in interconnected
+multilayer networks reveals versatile nodes. Nature Communications, 6:6868, 2015b.
+J. Hester and D. Vaughan. bench: High Precision Timing of R Expressions, 2025. URL https:
+//bench.r-lib.org/. R package version 1.1.4.
+L. Katz. A new status index derived from sociometric analysis. Psychometrika, 18(1):39–43, 1953.
+M. Kivelä, A. Arenas, M. Barthelemy, J. P. Gleeson, Y. Moreno, and M. A. Porter. Multilayer
+networks. Journal of Complex Networks, 2(3):203–271, 2014. doi: 10.1093/comnet/cnu016.
+H. Kjellström and others. A comparative analysis of multilayer network software, 2023. Upp-
+sala University, student thesis. Available at: https://uu.diva-portal.org/smash/get/diva2:
+1792544/FULLTEXT01.pdf.
+T. G. Kolda and B. W. Bader. Tensor decompositions and applications. SIAM review, 51(3):455–500,
+2009.
+J. Kossaifi, Y. Panagakis, A. Anandkumar, and M. Pantic. Tensorly: Tensor learning in python.
+Journal of Machine Learning Research, 20(26):1–6, 2019.
+A. N. Langville and C. D. Meyer. Google’s PageRank and Beyond: The Science of Search Engine
+Rankings. Princeton University Press, 2006.
+J. Luo, J. Wang, H. Wang, H. Dong, Z. Geng, H. Chen, and Y. Kuang.
+Neural krylov it-
+eration for accelerating linear system solving.
+In A. Globerson, L. Mackey, D. Belgrave,
+A. Fan, U. Paquet, J. Tomczak, and C. Zhang, editors, Advances in Neural Information Pro-
+cessing Systems, volume 37, pages 128636–128667. Curran Associates, Inc., 2024.
+doi: 10.
+52202/079017-4086. URL https://proceedings.neurips.cc/paper_files/paper/2024/file/
+e88870ec82f2469b0ddf32c817920c68-Paper-Conference.pdf.
+25
+
+
+P. J. Mucha, T. Richardson, K. Macon, M. A. Porter, and J.-P. Onnela. Community structure in
+time-dependent, multiscale, and multiplex networks. Science, 328(5980):876–878, 2010.
+T. P. Peixoto. Descriptive vs. inferential community detection in networks: Pitfalls, myths and
+half-truths. Cambridge University Press, 2023.
+Y. Saad. A generalized minimal residual algorithm for solving nonsymmetric linear systems. SIAM
+J. Sci. Stat. Comput, 7:417–424, 1985.
+Y. Saad. Iterative methods for sparse linear systems. 2003.
+H. A. Van der Vorst. Bi-cgstab: A fast and smoothly converging variant of bi-cg for the solution
+of nonsymmetric linear systems. SIAM Journal on scientific and Statistical Computing, 13(2):
+631–644, 1992.
+F. Zambelli, V. Pancaldi, and M. De Domenico. Unraveling the network signatures of oncogenicity
+in virus–human protein–protein interactions. Entropy, 27(12):1248, 2025.
+26
