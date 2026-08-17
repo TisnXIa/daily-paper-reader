@@ -1,0 +1,3447 @@
+Title: Exponentially Consistent Low Complexity Tests for Statistical Sequence Matching
+
+URL Source: https://arxiv.org/pdf/2608.10455v1
+
+Published Time: Wed, 12 Aug 2026 00:42:05 GMT
+
+Number of Pages: 28
+
+Markdown Content:
+> 1
+
+# Exponentially Consistent Low Complexity Tests for Statistical Sequence Matching 
+
+Lin Zhou 
+
+Abstract 
+
+Towards practical applications of statistical sequence matching, we propose low complexity tests that are exponentially consistent and bound the exponential decay rates for error probabilities of our proposed tests. In statistical sequence matching, one is given two databases of multiple sequences, where in each database, each sequence is generated i.i.d. from a distinct distribution. A pair of sequences, one from each database, is said matched if they are generated from the same distribution. The number of matched pairs of sequences, a.k.a, the number of matches, can be either zero or positive. We consider both cases of known and unknown number of matches. When the number of matches is known and positive, the task is to identify all matched pairs of sequences. To construct fixed-length tests, we calculate the scoring function values for all pairs of sequences across the two databases and identify the matched pairs as those having small enough pairwise scoring function values. We show that our proposed test is exponentially consistent, which strikes a better tradeoff between complexity and performance than existing fixed-length tests that use exhaustive search. To construct sequential tests, we need an additional positive threshold to determine the stopping time, and we show that our sequential test achieves strictly better performance than our fixed-length test. Subsequently, we generalize our results to the case with unknown number of matches. In this case, one needs to simultaneously estimate the number of matches and identify all matched pairs if the number of matches is positive. For both cases of known and unknown number of matches, we propose exponentially consistent low-complexity fixed-length and sequential tests for discrete and continuous observed sequences, characterize the exponential tradeoff among three error probabilities, and show that our proposed sequential test achieves better performance than our proposed fixed-length test. 
+
+Index Terms 
+
+Classification, Error exponent, Large deviations, Jensen-Shannon divergence, Maximum mean discrepancy 
+
+I. I NTRODUCTION 
+
+Motivated by database de-anonymization, statistical sequence matching (SSM) was pioneered by Unnikrishnan [1]. In this problem, one is given two databases, where each database consists of multiple sequences that are generated from distinct distributions. Each sequence can be either discrete, generated i.i.d. from a probability mass function (pmf), or continuous, generated i.i.d. from a probability density function (pdf). The generating distribution of each sequence in each database is assumed unknown. A pair of sequences, one from each database, is said matched if they are generated from the same distribution. The number of matched pairs of sequences, a.k.a. the number of matches, can be zero or positive. The task of SSM is to determine whether there are matched pairs of sequences and identify all matched pairs when the number of matches is positive. The number of matches can be either known [1] or unknown [2]. When the number of matches is known, the performance criterion is the mismatch probability, which quantifies the probability that the test fails to identify the set of matched pairs of sequences. When the number of matches is unknown, there are two additional performance criteria: the false reject and the false alarm probabilities. Specifically, the false reject probability quantities the probability that the test incorrectly claims that there are no matched pairs of sequences when there exists matched pairs, while the false alarm probability quantifies the probability that the test incorrectly claims there are matched pairs of sequences when there is no. The test can be either fixed-length [1] or sequential [3]. A fixed-length test [4] corresponds to offline decision, where the length of each sequence is fixed, while a sequential test [5], [6] corresponds to online decision, where the lengths of sequences are random, which are determined by the test designer to make reliable decisions. The sequential test usually yields superior performance [3], [5], [6]. When the number of matches is known and the observed sequences are discrete, Unnikrishnan [1, Section IV] proposed a fixed-length test using empirical distributions of all sequences, derived the exponential decay rates of the mismatch probability and proved optimality of the test in the generalized Neyman-Pearson sense when the test is allowed to output an additional reject decision, indicating that a reliable decision cannot be made. Zhou et al. [2] generalized the results in [1, Section IV] to the case with both known and unknown number of matches, studied the non-asymptotic performance of optimal tests in the generalized Neyman-Pearson sense and characterized the ignored false reject probability. When the reject decision is not allowed with known number of matches, the results in [2] have been generalized to sequential tests [3, Section III], where it was shown that sequential tests achieve better performance. Furthermore, the benefit of sequentiality with unknown number of matches was also revealed [3, Section IV]. When the observed sequences are continuous, using the maximum mean discrepancy 
+
+L. Zhou is the School of Automation and Intelligent Manufacturing, Southern University of Science and Technology (Email: zhoul9@sustech.edu.cn). arXiv:2608.10455v1 [cs.IT] 11 Aug 2026 2
+
+(MMD) metric [7], regardless whether the number of matches is known or unknown, Zhou et al. [8] proposed fixed-length and sequential tests and derived the exponential decay rates of error probabilities, generalizing the results in [2], [3] to continuous sequences. The above results have comprehensively characterized the performance of tests for SSM, with optimality guarantees in certain cases. However, in all above information theoretic studies, the crux is to ensure good performance while the computational complexity is not considered, in the spirit of Shannon [9], [10]. In particular, to run the test in [1]–[3], [8], the computational complexity scales exponentially with respect to the number of matches. When there are 100 sequences in the first database, 
+
+50 sequences in the second database and 10 matches between the two databases, one needs to check roughly 6.4526 ×
+
+10 29 possibilities to identify the set of matched pairs of sequences even when the number of matches is known. Such high computational complexity is unaffordable, rendering the above theoretically guaranteed tests impractical. To address the above problem, in this paper, we propose low complexity tests, characterize the performance of our tests and show that our tests strike a good balance between performance and computational complexity. We consider cases where the number of matches is known and unknown, and study the performance of both fixed-length and sequential tests. Specifically, we propose four tests for both discrete and continuous observed sequences. For discrete sequences, we propose a scoring function that uses empirical distributions of observed sequences while for continuous sequences, we propose another scoring function that uses observed sequences in MMD estimators. Our main contributions are summarized below. 
+
+A. Main Contributions 
+
+We first consider the case where the number of matches is known. In this case, the task is to identify all matched pairs of sequences. When the first database has M1 sequences, the second database has M2 sequences, and there are K matches, the total number of possible sets of matched sequences is TK := (M1
+
+> K
+
+)( M2
+
+> K
+
+)K!, which increases exponentially with respect to the number of matches K. The tests in [1]–[3], [8] use exhaustive search over all possibilities and thus suffer from intractable computational complexity. To address this problem, we propose a fixed-length test that has polynomial complexity with respect to the number of sequences (M1, M 2) of two databases, regardless of the number of matches K. The key idea is to use a scoring function that quantifies the closeness of generating distributions of two sequences. Asymptotically, if two sequences are matched, the scoring function value vanishes; otherwise, the value is non-vanishing. Using this idea, we calculate the values of all M1M2 pairwise scoring functions and identify the matched pairs as those having K smallest scoring function values. Our test is shown to be exponentially consistent and we lower bound the exponential decay rate of the mismatch probability, a.k.a., the mismatch exponent. Although the exponent is smaller than the test in [2], [8], our test enjoys low-complexity, enabling practical applications and achieving a good tradeoff between detecting performance and running times. We also generalize our results to sequential tests and reveal the benefit of sequentiality. We next consider the case where the number of matches is unknown. In this case, one needs to estimate the number of matches and identify all matched pairs of sequences if the estimated number of matches is positive. Each test should trade off three error probabilities: mismatch, false reject and false alarm. Since the number of matches is unknown, the total number of possibilities increases to T := ∑  
+
+> K∈[1 ,min {M1,M 2}]
+
+TK + 1 . To address the forbidden high computational complexity of the tests in [1]–[3], [8], we first calculate the values of all M1M2 pairwise scoring functions. Since the number of matches is unknown, we introduce a positive threshold λ to determine the null case with no match and to identify the matched pairs of sequences. Specifically, we output the set of matched pairs as all pairs of sequences that have pairwise scoring function no greater than λ. If the set is empty, then the null hypothesis is claimed. Under mild conditions on the tuple of unknown generating distributions, we show that our fixed-length test ensures exponentially small probabilities of mismatch, false reject and false alarm. Furthermore, we generalize the above results to sequential tests, show that our sequential tests have bounded expected stopping time under the same mild conditions for our fixed-length tests to have positive exponents and reveal the benefit of sequentiality. For both fixed-length and sequential tests, we reveal the penalty on the detection performance of not knowing the number of matches. 
+
+B. Related Studies 
+
+The cornerstone of our test design and performance analysis is binary classification, dating back to Gutman [11]. In this problem, one is giving a testing sequence and two training sequences that are generated i.i.d. from two distinct distributions. The task of binary classification is to infer the generating distribution of the testing sequence. Gutman [11, Theorem 1] proposed a non-parametric test that checks the similarity between the generating distributions of the testing sequence and the first training sequence. If the similarity level is high, the testing sequence is believed to be generated from the same distribution as the first training sequence; otherwise, the other case is believed to be true. Such a test is shown to be asymptotically optimal in the generalized Neyman-Pearson sense. Subsequently, Zhou, Tan and Motani [12] proved that such a test is optimal in the second-order asymptotic regime that approximates the performance of optimal tests with finite sample sizes. The above results for fixed-length tests have also been generalized to sequential tests. The sequential case was pioneered by Haghifam, Khisti and Tan [13], who proposed a semi-sequential test and demonstrated the benefit of sequentiality by showing that the Bayesian exponent of their sequential test is larger than that of Gutman’s fixed-length test. Semi-sequential refers to the case 3
+
+where the testing sequence arrives in a streaming manner while the training sequences are available in a fixed-length manner. Subsequently, for the full sequential setting where the testing and both training sequences arrive sequentially, Hsu, Li and Wang [14] proposed non-parametric tests and confirmed the benefit of sequentiality. Recently, Li and Wang [15] refined the results in [13], [14] by proposing a unified test for all settings and comprehensively revealing the benefit of sequentiality. The above results, especially [12], [14], inspire the test design and performance analyses in this paper for discrete observed sequences. For continuous observed sequences, our analysis uses the MMD metric in [7] and is inspired by [16]. 
+
+C. Organization for Rest of the Paper 
+
+The rest of the paper is organized as follows. In Section II, we formulate the problem by specifying the system model and performance metrics. The main results are presented in Sections III and IV for known and unknown number of matches, respectively. Subsequently, the proofs are given in Sections V and VI for known and unknown number of matches, respectively. Finally, Section VII summarizes the paper and discusses future directions. II. P ROBLEM FORMULATION 
+
+Notation 
+
+Random variables and their realizations are in upper case (e.g., X) and lower case (e.g., x), respectively. All sets are denoted in calligraphic font (e.g., X ). We use R, R+, and N to denote the set of real numbers, non-negative real numbers, and natural numbers, respectively. Given any positive integer a ∈ N, we use [a] to denote the collection of natural numbers between 
+
+1 and a, use Na to denote the collection of natural numbers that are greater than or equal to a and use a! to denote the factorial ∏ 
+
+> i∈[a]
+
+i. We use superscripts to denote the length of vectors, e.g., Xn := ( X1, . . . , X n). All logarithms are base e.The set of all distributions defined on the alphabet X is denoted as P(X ). Notation concerning the types follow [17], [18]. Specifically, given a finite set X and a vector xn = ( x1, x 2, . . . , x n) ∈ X n, the type or empirical distribution is denoted as 
+
+ˆTxn (a) = 1
+
+> n
+
+∑ni=1 1{xi = a}, a ∈ X . The set of types formed with length-n sequences on the alphabet X is denoted as 
+
+Pn(X ). Given a type P ∈ P n(X ), the set of all sequences of length n with type P , the type class, is denoted as T nP . Given any real number μ ∈ R and any positive real number σ ∈ R+, we use N (μ, σ 2) to denote the Gaussian distribution with mean μ and variance σ2 and use Exp( σ) to denote the exponential distribution with parameter σ. Given any two real numbers 
+
+(a, b ) ∈ R2 such that a < b , we use U( a, b ) to denote the uniform distribution in the set of [a, b ] and use U( b) to denote U(0 , b )
+
+if b > 0. Finally, given any number a ∈ (0 , 1) , we use Bern( a) to denote the Bernoulli distribution with the probability a of having one and probability of 1 − a of having zero. 
+
+A. Case of Known Number of Matches 1) System Model: Fix three integers (M1, M 2, K ) ∈ N3 such that M1 ≥ M2 ≥ K, two positive real numbers (α, β ) ∈ R+
+
+and an alphabet X . Consider any two tuples of distinct distributions P M1 := ( P1, . . . , P M1 ) ∈ (P(X )) M1 and QM2 := (Q1, . . . , Q M2 ) ∈ (P(X )) M2 such that for any (i, j ) ∈ [M1], if i 6 = j, Pi 6 = Pj and for any (i, j ) ∈ [M2] such that i 6 = j,
+
+Qj 6 = Qj . When X is finite, e.g., binary, each distribution is a probability mass function (pmf) while when X is continuous, e.g., the real set, each distribution is a probability density function (pdf). The assumption of distinct generating distribution for each sequence in a database is consistent with existing studies [1]–[3], [8]. Fix an integer N ∈ N. Define two sequences ξN := ⌈αN ⌉ and χN := ⌈βN ⌉. Consider the first database XξN := 
+
+{XξN 
+
+> 1
+
+, . . . , X ξN 
+
+> M1
+
+} that consists of M1 sequences, where for each i ∈ [M1], XξN 
+
+> i
+
+= ( Xi, 1, . . . , X i,ξ N ) is generated i.i.d. from distribution Pi. Analogously, the second database consists of M2 sequences, YχN := {Y χN 
+
+> 1
+
+, . . . , Y χN 
+
+> M2
+
+}, where for each 
+
+j ∈ [M2], Y χN 
+
+> j
+
+= ( Yj, 1, . . . , Y j,χ N ) is generated i.i.d. from distribution Qi. For any (i, j ) ∈ [M1] × [M2], if XξN 
+
+> i
+
+and Y χN
+
+> j
+
+are generated from the same distribution, i.e., Pi = Qj , then the pair of sequences (XξN 
+
+> i
+
+, Y χN 
+
+> j
+
+) is said matched. The task of sequence matching is to identify all matched pairs of sequences between the two databases when the generating distributions 
+
+(P M1 , Q M2 ) are unknown .Let us first consider the case where the number of matches K ∈ N is known. In this case, there are in total TK = (M1
+
+> K
+
+)( M2
+
+> K
+
+)K!
+
+possibilities for all K pairs of matched sequences between the two databases. One such possibility specifies a K-match. For ease of notation, given each l ∈ [TK ], let Al ∈ ([ M1] × [M2]) K collect the indices of matched pairs for one possible K-match, i.e., for each (i, j ) ∈ A l, the i-th sequence of the first database is mapped to the j-th sequence in the second database. Let 
+
+MK collect all TK possibilities, i.e., MK = {A 1, . . . , ATK }K . To illustrate the above definitions, we provide two examples below.  
+
+> •
+
+Set M1 = 3 , M2 = 2 and K = 1 . In this case, TK = (31
+
+)( 21
+
+)1! = 6 and MK is given by 
+
+A1 = {(1 , 1) } A2 = {(2 , 1) } A3 = {(3 , 1) }A4 = {(1 , 2) } A5 = {(2 , 2) } A6 = {(3 , 2) }. (1) When l = 2 , Al = {(2 , 1) }, which means that the second sequence of the first database is matched to the first sequence of the second database. 4 
+
+> •
+
+Set M1 = 3 , M2 = 3 and K = 3 . In this case, TK = (33
+
+)( 33
+
+)3! = 6 and MK is given as follows: 
+
+A1 = {(1 , 1) , (2 , 2) , (3 , 3) } A2 = {(1 , 1) , (2 , 3) , (3 , 2) }A3 = {(1 , 2) , (2 , 1) , (3 , 3) } A4 = {(1 , 2) , (2 , 3) , (3 , 1) }A5 = {(1 , 3) , (2 , 1) , (3 , 2) } A6 = {(1 , 3) , (2 , 2) , (3 , 1) }.
+
+(2) When l = 3 , Al = {(1 , 2) , (2 , 1) , (3 , 3) }, which means that the first sequence of the first database is matched to the second sequence of the second database, the second sequence of the first database is matched to the first sequence of the second database and the third sequence of the first database is matched to the third sequence of the second database. 
+
+2) Performance Metric: We consider two types of tests: fixed-length and sequential tests. In a fixed-length test, the sample size parameter N is fixed while in a sequential test, the sample size parameter is a random number that depends on the filtration 
+
+{(Xξn , Yχn )}n∈N. To unify the notation, a test Φ = ( τ, φ ) consists of a potentially random sample size parameter, a.k.a., the stopping time, τ and a decision φ : X M1 ξτ × X M2 χτ → M K . When τ equals a constant, the test is a fixed-length test [2]; when τ is a random number, the test is a sequential test [3]. For both tests, when the number of matches is known, the performance criterion is the mismatch probability that quantifies the probability that the test identifies the matched pairs incorrectly. Fix any A ∈ M K and assume that the indices of matched pairs of sequences are given by A. Define the following set of distributions: 
+
+PA := {( ˜P M1 , ˜QM2 ) ∈ P (X )M1 +M2 : ∀ (i, j ) ∈ A , ˜Pi = ˜Qj and ∀ (¯ i, ¯j) /∈ A , ˜P¯i 6 = ˜Q¯j
+
+}. (3) The set PA collects all possible tuples of generating distributions when the indices of matched pairs of sequences are given by the set A ∈ M K . This way, under any tuple of generating distributions (P M1 , Q M2 ) ∈ P A, the mismatch probability is defined as 
+
+θA(Φ |P M1 , Q M2 ) := PA
+
+{φ(Xξτ , Yχτ ) 6 = A}, (4) where PA denotes the joint generating distribution of all sequences. Furthermore, since the stopping time can be stochastic, one would like to constraint its expected value in the worst case. A test is said to satisfy the expected stopping time universality constraint [14] if there exists an integer N ∈ N such that the worst case expected stopping time is no greater than N , i.e., 
+
+max 
+
+> A∈M K
+
+sup    
+
+> (PM1,Q M2)∈P A
+
+EPA [τ ] ≤ N. (5) Note that a fixed-length test naturally satisfies this condition by setting τ = N .In this paper, we propose low-complexity exponentially consistent fixed-length and sequential tests and characterize the exponential decay rates of the mismatch probabilities of both tests. 
+
+B. Case of Unknown Number of Matches 
+
+When the number of matches is unknown, it could range from zero to min {M1, M 2} = M2. Thus, the task is more complicated: one needs to estimate the number of matches and identifies all pairs of matched sequences if the estimated number is positive. Specifically, the number of possible outcomes of a test increases from TK to T = ∑ ˆK∈[M2] T ˆK + 1 . Recall the definition of MK above Eq. (1). Let M := ⋃ ˆK∈[M2] M ˆK . In this setting, one needs to design a test Φu = ( τu, φ u) with potentially stochastic stopping time τu and a corresponding test φu, with input of the two databases and the output being either a set in M or the empty set ∅, the latter of which indicates that there is no matched pair of sequences. Correspondingly, there are three error probabilities: mismatch probability, false reject probability and false alarm probability. The mismatch and false reject probabilities are defined when the number of matches is positive while the false alarm probability is defined when the number of matches is zero. Fix any set A ∈ M that collects the indices of matched sequences. Recall the definition of PA in (3). For any (P M1 , Q M2 ) ∈ P A, the mismatch and false reject probabilities are defined as follows: 
+
+¯θA(Φ u|P M1 , Q M2 ) := PA
+
+{φu(Xξτ , Yχτ ) /∈ {A , ∅} }, (6) 
+
+ζA(Φ u|P M1 , Q M2 ) := PA
+
+{φu(Xξτ , Yχτ ) = ∅}. (7) Note that the mismatch probability ¯θA(Φ u|P M1 , Q M2 ) quantifies the probability that the test identifies a wrong set of matched pairs of sequences while the false reject probability ζA(Φ u|P M1 , Q M2 ) quantifies the probability that the test incorrectly claims that there is no matched pairs of sequences. The difference in the definitions of the mismatch probability in (4) and (6) results from the setting of known and unknown number of matches. When the number of matches is unknown, we need to remove the case of no match from the mismatch event, which corresponds to the false reject event. Analogously to (3), define the following set of distributions: 
+
+P∅ := {( ˜P M1 , ˜QM2 ) ∈ P (X )M1 +M2 : ∀ (i, j ) ∈ [M1] × [M2], ˜Pi 6 = ˜Qj
+
+}. (8) 5
+
+Given any (P M1 , Q M2 ) ∈ P ∅, the false alarm probability is defined as 
+
+η(Φ u|P M1 , Q M2 ) := P∅
+
+{
+
+φu(Xξτ , Yχτ ) 6 = ∅
+
+}
+
+, (9) where P∅ denotes the joint generating distribution of all sequences. Since the stopping time can be stochastic, we would like its expected value to be constrained as in (5). Specifically, a test is said to satisfy the expected stopping time universality constraint if there exists an integer N ∈ N such that 
+
+max  
+
+> A∈M
+
+sup    
+
+> (PM1,Q M2)∈P A
+
+EPA [τu] ≤ N, (10) 
+
+sup    
+
+> (PM1,Q M2)∈P ∅
+
+EP∅ [τu] ≤ N. (11) In this paper, we propose low-complexity fixed-length and sequential tests and characterize the exponential decay rates of all three error probabilities. A fixed-length test naturally satisfies the expected stopping time universality constraint. However, when the number of matches is unknown, our sequential test could not satisfy the constraint. Instead, we derive a sufficient condition for our sequential tests to have bounded expected stopping time. The same sufficient condition is needed by the fixed-length test to be exponentially consistent. III. M AIN RESULTS FOR KNOWN NUMBER OF MATCHES 
+
+A. Scoring Functions 1) GJS Divergence: Fix a finite alphabet X and a pair of distributions (P, Q ) ∈ P (X )2 with full support. The KL divergence is defined as 
+
+D(P ‖Q) := ∑
+
+> x∈X
+
+P (x) log P (x)
+
+Q(x) . (12) Fix any two positive real numbers (α, β ) ∈ R2+. Define the following linear combination of distributions (P, Q ):
+
+RP,Q α,β := αP + βQ α + β , (13) and define the following linear combination of KL divergence: 
+
+GJS( P, Q, α, β ) := αD (P ‖RP,Q α,β 
+
+) + βD (Q‖RP,Q α,β 
+
+). (14) The GJS Divergence has the following variational form [14, Eq. (6)]: 
+
+GJS( P, Q, α, β ) := min   
+
+> V∈P (X)
+
+(αD (P || V ) + βD (Q|| V )). (15) Fix any two positive real numbers (α, β ) ∈ R2+ and an integer N in N. Recall that ξN = ⌈αN ⌉ and χN = ⌈βN ⌉. Given two sequences xξN = [ x1, . . . , x ξN ] and yχN = [ y1 . . . , y χN ], the GJS scoring function is defined as 
+
+GJS( xξN , y χN ) := 1
+
+n GJS( ˆTxξN , ˆTyχN , ξ N , χ N ). (16) As N → ∞ , GJS( P, Q, x ξN , y χN ) converges in probability to GJS( P, Q, α, β ). Thus, asymptotically, it follows from the weak law of large numbers if P = Q, the value of GJS( P, Q, x ξN , y χN ) vanishes while if P 6 = Q, the value of GJS( P, Q, x ξN , y χN )
+
+is strictly positive. This way, GJS( P, Q, x ξN , y χN ) can be used as a scoring function to check whether two discrete i.i.d. sequences are generated from the same distribution or not, consistent with [2], [3], [11], [12], [19]. 
+
+2) Maximum Mean Discrepancy: Fix a positive real number Θ ∈ R+. Let κ : R2 → R + be a bounded characteristic kernel function associated with the Reproducing Kernel Hilbert Spaces [20], [21] such that max (a,b )∈R2 κ(a, b ) ≤ Θ. Fix a continuous alphabet X . Given any two distributions (P, Q ) ∈ P (X )2, the square population MMD [22, Lemma 6] is defined as 
+
+MMD 2(P, Q ) := EP P [κ(X, X ′)] − 2EP Q [κ(X, Y )] + EQQ [κ(Y, Y ′)] , (17) where the random variables (X, X ′, Y, Y ′) ∼ P P QQ are independent of each other. It follows that MMD 2(P, Q ) = 0 if and only if P = Q. A usually adopted kernel function is the following Gaussian kernel function 
+
+κ(x, y ) := exp 
+
+(
+
+− (x − y)2
+
+2σ2
+
+)
+
+, (18) where (x, y ) ∈ R 2 and σ ∈ R+ is an positive real number. In this case, Θ = 1 . For all numerical simulations using the MMD metric, the kernel function is chosen as the Gaussian kernel with σ2 = 12 .6
+
+Algorithm 1 Low complexity fixed-length test Φf
+
+Input: Parameter N ∈ N, M1 sequences of the first database, M2 sequences of the second database, the number of matches 
+
+K.
+
+Output: A set of indices for matched pairs of sequences.  
+
+> 1:
+
+For each (i, j ) ∈ [M1] × [M2], calculate the scoring function value f (XξN 
+
+> i
+
+, Y χN 
+
+> j
+
+). 
+
+> 2:
+
+Set ˆA as the indices of sequence pairs that have smallest K scoring function values.  
+
+> 3:
+
+return The set ˆA.Fix any integer N ∈ N. Given two sequences xξN = [ x1, . . . , x ξN ] and yχN = [ y1 . . . , y χN ], the MMD scoring function is defined as 
+
+MMD 2(xξN , y χN ) := 1
+
+ξN (ξN − 1) 
+
+∑  
+
+> (i,j )∈[ξN]2:i6=j
+
+κ(xi, x j ) + 1
+
+χN (χN − 1) 
+
+∑  
+
+> (i,j )∈[χN]2:i6=j
+
+κ(yi, y j )
+
+− 2
+
+ξN χN
+
+∑  
+
+> (i,j )∈[ξn]×[χN]
+
+κ(xi, y j ). (19) It was shown in [22, Lemma 6] that MMD 2(xξN , y χN ) is an unbiased estimator for MMD 2(P, Q ). Thus, as N → ∞ , if 
+
+P1 = P2, the value of MMD 2(xξN , y χN ) vanishes; otherwise, if P1 6 = P2, the value of MMD 2(xξN , y χN ) is strictly positive. Consistent with [7], [8], [23], MMD can be used to construct scoring functions to check whether two continuous i.i.d. sequences are generated from the same distribution or not. 
+
+B. Fixed-Length Test 1) Test Design and Asymptotic Intuition: We first consider the fixed-length test. The existing tests, including [2, Eq. (22)] and [3, Eq. (39)] for discrete sequences and [8, Eq. (16)] for continuous sequences, search exhaustively over all possible sets of matched sequences to make a reliable decision. Recall from the problem setting that the total number of possibilities equals 
+
+TK = (M1
+
+> K
+
+)( M2
+
+> K
+
+)K!. Thus, the computational complexity of these tests scales exponentially with respect to the numbers of sequences (M1, M 2) and the number of matches K. When M1 = 100 , M2 = 50 and K = 10 , TK ≈ 6.4526 × 10 29 , which is computationally intractable. To solve this problem, in this paper, we propose low-complexity tests and characterize their achievable mismatch exponents. Fix any integer N ∈ N. Given any two sequences (XξN , Y χN ) ∈ X ξN +χN , let f : X ξN +χN → R+ be a scoring function, which can be the GJS scoring function in (16) or the MMD scoring function in (19). Our low-complexity test is summarized in Algorithm 1. The key idea is to calculate the values of all M1M2 pairwise scoring functions and identify the matched pairs as those sequences having K smallest scoring function values. This way, the computation complexity is M1M2 for the calculation of scoring functions and the computational complexity of sorting the scoring functions is on average O(M1M2 log( M1M2)) 
+
+with the worst case of O(M 21 M 22 ). For the same value of M1 = 100 , M2 = 50 and K = 10 , the number of calculations required for our test is at roughly 5000 + 5000 2 = 2 .5005 × 10 7, which is much less than 6.4526 × 10 29 .We first explain the asymptotic intuition why the fixed-length test in Algorithm 1 works. Fix A ∈ M K as the set collecting indices of matched pairs of sequences. It follows from the results in Section III-A that, when n is sufficiently large, for any 
+
+(i, j ) ∈ A , the scoring function value f (XξN 
+
+> i
+
+, Y χN 
+
+> j
+
+) for a matched pair of sequences vanishes while for any (¯ i, ¯j) /∈ A , the scoring function value f (XξN 
+
+> ¯i
+
+, Y χN 
+
+> ¯j
+
+) for an unmatched pair of sequences is strictly positive. Thus, asymptotically, choosing the pairs of sequences as those having the K smallest scoring function values results in the correct set of matched sequences. As we show in the next section, our test is exponentially consistent for both discrete and continuous observed sequences, regardless of the number of matches and the unknown generating distributions. 
+
+2) Theoretical Benchmarks and Discussions: Fix any A ∈ M K and tuple of distributions (P M1 , Q M2 ) ∈ P A. Given any 
+
+(i, j ) ∈ A , (¯ i, ¯j) /∈ A and distributions (Ω 1, Ω2, Ψ1, Ψ2) ∈ (P(X )) 4, define the linear combination of KL divergence as 
+
+E(¯ i, ¯j)(i,j ) (Ω 1, Ω2, Ψ1, Ψ2) := αD (Ω 1‖Pi) + βD (Ψ 1‖Pi) + αD (Ω 2‖P¯i) + βD (Ψ 2‖Q¯j ). (20) Next define the following two exponent functions 
+
+Ef
+
+> A
+
+(P M1 , Q M2 ) := min     
+
+> (Ω 1,Ω2,Ψ1,Ψ2)∈(P(X)) 4:GJS(Ω 1,Ψ1,α,β )≥GJS(Ω 2,Ψ2,α,β )
+
+min  
+
+> (i,j )∈A
+> (¯ i, ¯j)/∈A
+
+E¯i, ¯j
+
+> (i,j )
+
+(Ω 1, Ω2, Ψ1, Ψ2), (21) 
+
+Ef,c 
+
+> A
+
+(P M1 , Q M2 ) := min {α, β } min (¯ i, ¯j) /∈A (MMD 2(P¯i, Q ¯j )) 2
+
+128Θ 2 . (22) As we show below, Ef
+
+> A
+
+(P M1 , Q M2 ) and Ef,c 
+
+> A
+
+(P M1 , Q M2 ) lower bound the mismatch exponent of our fixed-length test 
+
+Φf for discrete and continuous observed sequences, respectively. Both exponents are strictly positive. The positiveness of 7
+
+Ef,c 
+
+> A
+
+(P M1 , Q M2 ) is clear since MMD 2(P¯i, Q ¯j ) is strictly positive for any (¯ i, ¯j) /∈ A . The positiveness of Ef
+
+> A
+
+(P M1 , Q M2 )
+
+requires clarification. Note that to achieve a zero value of Ef
+
+> A
+
+(P M1 , Q M2 ), one needs to find (i, j ) ∈ A , (¯ i, ¯j) /∈ A and 
+
+(Ω 1, Ω2, Ψ1, Ψ2) ∈ (P(X )) 4 such that Ω1 = Ψ 1 = Pi, Ω2 = P¯i, Ψ2 = Q¯j and GJS(Ω 1, Ψ1, α, β ) ≥ GJS(Ω 2, Ψ2, α, β ).This is impossible because the above conditions cannot be satisfied simultaneously. Specifically, when Ω1 = Ψ 1, the condition 
+
+GJS(Ω 1, Ψ1, α, β ) ≥ GJS(Ω 2, Ψ2, α, β ) implies that Ω2 = Ψ 2 while the condition (¯ i, ¯j) /∈ A implies that P¯i 6 = Q¯j . Thus, one can not satisfy the condition Ω2 = P¯i and Ψ2 = Q¯j simultaneously. 
+
+Theorem 1. Fix any A ∈ M K and any tuple of distributions (P M1 , Q M2 ) ∈ P A. 
+
+> •
+
+When X is finite, using the GJS scoring function in (16) , the mismatch exponent satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log θ(Φ f |P M1 , Q M2 ) ≥ Ef
+
+> A
+
+(P M1 , Q M2 ). (23)  
+
+> •
+
+When X is continuous, using the MMD scoring function in (19) , the mismatch exponent satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log θ(Φ f |P M1 , Q M2 ) ≥ Ef,c 
+
+> A
+
+(P M1 , Q M2 ). (24) The proof of Theorem 1 is provided in Section V-A. Theorem 1 shows that our fixed-length test Φf is exponentially consistent for both discrete and continuous sequences and the exponent is always positive. In the proof of Theorem 1, we bound the probability of the event where there exists a matched pair of sequences and an unmatched pair sequences and such that the scoring function of the unmatched pair of sequences is smaller than that of the matched pair of sequences, i.e., the event {∃ (i, j ) ∈ A and (¯ i, ¯j) /∈ A : f (XξN 
+
+> i
+
+, Y χN 
+
+> j
+
+) ≥ f (XξN 
+
+> ¯i
+
+, Y χN 
+
+> ¯j
+
+)}. The analysis for discrete observed sequences uses the method of types [24] and results in the exponent Ef
+
+> A
+
+(P M1 , Q M2 ) while the analysis for continuous observed sequences uses the McDiarmid’s inequality [25] and results in the exponent Ef,c 
+
+> A
+
+(P M1 , Q M2 ).Compared with the exhaustive search tests– [3, Eq. (39)] for discrete sequences and [8, Eq. (16)] for continuous sequences, the mismatch exponents of our low-complexity test are generally smaller. However, there are cases where both exponents are the same, including the case of K = 1 . 
+
+> •
+
+For discrete observed sequences, an equivalent form of the achievable mismatch exponent [3, Theorem 2] of the test in [3, Eq. (39)] is F f
+
+> A
+
+(P M1 , Q M2 ), where 
+
+F f
+
+> A
+
+(P M1 , Q M2 ) = min   
+
+> (Ω M1,ΨM2)∈Q (A)
+
+E(P M1 , Q M2 , ΩM1 , ΨM2 ), (25) 
+
+Q(A) = 
+
+{
+
+ΩM1 , ΨM2 ) ∈ (P(X )) M1 +M2 : ∃ B ∈ M K \ {A} ,
+
+∑
+
+> (i,j )∈A
+
+GJS(Ω i, Ψj , α, β ) ≥ ∑
+
+> (¯ i, ¯j)∈B
+
+GJS(Ω ¯i, Ψ¯j , α, β )
+
+}
+
+, (26) 
+
+E(P M1 , Q M2 , ΩM1 , ΨM2 ) = 
+
+( ∑ 
+
+> i∈[M1]
+
+αD (Ω i‖Pi) + ∑ 
+
+> j∈[M2]
+
+βD (Ψ j ‖Qj )
+
+)
+
+. (27) An equivalent form of our mismatch exponent is 
+
+Ef
+
+> A
+
+(P M1 , Q M2 ) = min   
+
+> (Ω M1,ΨM2)∈Q ′(A)
+
+E(P M1 , Q M2 , ΩM1 , ΨM2 ), (28) 
+
+Q′(A) = 
+
+{
+
+ΩM1 , ΨM2 ) ∈ (P(X )) M1 +M2 : ∃ (i, j ) ∈ A , (¯ i, ¯j) /∈ A ,
+
+GJS(Ω i, Ψj , α, β ) ≥ GJS(Ω ¯i, Ψ¯j , α, β )
+
+}
+
+. (29) Comparing (25) and (28), we find that the mismatch exponent of our low complexity test is generally smaller, i.e., 
+
+Ef
+
+> A
+
+(P M1 , Q M2 ) ≤ F f
+
+> A
+
+(P M1 , Q M2 ). The reason is as follows. Fix any ΩM1 , ΨM2 ) ∈ (P(X )) M1 +M2 and B ∈ M K \ {A} .The condition that ∑ 
+
+> (i,j )∈A
+
+GJS(Ω i, Ψj , α, β ) ≥ ∑ 
+
+> (¯ i, ¯j)∈B
+
+GJS(Ω ¯i, Ψ¯j , α, β ) implies that there exists (i, j ) ∈ A \ {B} 
+
+and (¯ i, ¯j) ∈ B \ A such that GJS(Ω i, Ψj , α, β ) ≥ GJS(Ω ¯i, Ψ¯j , α, β ). Thus, Q(A) ⊆ Q ′(A) and F f
+
+> A
+
+(P M1 , Q M2 ) ≥
+
+Ef
+
+> A
+
+(P M1 , Q M2 ). When K = 1 , the equality Q(A) = Q′(A) holds and both exponents are equal.  
+
+> •
+
+For continuous observed sequences, the achievable mismatch exponent of the test in [8, Eq. (16)] is given by [8, Theorem 1]: 
+
+F f,c 
+
+> A
+
+(P M1 , Q M2 ) = min {α, β }(ΛK 
+
+> A
+
+(P M1 , Q M2 ))2
+
+128Θ 2 , (30) 
+
+ΛK 
+
+> A
+
+(f M1 , Q M2 ) = min      
+
+> B′∈M K:B′6=A
+
+max   
+
+> (i,j )∈B ′\A
+
+MMD 2(Pi, Q j ). (31) 8                  
+
+> 012345678910 -3
+> 10 -4
+> 10 -3
+> 10 -2
+> 10 -1
+> 10 0
+> 00.005 0.01 0.015 0.02 0.025 0.03 0.035 0.04 0.045 00.005 0.01 0.015 0.02 0.025 0.03 0.035 0.04 0.045 0.05
+
+(a) Discrete observed sequences (b) Continuous observed sequences 
+
+Fig. 1. Plot of the simulated mismatch probabilities as a function of running times for the low complexity test in Algorithm 1 and the fixed-length tests in [3], [8] when α = 1 and β = 2 . The left figure is for discrete observed sequences using the GJS scoring function in (16) when M1 = 6 , M2 = 3 ,
+
+K = 2 , X = {1, 2, 3} and (P M1 , Q M2 ) satisfies that P1 = Q1 = (0 .1, 0.3, 0.6) , P2 = Q2 = (0 .2, 0.3, 0.5) , P3 = ( 13 , 13 , 13 ), P4 = (0 .1, 0.35 , 0.55) ,
+
+P5 = (0 .15 , 0.25 , 0.6) , P6 = (0 .25 , 0.2, 0.55) and Q3 = (0 .3, 0.2, 0.5) . The right figure is for continuous observed sequences using the MMD scoring function in (19) when M1 = M2 = K = 3 and P M1 = QM2 = (Exp(2) , U(5) , N (−2, 1)) . As observed, our low complexity fixed-length test achieves a much better tradeoff between the mismatch probability and the running time. 
+
+One can verify that 
+
+Ef,c 
+
+> A
+
+(P M1 , Q M2 )
+
+F f,c 
+
+> A
+
+(f M1 , g M2 ) = min (¯ i, ¯j) /∈A (MMD 2(P¯i, Q ¯j )) 2
+
+min B′∈M K : B′ 6 =A max (i,j )∈B ′ \A (MMD 2(Pi, Q j )) 2 (32) 
+
+≤ min (¯ i, ¯j) /∈A (MMD 2(P¯i, Q ¯j )) 2
+
+min B′∈M K : B′ 6 =A min (i,j )∈B ′ \A (MMD 2(Pi, Q j )) 2 (33) 
+
+≤ min (¯ i, ¯j) /∈A (MMD 2(P¯i, Q ¯j )) 2
+
+min (¯ i, ¯j) /∈A (MMD 2(P¯i, Q ¯j )) 2 (34) 
+
+= 1 . (35) Thus, our achievable mismatch exponent is generally smaller. However, there are cases where both exponents are same. For example, when K = 1 , the inequality in (33) is an equality since the set {(i, j ) ∈ B ′ \ A} contains only one pair, implying that the maximum and minimum operation leads to the same value and leading to Ef,c 
+
+> A
+
+(P M1 , Q M2 ) = F f,c 
+
+> A
+
+(f M1 , g M2 ). For large values of K, it is still possible that the equality holds. For example, when M1 = M2 = K = 3 , set α = β = 1 and 
+
+P M1 = QM2 = (Exp(2) , Exp(5) , N (−2, 1)) , and consider the Gaussian kernel function with σ =
+
+√ 12 , both exponents are the same and equal approximately 1 4.8 × 10 −5.Compared with exhaustive search tests in [3], [8], our low-complexity test has great advantage in terms of the tradeoff between the computational complexity and the mismatch probability. As discussed at the beginning of Section III-B, the exhaustive search tests have exponential complexity with respect to the number of sequences (M1, M 2) and the number of matches K.In contrast, the complexity of our low complexity test is polynomial in the number of sequences (M1, M 2) regardless of the number of matches K. Thus, for slightly large numbers of (M1, M 2, K ), the exhaustive search tests are infeasible due to prohibitively high complexity while our test can still be used even for very large numbers (M1, M 2, K ). In summary, although exhaustive search tests have large mismatch exponents, the overly high computational complexity makes it infeasible while our low complexity tests achieve slightly worse performance with much smaller computational complexity. As a result, our low complexity tests strike a much better tradeoff between the computational complexity and mismatch probability. To illustrate the advantage of our low-complexity test, in Fig. 1, we plot the simulated mismatch probabilities versus the average running times of our low complexity test in Algorithm 1 and the exhaustive search fixed-length tests in [3], [8]. As observed, to achieve the same mismatch probability, our low complexity test requires much less time. For example, for binary observed sequences in Fig. 1(a) when M1 = 8 , M2 = 4 , K = 2 , in order to achieve a mismatch probability of 10 −4, our low complexity requires 6.65 × 10 −5 second while the exhaustive search fixed-length test in [3, Eq. (39)] requires 0.009 second, 
+
+> 1
+
+The approximation here is obtained via calculating the MMD metric in (17) via its unbiased estimator in (19) since the original integral form is hard to compute. 9
+
+Algorithm 2 Low complexity sequential test Φs
+
+Input: M1 sequences of the first database and M2 sequences of the second database, the number of matches K, test design parameters (λ, N ) ∈ R+ × N.
+
+Output: Stopping time τ and a set of indices for matched pairs of sequences  
+
+> 1:
+
+Set t = 0 and n = N − 1. 
+
+> 2:
+
+while t = 0 do  
+
+> 3:
+
+For each (i, j ) ∈ [M1] × [M2], calculate the scoring function value f (Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+). 
+
+> 4:
+
+Calculate the number r of scoring function values that are smaller than λ. 
+
+> 5:
+
+if r ≥ K then  
+
+> 6:
+
+Set t = 1 ; 
+
+> 7:
+
+else  
+
+> 8:
+
+Set n = n + 1 . 
+
+> 9:
+
+Obtain additional symbols from each observed sequence.  
+
+> 10:
+
+end if  
+
+> 11:
+
+end while  
+
+> 12:
+
+Set ˆA as indices of sequence pairs that have smallest K scoring function values.  
+
+> 13:
+
+return Stopping time τ = n and ˆA.which implies that when we run the exhaustive search fixed-length test in [3, Eq. (39)] once, we can run our low complexity test for more than 135 times. Analogously, for continuous observed sequences in Fig 1(b) when M1 = M2 = K = 3 , in order to achieve a mismatch probability of 0.01 , our low complexity requires 0.0074 second while the exhaustive search fixed-length test in [8, Eq. (16)] requires 0.039 second, which implies that when we run the exhaustive search fixed-length test in [8, Eq. (16)] once, we can run our low complexity test for more than 5 times. For continuous observed sequences, the advantage of low-complexity test is relatively insignificant. This is because the running time of calculating the MMD scoring function in (19) dominates the running times of both our low complexity test in Algorithm 1 and the exhaustive search fixed-length test in [8, Eq. (16)], which significantly decreases the difference of the running time of the detection steps. For continuous observed sequences, the advantage of our low-complexity test lies in being feasible even for large values of (M1, M 2, K ).
+
+C. Sequential Tests 1) Test Design: For the sequential test, one has the freedom to determine the number of samples until a reliable decision could be made. For this purpose, we need a positive threshold λ ∈ R+. The procedure of our sequential test is summarized in Algorithm 2. The key idea is to stop only when enough pairs of matched sequences are believed to be found and then run similar minimal scoring function test as the fixed-length test in Algorithm 1. Specifically, the initial sample size n is set to 
+
+N − 1 and increased by one after each iteration. In each iteration, one calculates the scoring function of all M1M2 pairs of sequences and calculate the number of the pair of sequences whose scoring function is less than the threshold λ. If the number is above the number of matches K, the test stops collecting more samples and makes a decision. Otherwise, the sample size parameter n is increased by one and the test continues. As we shall show below, with this slight freedom to determine the sample size, the performance of the test can be improved significantly. The asymptotic intuition of our sequential test Φs is similar to the fixed-length test Φf . When the sample size parameter n
+
+is large, all matched pairs have vanishing scoring function value while any unmatched pair of sequences have strictly positive scoring function value. Thus, the test can stop as desired and makes the identifies all matched pairs successfully. 
+
+2) Theoretical Benchmarks and Discussions: Given any integer n ∈ N and define 
+
+g(n) := log( nα + 2) + log( nβ + 2) 
+
+n . (36) For any positive real number λ ∈ R+, define the following exponent 
+
+E(λ) := min {α, β }λ2
+
+64Θ 2 . (37) As we show below, g(n) and E(λ) are critical to bound the expected stopping time of our sequential test for discrete and continuous observed sequences, respectively. Fix any A ∈ M K and (P M1 , Q M2 ) ∈ P A. Given any λ ∈ R+, define the exponent functions 
+
+Es
+
+> A
+
+(λ, P M1 , Q M2 ) := min  
+
+> (Ω ,Ψ) ∈(P(X)) 2:GJS(Ω ,Ψ,α,β )≤λ
+
+min  
+
+> (¯ i, ¯j)/∈A
+
+(αD (Ω ‖P¯i) + βD (Ψ ‖Q¯j )), (38) 
+
+Es,c 
+
+> A
+
+(λ, P M1 , Q M2 ) := min {α, β } min (¯ i, ¯j) /∈A (MMD 2(P¯i, Q ¯j ) − λ)2
+
+64Θ 2 . (39) 10 
+
+As we show below, Es
+
+> A
+
+(λ, P M1 , Q M2 ) and Es,c 
+
+> A
+
+(λ, P M1 , Q M2 ) lower bound the mismatch exponents of our sequential test for discrete and continuous observed sequences, respectively. Furthermore, Es
+
+> A
+
+(λ, P M1 , Q M2 ) decrease in λ and equals zero if λ ≥ min (¯ i, ¯j) /∈A GJS( P¯i, Q ¯j , α, β ) while Es,c 
+
+> A
+
+(λ, P M1 , Q M2 ) decreases in λ when 0 ≤ λ < min (¯ i, ¯j) /∈A MMD 2(P¯i, Q ¯j ).
+
+Theorem 2. Fix any A ∈ M K and any tuple of distributions (P M1 , Q M2 ) ∈ P A. 
+
+> •
+
+When X is finite, f (·) is the GJS scoring function in (16) .
+
+– When N satisfies K exp( −(N −1)( λ−g(N −1))) 1−exp( −(λ−g(N −1))) ≤ 1, the expected stopping time of the sequential test satisfies EPA [τ ] ≤ N .
+
+– Asymptotically, the mismatch exponent satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log θ(Φ s|P M1 , Q M2 ) ≥ Es
+
+> A
+
+(λ, P M1 , Q M2 ). (40)  
+
+> •
+
+When X is continuous, f (·) is the MMD scoring function in (19) .
+
+– When N satisfies K exp( −(N −1) E(λ)) 1−exp( −E(λ)) ≤ 1, we have EPA [τ ] ≤ N .
+
+– Asymptotically, when λ < min (¯ i, ¯j) /∈A MMD 2(P¯i, Q ¯j ), the mismatch exponent satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log θ(Φ s|P M1 , Q M2 ) ≥ Es,c 
+
+> A
+
+(λ, P M1 , Q M2 ). (41) The proof of Theorem 2 is provided in Section V-B. For discrete observed sequences, the condition K exp( −(N −1)( λ−g(N −1))) 1−exp( −(λ−g(N −1))) ≤ 1 implies that K exp( −(N −1)( λ−g(N −1))) ≤
+
+1, which is equivalent to λ ≥ log KN −1 + g(N − 1) . Thus, if we set λ = log KN −1 + g(N − 1) in our test, the expected stopping time is always upper bounded by N , satisfying the expected stopping time universality constraint in (5). Following the proof of Theorem 2, the mismatch exponent for discrete observed sequences is improved to 
+
+Es
+
+> A
+
+(0 , P M1 , Q M2 ) = min  
+
+> (Ω ,Ψ) ∈(P(X)) 2:GJS(Ω ,Ψ,α,β )≤0
+
+min  
+
+> (¯ i, ¯j)/∈A
+
+(αD (Ω ‖P¯i) + βD (Ψ ‖Q¯j )). (42) Compared with the mismatch exponent of the fixed-length test in Theorem 1, we reveal the benefit of sequentiality since the mis-match exponent Es
+
+> A
+
+(0 , P M1 , Q M2 ) of our sequential test in Algorithm 2 is larger than the mismatch exponent Ef
+
+> A
+
+(P M1 , Q M2 )
+
+of our fixed-length test in 1. This is because the GJS divergence in (14) is non-negative and thus 
+
+Ef
+
+> A
+
+(P M1 , Q M2 ) = min     
+
+> (Ω 1,Ω2,Ψ1,Ψ2)∈(P(X)) 4:GJS(Ω 1,Ψ1,α,β )≥GJS(Ω 2,Ψ2,α,β )
+
+min  
+
+> (i,j )∈A
+> (¯ i, ¯j)/∈A
+
+E¯i, ¯j
+
+> (i,j )
+
+(Ω 1, Ω2, Ψ1, Ψ2) (43) 
+
+≤ min   
+
+> (Ω 1,Ω2,Ψ1,Ψ2)∈(P(X)) 4:GJS(Ω 2,Ψ2,α,β )≤0
+
+min  
+
+> (i,j )∈A
+> (¯ i, ¯j)/∈A
+
+E¯i, ¯j 
+
+> (i,j )
+
+(Ω 1, Ω2, Ψ1, Ψ2) (44) 
+
+= Es
+
+> A
+
+(0 , P M1 , Q M2 ). (45) Analogously, for continuous observed sequences, the condition K exp( −(N −1) E(λ)) 1−exp( −E(λ)) ≤ 1 implies that K exp( −(N −1) E(λ)) ≤
+
+1, which is equivalent to N ≥ log KE(λ) + 1 = 64Θ 2 log K 
+
+> min {α,β }λ2
+
++ 1 . Thus, the mismatch exponent of the sequential test can be improved to 
+
+Es,c 
+
+> A
+
+(0 , P M1 , Q M2 ) := min {α, β } min (¯ i, ¯j) /∈A (MMD 2(P¯i, Q ¯j )) 2
+
+64Θ 2 . (46) To illustrate the benefit of sequentiality, in Fig. 2, we plot the simulated mismatch probabilities as a function of the expected stopping time for the low complexity fixed-length test in Algorithm 1 and the low-complexity sequential test in Algorithm 2 with λ = 0 .01 . As observed, the sequential test achieves smaller mismatch probability under the same expected stopping time, validating the benefit of sequentiality in the non-asymptotic case. IV. M AIN RESULTS FOR UNKNOWN NUMBER OF MATCHES 
+
+A. Fixed-Length Tests 
+
+When the number of matches is unknown, it can be any value from zero to min {M1, M 2}, which equals to M2 since we assume M1 ≥ M2. In this case, we need to estimate the number of matches and identify all matched pairs of sequences. Our low-complexity fixed-length test for this case is summarized in Algorithm 3. The key idea is to identify all pairs of sequences that have small enough scoring function values as the matched pairs and claim there is no matched pair of sequences if the scoring functions of all M1M2 pairs of sequences are large enough. Specifically, a positive threshold λ ∈ R+ is introduced. Similarly to the case of known number of matches as in Algorithm 1, we first calculate all M1M2 pairwise scoring function values. Subsequently, we collect the indices of potential matched pairs as the set ˆA, which contain indices of pairs of sequences that have scoring function value no greater than λ. If ˆA is the empty set, the decision of no match is made; otherwise, the matched pairs of sequences are claimed to be those having indices in ˆA.11                 
+
+> 1000 1200 1400 1600 1800 2000 2200 2400 2600 2800 3000 10 -4
+> 10 -3
+> 10 -2
+> 10 -1
+> 30 40 50 60 70 80 90 10 -2
+> 10 -1
+
+(a) Discrete Observed Sequences (b) Continuous Observed Sequences 
+
+Fig. 2. Plot of the simulated mismatch probabilities as a function of expected stopping time for the low complexity fixed-length test in Algorithm 1 and the low-complexity sequential test in Algorithm 2 with λ = 0 .01 when α = 1 , β = 2 . The left figure is for M1 = 3 , M2 = K = 2 , P M1 = Bern(0 .1, 0.2, 0.15) and 
+
+QM2 = Bern(0 .1, 0.2) while the right figure is for M1 = M2 = 3 , K = 2 , P M1 = (Exp(2) , U(10) , N (−5, 1)) and QM2 = (Exp(2) , U(10) , N (5 , 4)) .As observed, with the same expected stopping time, our sequential test achieves better performance than the fixed-length test. 
+
+Algorithm 3 Low complexity fixed-length test Φuf with unknown number of matches 
+
+Input: Parameter N ∈ N, M1 sequences of the first database, M2 sequences of the second database, test design parameter 
+
+λ ∈ R+.
+
+Output: A set of indices for matched pairs of sequences. 
+
+1: For each (i, j ) ∈ [M1] × [M2], calculate the scoring function value f (XξN 
+
+> i
+
+, Y χN 
+
+> j
+
+).
+
+2: Set ˆA as indices of all pairs of sequences that have scoring function value no greater than λ.
+
+3: if ˆA = ∅ then 
+
+4: return The empty set ∅.
+
+5: else 
+
+6: return The set ˆA.
+
+7: end if 
+
+The asymptotic intuition of the test in Algorithm 3 is analogously to that of Algorithm 1. It follows from the weak law of large numbers that the scoring function value of any matched pairs of sequences vanishes while the scoring function value of any unmatched pairs of sequences is strictly positive. Therefore, when λ is strictly positive, we can always make the correct decision, either find there is no matched pair or identify all matched pairs of sequences. In what follows, we explicitly lower bound the exponential decay rates of three error probabilities of the test: mismatch, false reject and false alarm. Fix any positive real number λ ∈ R+. Given any (P M1 , Q M2 ) ∈ P ∅, define the exponent function 
+
+Efa (λ, P M1 , Q M2 ) := min   
+
+> (i,j )∈[M1]×[M2]
+
+min  
+
+> (Ω ,Ψ) ∈(P(X)) 2:GJS(Ω ,Ψ,α,β )≤λ
+
+(
+
+αD (Ω ‖Pi) + βD (Ψ ‖Qj )
+
+)
+
+, (47) 
+
+Ecfa (λ, P M1 , Q M2 ) := min  
+
+> (i,j )∈[M1]×[M2]
+
+min {α, β }(MMD 2(Pi, Q j ) − λ)2
+
+64Θ 2 . (48) As we show below, Efa (λ, P M1 , Q M2 ) and Ecfa (λ, P M1 , Q M2 ) lower bound the false alarm exponents for discrete and continuous observed sequences respectively. The exponent function Efa (λ, P M1 , Q M2 ) decreases in λ, is strictly positive if 0 ≤ λ < min (i,j )∈[M1 ]×[M2 ] GJS( Pi, Q j , α, β ) and achieves the maximum value when λ = 0 . Furthermore, when λ < 
+
+min (i,j )∈[M1 ]×[M2] MMD 2(Pi, Q j ), Ecfa (λ, P M1 , Q M2 ) decreases in λ and is strictly positive. Recall the definitions of the exponent functions E(·), Es
+
+> A
+
+(·), and Es,c 
+
+> A
+
+(·) in (37), (38) and (39), respectively. 
+
+Theorem 3. Our fixed-length test in Algorithm 3 is exponentially consistent under mild conditions. Fix any λ ∈ R+. 
+
+> •
+
+For discrete observed sequences, f (·) is the GJS scoring function in (16) .
+
+– For any (P M1 , Q M2 ) ∈ P ∅, the false alarm exponent satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log η(Φ uf |P M1 , Q M2 ) ≥ Efa (λ, P M1 , Q M2 ). (49) 12 
+
+– Fix any A ∈ M and tuple of distributions (P M1 , Q M2 ) ∈ P A. The mismatch and false reject exponents satisfy 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log ¯θ(Φ uf |P M1 , Q M2 ) ≥ min {λ, E s
+
+> A
+
+(λ, P M1 , Q M2 )}, (50) 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log η(Φ uf |P M1 , Q M2 ) ≥ λ. (51)  
+
+> •
+
+For continuous observed sequences, f (·) is the MMD scoring function in (19) .
+
+– For any (P M1 , Q M2 ) ∈ P ∅, the false alarm exponent satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log η(Φ uf |P M1 , Q M2 ) ≥ Ecfa (λ, P M1 , Q M2 ). (52) 
+
+– Fix any A ∈ M and tuple of distributions (P M1 , Q M2 ) ∈ P A. The mismatch and false reject exponents satisfy 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log ¯θ(Φ uf |P M1 , Q M2 ) ≥ min {E(λ), E s,c 
+
+> A
+
+(λ, P M1 , Q M2 )}, (53) 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log η(Φ uf |P M1 , Q M2 ) ≥ E(λ). (54) The proof of Theorem 3 is provided in Section VI-A. We first explain why each exponent function appears. For our fixed-length test in Algorithm 3, a false alarm event occurs if there exists a pair of sequences that has scoring function value no greater than λ when the unknown generating distributions satisfy (P M1 , Q M2 ) ∈ P ∅. The exponent functions Efa (λ, P M1 , Q M2 ) and Ecfa (λ, P M1 , Q M2 ) lower bound the exponential decay rates of the probabilities of such event for discrete and continuous observed sequences, respectively. Furthermore, when there are matched pairs of sequences, a mismatch event occurs if i) a matched pair of sequences has scoring function value greater than λ or ii) an unmatched pair of sequence has scoring function value no greater than λ. The exponential decay rates of these two error events are lower bounded by (λ, E s
+
+> A
+
+(λ, P M1 , Q M2 )) for discrete observed sequences and by 
+
+(E(λ), E s,c 
+
+> A
+
+(λ, P M1 , Q M2 )) for continuous observed sequences. Finally, a false reject event occurs if all matched pairs of sequences have scoring function values greater than λ and the exponent functions (λ, E (λ)) lower bound the exponential decay rates of the probabilities of the false reject event for discrete and continuous observed sequences, respectively. The test design parameter λ trades off the exponential decay rates of the three error probabilities: false alarm, mismatch and false reject. The false alarm exponent decreases in λ while the false reject exponent increases in λ. The mismatch exponent is a bit complicated as a minimum of two terms: one term increases in λ while the other term decreases in λ. As we shall, for sequential test, such tradeoff is resolved due to the freedom to choose the stopping time. To clarify, in Fig. 3, we plot the mismatch exponent as a function of λ. As observed, the mismatch exponent first increases in λ and then decreases in λ. This is because, when λ is small, the exponent function Es
+
+> A
+
+(λ, P M1 , Q M2 ) for discrete observed sequences and Es,c 
+
+> A
+
+(λ, P M1 , Q M2 )
+
+is larger than λ and thus the mismatch exponent increases in λ. But as λ increases further, Es,c 
+
+> A
+
+(λ, P M1 , Q M2 ) is smaller than 
+
+λ and the mismatch exponent is given by Es,c 
+
+> A
+
+(λ, P M1 , Q M2 ), which decreases in λ.In contrast to Theorem 1, when the number of matches is unknown, our fixed-length test is no longer exponentially consistent for any tuple of generating distributions. Instead, Theorem 3 provides a sufficient condition for our tests to have strictly positive exponents. Specifically, when there is no match, for any (P M1 , Q M2 ) ∈ P∅, the false alarm ex-ponent of our fixed-length test is strictly positive when λ < min (i,j )∈[M1 ]×[M2] GJS( Pi, Q j , α, β ) for discrete sequences and λ < min (i,j )∈[M1 ]×[M2 ] MMD 2(Pi, Q j ) for continuous sequences. When there exists matched pairs whose indices are given a set A ∈ M , for any (P M1 , Q M2 ) ∈ P A, both the misclassification and false reject exponents are positive when 
+
+0 < λ < min (¯ i, ¯j) /∈A GJS( P¯i, Q ¯j , α, β ) for discrete sequences and when 0 < λ < min (¯ i, ¯j) /∈A MMD 2(P¯i, Q ¯j ) for continuous sequences. Comparing Theorems 1 and 3, we reveal the penalty on the test performance when the number of matches is unknown. For fair comparison, when the number of matches is unknown and positive, we need to consider the Bayesian exponent, which is the smaller one of the mismatch and the false reject exponent. For continuous sequences, the Bayesian exponent is given by 
+
+min {E(λ), E s,c 
+
+> A
+
+(λ, P M1 , Q M2 )}. The maximum Bayesian exponent is achieved by λ such that E(λ) = Es,c 
+
+> A
+
+(λ, P M1 , Q M2 ).Using the definitions of E(·) in in (37) and Es,c 
+
+> A
+
+(·) in (39), we conclude that the maximum Bayesian exponent is achieved when λ = min (i,j ) /∈A MMD 2 (P¯i ,Q ¯j ) 
+
+> 2
+
+, leading to the Bayesian exponent of min {α,β } min (¯ i, ¯j) /∈A (MMD 2 (P¯i,Q ¯j )) 2 
+
+> 256Θ 2
+
+, which is exactly half of the mismatch exponent in Theorem 1 when the number of matches is known. Similarly, for discrete observed sequences, the maximum Bayesian exponent is achieved by λ such that λ = Es
+
+> A
+
+(λ, P M1 , Q M2 ). In contrast to the case of continuous observed sequences, the theoretical comparison of the Bayesian exponent with the mismatch exponent in Theorem 1 for discrete observed sequences is less obvious due to the complicated expressions of the exponent functions. Instead, we provide a numerical example. Specifically, in Fig. 4, we plot the simulated mismatch probability of the test in Algorithm 1 and the Bayesian error probability of the test in Algorithm 3 when there are matches, for both discrete and continuous observed sequences. As observed, in both cases, there is a penalty of not knowing the number of matches: the test in Algorithm 1 that knows the number of matches achieves smaller Bayesian error probability than the test in Algorithm 3 that does not know the number of matches. 13          
+
+> 00.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 00.005 0.01 0.015 0.02 0.025
+
+(a) Discrete observed sequences (b) Continuous observed sequences 
+
+Fig. 3. Plot of the achievable mismatch exponent in Theorem 2 as a function of our sequential test in Algorithm 2 with parameter λ. The left figure is for discrete observed sequences with α = 1 , β = 2 , M1 = 3 , M2 = K = 2 , P M1 = Bern(0 .1, 0.3, 0.6) and QM2 = Bern(0 .1, 0.3) while the right figure is for continuous observed sequences with α = β = 5 , M1 = M2 = K = 3 , P M1 = QM2 = (Exp(1) , U(10 , 30) , N (−10 , 25)) . As observed, the mismatch exponent first increases in λ and then decreases in λ.                
+
+> 500 1000 1500 2000 2500 3000 3500 4000 4500 5000 10 -5
+> 10 -4
+> 10 -3
+> 10 -2
+> 10 -1
+> 10 0
+> 30 40 50 60 70 80 90 100 10 -3
+> 10 -2
+> 10 -1
+> 10 0
+
+(a) Discrete observed sequences (b) Continuous observed sequences 
+
+Fig. 4. Plot of the simulated mismatch probability of the fixed-length test in Algorithm 1 and the Bayesian error probability of the fixed-length test in Algorithm 3 when there are matched pairs of sequences, α = 1 and β = 2 . The left figure is for discrete observed sequences using the GJS scoring function in (16) when λ = 0 .002 , M1 = 6 , M2 = 3 , K = 2 , X = {1, 2, 3} and (P M1 , Q M2 ) satisfies that P1 = Q1 = (0 .1, 0.3, 0.6) , P2 = Q2 = (0 .2, 0.3, 0.5) ,
+
+P3 = ( 13 , 13 , 13 ), P4 = (0 .1, 0.35 , 0.55) , P5 = (0 .15 , 0.25 , 0.6) , P6 = (0 .25 , 0.2, 0.55) and Q3 = (0 .3, 0.2, 0.5) . The right figure is for continuous observed sequences using the MMD scoring function in (19) when λ = 0 .008 , M1 = M2 = K = 3 and P M1 = QM2 = (Exp(2) , U(5) , N (−2, 1)) . As observed, there is a penalty of not knowing the number of matches: the test in Algorithm 1 that knows the number of matches achieves smaller Bayesian error probability than the test in Algorithm 3 that does not know the number of matches. 
+
+B. Sequential Tests 
+
+When the number of matches is unknown, the construction of a sequential test is quite complicated since one needs to determine a stopping time to make a reliable decision of either no match or identifying all matched pairs of sequences. To solve the problem, we adopt the idea of clustering. Specifically, set the initial stopping time as n = N − 1, where N ∈ N is a design parameter. The value of n is increased by one in each iteration until the stopping criterion is matched. Within each iteration, we first calculate the values of all M1M2 pairwise scoring functions. Subsequently, using two positive thresholds 
+
+(λ1, λ 2) such that λ1 ≤ λ2, we use a set ˆA to collect indices of all pairs of sequences that having scoring function value no greater than λ1 and use another set B to collect indices of all pairs of sequences that having scoring function value greater than λ2. Intuitively, ˆA collects the indices of matched pairs while B collects indices of unmatched pairs. When | ˆA| + |B| so that all M1M2 pairs of sequences are either classified as matched or unmatched, the test stops to make a decision. Otherwise, 14 
+
+Algorithm 4 Low complexity sequential test Φus with unknown number of matches 
+
+Input: M1 sequences of the first database and M2 sequences of the second database, test design parameters (λ1, λ 2, N ) ∈
+
+R2+ × N such that λ1 ≤ λ2.
+
+Output: Stopping time τ and a set of indices for matched pairs of sequences.  
+
+> 1:
+
+Set t = 0 and n = N − 1. 
+
+> 2:
+
+while t = 0 do  
+
+> 3:
+
+For each (i, j ) ∈ [M1] × [M2], calculate the scoring function value f (Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+). 
+
+> 4:
+
+Set ˆA as indices of all pairs of sequences that have scoring function value no greater than λ1. 
+
+> 5:
+
+Set B as indices of all pairs of sequences that have scoring function value greater than λ2. 
+
+> 6:
+
+if | ˆA| + |B| = M1M2 then  
+
+> 7:
+
+Set t = 1 ; 
+
+> 8:
+
+else  
+
+> 9:
+
+Set n = n + 1 . 
+
+> 10:
+
+Obtain additional symbols from each observed sequence  
+
+> 11:
+
+end if  
+
+> 12:
+
+end while  
+
+> 13:
+
+if ˆA = ∅ then  
+
+> 14:
+
+return Stopping time τu = n and the empty set ∅. 
+
+> 15:
+
+else  
+
+> 16:
+
+return Stopping time τu = n and the set ˆA. 
+
+> 17:
+
+end if 
+
+the test takes additional samples. When the test stops, if ˆA = ∅, the decision of no match is made; otherwise, the set ˆA is output as the indices of all matched pairs. As we shall show, with the slight freedom to determine the stopping time, the sequential test achieves significantly better performance. Specifically, this freedom helps identify matched and unmatched pairs of sequences with high probability, as reflected by steps 2-10 that determine the stopping time. The asymptotic intuition of the sequential test is similar to the fixed-length test and thus omitted. Below, we explicitly bound the exponential decay rates of all three error probabilities of the sequential test. Recall the definitions of g(·) in (36), Es
+
+> A
+
+(·) in (38) and Es,c 
+
+> A
+
+(·) in (39), Efa (·) in (47), and Ecfa (·) in (48). 
+
+Theorem 4. The sequential test in Algorithm 4 has bounded expected stopping time and is exponentially consistent under mild conditions. Fix any positive real numbers (λ1, λ 2) ∈ R2+ such that λ1 ≤ λ2. 
+
+> •
+
+For discrete observed sequences, f (·) is the GJS scoring function in (16) .
+
+– For any (P M1 , Q M2 ) ∈ P ∅, when N satisfies M1M2 exp( −(N −1) Efa (λ2 ,P M1 ,Q M2 )−g(N −1)) 1−exp( −(Efa (λ2,P M1 ,Q M2 )−g(N −1))) ≤ 1, the expected stopping time is upper bounded by N . Furthermore, the false alarm exponent satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log η(Φ us |P M1 , Q M2 ) ≥ Efa (λ1, P M1 , Q M2 ). (55) 
+
+– Fix any A ∈ M and tuple of distributions (P M1 , Q M2 ) ∈ P A. When N satisfies |A| exp( −(N −1)( λ1−g(N −1))) 1−exp( −(λ1−g(N −1))) +              
+
+> (M1M2−|A| ) exp( −(N−1)( Es
+> A(λ2,P M1,Q M2)−g(N−1))) 1−exp( −(Es
+> A(λ2,P M1,Q M2)−g(N−1)))
+
+≤ 1, the expected stopping time is upper bounded by N . Further-more, the mismatch and false reject exponents satisfy 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log ¯θ(Φ us |P M1 , Q M2 ) ≥ min {Es
+
+> A
+
+(λ1, P M1 , Q M2 ), λ 2}, (56) 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log ζ(Φ us |P M1 , Q M2 ) ≥ λ2. (57)  
+
+> •
+
+For continuous observed sequences, f (·) is the MMD scoring function in (19) .
+
+– For any (P M1 , Q M2 ) ∈ P ∅, when N satisfies M1 M2 exp( −(N −1) Ecfa (λ2 ,P M1 ,Q M2 )1−exp( −Ecfa (λ2 ,P M1 ,Q M2 )) ≤ 1, the expected stopping time is upper bounded by N . Furthermore, the false alarm exponent satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log η(Φ us |P M1 , Q M2 ) ≥ Ecfa (λ1, P M1 , Q M2 ). (58) 15 
+
+– Fix any A ∈ M and tuple of distributions (P M1 , Q M2 ) ∈ P A. When N is chosen such that |A| exp( −(N −1) E(λ1)1−exp( −E(λ1 )) +            
+
+> (M1M2−|A| ) exp( −(N−1) Es,c
+> A(λ2,P M1,Q M2)) 1−exp( −Es,c
+> A(λ2,P M1,Q M2))
+
+≤ 1, the expected stopping time is upper bounded by N . Furthermore, when 
+
+λ1 < min (¯ i, ¯j) /∈A MMD 2(P¯i, Q ¯j ), the mismatch and false reject exponents satisfy 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log ¯θ(Φ us |P M1 , Q M2 ) ≥ min {Es,c 
+
+> A
+
+(λ1, P M1 , Q M2 ), E (λ2)}, (59) 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log ζ(Φ us |P M1 , Q M2 ) ≥ E(λ2). (60) The proof of Theorem 4 is provided in Section VI-B. We first provide a proof sketch and explain why each exponent function appears. First consider the case where there is no matched pair of sequences. Our test in Algorithm 4 cannot stop if there exists a pair of sequences whose scoring function value lies between λ1 and λ2 while a false alarm event occurs if there exists a pair of sequences whose scoring function value is no greater than λ1. For any integer n, the probability that the stopping time is greater than n is upper bounded by the probability that there exists a pair of sequences whose scoring function value is no greater than λ2, whose exponential decay rate is lower bounded by Efa (λ2, P M1 , Q M2 ) for discrete observed sequences and by Ecfa (λ2, P M1 , Q M2 ) for continuous observed sequences, respectively. Thus, using the sum of geometric series, the expected stopping time is bounded as desired under mild conditions on λ2 listed above. The exponential decay rate of the probability of the false alarm event is lower bounded by Efa (λ1, P M1 , Q M2 ) for discrete observed sequences and by Ecfa (λ1, P M1 , Q M2 ) for continuous observed sequences, respectively. Next consider the case where there exists matched pairs of sequences. For any integer n, the probability that the stopping time is greater than n is upper bounded by the probability that there exists a matched pair of sequences whose scoring function value is greater than λ1 or there exists an unmatched pair of sequences whose scoring function value is no greater than λ2. A lower bound on the exponential decay rates of these two events are (λ1, E s
+
+> A
+
+(λ2, P M1 , Q M2 )) for discrete observed sequences and (E(λ1), E s,c 
+
+> A
+
+(λ2, P M1 , Q M2 )) for continuous observed sequences, leading to the constraint of (λ1, λ 2) to ensure bounded expected stopping time. Furthermore, a mismatch event occurs if there exists a matched pair of sequences whose scoring function value is greater than λ2 or there exists an unmatched pair of sequences whose scoring function value is no greater than λ1, leading to exponents (Es
+
+> A
+
+(λ1, P M1 , Q M2 ), λ 2) for discrete observed sequences and exponents (Es,c 
+
+> A
+
+(λ1, P M1 , Q M2 ), E (λ2 )) for continuous observed sequences. Finally, a false reject event occurs if all matched pairs of sequences have scoring function greater than λ2, leading to an exponential decay rate of λ2 for discrete observed sequences and E(λ2) for continuous observed sequences. In contrast to Theorem 2, when the number of matches is unknown, our sequential tests does not satisfy the expected stopping time universality constraint. Instead, Theorem 4 provides a sufficient condition for our sequential test to have bounded expected stopping time, which is also the condition for our sequential test to have strictly positive exponents. Specifically, when there is no match, asymptotically as N → ∞ , for any (P M1 , Q M2 ) ∈ P ∅, the expected stopping time is bounded when 0 < λ 2 <
+
+min (i,j )∈[M1 ]×[M2] GJS( Pi, Q j , α, β ) for discrete observed sequences and when 0 < λ 2 < min (i,j )∈[M1 ]×[M2] MMD 2(Pi, Q j )
+
+for continuous observed sequences. In this case, λ1 is unconstrained and can be chosen as small as possible, leading to maximal false alarm exponents (Efa (0 , P M1 , Q M2 ), E cfa (0 , P M1 , Q M2 )) for discrete and continuous observed sequences, respectively. Next consider the case with matched pairs of sequences whose indices are denoted by a set A ∈ M . Fix any (P M1 , Q M2 ) ∈ P A.Asymptotically as N → ∞ , if λ1 > 0 and λ2 < min (¯ i, ¯j) /∈A GJS( P¯i, Q ¯j , α, β ), the expected stopping time is bounded for dis-crete sequences. By properly choosing parameters (λ1, λ 2) on the boundary of the above conditions, the maximal achievable mis-match and false reject exponents are min {Es
+
+> A
+
+(0 , P M1 , Q M2 ), min (¯ i, ¯j) /∈A GJS( P¯i, Q ¯j , α, β )} and min (¯ i, ¯j) /∈A GJS( P¯i, Q ¯j , α, β ),respectively. Analogously, for sufficiently large N , if λ1 > 0 and λ2 < min (¯ i, ¯j) /∈A MMD 2(P¯i, Q ¯j ), the expected stopping time is bounded for continuous observed sequences and the maximal achievable mismatch and false reject exponents are 
+
+min {Esc  
+
+> A
+
+(0 , P M1 , Q M2 ), E (min (¯ i, ¯j) /∈A MMD 2(P¯i, Q ¯j )) } and E(min (¯ i, ¯j) /∈A MMD 2(P¯i, Q ¯j )) , respectively. Comparing Theorems 3 and 4, we reveal the benefit of sequentiality. Set λ in Theorem 3 as λ1 in Theorem 4. The false alarm exponents of the fixed-length and sequential tests are the same. However, the mismatch and false reject exponents of the sequential test in Algorithm 4 are larger than those of the fixed-length test in Algorithm 3. This is because λ2 ≥ λ1. If one digs deeper, the benefit of sequentiality results from the freedom of the sequential test to determine the stopping time and thus avoid unreliable decisions. In Fig. 5, we plot the Bayesian exponents in Theorems 3 and 4 for both discrete and continuous observed sequences and show that the benefit of sequentiality can be strict. Furthermore, in Fig. 6, we plot the simulated Bayesian error probabilities as a function of expected stopping time for the low complexity fixed-length test in Algorithm 3 and the low-complexity sequential test in Algorithm 4 with λ = 0 .01 . As observed, the sequential test achieves smaller Bayesian error probability under the same expected stopping time, validating the superiority of the sequential test even in the non-asymptotic case with finite expected stopping times. Comparing Theorems 2 and 4, we find the penalty of not knowing the number of matches when there are matched pair of se-quences. For discrete sequences, the achievable Bayesian exponent of the sequential test in Algorithm 4 is min {Es
+
+> A
+
+(λ1, P M1 , Q M2 ), λ 2},which is less than the mismatch exponent Es
+
+> A
+
+(λ1, P M1 , Q M2 ) of the sequential test in Algorithm 2 with knowledge of the number of matches. The same is also true for continuous observed sequences. In Fig. 7, we show that the penalty can be 16                    
+
+> 00.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 00.01 0.02 0.03 0.04 0.05 0.06 0.07 0.02 0.04 0.06 0.08 0.1 0.12 0.14 0.16 0.18 0.2 012345678910 -4
+
+(a) Discrete observed sequences (b) Continuous observed sequences 
+
+Fig. 5. Plot of the achievable Bayesian error exponents of the fixed-length test in Algorithm 3 and the sequential test in Algorithm 4 as a function of the test design parameter λ2. The left figure is for discrete observed sequences with λ1 = 0 .001 α = 1 , β = 2 , M1 = 3 , M2 = K = 2 ,
+
+P M1 = Bern(0 .1, 0.3, 0.6) and QM2 = Bern(0 .1, 0.3) while the right figure is for continuous observed sequences with λ1 = 0 .02 , α = β = 5 ,
+
+M1 = M2 = K = 3 , P M1 = QM2 = (Exp(1) , U(10 , 30) , N (−10 , 25)) .               
+
+> 500 1000 1500 2000 2500 3000 10 -4
+> 10 -3
+> 10 -2
+> 10 -1
+> 10 0
+> 30 35 40 45 50 55 60 65 70 75 80 10 -1
+> 10 0
+
+(a) Discrete Observed Sequences (b) Continuous Observed Sequences 
+
+Fig. 6. Plot of the simulated Bayesian error probabilities as a function of expected stopping time for the low complexity fixed-length test in Algorithm 3 and the low-complexity sequential test in Algorithm 4 with λ = λ1 = 0 .01 when α = 1 , β = 2 . The left figure is for λ2 = 0 .03 , M1 = 3 , M2 = K = 2 , P M1 =Bern(0 .1, 0.2, 0.15) and QM2 = Bern(0 .1, 0.2) while the right figure is for λ2 = 0 .05 , M1 = M2 = 3 , K = 2 , P M1 = (Exp(2) , U(10) , N (−5, 1)) 
+
+and QM2 = (Exp(2) , U(10) , N (5 , 4)) .
+
+strict via a numerical example by showing that when the number of matches is unknown, the achievable Bayesian exponent of the sequential test in Algorithm 4 can be strictly smaller than the sequential test in Algorithm 2 that knows the number of matches. Furthermore, in Fig. 8, we plot the simulated Bayesian error probabilities of the sequential tests in Algorithms 2 and 4 to illustrate the penalty of not knowing the number of matches. As observed, the sequential test in Algorithm 4 that does not known the number of matches has larger Bayesian error probability than the sequential test in Algorithm 2 that knows the number of matches, demonstrating the penalty of not knowing the nubmer of matches. V. P ROOFS FOR KNOWN NUMBER OF MATCHES 
+
+A. Proof of Theorem 1 (Fixed-Length Test) 
+
+For the low-complexity test Φf in Algorithm 1, a mismatch error event occurs if there exists a matched pair of sequences that has a larger scoring function than that of an unmatched pair of sequences. Fix any A ∈ M K and (P M1 , Q M2 ) ∈ P A. The 17                    
+
+> 00.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09 00.01 0.02 0.03 0.04 0.05 0.06 0.07 0.02 0.04 0.06 0.08 0.1 0.12 0.14 0.16 0.18 0.2 012345678910 -4
+
+(a) Discrete observed sequences (b) Continuous observed sequences 
+
+Fig. 7. Plot of the achievable Bayesian error exponent of the sequential test in Algorithm 2 and the Bayesian exponent of the sequential test in Algorithm 4 as a function of the test design parameter λ2. The left figure is for discrete observed sequences with λ = λ1 = 0 .001 α = 1 , β = 2 , M1 = 3 , M2 = K = 2 ,
+
+P M1 = Bern(0 .1, 0.3, 0.6) and QM2 = Bern(0 .1, 0.3) while the right figure is for continuous observed sequences with λ = λ1 = 0 .02 , α = β = 5 ,
+
+M1 = M2 = K = 3 , P M1 = QM2 = (Exp(1) , U(10 , 30) , N (−10 , 25)) . As observed, when the number of matches is unknown, the achievable Bayesian exponent of the sequential test in Algorithm 4 can be strictly smaller than the sequential test in Algorithm 2 that knows the number of matches.                 
+
+> 1200 1400 1600 1800 2000 2200 2400 2600 2800 3000 10 -4
+> 10 -3
+> 10 -2
+> 10 -1
+> 35 40 45 50 55 60 65 70 10 -2
+> 10 -1
+
+(a) Discrete Observed Sequences (b) Continuous Observed Sequences 
+
+Fig. 8. Plot of the simulated Bayesian error probabilities as a function of expected stopping time for the low complexity sequential test with known number of matches in Algorithm 2 and the low-complexity sequential test with unknown number of matches in Algorithm 4 with λ = λ1 = 0 .01 when α = 1 ,
+
+β = 2 . The left figure is for λ2 = 0 .03 , M1 = 3 , M2 = K = 2 , P M1 = Bern(0 .1, 0.2, 0.15) and QM2 = Bern(0 .1, 0.2) while the right figure is for 
+
+λ2 = 0 .05 , M1 = M2 = 3 , K = 2 , P M1 = (Exp(2) , U(10) , N (−5, 1)) and QM2 = (Exp(2) , U(10) , N (5 , 4)) . As observed, there is a penalty of not knowing the number of matches: the sequential test in Algorithm 4 that does not known the number of matches has larger Bayesian error probability than the sequential test in Algorithm 2 that knows the number of matches. 
+
+mismatch probability satisfies 
+
+θA(Φ f |P M1 , Q M2 ) = PA
+
+{
+
+∃ (i, j ) ∈ A and (¯ i, ¯j) /∈ A : f (XξN
+
+i , Y χN
+
+j ) ≥ f (XξN
+
+¯i , Y χN
+
+¯j )
+
+}
+
+(61) 
+
+≤ ∑
+
+(i,j )∈A 
+
+∑
+
+(¯ i, ¯j) /∈A 
+
+PA
+
+{
+
+f (XξN
+
+i , Y χN
+
+j ) ≥ f (XξN
+
+¯i , Y χN
+
+¯j )
+
+}
+
+. (62) Fix any (i, j ) ∈ A and (¯ i, ¯j) /∈ A . Since (P M1 , Q M2 ) ∈ P A, it follows that Pi = Qj .When X is finite, f (·) is the GJS scoring function in (16). Using the method of types [24], it follows that each probability 18 
+
+term in (62) satisfies 
+
+PA
+
+{
+
+f (XξN 
+
+> i
+
+, Y χN 
+
+> j
+
+) ≥ f (XξN 
+
+> ¯i
+
+, Y χN 
+
+> ¯j
+
+)
+
+}
+
+= PA
+
+{
+
+GJS( XξN 
+
+> i
+
+, Y χN 
+
+> j
+
+) ≥ GJS( XξN 
+
+> ¯i
+
+, Y χN 
+
+> ¯j
+
+)
+
+}
+
+(63) 
+
+= ∑     
+
+> (Ω 1,Ω2)∈(PξN(X)) 2
+> (Ψ 1,Ψ2)∈(PχN(X)) 2
+
+∑              
+
+> (xξNi,x ξN
+> ¯i)∈T ξN(Ω 1)×T ξN(Ω 2)(yχNj,y χN
+> ¯j)∈T χN(Ψ 1)×T χN(Ψ 2): GJS( xξNi,y χNj)≥GJS( xξN
+> ¯i,y χN
+> ¯j)
+
+P ξN 
+
+> i
+
+(xξN 
+
+> i
+
+)P χN 
+
+> i
+
+(yχN 
+
+> j
+
+)P ξN 
+
+> ¯i
+
+(xξN 
+
+> ¯i
+
+)QχN 
+
+> ¯j
+
+(yχN 
+
+> ¯j
+
+) (64) 
+
+= ∑           
+
+> (Ω 1,Ω2,Ψ1,Ψ2)∈(PξN(X)) 2×(PχN(X)) 2:GJS(Ω 1,Ψ1,ξ N,χ N)≥GJS(Ω 2,Ψ2,ξ N,χ N)
+
+P ξN 
+
+> i
+
+(TξN (Q1)) P χN 
+
+> i
+
+(TχN (Q2)) P ξN 
+
+> ¯i
+
+(TξN ( ¯Q1)) P χN 
+
+> ¯j
+
+(TχN ( ¯Q2)) (65) 
+
+≤ ∑           
+
+> (Ω 1,Ω2,Ψ1,Ψ2)∈(PξN(X)) 2×(PχN(X)) 2:GJS(Ω 1,Ψ1,ξ N,χ N)≥GJS(Ω 2,Ψ2,ξ N,χ N)
+
+exp 
+
+(
+
+− ξN D(Ω 1‖Pi) − ξN D(Ω 2‖P¯i) − χN D(Ψ 1‖Pi) − χN D(Ψ 2‖Q¯j )
+
+)
+
+(66) 
+
+≤ (ξN + 1) 2|X | (χN + 1) 2|X | 
+
+× exp 
+
+(
+
+− min            
+
+> (Ω 1,Ω2,Ψ1,Ψ2)∈(PξN(X)) 2×(PχN(X)) 2:GJS(Ω 1,Ψ1,ξ N,χ N)≥GJS(Ω 2,Ψ2,ξ N,χ N)
+
+(
+
+ξN D(Ω 1‖Pi) + ξN D(Ω 2‖P¯i) + χN D(Ψ 1‖Pi) + χN D(Ψ 2‖Q¯j )
+
+))
+
+,
+
+(67) where (65) follows from the definition of GJS scoring function in (16), (66) follows from the upper bound for the probability of a type class [26, Theorem 11.1.4], and (67) follows from the upper bound on the number of types [26, Theorem 11.1.1] Recall that ξN = ⌈αN ⌉ and χN = ⌈βN ⌉. Using the definition of the exponent function Ef
+
+> A
+
+(P M1 , Q M2 ) in (21), it follows from (62) and (67) that the mismatch exponent satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log θA(Φ f |P M1 , Q M2 ) ≥ Ef
+
+> A
+
+(P M1 , Q M2 ). (68) When X is continuous, similarly to [8, Eq. (108), (121) and (124)] with (i∗, j ∗) replaced by (¯ i, ¯j), it follows from McDiarmid’s inequality [25] that each probability term in (62) satisfies 
+
+PA
+
+{
+
+MMD 2(XξN 
+
+> i
+
+, Y χN 
+
+> j
+
+) ≥ MMD 2(XξN 
+
+> ¯i
+
+, Y χN 
+
+> ¯j
+
+)
+
+}
+
+≤ exp 
+
+(
+
+− N min {α, β }(MMD 2(P¯i, Q ¯j )) 2
+
+128Θ 2
+
+)
+
+. (69) Thus, the mismatch exponent satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log θA(Φ f |P M1 , Q M2 ) ≥ min  
+
+> (¯ i, ¯j)/∈A
+
+min {α, β }(MMD 2(P¯i, Q ¯j )) 2
+
+128Θ 2 (70) 
+
+= Ef,c 
+
+> A
+
+(P M1 , Q M2 ), (71) where (71) follows from the definition of Ef,c 
+
+> A
+
+(·) in (22). The proof of Theorem 1 is now completed. 
+
+B. Proof of Theorem 2 (Sequential Test) 
+
+The analysis is two fold: the expected stopping time and the mismatch exponent. Fix any A ∈ M K and (P M1 , Q M2 ) ∈ P A.The expected stopping time of the sequential test in Algorithm 2 satisfies 
+
+EPA [τ ] = N − 1 + ∑ 
+
+> n∈NN−1
+
+PA{τ > n }. (72) Each probability term in (72), which quantifies the probability that the random stopping time τ is greater than n, satisfies 
+
+PA{τ > n } ≤ PA
+
+{∃ (i, j ) ∈ A : f (Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) > λ } (73) 
+
+≤ ∑
+
+> (i,j )∈A
+
+PA
+
+{f (Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) > λ }. (74) 19 
+
+Furthermore, a mismatch error event occurs if there exists an unmatched pair of sequences whose scoring function has value no greater than λ. Thus, the mismatch probability satisfies 
+
+θ(Φ s|P M1 , Q M2 ) = PA
+
+{∃ (¯ i, ¯j) /∈ A : f (Xξτ 
+
+> ¯i
+
+, Y χτ 
+
+> ¯j
+
+) ≤ λ} (75) 
+
+= ∑ 
+
+> n∈NN−1
+
+PA{τ = n}PA
+
+{∃ (¯ i, ¯j) /∈ A : f (Xξn 
+
+> ¯i
+
+, Y χn 
+
+> ¯j
+
+) ≤ λ} (76) 
+
+≤ ∑ 
+
+> n∈NN−1
+
+PA
+
+{∃ (¯ i, ¯j) /∈ A : f (Xξn 
+
+> ¯i
+
+, Y χn 
+
+> ¯j
+
+) ≤ λ} (77) 
+
+≤ ∑ 
+
+> n∈NN−1
+
+∑ 
+
+> (¯ i, ¯j)/∈A
+
+PA
+
+{f (Xξn 
+
+> ¯i
+
+, Y χn 
+
+> ¯j
+
+) ≤ λ}. (78) In what follows, we upper bound the expected stopping time in (72) and the mismatch probability in (78) for discrete and continuous observed sequences, respectively. 
+
+1) Discrete Observed Sequences: Fix any (i, j ) ∈ A . We first bound each probability term in (74). When the observed sequences are discrete, f (·) is the GJS scoring function in (16). Analogously to (67), it follows from the method of types [24] that 
+
+PA
+
+{f (Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) > λ }
+
+≤ PA
+
+{GJS( Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) ≥ λ} (79) 
+
+= ∑    
+
+> (Ω ,Ψ) ∈P ξn (X)×P χn (X)
+
+∑      
+
+> (xξn i,y χn j)∈T ξn (Ω) ×T χn (Ψ): GJS( xξn i,y χn j)≥λ
+
+P ξn 
+
+> i
+
+(xξn 
+
+> i
+
+)P χn 
+
+> i
+
+(yχn 
+
+> j
+
+) (80) 
+
+= ∑     
+
+> (Ω ,Ψ) ∈P ξn (X)×P χn (X): GJS(Ω ,Ψ,ξ n,χ n)≥nλ
+
+P ξn 
+
+> i
+
+(Tξn (Ω)) P χn 
+
+> i
+
+(Tχn (Ψ)) (81) 
+
+≤ ∑     
+
+> (Ω ,Ψ) ∈P ξn (X)×P χn (X): GJS(Ω ,Ψ,ξ n,χ n)≥nλ
+
+exp 
+
+(
+
+− n(αD (Ω ‖Pi) + βD (Ψ ‖Pi)))
+
+(82) 
+
+≤ ∑    
+
+> (Ω ,Ψ) ∈P (X)×P χn (X): GJS(Ω ,Ψ,ξ n,χ n)≥nλ
+
+exp 
+
+(
+
+− n min  
+
+> (Ω ,Ψ) ∈(P(X)) 2
+
+(αD (Ω ‖Pi) + βD (Ψ ‖Pi)))
+
+(83) 
+
+≤ ∑   
+
+> (Ω ,Ψ) ∈P (X)×P χn (X): GJS(Ω ,Ψ,α,β )≥λ
+
+exp( −nλ ) (84) 
+
+≤ (ξn + 1) |X | (χn + 1) |X | exp( −nλ ) (85) 
+
+≤ exp( −n(λ − g(n))) , (86) where (81) uses the definition of GJS scoring function in (16), (82) follows from the upper bound on the probability of a type class in [26, Theorem 11.1.4] and the fact that ξn ≥ αn , χn ≥ βn , (83) follows since exp( −a) decreases in its parameter 
+
+a ∈ R+, (84) follows from the alternative form of GJS divergence in (15) which implies that min (Ω ,Ψ) ∈(P(X )) 2
+
+(αD (Ω ‖Pi) + 
+
+βD (Ψ ‖Pi)) = GJS(Ω , Ψ, α, β ), (85) follows from the upper bound on the number of types in [26, Theorem 11.1.1] and (86) follows from the definition of g(n) in (36). Combining (74) and (86) and using the fact that A ∈ M K , it follows that 
+
+PA{τ > n } ≤ ∑
+
+> (i,j )∈A
+
+exp( −n(λ − g(n))) (87) 
+
+≤ K exp( −n(λ − g(n))) . (88) Thus, it follows from (72) and (88) that the stopping time satisfies 
+
+EPA [τ ] = N − 1 + ∑ 
+
+> n∈NN−1
+
+PA{τ > n } (89) 
+
+≤ N − 1 + ∑ 
+
+> n∈NN−1
+
+K exp( −n(λ − g(n))) (90) 
+
+≤ N − 1 + ∑ 
+
+> n∈NN−1
+
+K exp( −n(λ − g(N − 1))) (91) 20 
+
+= N − 1 + K exp( −(N − 1)( λ − g(N − 1))) 1 − exp( −(λ − g(N − 1))) , (92) where (91) follows since g(n) decreases in its parameter n ∈ N, and (92) follows from the sum of geometric series. Thus, when N is sufficiently large such that K exp( −(N −1)( λ−g(N −1))) 1−exp( −(λ−g(N −1))) ≤ 1, the expected stopping time satisfies EPA [τ ] ≤ N .We next analyze the mismatch probability. It follows from (78) that the mismatch probability satisfies 
+
+θ(Φ s|P M1 , Q M2 ) ≤ ∑ 
+
+> n∈NN−1
+
+∑ 
+
+> (¯ i, ¯j)/∈A
+
+PA{GJS( Xξn 
+
+> ¯i
+
+, Y χn 
+
+> ¯j
+
+) ≤ λ}. (93) Fix n ∈ NN −1 and (¯ i, ¯j) /∈ A . Analogously to steps leading to (82), using the method of types, it follows that 
+
+PA
+
+{GJS( Xξn 
+
+> ¯i
+
+, Y χn 
+
+> ¯j
+
+) ≤ λ} ≤ ∑      
+
+> (Ω ,Ψ) ∈P ξn (X)×P χn (X): GJS(Ω ,Ψ,ξ n,χ n)≤nλ
+
+exp 
+
+(
+
+− n(αD (Ω ‖P¯i) + βD (Ψ ‖Q¯j )))
+
+(94) 
+
+≤ ∑      
+
+> (Ω ,Ψ) ∈P ξn (X)×P χn (X): GJS(Ω ,Ψ,ξ n,χ n)≤nλ
+
+exp 
+
+(
+
+− n min    
+
+> (Ω ,Ψ) ∈(P(X)) 2:GJS(Ω ,Ψ,ξ n,χ n)≤nλ
+
+(αD (Ω ‖P¯i) + βD (Ψ ‖Q¯j )))
+
+(95) 
+
+≤ (ξn + 1) |X | (χn + 1) |X | exp 
+
+(
+
+− n min  
+
+> (Ω ,Ψ) ∈(P(X)) 2:GJS(Ω ,Ψ,α,β )≤λ
+
+(αD (Ω ‖P¯i) + βD (Ψ ‖Q¯j )))
+
+, (96) where (96) follows from the definition of the GJS scoring function in (16), the fact that ξn = ⌈αn ⌉ ≥ αn , χn = ⌈βn ⌉ ≥ βn ,which implies that 1 
+
+> n
+
+GJS(Ω , Ψ, ξ n, χ n) ≥ GJS(Ω , Ψ, α, β ).Combining (93) and (96) and using the definitions of g(·) in (36) and Es
+
+> A
+
+(·) in (38), we have 
+
+θ(Φ s|P M1 , Q M2 ) ≤ ∑ 
+
+> n∈NN−1
+
+∑ 
+
+> (¯ i, ¯j)/∈A
+
+exp ( − n(Es
+
+> A
+
+(λ, P M1 , Q M2 ) − g(n)) ) (97) 
+
+≤ ∑ 
+
+> n∈NN−1
+
+(M1M2 − K) exp ( − n(Es
+
+> A
+
+(λ, P M1 , Q M2 ) − g(N − 1)) ) (98) 
+
+≤ (M1M2 − K) exp( −(N − 1)( Es
+
+> A
+
+(λ, P M1 , Q M2 ) − g(N − 1))) 1 − exp( −(Es
+
+> A
+
+(λ, P M1 , Q M2 ) − g(N − 1)) , (99) where (98) follows since g(n) decreases in n and there are M1M2 − K unmatched pairs of sequences, and (99) follows from the sum of geometric series. Thus, the mismatch exponent for discrete observed sequences satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log θ(Φ s|P M1 , Q M2 ) ≥ Es
+
+> A
+
+(λ, P M1 , Q M2 ). (100) 
+
+2) Continuous Observed Sequences: For continuous observed sequences, f (·) is the MMD scoring function in (19). It follows from the results in (72) and (74) that the expected stopping time satisfies 
+
+EPA [τ ] ≤ N − 1 + ∑ 
+
+> n∈NN−1
+
+PA{MMD 2(Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) > λ } (101) 
+
+≤ N − 1 + ∑ 
+
+> n∈NN−1
+
+K exp( −nE (λ)) (102) 
+
+≤ N − 1 + K exp( −(N − 1) E(λ)) 1 − exp( −E(λ)) , (103) where (102) follows from the result in [8, Eq. (144)-(146)] and the definition of E(·) in (37), and (103) follows from the sum of geometric series. Thus, when N is sufficiently large such that K exp( −(N −1) E(λ)) 1−exp( −E(λ)) ≤ 1, the expected stopping time satisfies 
+
+EPA [τ ] ≤ N .We next bound the mismatch probability. It follows from (78) that the mismatch probability satisfies 
+
+θ(Φ s|P M1 , Q M2 ) ≤ ∑ 
+
+> n∈NN−1
+
+∑ 
+
+> (¯ i, ¯j)/∈A
+
+PA{MMD 2(Xξn 
+
+> ¯i
+
+, Y χn 
+
+> ¯j
+
+) ≤ λ}. (104) Recall the definition of Es,c 
+
+> A
+
+(·) in (39) and the fact that ξn = ⌈αn ⌉ ≥ αn and χn = ⌈βn ⌉ ≥ βn . For any (¯ i, ¯j) /∈ A , it follows from [8, Eq. (158)-(159)] that when λ < MMD 2(P¯i, Q ¯j ),
+
+PA{MMD 2(Xξn 
+
+> ¯i
+
+, Y χn 
+
+> ¯j
+
+) ≤ λ} ≤ exp 
+
+(
+
+− n min {α, β }(MMD 2(P¯i, Q ¯j ) − λ)2
+
+64Θ 2
+
+)
+
+(105) 
+
+≤ exp( −nE s,c 
+
+> A
+
+(λ, P M1 , Q M2 )) . (106) 21 
+
+Combining (104) and (106) and using the sum of geometric series, it follows that when λ < min (¯ i, ¯j) /∈A MMD 2(P¯i, Q ¯j ),
+
+θ(Φ s|P M1 , Q M2 ) ≤ ∑ 
+
+> n∈NN−1
+
+(M1M2 − K) exp( −nE s,c 
+
+> A
+
+(λ, P M1 , Q M2 )) (107) 
+
+≤ (M1M2 − K) exp( −(N − 1)) Es,c 
+
+> A
+
+(λ, P M1 , Q M2 )1 − exp( Es,c 
+
+> A
+
+(λ, P M1 , Q M2 )) . (108) Thus, when λ < min (¯ i, ¯j) /∈A MMD 2(P¯i, Q ¯j ), the mismatch exponent for continuous observed sequences satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log θ(Φ s|P M1 , Q M2 ) ≥ Es,c 
+
+> A
+
+(λ, P M1 , Q M2 ). (109) VI. P ROOF FOR UNKNOWN NUMBER OF MATCHES 
+
+A. Proof of Theorem 3 (Fixed-Length Test) 1) Case with No Match: First consider the case with no matched pair of sequences. In this case, an error occurs if there exists a pair of sequences whose scoring function value is no greater than λ. Thus, given any (P M1 , Q M2 ) ∈ P ∅, the false alarm probability satisfies 
+
+η(Φ uf |P M1 , Q M2 ) = P∅
+
+{∃ (i, j ) ∈ [M1] × [M2] : f (XξN 
+
+> i
+
+, Y χN 
+
+> j
+
+) ≤ λ} (110) 
+
+≤ ∑ 
+
+> (i,j )∈[M1]×[M2]
+
+P∅
+
+{f (XξN 
+
+> i
+
+, Y χN 
+
+> j
+
+) ≤ λ}. (111) Fix any (i, j ) ∈ [M1] × [M2]. For discrete observed sequences, f (·) is the GJS scoring function in (16). Similarly to (96), it follows that 
+
+P∅
+
+{GJS( XξN 
+
+> i
+
+, Y χN 
+
+> j
+
+) ≤ λ} ≤ (ξN + 1) |X | (χN + 1) |X | exp 
+
+(
+
+− N min  
+
+> (Ω ,Ψ) ∈(P(X)) 2:GJS(Ω ,Ψ,α,β )≤λ
+
+(
+
+αD (Ω ‖Pi) + βD (Ψ ‖Qj )
+
+))
+
+. (112) Using the definition of Efa (·) in (47) and combining (111), (112), the false alarm exponent for discrete observed sequences satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log η(Φ uf |P M1 , Q M2 ) ≥ min    
+
+> (i,j )∈[M1]×[M2]
+
+min  
+
+> (Ω ,Ψ) ∈(P(X)) 2:GJS(Ω ,Ψ,α,β )≤λ
+
+(
+
+αD (Ω ‖Pi) + βD (Ψ ‖Qj )
+
+)
+
+(113) 
+
+= Efa (λ, P M1 , Q M2 ). (114) For continuous sequences, f (·) is the MMD scoring function in (19). Similarly to (105), using the McDiarmid’s inequal-ity [25], when λ < MMD 2(Pi, Q j ), we have 
+
+P∅
+
+{MMD 2(XξN 
+
+> i
+
+, Y χN 
+
+> j
+
+) ≤ λ} ≤ exp 
+
+(
+
+− N min {α, β }(MMD 2(Pi, Q j ) − λ)2
+
+64Θ 2
+
+)
+
+, (115) Thus, using the definition of Ecfa (·) in (48) and combining (111) and (115), when λ < min (i,j )∈[M1 ]×[M2] MMD 2(Pi, Q j ), the false alarm exponent for continuous observed sequences satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log η(Φ uf |P M1 , Q M2 ) ≥ min  
+
+> (i,j )∈[M1]×[M2]
+
+min {α, β }(MMD 2(Pi, Q j ) − λ)2
+
+64Θ 2 (116) 
+
+= Ecfa (λ, P M1 , Q M2 ). (117) 
+
+2) Case with Matched Pairs: We next consider the case with matched pairs of sequences. Fix any A ∈ M and tuple of distributions (P M1 , Q M2 ) ∈ P A. When the matched pairs are indexed by A, for the test in Algorithm 3, a mismatch error event occurs if there exists a matched pair of sequences whose scoring function value is greater than λ, i.e., the event 
+
+E1 := {∃ (i, j ) ∈ A : f (XξN 
+
+> i
+
+, Y χN 
+
+> j
+
+) > λ }, or there exists an unmatched pair of sequences whose scoring function value is no greater than λ, i.e., the event E2 := {∃ (¯ i, ¯j) /∈ A : f (XξN 
+
+> ¯i
+
+, Y χN 
+
+> ¯j
+
+) ≤ λ}. Thus, the mismatch probability satisfies 
+
+¯θ(Φ uf |P M1 , Q M2 ) = PA{E 1 or E2} (118) 
+
+= PA{E 1} + PA{E 2}. (119) 22 
+
+Furthermore, a false reject event occurs if all M1M2 pairs of sequences have scoring function values greater than λ. Thus, the false reject probability satisfies 
+
+ζ(Φ uf |P M1 , Q M2 ) ≤ PA{∀ (i, j ) ∈ [M1] × [M2], f (XξN 
+
+> i
+
+, Y χN 
+
+> j
+
+) ≥ λ} (120) 
+
+≤ PA{∀ (i, j ) ∈ A , f (XξN 
+
+> i
+
+, Y χN 
+
+> j
+
+) ≥ λ} (121) 
+
+≤ min  
+
+> (i,j )∈A
+
+PA{f (XξN 
+
+> i
+
+, Y χN 
+
+> j
+
+) ≥ λ}. (122) We first bound the mismatch probability for discrete observed sequences. In this case, f (·) is the GJS scoring function in (16). Using the definition of g(·) in (36) and the result in (86), we have 
+
+PA{E 1} ≤ ∑
+
+> (i,j )∈A
+
+PA{GJS( XξN 
+
+> i
+
+, Y χN 
+
+> j
+
+) > λ } (123) 
+
+≤ ∑
+
+> (i,j )∈A
+
+exp( −N (λ − g(N ))) (124) 
+
+≤ |A| exp( −N (λ − g(N ))) . (125) Furthermore, it follows from (96) that for any (¯ i, ¯j) /∈ A ,
+
+PA{GJS( XξN 
+
+> ¯i
+
+, Y χN 
+
+> ¯j
+
+) ≤ λ} ≤ (ξN + 1) |X | (χN + 1) |X | exp 
+
+(
+
+− N min  
+
+> (Ω ,Ψ) ∈(P(X)) 2:GJS(Ω ,Ψ,α,β )≤λ
+
+(αD (Ω ‖P¯i) + βD (Ψ ‖Q¯j )))
+
+. (126) Thus, using the definitions of Es
+
+> A
+
+(·) in (38) and E2, we have 
+
+PA{E 2} ≤ (M1M2 − |A| ) exp( −N E s
+
+> A
+
+(λ, P M1 , Q M2 )) . (127) Combining (119), (125) and (127), the mismatch exponent for discrete observed sequences satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log ¯θ(Φ uf |P M1 , Q M2 ) ≥ min {λ, E s
+
+> A
+
+(λ, P M1 , Q M2 )}. (128) Next we bound the false reject probability for discrete observed sequences. It follows from (86) that for any (i, j ) ∈ A ,
+
+PA{f (XξN 
+
+> i
+
+, Y χN 
+
+> j
+
+) ≥ λ} ≤ exp( −N (λ − g(N ))) . (129) Thus, combining (122) and (129), the false reject exponent for discrete observed sequences satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log η(Φ uf |P M1 , Q M2 ) ≥ λ. (130) We now bound the mismatch probability for continuous observed sequences. In this case, f (·) is the MMD scoring function in (19). It follows from the definition of E(·) in (37) and the result in [8, Eq. (144)-(146)] that 
+
+PA
+
+{E1
+
+} ≤ ∑
+
+> (i,j )∈A
+
+PA
+
+{MMD 2(XξN 
+
+> i
+
+, Y χN 
+
+> j
+
+) > λ } (131) 
+
+≤ ∑
+
+> (i,j )∈A
+
+exp( −N E (λ)) (132) 
+
+≤ |A| exp( −N E (λ)) . (133) Recall the definition of Es,c 
+
+> A
+
+(·) in (39). For any (¯ i, ¯j) /∈ A , when λ < MMD 2(P¯i, Q ¯j ), it follows from (106) that 
+
+PA{MMD 2(XξN 
+
+> ¯i
+
+, Y χN 
+
+> ¯j
+
+) ≤ λ} ≤ exp( −N E s,c 
+
+> A
+
+(λ, P M1 , Q M2 )) . (134) Thus, when λ < min (¯ i, ¯j) /∈A MMD 2(P¯i, Q ¯j ),
+
+PA
+
+{E2
+
+} ≤ (M1M2 − |A| ) exp( −N E s,c 
+
+> A
+
+(λ, P M1 , Q M2 )) . (135) Combining (119), (133) and (135), when λ < min (¯ i, ¯j) /∈A MMD 2(P¯i, Q ¯j ), the mismatch exponent for continuous observed sequences satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log ¯θ(Φ uf |P M1 , Q M2 ) ≥ min {E(λ), E s,c 
+
+> A
+
+(λ, P M1 , Q M2 )}. (136) Finally, we bound the false reject probability for continuous observed sequences. Using the definition of E(·) in (37), it follows from [8, Eq. (144)-(146)] that for any (i, j ) ∈ A ,
+
+PA{MMD 2(XξN 
+
+> i
+
+, Y χN 
+
+> j
+
+) ≥ λ} ≤ exp( −N E (λ)) . (137) Thus, combining (122) and (137), the false reject exponent for continuous observed sequences satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log ζ(Φ uf |P M1 , Q M2 ) ≥ E(λ). (138) 23 
+
+B. Proof of Theorem 4 (Sequential Test) 1) Case with No Match: First consider the case with no match. Fix any (P M1 , Q M2 ) ∈ P ∅. In this case, the expected stopping time satisfies 
+
+EP∅ [τu] = N − 1 + ∑ 
+
+> n∈NN−1
+
+P∅{τu > n }. (139) Fix any n ∈ N. It follows from the sequential test design in Algorithm 4 that 
+
+P∅{τu > n } ≤ P∅
+
+{∃ (i, j ) ∈ [M1] × [M2], λ 1 < f (Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) ≤ λ2
+
+} (140) 
+
+≤ ∑  
+
+> (i,j )∈[M1]×[M2]
+
+P∅
+
+{λ1 < f (Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) ≤ λ2
+
+} (141) 
+
+≤ ∑  
+
+> (i,j )∈[M1]×[M2]
+
+P∅
+
+{f (Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) ≤ λ2
+
+}. (142) Furthermore, the false alarm probability satisfies 
+
+η(Φ us |P M1 , Q M2 ) ≤ P∅
+
+{∃ (i, j ) ∈ [M1] × [M2], f (Xξτu 
+
+> i
+
+, Y χτu 
+
+> j
+
+) ≤ λ1
+
+} (143) 
+
+= ∑ 
+
+> n∈NN−1
+
+P∅{τu = n}P∅
+
+{∃ (i, j ) ∈ [M1] × [M2], f (Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) ≤ λ1
+
+} (144) 
+
+≤ ∑ 
+
+> n∈NN−1
+
+P∅
+
+{∃ (i, j ) ∈ [M1] × [M2], f (Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) ≤ λ1
+
+} (145) 
+
+≤ ∑ 
+
+> n∈NN−1
+
+∑ 
+
+> (i,j )∈[M1]×[M2]
+
+P∅
+
+{f (Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) ≤ λ1
+
+}. (146) Fix any n ∈ N and (i, j ) ∈ [M1] × [M2]. For discrete sequences, f (·) is the GJS scoring function in (16). Using the definitions of g(·) in (36) and Efa (·) in (47), and the result in (112), each probability term in (139) satisfies 
+
+P∅
+
+{GJS( Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) ≤ λ2
+
+} ≤ exp ( − n(Efa (λ2, P M1 , Q M2 ) − g(n)) ). (147) Combining (139), (142) and (147) and using the sum of geometric series, the expected stopping time of the test satisfies 
+
+EP∅ [τu] = N − 1 + M1M2
+
+∑ 
+
+> n∈NN−1
+
+exp ( − n(Efa (λ2, P M1 , Q M2 ) − g(n)) ) (148) 
+
+≤ N − 1 + M1M2
+
+∑ 
+
+> n∈NN−1
+
+exp ( − n(Efa (λ2, P M1 , Q M2 ) − g(N − 1)) ) (149) 
+
+≤ N − 1 + M1M2 exp( −(N − 1)( Efa (λ2, P M1 , Q M2 ) − g(N − 1))) 1 − exp( −(Efa (λ2, P M1 , Q M2 ) − g(N − 1))) , (150) where (149) follows since g(n) decreases in n, and (150) follows from the sum of geometric series. Hence, when N is sufficiently large such that M1 M2 exp( −(N −1) Efa (λ2,P M1 ,Q M2 )−g(N −1)) 1−exp( −(Efa (λ2 ,P M1 ,Q M2 )−g(N −1))) ≤ 1, the expected stopping time satisfies EP∅ [τu] ≤ N .Analogously to (147) and (150), it follows from (146) that the false alarm probability satisfies 
+
+η(Φ us |P M1 , Q M2 ) ≤ ∑ 
+
+> n∈NN−1
+
+∑ 
+
+> (i,j )∈[M1]×[M2]
+
+P∅
+
+{GJS( Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) ≤ λ1
+
+} (151) 
+
+≤ ∑ 
+
+> n∈NN−1
+
+∑ 
+
+> (i,j )∈[M1]×[M2]
+
+exp ( − n(Efa (λ1, P M1 , Q M2 ) − g(n)) ) (152) 
+
+≤ M1M2 exp( −(N − 1)( Efa (λ1, P M1 , Q M2 ) − g(N − 1))) 1 − exp( −(Efa (λ1, P M1 , Q M2 ) − g(N − 1))) . (153) Thus, the false alarm exponent for discrete observed sequences satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log η(Φ us |P M1 , Q M2 ) ≥ Efa (λ1, P M1 , Q M2 ). (154) For continuous observed sequences, f (·) is the MMD scoring function in (19). Using the definition of Ecfa (·) in (48) and the result in (115), for any n ∈ N and positive real number λ < min (i,j )∈[M1 ]×[M2] MMD 2(Pi, Q j ), it follows that 
+
+P∅
+
+{MMD 2(Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) ≤ λ} ≤ exp( −nE cfa (λ, P M1 , Q M2 )) . (155) 24 
+
+Thus, it follows from (139), (142) and (155) that when λ2 < min (i,j )∈[M1 ]×[M2] MMD 2(Pi, Q j ), the expected stopping time satisfies 
+
+EP∅ [τu] = N − 1 + ∑ 
+
+> n∈NN−1
+
+∑ 
+
+> (i,j )∈[M1]×[M2]
+
+P∅
+
+{MMD 2(Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) ≤ λ2
+
+} (156) 
+
+≤ N − 1 + ∑ 
+
+> n∈NN−1
+
+M1M2 exp( −nE cfa (λ2, P M1 , Q M2 )) (157) 
+
+≤ N − 1 + M1M2 exp( −(N − 1) Ecfa (λ2, P M1 , Q M2 )1 − exp( −Ecfa (λ2, P M1 , Q M2 )) , (158) which is less than N when M1M2 exp( −(N −1) Ecfa (λ2 ,P M1 ,Q M2 )1−exp( −Ecfa (λ2,P M1 ,Q M2 )) ≤ 1.Furthermore, in a similar manner, it follows from (146) that when λ1 < min (i,j )∈[M1 ]×[M2] MMD 2(Pi, Q j ), the false alarm probability satisfies 
+
+η(Φ us |P M1 , Q M2 ) ≤ ∑ 
+
+> n∈NN−1
+
+∑ 
+
+> (i,j )∈[M1]×[M2]
+
+P∅
+
+{MMD 2(Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) ≤ λ1
+
+} (159) 
+
+≤ ∑ 
+
+> n∈NN−1
+
+∑ 
+
+> (i,j )∈[M1]×[M2]
+
+exp( −nE cfa (λ1, P M1 , Q M2 )) (160) 
+
+≤ M1M2 exp( −(N − 1) Ecfa (λ1, P M1 , Q M2 )1 − exp( −Ecfa (λ1, P M1 , Q M2 )) . (161) Thus, when λ1 < min (i,j )∈[M1 ]×[M2] MMD 2(Pi, Q j ), the false alarm exponent for continuous observed sequences satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log η(Φ us |P M1 , Q M2 ) ≥ Ecfa (λ1, P M1 , Q M2 ). (162) 
+
+2) General Expressions for the Case with Matched Pairs: We next consider the case with matched pairs of sequences. Fix any A ∈ M and tuple of distributions (P M1 , Q M2 ) ∈ P A. In this case, the expected stopping time of the test in Algorithm 4 satisfies 
+
+EPA [τu] = N − 1 + ∑ 
+
+> n∈NN−1
+
+PA{τu > n }, (163) where 
+
+PA{τu > n } = PA{∃ (i, j ) ∈ [M1] × [M2], λ 1 < f (Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) ≤ λ2} (164) 
+
+≤ ∑ 
+
+> (i,j )∈[M1]×[M2]
+
+PA{λ1 < f (Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) ≤ λ2} (165) 
+
+≤ ∑
+
+> (i,j )∈A
+
+PA{f (Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) > λ 1} + ∑ 
+
+> (¯ i, ¯j)/∈A
+
+PA{f (Xξn 
+
+> ¯i
+
+, Y χn 
+
+> ¯j
+
+) ≤ λ2}. (166) When the matched pairs are indexed by A, a mismatch error event occurs if there exists a matched pair of sequences whose scoring function value is greater than λ2, i.e., the event F1 := {∃ (i, j ) ∈ A : f (Xξτu 
+
+> i
+
+, Y χτu 
+
+> j
+
+) > λ 2}, or there exists an unmatched pair of sequences whose scoring function value is no greater than λ1, i.e., the event F2 := {∃ (¯ i, ¯j) /∈A : f (Xξτu 
+
+> ¯i
+
+, Y χτu 
+
+> ¯j
+
+) ≤ λ1}. Thus, the mismatch probability satisfies 
+
+¯θ(Φ us |P M1 , Q M2 ) = PA{F 1} + PA{F 2}. (167) Furthermore, 
+
+PA{F 1} = ∑ 
+
+> n∈NN−1
+
+PA{τu = n}PA{∃ (i, j ) ∈ A : f (Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) > λ 2} (168) 
+
+≤ ∑ 
+
+> n∈NN−1
+
+∑
+
+> (i,j )∈A
+
+PA{f (Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) > λ 2}. (169) Similarly, 
+
+PA{F 2} ≤ ∑ 
+
+> n∈NN−1
+
+∑ 
+
+> (¯ i, ¯j)/∈A
+
+PA{f (Xξn 
+
+> ¯i
+
+, Y χn 
+
+> ¯j
+
+) ≤ λ1}. (170) 25 
+
+A false reject event occurs if all pairs of sequences have scoring function values greater than λ2. Thus, the false alarm probability satisfies 
+
+ζ(Φ us |P M1 , Q M2 ) ≤ PA
+
+{∀ (i, j ) ∈ [M1] × [M2], f (Xξτu 
+
+> i
+
+, Y χτu 
+
+> j
+
+) > λ 2
+
+} (171) 
+
+≤ PA
+
+{∀ (i, j ) ∈ A , f (Xξτu 
+
+> i
+
+, Y χτu 
+
+> j
+
+) > λ 2
+
+} (172) 
+
+≤ min  
+
+> (i,j )∈A
+
+PA
+
+{f (Xξτu 
+
+> i
+
+, Y χτu 
+
+> j
+
+) > λ 2
+
+} (173) 
+
+≤ min 
+
+> (i,j )∈A
+
+∑ 
+
+> n∈NN−1
+
+PA{f (Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) > λ 2}. (174) 
+
+3) Case with Matched Pairs for Discrete Observed Sequences: For discrete observed sequences, f (·) is the GJS scoring function in (16). We first bound the expected stopping time in (163). Recall the definition of g(·) in (36). Fix any n ∈ N. It follows from (86) with λ replaced by λ1 that 
+
+∑
+
+> (i,j )∈A
+
+PA{GJS( Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) > λ 1} ≤ ∑
+
+> (i,j )∈A
+
+exp( −n(λ1 − g(n))) (175) 
+
+≤ |A| exp( −n(λ1 − g(n))) . (176) Furthermore, it follows from the definition of Es
+
+> A
+
+(·) in (38) and the result in (96) with λ replaced with λ2 that 
+
+∑ 
+
+> (¯ i, ¯j)/∈A
+
+PA{GJS( Xξn 
+
+> ¯i
+
+, Y χn 
+
+> ¯j
+
+) ≤ λ2} ≤ ∑ 
+
+> (¯ i, ¯j)/∈A
+
+exp ( − n(Es
+
+> A
+
+(λ2, P M1 , Q M2 ) − g(n)) ) (177) 
+
+= ( M1M2 − |A| ) exp ( − n(Es
+
+> A
+
+(λ2, P M1 , Q M2 ) − g(n)) ). (178) Combining (163), (166), (176) and (178) and using the sum of geometric series, the expected stopping time satisfies 
+
+EPA [τu] ≤ N − 1 + ∑ 
+
+> n∈NN−1
+
+(|A| exp( −n(λ1 − g(n))) + ( M1M2 − |A| ) exp ( − n(Es
+
+> A
+
+(λ1, P M1 , Q M2 ) − g(n)) )) (179) 
+
+≤ N − 1 + |A| exp( −(N − 1)( λ1 − g(N − 1))) 1 − exp( −(λ1 − g(N − 1))) + (M1M2 − |A| exp( −(N − 1)( Es
+
+> A
+
+(λ2, P M1 , Q M2 ) − g(N − 1)))) 1 − exp( −(Es
+
+> A
+
+(λ2, P M1 , Q M2 ) − g(N − 1))) . (180) Thus, when N is sufficiently large such that |A| exp( −(N −1)( λ1 −g(N −1))) 1−exp( −(λ1−g(N −1))) + (M1 M2 −|A| ) exp( −(N −1)( Es           
+
+> A(λ2,P M1,Q M2)−g(N−1))) 1−exp( −(Es
+> A(λ2,P M1,Q M2)−g(N−1)))
+
+≤
+
+1, the expected stopping time satisfies EPA [τu] ≤ N .We next bound the mismatch probability in (167). It follows from (86) with λ replaced by λ2, the result in (169) and the sum of geometric series that 
+
+PA{F 1} ≤ ∑ 
+
+> n∈NN−1
+
+∑
+
+> (i,j )∈A
+
+PA{GJS( Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) > λ 2} (181) 
+
+≤ ∑ 
+
+> n∈NN−1
+
+∑
+
+> (i,j )∈A
+
+exp( −n(λ2 − g(n))) (182) 
+
+≤ |A| ∑ 
+
+> n∈NN−1
+
+exp( −n(λ2 − g(N − 1))) (183) 
+
+≤ |A| exp( −(N − 1)( λ2 − g(N − 1))) 1 − exp( −(λ2 − g(N − 1))) . (184) Analogously, it follows from the definition of Es
+
+> A
+
+(·) in (38), the result in (96) with λ replaced with λ1 and the result in (170) that 
+
+PA{F 2} ≤ ∑ 
+
+> n∈NN−1
+
+∑ 
+
+> (¯ i, ¯j)/∈A
+
+PA{GJS( Xξn 
+
+> ¯i
+
+, Y χn 
+
+> ¯j
+
+) ≤ λ1} (185) 
+
+≤ ∑ 
+
+> n∈NN−1
+
+∑ 
+
+> (¯ i, ¯j)/∈A
+
+exp ( − n(Es
+
+> A
+
+(λ1, P M1 , Q M2 ) − g(n)) ) (186) 
+
+≤ (M1M2 − |A| ) ∑ 
+
+> n∈NN−1
+
+∑ 
+
+> (¯ i, ¯j)/∈A
+
+exp ( − n(Es
+
+> A
+
+(λ1, P M1 , Q M2 ) − g(N − 1)) ) (187) 
+
+≤ (M1M2 − |A| ) exp( −(N − 1)( Es
+
+> A
+
+(λ1, P M1 , Q M2 ) − g(N − 1))) 1 − exp( −(Es
+
+> A
+
+(λ1, P M1 , Q M2 ) − g(N − 1))) . (188) 26 
+
+Thus, combining (167), (169), (170), (184) and (188), the mismatch exponent for discrete observed sequences satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log ¯θ(Φ us |P M1 , Q M2 ) ≥ min {Es
+
+> A
+
+(λ1, P M1 , Q M2 ), λ 2}. (189) Finally, we bound the false reject probability. Analogously to (184), it follows from (86) with λ replaced by λ2, the result in (174) and the sum of geometric series that the false reject probability satisfies 
+
+ζ(Φ us |P M1 , Q M2 ) ≤ min 
+
+> (i,j )∈A
+
+∑ 
+
+> n∈NN−1
+
+PA{GJS( Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) > λ 2} (190) 
+
+≤ ∑ 
+
+> n∈NN−1
+
+exp( −n(λ2 − g(n))) (191) 
+
+≤ exp( −(N − 1)( λ2 − g(N − 1))) 1 − exp( −(λ2 − g(N − 1))) . (192) Thus, the false reject exponent for discrete observed sequences satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log ζ(Φ us |P M1 , Q M2 ) ≥ λ2. (193) 
+
+4) Case with Matched Pairs for Continuous Observed Sequences: For continuous observed sequences, f (·) is the MMD scoring function in (19). We first bound the expected stopping time in (163). It follows from the definition of E(·) in (37) and the result in [8, Eq. (144)-(146)] that 
+
+∑
+
+> (i,j )∈A
+
+PA{MMD 2(Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) > λ 1} ≤ ∑
+
+> (i,j )∈A
+
+exp( −nE (λ1)) (194) 
+
+≤ |A| exp( −nE (λ1)) . (195) Furthermore, it follows from the result in (106) and the definition of Es,c 
+
+> A
+
+(·) in (106) that when λ2 < min (¯ i, ¯j) /∈A MMD 2(P¯i, Q ¯j )
+
+∑ 
+
+> (¯ i, ¯j)/∈A
+
+PA{MMD 2(Xξn 
+
+> ¯i
+
+, Y χn 
+
+> ¯j
+
+) ≤ λ2} ≤ ∑ 
+
+> (¯ i, ¯j)/∈A
+
+exp( −nE s,c 
+
+> A
+
+(λ2, P M1 , Q M2 )) (196) 
+
+≤ (M1M2 − |A| ) exp( −nE s,c 
+
+> A
+
+(λ2, P M1 , Q M2 )) . (197) Combining (163), (166), (195) and (197) and using the sum of geometric series, when λ2 < min (¯ i, ¯j) /∈A MMD 2(P¯i, Q ¯j ), the expected stopping time satisfies 
+
+EPA [τu] ≤ N − 1 + |A| exp( −(N − 1) E(λ1)1 − exp( −E(λ1)) + (M1M2 − |A| ) exp( −(N − 1) Es,c 
+
+> A
+
+(λ2, P M1 , Q M2 )) 1 − exp( −Es,c 
+
+> A
+
+(λ2, P M1 , Q M2 )) , (198) which is less than N if |A| exp( −(N −1) E(λ1)1−exp( −E(λ1 )) + (M1 M2 −|A| ) exp( −(N −1) Es,c           
+
+> A(λ2,P M1,Q M2)) 1−exp( −Es,c
+> A(λ2,P M1,Q M2))
+
+≤ 1.We next bound the mismatch probability. Using [8, Eq. (144)-(146)], analogously to (103), it follows from the definition of 
+
+E(·) in (37) and the result in (169) that 
+
+PA{F 1} ≤ ∑ 
+
+> n∈NN−1
+
+∑
+
+> (i,j )∈A
+
+PA{MMD 2(Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) > λ 2} (199) 
+
+≤ ∑ 
+
+> n∈NN−1
+
+∑
+
+> (i,j )∈A
+
+exp( −nE (λ2)) (200) 
+
+≤ |A| exp( −(N − 1) E(λ2)) 1 − exp( −E(λ2)) . (201) Furthermore, it follows from (106) and (170) that when λ1 < min (¯ i, ¯j) /∈A MMD 2(P¯i, Q ¯j )
+
+PA{F 2} ≤ ∑ 
+
+> n∈NN−1
+
+∑ 
+
+> (¯ i, ¯j)/∈A
+
+PA{MMD 2(Xξn 
+
+> ¯i
+
+, Y χn 
+
+> ¯j
+
+) ≤ λ1} (202) 
+
+≤ ∑ 
+
+> n∈NN−1
+
+∑ 
+
+> (¯ i, ¯j)/∈A
+
+exp( −nE s,c 
+
+> A
+
+(λ1, P M1 , Q M2 )) (203) 
+
+≤ (M1M2 − |A| ) exp( −(N − 1) Es,c 
+
+> A
+
+(λ1, P M1 , Q M2 )) 1 − exp( −Es,c 
+
+> A
+
+(λ1, P M1 , Q M2 )) . (204) 27 
+
+Thus, combining (167), (169), (170), (201) and (204), when λ1 < min (¯ i, ¯j) /∈A MMD 2(P¯i, Q ¯j ), the mismatch exponent for continuous observed sequences satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log ¯θ(Φ us |P M1 , Q M2 ) ≥ min {Es,c 
+
+> A
+
+(λ1, P M1 , Q M2 ), E (λ2)}. (205) Finally, we bound the false reject probability for continuous observed sequences. Analogously to (201), it follows from [8, Eq. (144)-(146)] with λ replaced by λ2, the result in (174) and the sum of geometric series that 
+
+ζ(Φ us |P M1 , Q M2 ) ≤ min 
+
+> (i,j )∈A
+
+∑ 
+
+> n∈NN−1
+
+PA{MMD 2(Xξn 
+
+> i
+
+, Y χn 
+
+> j
+
+) > λ 2} (206) 
+
+≤ ∑ 
+
+> n∈NN−1
+
+exp( −nE (λ2)) (207) 
+
+≤ exp( −(N − 1) E(λ2)) 1 − exp( −E(λ2)) . (208) Thus, the false reject exponent for continuous observed sequences satisfies 
+
+lim inf   
+
+> N→∞
+
+− 1
+
+N log ζ(Φ us |P M1 , Q M2 ) ≥ E(λ2). (209) VII. C ONCLUSION 
+
+We revisited the problem of statistical sequence matching and proposed low-complexity exponentially consistent tests for both discrete and continuous observed sequences. We considered both cases when the number of matches is known and unknown. For each case, we proposed non-parametric fixed-length tests and sequential tests, characterized the exponential decay rates of error probabilities and demonstrated the benefit of sequentiality by showing that our proposed sequential tests achieve better performance than our proposed fixed-length tests. Compared with existing exhaustive search tests [1]–[3], [8] that have exponential complexity with respect to the number of sequences and the number of matches, our tests have polynomial complexity with respect to the number of sequences in each database regardless of the number of matches, which strike a better tradeoff between detection performance and computational complexity. In particular, when the number of sequences of either database and the number of matches is large, the tests in [1]–[3], [8] cannot be used due to prohibitively high complexity but our tests are feasible. We next discuss future research directions. Firstly, we assumed that a pair of matched sequences are generated from exactly the same distribution. However, in practice, even matched sequences could be generated from distributions that deviate slightly. Thus, towards a further step to practical applications, it would be worthwhile to model distribution uncertainty and analyze the impact of distribution uncertainty on the performance of tests, potentially borrowing ideas from [16], [27]. Secondly, we derived achievability results in this paper. Without a matching converse result, it is unclear whether our results are optimal and our claimed benefit of sequentiality is general. Thus, it is valuable to derive converse results for the settings in this paper. Finally, for sequential tests, we assumed that all sequences of both databases are available at each time point. However, in certain cases, the set of available sequences could be determined in an online manner by the test designer to further improve sample efficiency. Thus, it is beneficial to generalize our results for sequential tests with an additional sampling step, potentially borrowing ideas from [28]. REFERENCES [1] J. Unnikrishnan, “Asymptotically optimal matching of multiple sequences to source distributions and training sequences,” IEEE Trans. Inf. Theory ,vol. 61, no. 1, pp. 452–468, 2015. [2] L. Zhou, Q. Wang, J. Wang, L. Bai, and A. Hero, “Large and small deviations for statistical sequence matching,” IEEE Trans. Inf. Theory , vol. 70, no. 11, pp. 7532 – 7562, 2024. [3] L. Zhou, Q. Wang, W. Yun, and J. Wang, “Large deviations for sequential tests of statistical sequence matching,” arXiv 2506.03976 , 2025. [4] R. Blahut, “Hypothesis testing and information theory,” IEEE Trans. Inf. Theory , vol. 20, no. 4, pp. 405–417, 1974. [5] A. Wald, “Sequential tests of statistical hypotheses,” Ann. Math. Statist. , vol. 16, no. 2, pp. 117–186, 1945. [6] A. Wald and J. Wolfowitz, “Optimum character of the sequential probability ratio test,” Ann. Math. Statist. , pp. 326–339, 1948. [7] A. Gretton, K. Borgwardt, M. Rasch, B. Scholkopf, and A. Smola, “A kernel two-sample test,” J. Mach. Learn. Res. , vol. 13, pp. 723–773, 2012. [8] L. Zhou and W. Yuan, “Exponentially consistent tests for statistical sequence matching of continuous sequences,” submitted to IEEE Trans. Inf. Theory ,2025. [9] C. E. Shannon, “A mathematical theory of communication,” Bell Syst. Tech. J. , vol. 27, no. 1, pp. 379–423, 1948. [10] ——, “Coding theorems for a discrete source with a fidelity criterion,” IRE Nat. Conv. Rec , vol. 4, no. 142-163, p. 1, 1959. [11] M. Gutman, “Asymptotically optimal classification for multiple tests with empirically observed statistics,” IEEE Trans. Inf. Theory , vol. 35, no. 2, pp. 401–408, 1989. [12] L. Zhou, V. Y. F. Tan, and M. Motani, “Second-order optimal statistical classification,” Information and Inference: A Journal of the IMA , vol. 9, no. 1, pp. 81–111, 2020. [13] M. Haghifam, V. Y. F. Tan, and A. Khisti, “Sequential classification with empirically observed statistics,” IEEE Trans. Inf. Theory , vol. 67, no. 5, pp. 3095–3113, 2021. [14] C. Y. Hsu, C. F. Li, and I. H. Wang, “On universal sequential classification from sequentially observed empirical statistics,” in IEEE ITW , 2022, pp. 642–647. 28 
+
+[15] C.-F. Li and I.-H. Wang, “A unified study on sequentiality in universal classification with empirically observed statistics,” IEEE Trans. Inf. Theory ,vol. 71, no. 3, pp. 1546–1569, 2025. [16] L. Zhu and L. Zhou, “Exponentially consistent statistical classification of continuous sequences with distribution uncertainty,” arXiv 2410.21799 , 2024. [17] V. Y. F. Tan, “Asymptotic estimates in information theory with non-vanishing error probabilities,” Foundations and Trends ® in Communications and Information Theory , vol. 11, no. 1–2, pp. 1–184, 2014. [18] L. Zhou and M. Motani, “Finite blocklength lossy source coding for discrete memoryless sources,” Foundations and Trends ® in Communications and Information Theory , vol. 20, no. 3, pp. 157–389, 2023. [19] L. Zhou, Y. Wei, and A. O. Hero, “Second-order asymptotically optimal outlier hypothesis testing,” IEEE Trans. Inf. Theory , vol. 68, no. 6, pp. 3585–3607, 2022. [20] K. Fukumizu, A. Gretton, X. Sun, and B. Scholkopf, “Kernel measures of conditional dependence,” in NeurIPS , 2007. [21] B. K. Sriperumbudur, A. Gretton, K. Fukumizu, G. R. G. Lanckriet, and B. Scholkopf, “Injective hilbert space embeddings of probability measures,” in 
+
+COLT , 2008. [22] A. Gretton, K. M. Borgwardt, M. J. Rasch, B. Schölkopf, and A. Smola, “A kernel two-sample test,” J. Mach. Learn. Res. , vol. 13, no. 1, pp. 723–773, 2012. [23] L. Zhu and L. Zhou, “Exponentially consistent outlier hypothesis testing for continuous sequences,” IEEE Trans. Inf. Theory , vol. 71, no. 5, pp. 3287–3304, 2025. [24] I. Csiszar, “The method of types [information theory],” IEEE Trans. Inf. Theory , vol. 44, no. 6, pp. 2505–2523, 1998. [25] C. McDiarmid et al. , “On the method of bounded differences,” Surveys in combinatorics , vol. 141, no. 1, pp. 148–188, 1989. [26] T. M. Cover and J. A. Thomas, Elements of Information Theory . John Wiley & Sons, 2012. [27] H.-W. Hsu and I.-H. Wang, “On binary statistical classification from mismatched empirically observed statistics,” in IEEE ISIT , 2020, pp. 2533–2538. [28] R. C. Yavas, Y. Huang, V. Y. F. Tan, and J. Scarlett, “A general framework for clustering and distribution matching with bandit feedback,” IEEE Trans. Inf. Theory , vol. 71, no. 3, pp. 2116–2139, 2025.

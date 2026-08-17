@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-08-17 <!--dpr-date:20260817-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/17/2608.10455v1-exponentially-consistent-low-complexity-tests-for-statistical-sequence-matching" data-sidebar-item="{&quot;title&quot;: &quot;Exponentially Consistent Low Complexity Tests for Statistical Sequence Matching&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.10455v1-exponentially-consistent-low-complexity-tests-for-statistical-sequence-matching&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;microbiome&quot;}], &quot;evidence&quot;: &quot;统计序列匹配方法可支持宏基因组测序数据分析&quot;}">Exponentially Consistent Low Complexity Tests for Statistical Sequence Matching</a>
   * 2026-08-15 <!--dpr-date:20260815-->
     * 速读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/15/2608.07344v1-muxvizpy-a-python-library-for-the-analysis-of-multilayer-biological-networks" data-sidebar-item="{&quot;title&quot;: &quot;muxvizpy: a Python library for the analysis of multilayer biological networks&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.07344v1-muxvizpy-a-python-library-for-the-analysis-of-multilayer-biological-networks&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;microbiome&quot;}], &quot;evidence&quot;: &quot;多层生物网络分析工具，可分析细菌物种等多实体间的交互，适用于微生物组网络分析&quot;}">muxvizpy: a Python library for the analysis of multilayer biological networks</a>
