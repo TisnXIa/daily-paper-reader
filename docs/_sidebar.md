@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-08-18 <!--dpr-date:20260818-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/18/2608.14866v1-arise-an-adaptive-residual-informed-stability-ensemble-for-feature-selection-in-small-sample-biomedical-omics" data-sidebar-item="{&quot;title&quot;: &quot;ARISE: An adaptive residual-informed stability ensemble for feature selection in small-sample biomedical omics&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.14866v1-arise-an-adaptive-residual-informed-stability-ensemble-for-feature-selection-in-small-sample-biomedical-omics&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;microbiome&quot;}], &quot;evidence&quot;: &quot;面向组学数据的特征选择方法，可迁移到微生物组数据分析&quot;}">ARISE: An adaptive residual-informed stability ensemble for feature selection in small-sample biomedical omics</a>
   * 2026-08-17 <!--dpr-date:20260817-->
     * 速读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/17/2608.10455v1-exponentially-consistent-low-complexity-tests-for-statistical-sequence-matching" data-sidebar-item="{&quot;title&quot;: &quot;Exponentially Consistent Low Complexity Tests for Statistical Sequence Matching&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.10455v1-exponentially-consistent-low-complexity-tests-for-statistical-sequence-matching&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;microbiome&quot;}], &quot;evidence&quot;: &quot;统计序列匹配方法可支持宏基因组测序数据分析&quot;}">Exponentially Consistent Low Complexity Tests for Statistical Sequence Matching</a>

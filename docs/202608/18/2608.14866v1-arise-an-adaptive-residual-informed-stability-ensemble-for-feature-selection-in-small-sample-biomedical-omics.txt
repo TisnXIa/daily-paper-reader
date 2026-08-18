@@ -1,0 +1,594 @@
+Title: ARISE: An adaptive residual-informed stability ensemble for feature selection in small-sample biomedical omics
+
+URL Source: https://arxiv.org/pdf/2608.14866v1
+
+Published Time: Tue, 18 Aug 2026 00:19:20 GMT
+
+Number of Pages: 30
+
+Markdown Content:
+# ARISE: An adaptive residual-informed stability ensemble for feature selection in small-sample biomedical omics 
+
+Zardad Khan a, ∗, Amjad Ali a, Naz Gul b, Sheema Gul b, Saeed Aldahmani a, ∗
+
+> aDepartment of Statistics and Business Analytics, United Arab Emirates University, Al Ain, United Arab Emirates
+> bDepartment of Statistics, Abdul Wali Khan University Mardan, Mardan, Pakistan
+
+Abstract Objective: Molecular classification involving a small number of observa-tions requires feature-selection methods that identify predictive, stable, and nonredundant feature subsets while remaining applicable to both binary and multiclass outcomes. We propose ARISE (Adaptive Residual-Informed Stability Ensemble), an adaptive feature-selection framework that integrates multiple complementary relevance signals, class-balanced stability assessment, residual-informed redundancy control, and multiclass pairwise coverage. 
+
+Methods: The proposed ARISE method combines seven percentile-normalized relevance components through fifteen predefined selector pro-files whose contributions are adaptively weighted using nested inner cross-validation. The framework was evaluated on five molecular datasets using eight feature-set sizes, three fixed classifiers (k-nearest neighbours, support vector machine, and random forest), and six standalone filter-based com-parators. Generalization performance was estimated using five-fold outer cross-validation repeated 50 times and assessed using balanced accuracy, macro-F1, and Cohen’s κ.
+
+Results: Across a total of 210,000 held-out assessments on the five datasets, the prposed ARISE method achieved the highest overall perfor-mance for all three evaluation metrics, corresponding to all 15 dataset–metric combinations. Its equal-dataset mean performance was 0.793 for balanced accuracy, 0.776 for macro-F1, and 0.725 for Cohen’s κ, exceeding the strongest     
+
+> ∗Corresponding author.
+> Email addresses: zaar@uaeu.ac.ae (Zardad Khan), saldahmani@uaeu.ac.ae (Saeed Aldahmani) arXiv:2608.14866v1 [stat.ML] 14 Aug 2026
+
+aggregate comparator by 0.022, 0.023, and 0.028, respectively. ARISE main-tained strong performance across a range of compact feature-set sizes, while the best-performing feature budget varied among datasets, indicating that no single subset size was uniformly optimal. 
+
+Conclusion: ARISE yields a transparent and adaptive framework for molecular feature selection that jointly addresses relevance, stability, redun-dancy, and multiclass discrimination. Its consistent performance across the five molecular datasets, multiple classifiers, evaluation metrics, and feature-set sizes supports its potential for small-sample molecular classification. 
+
+Keywords: medical artificial intelligence, feature selection, multiclass classification, stability, nested cross-validation, omics, biomarker discovery 
+
+1. Introduction 
+
+Molecular diagnostic studies often involve hundreds to tens of thousands of candidate features measured on comparatively small cohorts comprising only tens or hundreds of observations. In this “large p, small n” regime, a selector must do more than maximize apparent discrimination: it should resist sampling perturbations, avoid redundant panels, preserve minority-class signals, and separate every tuning decision from the held-out assessment. These requirements are especially important in medical artificial intelligence (AI), where an unstable or leakage-contaminated panel may appear accurate yet fail mechanistic interpretation, assay transfer, or external validation. Conventional filters provide speed and transparent rankings, but each emphasizes a particular signal geometry. Mean-shift scores favor approxi-mately location-separated classes; mutual information (MI) detects broader dependence; and interval overlap and Bhattacharyya separation capture distri-butional structure. No one geometry is uniformly appropriate across tissues, diseases, platforms, class imbalance, and feature budgets. Conversely, wrap-pers that search many subsets can be prohibitively variable in small samples and can overfit the model-selection criterion. Therefore, we developed ARISE, Adaptive Residual-Informed Stability En-semble , a multiclass, stability-aware selector that (i) expresses complementary filters on a common percentile scale, (ii) estimates class-balanced subsample robustness, (iii) penalizes within-class residual correlation rather than raw correlation, (iv) rewards coverage of unresolved class pairs, and (v) tunes a fixed profile library with nested minimax-regret racing and soft consensus. 2Learner hyperparameters remain fixed across selectors so that the comparison targets feature selection rather than classifier optimization. The current manuscript offers four contributions. First, it gives a unified construction for binary and multiclass feature selection with exact nested feature paths. Second, it combines complementary relevance evidence with class-balanced subsample robustness, within-class residual redundancy con-trol, and explicit multiclass pair coverage. Third, it establishes boundedness, pair-coverage submodularity, class-shift invariance of the redundancy term, conditional subsample-mean concentration, consensus feasibility, determin-istic nesting, and outer-test separation. Fourth, it evaluates the proposed selector under fully nested repeated cross-validation across five heterogeneous molecular datasets, three fixed classifiers, and three performance metrics: balanced accuracy, macro-F1, and Cohen’s κ.The study is intended as a methodological evaluation rather than evidence of clinical deployment. The datasets span different molecular platforms, di-mensionalities, and multiclass structures, while the classifiers are deliberately held fixed to isolate the effect of feature selection. The rest of the paper is arranged as follows. Section 2 reviews related work on feature selection, stability, ensemble approaches, and biomedical applications. Section 3 de-scribes the datasets, the proposed ARISE framework, its relevance, stability, redundancy, and pair-coverage components, the nested profile-racing and con-sensus procedure, the comparison methods, classifiers, and validation protocol. Section 4 presents the main theoretical properties of the proposed framework. Section 5 reports the experimental results, including aggregate performance, dataset-wise comparisons, feature-budget behaviour, and selected-set stability. Section 6 discusses the methodological implications, limitations, and direc-tions for further research. Finally, the Conclusion summarizes the principal findings and perspectives of the study. 
+
+2. Related work 
+
+There are three common categories of feature-selection methods, i.e., filters, wrappers, and embedded approaches [1]. Maximum-relevance/minimum-redundancy formalized a central filter trade-off [2]; support-vector recursive elimination provided an influential wrapper for cancer expression data [3]; and the lasso and elastic net established sparse embedded estimation [4, 5]. These methods remain useful, but fixed assumptions about effect geometry or correlation can be brittle across heterogeneous molecular studies. 3Chance-corrected stability and stability selection measures made resam-pling consistency an explicit objective [6, 7]. Equally important, model selection and preprocessing must be nested: nonnested tuning creates op-timistic bias [8], a risk recognized early in microarray prognosis studies [9]. ARISE integrates these ideas, but uses subsampling stability as a score com-ponent rather than claiming the family-wise error control of classical stability selection. Recent research work has focusd on multi-objective and ensemble selection. Dual-stage bias correction, filter–wrapper stacking, rough-hypervolume search, low-order information criteria, bi-level ensembles, rank-revealing subspaces, and expert-augmented selection target complementary combinations of ac-curacy, stability, compactness, and interpretability [10–16]. Work within medical AI and biomedical decision support has emphasized stable graph-based biomarker selection [17], multi-objective clinical feature search [12], and quantifiable interpretation of molecular response models [18]. ARISE differs by using a fixed interpretable component library, within-class residual redundancy, explicit class-pair coverage, and a nested soft consensus rather than selecting a single winning profile. Feature discovery in biomedical regimes increasingly spans network, single-cell, multi-view, and multi-omics learning. Examples include directed regula-tory graphs [19], trajectory-preserving single-cell selection [20], differentiable information imbalance [21], electronic-health-record-assisted omics [22], incom-plete multi-omics integration [23], and cross-platform molecular prediction [24]. Foundation models, graph methods, and multiscale association frameworks broaden the representational space [25–27], while recent reviews emphasize precision immunotherapy and knowledge-guided genomics [28, 29]. Graphi-cal ensemble selection additionally models dependencies among co-selected medical features [30]. Explainable gene-biomarker models and reviews stress that attribution alone is not clinical validity [31, 32]; early-integration and training-dynamics studies similarly motivate explicit robustness audits [33, 34]. Our narrower objective is a transparent selector that can precede several fixed learners and remains computationally feasible when p ≫ n.
+
+3. Materials and methods 
+
+3.1. Study datasets and data provenance 
+
+The current evaluation utilized the five molecular datasets summarized in Table 1. They span methylation and gene-expression measurements, three to 4six analysis classes, and feature dimensions from 45 to 22,283. Each dataset was evaluated with the same three fixed classifiers, i.e., kNN, SVM, and random forest, and the same three reported metrics, i.e.,balanced accuracy, macro-F1, and Cohen’s κ. The dataset is the unit of across-study aggregation; folds, feature budgets, classifiers, and predictions are treated as repeated measurements within a dataset rather than as independent studies.                                   
+
+> Table 1: Benckmark molecular datasets used in the benchmark evaluation. Here, n,p,and Kdenote sample size, number of features, and number of classes, respectively.
+> ID Dataset npKSource D1 HCC methylation 56 45 3[35] D2 Nutrimouse 40 120 5[36] D3 Yeoh ALL 248 12625 6[37] D4 Su 102 5565 4[38, 39] D5 Burczynski 127 22283 3[40]
+
+The benchmark datasets were obtained from established R data resources. D1 used hccframe from ordinalgmifs version 1.0.9; D2 used nutrimouse 
+
+from whitening version 1.4.0; and D3–D5 used yeoh , su , and burczynski ,respectively, from datamicroarray version 0.2.3. Object-level provenance is reported because the analyzed dimensions can differ from those in the originating studies. D1 is a 45-CpG subset of GSE18081 for which technical replicates and matched cirrhotic specimens belonging to hepatocellular-carcinoma subjects were removed [35, 41]. D2 uses diet as the classification endpoint, while genotype is balanced but not modeled [36]. D4 preserves the processed object’s native endpoint codes; no clinical tissue names are inferred. Its provenance links the original transcriptome resource to the later FABIA data layer [38, 39]. D5 traces to GSE3365. These dataset-specific characteristics constrain biological interpretation. All additional preprocessing, feature scoring, tuning, and model fitting introduced in the present study were performed within the applicable training partition. 
+
+3.2. Notation and component construction 
+
+Let D = {(xi, y i)}ni=1 , where xi ∈ Rp and yi ∈ { 1, . . . , K }. Let M =
+
+K(K − 1) /2 denote the number of unordered class pairs and let J = 7 denote the number of relevance components. Every quantity estimated by the study 5pipeline, including additional preprocessing, component scores, subsampling quantities, profile tuning, feature paths, and classifier parameters, is learned from the applicable training partition. Transformations already embedded in the published source objects are treated as fixed inputs and are not re-estimated. For feature g and pair ( a, b ), let μag , s 2
+
+> ag
+
+, n a denote the class mean, variance, and size; set vag = max( s2
+
+> ag
+
+, ϵ ), ϵ = 10 −12 , and δabg = μbg − μag . Six pairwise components are 
+
+DF 
+
+> abg
+
+= δ2
+
+> abg
+
+vag + vbg + ϵ, DSNR  
+
+> abg
+
+= |δabg |√vag + √vbg + ϵ, (1) 
+
+DW 
+
+> abg
+
+= |δabg |
+
+> √
+
+vag /n a + vbg /n b + ϵ, DB 
+
+> abg
+
+= 14 log  
+
+> [
+
+14 
+
+> (
+
+vag 
+
+vbg 
+
++ vbg 
+
+vag 
+
++ 2 
+
+> )]
+
++ δ2
+
+> abg
+
+4( vag + vbg ).
+
+(2) For POS, the proposed cache uses whisker ω = 1 .5 and robust class interval 
+
+Iag = [ Lag , U ag ] = [
+
+max {min xag , Q 1,ag − ω IQR ag }, min {max xag , Q 3,ag + ω IQR ag }]
+
+.
+
+Let Oabg = max {0, min( Uag , U bg )−max( Lag , L bg )} and Habg = max( Uag , U bg )−
+
+min( Lag , L bg ). The POS score is DPOS  
+
+> abg
+
+= 1 − Oabg /H abg when Habg > ϵ and zero otherwise. Rank-based pair separation is DA 
+
+> abg
+
+= |2AUC abg − 1|. Here, the pairwise AUC is used only to construct this feature-relevance component; it is not an evaluation metric. Each component is converted to a feature percentile within its class pair and then averaged equally over pairs. MI uses three quantile bins by default and is also percentile-normalized. Thus every feature has pg ∈ [0 , 1] 7.
+
+3.3. Profile relevance, stability, redundancy, and pair coverage 
+
+Each fixed candidate profile c ∈ { 1, . . . , C }, with C = 15, has nonnegative component weights wc ∈ ∆7, where ∆7 =
+
+> 
+
+w ∈ R7+ :
+
+> 7∑
+> j=1
+
+wj = 1  
+
+> 
+
+.
+
+Its relevance is 
+
+Rgc = w⊤ 
+
+> c
+
+pg.
+
+6Let nmin = min k nk and m = min {nmin , max(2 , ⌊0.70 nmin ⌋)}. For each of 
+
+B = 8 independent draws, m observations are sampled without replacement from every class. The POS, Fisher, SNR, Welch, Bhattacharyya, rank-based, and MI components are recomputed. The resulting profile-weighted scores are re-percentiled across the screened features to obtain Z(b) 
+
+> gc
+
+. The subsample-averaged robustness score and combined base score are 
+
+Sgc = 1
+
+B
+
+> B∑
+> b=1
+
+Z(b) 
+
+> gc
+
+, Agc = (1 − αc)Rgc + αcSgc , αc ∈ [0 , 1] .
+
+The quantity Sgc is a mean subsample rank rather than a dispersion measure or selection frequency; selected-set Jaccard stability is evaluated separately. To avoid treating replicated class signal as nuisance correlation, redundancy is calculated after within-class centering. Let 
+
+zig = xig − xyig
+
+swithin 
+
+> g
+
+, ρg(S) = max 
+
+> h∈S
+> ∣∣∣∣∣
+
+z⊤ 
+
+> g
+
+zh
+
+n − K 
+
+> ∣∣∣∣∣
+
+,
+
+where swithin  
+
+> g
+
+= {∑
+
+> i
+
+(xig − xyig)2/(n − K)}1/2. A nonfinite or < 10 −12 within-class scale is replaced by one, and any remaining nonfinite residual is set to zero. We set ρg(∅) = 0. No hard correlation deletion or mandatory cluster representative is used. For multiclass coverage, let U (c) 
+
+> gm
+
+∈ [0 , 1] be the profile-c weighted pairwise utility for pair m, using the six pairwise components and their weights renormalized to sum to one. When K = 2, or when profile c has zero total weight on those six components (the pure MI profile), we set Fc ≡ 0 and 
+
+ηc = 0. Otherwise define 
+
+Fc(S) = 1
+
+M
+
+> M∑
+> m=1
+
+max  
+
+> g∈S
+
+U (c)
+
+> gm
+
+, Fc(∅) = 0 .
+
+Let Gc be profile c’s deterministic local candidate universe after screening, with |G c| ≥ qmax . Let ηc ≥ 0 denote the pair-coverage weight, λ0c ≥ 0 the initial redundancy penalty, and dc ∈ [0 , 1] its linear decay parameter. At path step t ≤ qmax , ARISE selects 
+
+gt = arg max 
+
+> g∈G c\S t−1
+
+[Agc + ηc∆Fc(g | S t−1) − λc(t)ρg(St−1)] , (3) 7where ∆ Fc(g | S ) = Fc(S ∪ { g}) − Fc(S) and 
+
+λc(t) = 
+
+> 
+
+λ0c
+
+> [
+
+1 − dc
+
+t − 1
+
+qmax − 1
+
+> ]
+
+, qmax > 1,λ0c, qmax = 1 .
+
+The output is one ordered path; all feature budgets are exact prefixes. 
+
+3.4. Two-stage nested profile racing and soft consensus 
+
+The 15 profiles comprise eight mixed profiles (balanced, location-shift, distributional, nonlinear, stability-first, diversity-first, low-redundancy, and maximin) and seven pure components. Within each outer-training partition, three-fold inner cross-validation performs two-stage racing. Stage 1 evaluates all profiles at budgets 5 and 15 with fixed kNN and SVM. A one-standard-error rule first defines the preferred set; exactly three profiles proceed to Stage 2, padding with the next-lowest-loss profiles when fewer than three qualify and truncating by deterministic loss order when more than three qualify. Stage 2 evaluates those three profiles at all eight budgets and all three classifiers. The three performance metrics used for profile racing and for reported evaluation are 
+
+LT = LR = {BA , MacroF1 , κ }.
+
+Let mcf ℓ ∈ [0 , 1] be the inner-fold utility for metric ℓ ∈ L T and configuration 
+
+c, after mapping κ to ( κ + 1) /2. Within fold f , mcf ℓ is the equal mean over the applicable stage conditions: four cells in Stage 1 (two budgets × two classifiers) and 24 cells in Stage 2 (eight budgets × three classifiers). The fold-specific regret and loss are 
+
+rcf ℓ = max  
+
+> c′
+
+mc′f ℓ − mcf ℓ , Lcf = 0 .70 max 
+
+> ℓ∈L T
+
+rcf ℓ + 0 .30 |L T|−1 ∑
+
+> ℓ∈L T
+
+rcf ℓ . (4) After Stage 2, the best-plus-one-SE rule is recomputed among the three survivors; at least the best profile is retained in E. Let Lc and SE c be the mean and standard error of fold losses. Eligible profiles receive soft weights 
+
+ωc = exp[ −(Lc − Lmin )/τ ]/(1 + SE c/τ ) 
+
+> ∑
+> j∈E
+
+exp[ −(Lj − Lmin )/τ ]/(1 + SE j /τ ), τ = 0 .02 , (5) and every continuous path hyperparameter is averaged as θ∗ = ∑ 
+
+> c∈E
+
+ωcθc.8Component scores, stability, and the greedy path are then recomputed on the full outer-training partition using this consensus. 
+
+Input: training data T , budgets Q = {1, 5, 10 , 15 , 20 , 25 , 30 , 35 }, 15 fixed profiles, B = 8, and seed. 
+
+Output: one ordered consensus path whose prefixes give the selected sets for all q ∈ Q .
+
+1. Create three stratified inner folds within T .
+
+2. For each fold f , fit imputation and variance filtering on its inner-training subset T−f and apply the frozen operations to validation subset Vf .
+
+3. From T−f only, construct the seven percentile-normalized components and deterministic candidate workspace. 
+
+4. For every profile c, compute Rgc ; draw B balanced subsamples to obtain Sgc ; and form Agc .
+
+5. On T−f , compute residual redundancy, enabled pair utilities, and the profile path by equation (3). 
+
+6. Freeze each prefix, standardize its columns using T−f , fit kNN and SVM at q ∈ { 5, 15 }, and score Vf .
+
+7. Aggregate Stage 1 losses across folds and advance exactly three profiles by the padded/capped one-standard-error rule. 
+
+8. For each f , reuse its training-only workspace to evaluate those survivors over Q and all fixed learners on Vf .
+
+9. Compute equation (4), the final one-standard-error set, and soft weights ωc by equation (5). 
+
+10. Refit imputation and variance filtering on all of T and construct its component cache and candidate workspace. 
+
+11. Recompute consensus relevance, balanced-subsample robustness, residual redundancy, pair coverage, and the greedy path on all of T .
+
+12. Return the ordered consensus path; each requested selected set is its exact prefix. 
+
+Algorithm 1: ARISE training and nested feature-path construction. 
+
+Figure 1 summarizes the proposed method. The main sequence follows com-ponent construction, profile-specific path generation, inner-cross-validation racing, and soft consensus before refitting on the complete training partition. 9Current training partition Seven normalized rel-evance components and candidate screening Class-balanced subsample robustness Sgc            
+
+> Profile-weighted relevance Rgc
+> Combined score
+> Agc = (1 −αc)Rgc +αcSgc
+> Residual redundancy penalty Pairwise coverage gain Greedy nested feature paths Inner-CV profile race 15 profiles →3 survivors One-SE selection and soft consensus Final consensus path for q∈Q
+
+Figure 1: Architecture of the proposed ARISE feature-selection framework. 
+
+3.5. Comparators and fixed classifiers 
+
+The six standalone comparators were POS, Fisher score, signal-to-noise ratio (SNR), MI, Bhattacharyya distance, and Welch score. Small fixed grids were used only where a natural hyperparameter existed: POS interval whisker 
+
+ω ∈ { 1, 1.5, 2} and MI bins ∈ { 2, 3, 4}. Within each method, the choice minimized the same 0.70 worst-regret plus 0.30 mean-regret objective over three inner folds, using fixed SVM and budget 15. For each parameter-free pairwise filter, every class-pair score was computed, features were percentile-ranked within that pair, and the percentiles were averaged equally over the 
+
+K(K − 1) /2 pairs. Three classifiers were used throughout the main evaluation, with hyper-parameters fixed identically across selectors: distance-weighted kNN with 10 k = 5; radial SVM with C = 1, γ = 1 /q , shrinking enabled, and probability fitting disabled; and random forest [42] with 120 trees, mtry = ⌊√q⌋, terminal node size 1, and bootstrap replacement. In each current training partition, class k received weight n/ (Kn k). For kNN this multiplied inverse-distance neighbor votes, while SVM and random forest received their native class-weight arguments. For every classifier, the predicted label was the argmax of its class-score matrix. kNN supplied normalized weighted votes and ran-dom forest supplied normalized vote proportions. For SVM, each pairwise decision margin was oriented by its training-class mean margins, divided by the corresponding training-pair standard deviation, transformed by the logistic function, accumulated for each class, and divided by the number of class pairs. The design therefore estimates average selector utility across three fixed, heterogeneous decision rules rather than the maximum attainable accuracy of separately tuned classifiers. The fixed library comprised eight mixed profiles (balanced, location-shift, distributional, nonlinear, stability-first, diversity-first, low-redundancy, and maximin) and seven pure-component profiles. The seven pure profiles place unit weight on one relevance component at a time, whereas the mixed profiles combine components according to their named design objective. 
+
+3.6. Nested validation, metrics, and aggregation 
+
+The outer design used five stratified folds repeated fifty times (250 held-out fold values per budget–classifier condition); the inner design used one three-fold split inside each outer training set. The same three classifiers, i.e., kNN, SVM, and random forest, were evaluated for every dataset, method, and feature budget. All newly fitted missing-value handling, variance fil-tering, scaling, scoring, screening, profile selection, and model fitting were training-only. This procedural separation cannot reverse filtering, imputation, normalization, or other transformations already present in an upstream pack-age object. For class k, let Rk and Pk denote recall and precision. The three 11 reported performance metrics were BA = K−1
+
+> K∑
+> k=1
+
+Rk, (6) MacroF1 = K−1
+
+> K∑
+> k=1
+
+2PkRk
+
+Pk + Rk
+
+, (7) 
+
+κ = po − pe
+
+1 − pe
+
+, (8) where undefined class F1 terms were assigned zero, po is observed agreement, and pe is chance agreement from predicted and observed margins. Balanced accuracy gives each class equal recall weight, macro-F1 additionally requires classwise precision, and κ corrects overall agreement for agreement expected from the marginal label distributions. Their joint use therefore distinguishes minority-class recognition, precision–recall balance, and chance-corrected concordance. For each dataset, method, and metric, we first averaged the 250 outer-fold values within every budget–classifier condition, then averaged the 24 condition means equally. Methods were ranked descending with average ranks for exact ties. Across-dataset means therefore give every dataset equal weight, irrespective of its sample size. 
+
+3.7. Exploratory statistical analysis 
+
+Across the five dataset-level means, we used the Friedman statistic as an omnibus rank diagnostic. Proposed-versus-comparator differences were summarized by exact two-sided sign tests; six comparator P values were Holm-adjusted within each reported metric. Repeated folds were never treated as independent replicates. Because only five heterogeneous datasets were available for across-study inference, these tests are interpreted as exploratory diagnostics; emphasis is placed on effect sizes, dataset-level consistency, and distributional overlap rather than on confirmatory significance. 
+
+3.8. Computational details 
+
+The computational procedure caches univariate components and pairwise summaries within each training fold, reuses nested feature prefixes, and paral-lelizes outer folds. Each profile’s Screen value is a local candidate cap applied after descending base-score ordering (525, 630, or 700 for mixed profiles and 12 700 for pure profiles). The consensus cap is max {100 , round( ∑ 
+
+> c
+
+ωc Screen c)}.A shared workspace is formed from the union of each profile’s top-qmax 
+
+relevance-ranked features and is filled deterministically by mean relevance to at most 700 features. Fixed random seeds, stored split assignments, determin-istic tie handling, and completeness checks were used to support reproducible evaluation. 
+
+4. Theoretical properties 
+
+The following results characterize the selector conditional on a training sample and its fixed candidate-profile library. They do not claim that a selected panel is biologically causal or universally optimal. 
+
+Lemma 1 (Bounded construction) . If component and subsample percentiles lie in [0 , 1] , wc ∈ ∆7, and αc ∈ [0 , 1] , then Rgc , Sgc , Agc , Fc(S), and ∆Fc(g | S )
+
+all lie in [0 , 1] ; when pair coverage is enabled, so does U (c)
+
+> gm
+
+.Proof. The relevance, subsample-robustness mean, and pair utility are convex combinations of bounded quantities. A coordinatewise maximum of values in [0 , 1] remains bounded, as does its nonnegative average. Because adding a feature cannot reduce any coordinatewise maximum, the marginal gain is nonnegative and at most one. 
+
+Proposition 1 (Monotone submodular pair coverage) . Fc is normalized, monotone, and submodular. In the enabled multiclass case, its implemented gain is 
+
+∆Fc(g | S ) = 1
+
+M
+
+> M∑
+> m=1
+> (
+
+U (c) 
+
+> gm
+
+− max  
+
+> h∈S
+
+U (c)
+
+> hm
+> )
+> +
+
+.
+
+Proof. For each pair m, max g∈S U (c) 
+
+> gm
+
+is zero at ∅, is nondecreasing with S,and has diminishing returns because the current maximum can only increase. Nonnegative averaging over pairs preserves normalization, monotonicity, and submodularity. When coverage is disabled, Fc ≡ 0 has the same properties trivially. 
+
+Lemma 2 (Within-class shift invariance) . For transformed values x′ 
+
+> ig
+
+=
+
+xig + ayig, where akg is any class-specific constant, the residualized vector zg
+
+and every redundancy correlation are unchanged, provided the within-class scale is nonzero. 
+
+13 Proof. The transformed class mean is x′ 
+
+> kg
+
+= xkg + akg , so x′ 
+
+> ig
+
+− x′ 
+
+> yig
+
+= xig −
+
+xyig. The within-class scale and all residual cross-products are consequently identical. 
+
+Proposition 2 (Deterministic nested path) . Conditional on training data, configuration, random seed, a candidate universe containing at least qmax 
+
+finite-score features, and the feature-universe order, the greedy routine returns one no-duplicate ordered path. If q1 < q 2, then Sq1 ⊂ S q2 and Sq1 is exactly the first q1 entries of Sq2 .Proof. Before greedy updates, local candidates are ordered by decreasing base score and then original feature index. At each step, selected features are masked; any subsequent score tie is resolved by that fixed local order, so exactly one unselected feature is appended. Induction over t gives uniqueness and the prefix property. 
+
+Lemma 3 (Conditional subsample-mean concentration) . Let H be the sigma-field generated by D, the fixed screen and cache, and all nonsubsampling randomness. Conditional on H, assume the balanced subsamples are drawn independently, and let Z(b) 
+
+> gc
+
+∈ [0 , 1] for the ps screened features. For ε > 0,
+
+P (|Sgc − E[Sgc | H ]| ≥ ε | H ) ≤ 2 exp( −2Bε 2).
+
+Simultaneously over ps screened features and C profiles, the union bound is 
+
+P 
+
+> 
+
+max 
+
+> 1≤g≤ps
+> 1≤c≤C
+
+|Sgc − E[Sgc | H ]| ≥ ε
+
+> ∣∣∣∣∣∣∣
+
+H 
+
+> 
+
+≤ min {1, 2psC exp( −2Bε 2)}.
+
+Proof. Apply Hoeffding’s inequality to the B conditionally independent bounded variables and then the union bound. The result describes Monte Carlo concentration of a mean rank, not biological selection consistency or dispersion. With B = 8 and as many as 700 screened features, the simultane-ous union bound can still be numerically vacuous and is included only as a formal finite-sample statement. 
+
+Proposition 3 (Regret dominance) . After normalizing κ to [0 , 1] , rcf ℓ , L cf ∈
+
+[0 , 1] . If configuration c weakly dominates c′ on every utility in LT within an inner fold, then Lcf ≤ Lc′f .
+
+14 Proof. The best metric value in the fold is common to both regret definitions, so dominance implies rcf ℓ ≤ rc′f ℓ for every ℓ. Both the maximum and arithmetic mean are monotone coordinatewise, proving the loss inequality. 
+
+Proposition 4 (Consensus feasibility) . The weights in equation (5) are nonnegative and sum to one. Hence θ∗ lies in the convex hull of eligible profiles; in particular, the consensus component weights remain on the simplex. Proof. Each unnormalized factor is strictly positive and the denominator is their sum. Convex combinations remain in every convex feasible set shared by the eligible parameters. 
+
+Proposition 5 (Outer-test separation) . Given fixed outer splits and a fixed input data object, every preprocessing statistic newly fitted by the evaluation pipeline, selector score, tuning decision, feature path, and classifier fit is mea-surable with respect to the outer-training data and algorithmic random seeds. Outer-test values are only transformed by the frozen training-fitted operations and supplied to the frozen model for prediction and metric calculation. Proof. By construction, transformations, selectors, and models are fitted exclusively on inner or full outer-training partitions. Feature alignment, mean imputation, selected-column centering and scaling, and the fitted classifier are then frozen before application to outer-test values. This establishes procedural test separation conditional on the input object; it does not reverse any preprocessing already embedded in that object before the study pipeline begins. 
+
+Complexity.. Conditional on an already constructed full component cache and a fixed screen, computing C profile relevances costs O(pJC ). For a screened universe ps, a target path q, and M class pairs, the incremental greedy path stage uses O(qnp s + qM p s) operations per profile and O(np s + psC + psM )additional working memory. Here J = 7 components, C = 15, ps ≤ 700, and 
+
+q ≤ 35. These are not end-to-end bounds: total computation also includes the full input and component cache (including p × M pairwise arrays), feature ordering during screening, and rebuilding B = 8 subsample ranks on the screened set. 15 5. Results 
+
+5.1. Evaluation integrity and aggregate method performance 
+
+The evaluation comprised 210,000 held-out assessments across five datasets, seven feature-selection methods, eight feature budgets, three classifiers, and 250 outer-fold evaluations generated by 50 repetitions of five-fold cross-validation. All three performance measures, i.e.,balanced accuracy, macro-F1, and Cohen’s κ, were successfully obtained for every evaluation. For each dataset–method combination, 6,000 dependent held-out values were gen-erated across the eight feature budgets and three classifiers. Accordingly, each dataset–method–metric summary represented all 24 budget–classifier conditions. Table 2 summarizes the aggregate performance across the five datasets. ARISE achieved the highest equal-dataset mean and the best mean rank for each of the three evaluation metrics. SNR was the strongest comparator for balanced accuracy and macro-F1, with absolute differences in favour of ARISE of 0.0221 and 0.0233, respectively. For Cohen’s κ, MI was the closest comparator, with an absolute difference of 0.0284. When the 15 dataset– metric summaries were weighted equally, ARISE achieved the highest overall three-metric mean (0.7650), followed by SNR (0.7400), MI (0.7377), Fisher (0.7370), Welch (0.7338), POS (0.6693), and Bhattacharyya (0.6632). Overall, these results indicate consistently stronger aggregate performance of ARISE across the evaluated datasets and performance criteria, with SNR and MI representing the most competitive standalone alternatives. 
+
+> Table 2: Aggregate comparison across the five evaluated datasets. Values are equal-dataset means with mean ranks in parentheses; lower rank is better. The final column is the equal-weight mean across all 15 dataset–metric combinations. Bold and underline denote the best and second-best values, respectively.
+
+Method Balanced accuracy Macro-F1 κ Three-metric mean ARISE 0.7932 (1.0) 0.7765 (1.0) 0.7252 (1.0) 0.7650 
+
+SNR 0.7711 (2.6) 0.7532 (2.8) 0.6957 (3.0) 0.7400 MI 0.7680 (4.4) 0.7483 (4.6) 0.6968 (3.8) 0.7377 Fisher 0.7683 (3.8) 0.7504 (3.6) 0.6924 (3.8) 0.7370 Welch 0.7658 (4.0) 0.7474 (3.8) 0.6884 (4.0) 0.7338 POS 0.7114 (6.8) 0.6848 (6.8) 0.6116 (6.8) 0.6693 Bhattacharyya 0.7076 (5.4) 0.6773 (5.4) 0.6046 (5.6) 0.6632 
+
+16 The violin plots in figures 2 to 4 retain the full observed spread that the means suppress. Each dataset–method violin contains the same 6,000 outer-fold–budget–classifier values used in the corresponding mean, while its embedded box summarizes the median and interquartile range. The distributions overlap among methods within every dataset, showing that aggregate superiority does not imply uniform fold-level dominance. D2 exhibits the lowest central performance and substantial dispersion, whereas D3 and D4 generally occupy the strongest ranges. Because folds, budgets, and classifiers reuse observations and training partitions, violin width is descriptive density rather than sampling evidence. 
+
+> Figure 2: Balanced-accuracy distributions across the five datasets and seven methods.
+
+17 Figure 3: Macro-F1 distributions across the five datasets and seven methods.   
+
+> Figure 4: Cohen’s κdistributions across the five datasets and seven methods.
+
+5.2. Dataset-wise consistency and effect concentration 
+
+The aggregate position was consistent across datasets: ARISE ranked first among the seven displayed methods in all 15 dataset–metric cells (table 3). 18 The absolute advantage over the best remaining comparator ranged from 0.0051 to 0.0261 for balanced accuracy, from 0.0044 to 0.0316 for macro-F1, and from 0.0054 to 0.0383 for κ. D5 showed the largest advantage on every reported metric, whereas D1 had the smallest balanced-accuracy and macro-F1 margins and D3 the smallest κ margin. 
+
+> Table 3: Dataset-wise performance of ARISE. Values are means with ranks among the seven methods in parentheses, averaged across the 24 budget–classifier conditions.
+
+Dataset Balanced accuracy Macro-F1 Cohen’s κ
+
+D1 0.8524 (1.0) 0.8416 (1.0) 0.7794 (1.0) D2 0.5903 (1.0) 0.5351 (1.0) 0.4744 (1.0) D3 0.8513 (1.0) 0.8465 (1.0) 0.8440 (1.0) D4 0.9083 (1.0) 0.9045 (1.0) 0.8760 (1.0) D5 0.7638 (1.0) 0.7546 (1.0) 0.6520 (1.0) 
+
+> Table 4: Friedman rank analysis across the five datasets.
+
+Metric Friedman statistic df P -value Balanced accuracy 22.457 6 0.00100 Macro-F1 22.286 6 0.00107 Cohen’s κ 21.943 6 0.00124 
+
+The Friedman analysis indicated differences in method rankings across all three evaluation metrics (Table 4). The corresponding asymptotic P -values were 0.00100 for balanced accuracy, 0.00107 for macro-F1, and 0.00124 for Cohen’s κ. However, because only five datasets constitute independent experimental blocks, these results should be interpreted as exploratory rather than confirmatory. Accordingly, greater emphasis is placed on the consistency of dataset-wise rankings and the magnitude of the observed performance differences. 
+
+5.3. Feature-budget behavior and selected-set stability 
+
+The ARISE condition structure is shown compactly in figure 5: five dataset rows, three metric panels, and 24 classifier–budget columns formed by three classifiers and eight feature budgets. Thus, the atlas contains 5 ×3×3×8 = 360 condition means. Averaging those 360 condition means equally, the common-budget composite rose from 0.4595 at one feature to 0.8239 at 20, 0.8241 at 19 25, and a maximum of 0.8289 at 30, before decreasing to 0.8166 at 35. At 30 features, the separate means were 0.8501 for balanced accuracy, 0.8359 for macro-F1, and 0.8007 for κ. Thirty features is therefore the best observed 
+
+common budget for this panel, not a universal optimum: the dataset-specific composite maxima occurred at 20 features for D1, 15 for D2, 35 for D3 and D4, and 30 for D5. 
+
+> Figure 5: ARISE performance across datasets, classifiers, metrics, and feature budgets.
+
+Predictive performance was accompanied by informative selected-set sta-bility patterns (figure 6). At 35 features, the mean pairwise Jaccard overlap was 0.836 for D1, 0.457 for D2, 0.461 for D3, 0.337 for D4, and 0.237 for D5. The strong overlap for D1 reflects highly consistent feature recovery within its compact 45-feature universe, where selecting 35 features naturally increases agreement across folds. For the higher-dimensional datasets, the more moderate overlap suggests that ARISE preserves predictive performance while allowing flexibility in the choice of near-equivalent feature subsets across 20 resamples. This pattern is consistent with the presence of multiple com-petitive biomarker combinations in complex molecular settings, rather than reliance on a single rigid panel. Overall, the stability results support ARISE as a robust feature-selection framework, while indicating that biomarker-level interpretation should be complemented by external validation and assay-level replication. 
+
+> Figure 6: Selected-set stability of ARISE across feature budgets for D1–D5.
+
+6. Discussion 
+
+Across the five datasets, three reported metrics, and three fixed classifiers, ARISE had the largest equal-dataset mean and rank 1 in all 15 dataset– metric cells (5 datasets ×3 metrics), and its three-metric composite exceeded those of SNR and MI, the second- and third-ranked standalone methods. The agreement among balanced accuracy, macro-F1, and κ is useful because the measures stress different failure modes: minority-class recall, classwise precision–recall balance, and chance-corrected concordance. Their distribu-tional plots nevertheless show substantial within-dataset overlap, indicating that aggregate superiority does not imply uniform fold-level dominance. The 21 results therefore support the proposed architecture as a methodological candi-date for further independent evaluation rather than as evidence of universal superiority. The method’s value lies in how it reconciles signal geometries rather than in a new isolated score. Percentile normalization places heterogeneous evi-dence on a common scale; class-balanced subsampling reduces majority-class control of robustness; residual correlation discourages redundant within-class variation; pair coverage rewards features that resolve different class contrasts; and soft consensus averages parameters of eligible near-tied profiles instead of choosing a single winner. The formal results support this interpretation: the construction is bounded, the coverage term is monotone submodular, redundancy is invariant to class-specific shifts, paths are deterministically nested, and consensus parameters remain within the eligible-profile hull. These are properties of internal coherence and reproducibility, not guarantees of biological causality or out-of-distribution performance. A component-by-component ablation remains necessary to quantify which mechanisms generate the observed gains. The five datasets expose distinct translational contexts. D1 shows that ARISE can exploit a compact methylation panel, but because only 45 CpGs enter the package object, it does not demonstrate de novo genome-scale assay discovery. D2 is a controlled Nutrimouse experiment and broadens multiclass signal geometry without constituting human clinical validation. D3 provides the largest sample and strong discrimination among acute lymphoblastic leukemia subtypes, yet remains internal resampling rather than cohort trans-fer. D4 is a useful four-class molecular stress test, but its processed native codes limit clinical interpretation. D5 provides a three-class peripheral-blood expression setting relevant to inflammatory bowel disease and also contributed the largest proposed-method margins. This heterogeneity supports method de-velopment while preventing the pooled mean from being read as the expected effect for a single clinical population. Thirty selected features was the best common setting, but the optimum ranged from 15 to 35 by dataset. That variation argues for budget choice inside the training loop when a study has no prespecified assay size; if laboratory cost fixes the panel size, the budget should instead be declared before evaluation. Stability provides a second qualification. D4 and D5 retained low overlap at larger budgets, and D1’s high overlap is partly a combinatorial consequence of selecting most of a 45-feature universe. Accurate prediction and reproducible biomarker identification are therefore separate objectives. Future work should 22 use chance-corrected stability, pathway coherence, assay replication, and untouched cohorts rather than interpreting selection frequency alone. Contemporary medical AI increasingly combines stability, explainability, networks, and multi-objective search [12, 17, 18]. ARISE is deliberately more transparent than graph or foundation models: it returns one transparent ordered panel, separates selector adaptation from fixed-learner comparison, and exposes each source of gain. That transparency is attractive for small studies, while pathway structure, assay uncertainty, patient covariates, cal-ibration, treatment decisions, and subgroup robustness remain outside the current model. A clinically credible extension should freeze the selector before testing, compare it with stable and network-based methods on untouched cohorts, and quantify calibration, decision-curve utility, assay feasibility, and the reproducibility of individual selected features. 
+
+7. Conclusion 
+
+ARISE provides a coherent multiclass feature-selection framework com-bining complementary relevance evidence, balanced-subsample robustness, within-class residual redundancy control, class-pair coverage, nested profile racing, and convex consensus. Across five evaluated datasets, three reported metrics, and three fixed classifiers, it ranked first in all 15 dataset–metric cells. Although 30 features produced the best common-budget mean, the dataset-specific optima differed, highlighting the value of evaluating the method across multiple feature-set sizes rather than relying on a single prespecified panel size. The consistent results across balanced accuracy, macro-F1, and κ further indicate that the observed advantage is not confined to a single performance criterion. The study also has several clearly defined methodological boundaries that help delimit the current evidence. The use of five heterogeneous benchmark datasets provides variation in sample size, dimensionality, molecular platform, and class structure, while preserving a controlled experimental setting for evaluating the selector. Package-level preprocessing was retained to ensure reproducibility with established public data objects, whereas all additional preprocessing, feature selection, tuning, and model fitting introduced in this study were restricted to the corresponding training partitions. The inclusion of a preclinical dataset broadens the range of signal structures examined, although clinical interpretation remains focused on methodological performance rather than direct translational claims. Similarly, the use of 23 fixed classifiers was intentional, allowing differences in predictive performance to be attributed more directly to feature selection rather than to extensive learner-specific hyperparameter optimization. The repeated five-fold design provided extensive resampling across 250 held-out folds per condition, while the dataset, rather than the individual fold, remained the unit of across-study inference. Finally, variation in selected-set overlap across datasets highlights the ability of ARISE to identify alternative competitive feature subsets in high-dimensional settings and also motivates complementary stability analyses when the goal extends from prediction to biomarker interpretation. These design choices define a rigorous benchmarking stage and provide a clear basis for future evaluation on prospectively specified datasets, independent external cohorts, assay-level replication, calibration, decision-curve analysis, subgroup assessment, and chance-corrected feature stability before clinical translation. 
+
+Data availability 
+
+The datasets analyzed in this study are publicly available through the data resources and originating studies identified in table 1 and section 3.1. The analyzed object names and package versions are reported in the Methods section to support object-level provenance. 
+
+Declaration of competing interest 
+
+The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper. 
+
+Funding 
+
+This work was sponsored by the United Arab Emirates University under grand 12B086. 
+
+CRediT authorship contribution statement Zardad Khan: Conceptualization, Methodology, Software, Formal anal-ysis, Visualization, Supervision, Writing – original draft, Writing – review & editing. Amjad Ali: Methodology, Software, Investigation, Data curation, Validation, Formal analysis, Writing – review & editing. Naz Gul: Investiga-tion, Data curation, Formal analysis, Validation, Visualization, Methodology, 24 Writing – review & editing. Sheema Gul: Investigation, Data curation, Resources, Validation, Visualization, Writing – review & editing. Saeed Aldahmani: Conceptualization, Resources, Funding acquisition, Project administration, Supervision, Validation, Writing – review & editing. 
+
+References 
+
+[1] Y. Saeys, I. Inza, P. Larranaga, A review of feature selection techniques in bioinformatics, Bioinformatics 23 (19) (2007) 2507–2517. doi:10. 1093/bioinformatics/btm344 .[2] H. Peng, F. Long, C. Ding, Feature selection based on mutual information: criteria of max-dependency, max-relevance, and min-redundancy, IEEE Transactions on Pattern Analysis and Machine Intelligence 27 (8) (2005) 1226–1238. doi:10.1109/TPAMI.2005.159 .[3] I. Guyon, J. Weston, S. Barnhill, V. Vapnik, Gene selection for cancer classification using support vector machines, Machine Learning 46 (2002) 389–422. doi:10.1023/A:1012487302797 .[4] R. Tibshirani, Regression shrinkage and selection via the lasso, Journal of the Royal Statistical Society: Series B (Methodological) 58 (1) (1996) 267–288. doi:10.1111/j.2517-6161.1996.tb02080.x .[5] H. Zou, T. Hastie, Regularization and variable selection via the elastic net, Journal of the Royal Statistical Society: Series B (Statistical Methodol-ogy) 67 (2) (2005) 301–320. doi:10.1111/j.1467-9868.2005.00503.x .[6] N. Meinshausen, P. Buhlmann, Stability selection, Journal of the Royal Statistical Society: Series B (Statistical Methodology) 72 (4) (2010) 417–473. doi:10.1111/j.1467-9868.2010.00740.x .[7] S. Nogueira, K. Sechidis, G. Brown, On the stability of feature selection algorithms, Journal of Machine Learning Research 18 (174) (2018) 1–54. URL https://jmlr.org/papers/v18/17-514.html 
+
+[8] G. C. Cawley, N. L. C. Talbot, On over-fitting in model selection and subsequent selection bias in performance evaluation, Journal of Machine Learning Research 11 (2010) 2079–2107. URL https://jmlr.org/papers/v11/cawley10a.html 
+
+25 [9] R. Simon, M. D. Radmacher, K. Dobbin, L. M. McShane, Pitfalls in the use of DNA microarray data for diagnostic and prognostic classification, Journal of the National Cancer Institute 95 (1) (2003) 14–18. doi: 10.1093/jnci/95.1.14 .[10] L. Cattelani, V. Fortino, Dual-stage optimizer for systematic overes-timation adjustment applied to multi-objective genetic algorithms for biomarker selection, Briefings in Bioinformatics 26 (1) (2025) bbae674. 
+
+doi:10.1093/bib/bbae674 .[11] S. Budhraja, M. Doborjeh, N. Kasabov, Filter and wrapper stacking ensemble (FWSE): a robust approach for reliable biomarker discovery in high-dimensional omics data, Briefings in Bioinformatics 24 (6) (2023) bbad382. doi:10.1093/bib/bbad382 .[12] X. Zhou, Y. Chen, A. A. Heidari, H. Chen, X. Chen, Rough hypervolume-driven feature selection with groupwise intelligent sampling for detect-ing clinical characterization of lupus nephritis, Artificial Intelligence in Medicine 160 (2025) 103042. doi:10.1016/j.artmed.2024.103042 .[13] W. Gao, P. Hao, Y. Wu, P. Zhang, A unified low-order information-theoretic feature selection framework for multi-label learning, Pattern Recognition 134 (2023) 109111. doi:10.1016/j.patcog.2022.109111 .[14] P. Zhou, X. Wang, L. Du, Bi-level ensemble method for unsupervised feature selection, Information Fusion 100 (2023) 101910. doi:10.1016/ j.inffus.2023.101910 .[15] A. Moslemi, A. Ahmadian, Subspace learning for feature selection via rank revealing QR factorization: Fast feature selection, Expert Sys-tems with Applications 256 (2024) 124919. doi:10.1016/j.eswa.2024. 124919 .[16] M. Rabiee, M. Mirhashemi, M. S. Pangburn, S. Piri, D. Delen, Towards explainable artificial intelligence through expert-augmented supervised feature selection, Decision Support Systems 181 (2024) 114214. doi: 10.1016/j.dss.2024.114214 .[17] H. Chereda, A. Leha, T. Beissbarth, Stable feature selection utilizing graph convolutional neural network and layer-wise relevance propagation 26 for biomarker discovery in breast cancer, Artificial Intelligence in Medicine 151 (2024) 102840. doi:10.1016/j.artmed.2024.102840 .[18] H. Shi, T. Xu, X. Li, Q. Gao, Z. Xiong, J. Xia, Z. Yue, DRExplainer: Quantifiable interpretability in drug response prediction with directed graph convolutional network, Artificial Intelligence in Medicine 163 (2025) 103101. doi:10.1016/j.artmed.2025.103101 .[19] X.-F. Wang, L. Huang, Y. Wang, N. Sheng, X.-P. Xie, W.-J. Hou, Multi-view learning framework for predicting unknown types of cancer markers via directed graph neural networks fitting regulatory networks, Briefings in Bioinformatics 25 (6) (2024) bbae546. doi:10.1093/bib/bbae546 .[20] J. S. Ranek, W. Stallaert, J. J. Milner, M. Redick, S. C. Wolff, A. S. Beltran, N. Stanley, J. E. Purvis, DELVE: feature selection for preserving biological trajectories in single-cell data, Nature Communications 15 (2024) 2765. doi:10.1038/s41467-024-46773-z .[21] R. Wild, F. Wodaczek, V. D. Tatto, B. Cheng, A. Laio, Automatic feature selection and weighting in molecular systems using differentiable information imbalance, Nature Communications 16 (2025) 270. doi: 10.1038/s41467-024-55449-7 .[22] S. J. Mataraso, C. A. Espinosa, D. Seong, S. M. Reincke, E. Berson, J. D. Reiss, Y. Kim, M. Ghanem, C.-H. Shu, T. James, Y. Tan, S. Shome, I. A. Stelzer, D. Feyaerts, R. J. Wong, G. M. Shaw, M. S. Angst, B. Gaudilliere, D. K. Stevenson, N. Aghaeepour, A machine learning approach to leveraging electronic health records for enhanced omics analysis, Nature Machine Intelligence 7 (2025) 293–306. doi:10.1038/ s42256-024-00974-9 .[23] S. Ma, A. G. X. Zeng, B. Haibe-Kains, A. Goldenberg, J. E. Dick, B. Wang, Moving towards genome-wide data integration for patient stratification with integrate any omics, Nature Machine Intelligence 7 (1) (2025) 29–42. doi:10.1038/s42256-024-00942-3 .[24] K. Y. X. Wang, G. M. Pupo, V. Tembe, E. Patrick, D. Strbenac, S.-J. Schramm, J. F. Thompson, R. A. Scolyer, S. Muller, G. Tarr, G. J. Mann, J. Y. H. Yang, Cross-platform omics prediction procedure: a statistical machine learning framework for wider implementation of 27 precision medicine, npj Digital Medicine 5 (1) (2022) 85. doi:10.1038/ s41746-022-00618-5 .[25] S. Pai, D. Bontempi, I. Hadzic, V. Prudente, M. Sokac, T. L. Chaunzwa, S. Bernatz, A. Hosny, R. H. Mak, N. J. Birkbak, H. J. W. L. Aerts, Foun-dation model for cancer imaging biomarkers, Nature Machine Intelligence 6 (3) (2024) 354–367. doi:10.1038/s42256-024-00807-9 .[26] N. A. Valous, F. Popp, I. Zornig, D. Jager, P. Charoentong, Graph machine learning for integrated multi-omics analysis, British Journal of Cancer 131 (2) (2024) 205–211. doi:10.1038/s41416-024-02706-7 .[27] A. Schweickart, K. Chetnik, R. Batra, R. Kaddurah-Daouk, K. Suhre, A. Halama, J. Krumsiek, AutoFocus: a hierarchical framework to explore multi-omic disease associations spanning multiple scales of biomolecular interaction, Communications Biology 7 (1) (2024) 1094. doi:10.1038/ s42003-024-06724-2 .[28] Y. Li, X. Wu, D. Fang, Y. Luo, Informing immunotherapy with multi-omics driven machine learning, npj Digital Medicine 7 (1) (2024) 67. 
+
+doi:10.1038/s41746-024-01043-6 .[29] K. Guo, M. Wu, Z. Soo, Y. Yang, Y. Zhang, Q. Zhang, H. Lin, M. Grosser, D. Venter, G. Zhang, J. Lu, Artificial intelligence-driven biomedical genomics, Knowledge-Based Systems 279 (2023) 110937. doi:10.1016/ j.knosys.2023.110937 .[30] E. Battistella, D. Ghiassian, A.-L. Barabási, Improving the perfor-mance and interpretability on medical datasets using graphical en-semble feature selection, Bioinformatics 40 (6) (2024) btae341. doi: 10.1093/bioinformatics/btae341 .[31] F. H. Yagin, I. B. Cicek, A. Alkhateeb, B. Yagin, C. Colak, M. Azzeh, S. Akbulut, Explainable artificial intelligence model for identifying COVID-19 gene biomarkers, Computers in Biology and Medicine 154 (2023) 106619. doi:10.1016/j.compbiomed.2023.106619 .[32] S. Ali, F. Akhlaq, A. S. Imran, Z. Kastrati, S. M. Daudpota, M. Moosa, The enlightening role of explainable artificial intelligence in medical & healthcare domains: A systematic literature review, Computers in 28 Biology and Medicine 166 (2023) 107555. doi:10.1016/j.compbiomed. 2023.107555 .[33] W. Zhang, M. Mou, W. Hu, M. Lu, H. Zhang, H. Zhang, Y. Luo, H. Xu, L. Tao, H. Dai, J. Gao, F. Zhu, MOINER: A novel multiomics early integration framework for biomedical classification and biomarker discovery, Journal of Chemical Information and Modeling 64 (7) (2024) 2720–2732. doi:10.1021/acs.jcim.4c00013 .[34] J. Karin, R. Mintz, B. Raveh, M. Nitzan, Interpreting single-cell and spatial omics data using deep neural network training dynamics, Na-ture Computational Science 4 (12) (2024) 941–954. doi:10.1038/ s43588-024-00721-5 .[35] K. J. Archer, V. R. Mas, D. G. Maluf, R. A. Fisher, High-throughput assessment of CpG site methylation for distinguishing between HCV-cirrhosis and HCV-associated hepatocellular carcinoma, Molecular Genetics and Genomics 283 (4) (2010) 341–349. doi:10.1007/ s00438-010-0522-y .[36] P. G. P. Martin, H. Guillou, F. Lasserre, S. Déjean, A. Lan, J.-M. Pascussi, M. SanCristobal, P. Legrand, P. Besse, T. Pineau, Novel aspects of PPARalpha-mediated regulation of lipid and xenobiotic metabolism revealed through a nutrigenomic study, Hepatology 45 (3) (2007) 767–777. 
+
+doi:10.1002/hep.21510 .[37] E.-J. Yeoh, M. E. Ross, S. A. Shurtleff, et al., Classification, subtype discovery, and prediction of outcome in pediatric acute lymphoblastic leukemia by gene expression profiling, Cancer Cell 1 (2) (2002) 133–143. 
+
+doi:10.1016/S1535-6108(02)00032-6 .[38] A. I. Su, M. P. Cooke, K. A. Ching, Y. Hakak, J. R. Walker, T. Wiltshire, A. P. Orth, R. G. Vega, L. M. Sapinoso, A. Moqrich, A. Patapoutian, G. M. Hampton, P. G. Schultz, J. B. Hogenesch, Large-scale analysis of the human and mouse transcriptomes, Proceedings of the National Academy of Sciences of the United States of America 99 (7) (2002) 4465–4470. doi:10.1073/pnas.012025199 .[39] S. Hochreiter, U. Bodenhofer, M. Heusel, A. Mayr, A. Mitterecker, A. Kasim, T. Khamiakova, S. V. Sanden, D. Lin, W. Talloen, L. Bijnens, 29 H. W. H. Gohlmann, Z. Shkedy, D.-A. Clevert, FABIA: factor analysis for bicluster acquisition, Bioinformatics 26 (12) (2010) 1520–1527. doi: 10.1093/bioinformatics/btq227 .[40] M. E. Burczynski, R. L. Peterson, N. C. Twine, et al., Molecular classifica-tion of Crohn’s disease and ulcerative colitis patients using transcriptional profiles in peripheral blood mononuclear cells, The Journal of Molecular Diagnostics 8 (1) (2006) 51–61. doi:10.2353/jmoldx.2006.050079 .[41] K. J. Archer, J. Hou, Q. Zhou, K. Ferber, J. G. Layne, A. E. Gentry, ordinalgmifs: An R package for ordinal regression in high-dimensional data settings, Cancer Informatics 13 (2014) 187–195. doi:10.4137/CIN. S20806 .[42] L. Breiman, Random forests, Machine Learning 45 (1) (2001) 5–32. 
+
+doi:10.1023/A:1010933404324 .30
