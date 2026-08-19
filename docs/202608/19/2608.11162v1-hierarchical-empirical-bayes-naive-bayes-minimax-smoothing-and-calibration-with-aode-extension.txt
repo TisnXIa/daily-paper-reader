@@ -1,0 +1,1548 @@
+Title: Hierarchical Empirical-Bayes Naive Bayes: Minimax Smoothing and Calibration with AODE Extension
+
+URL Source: https://arxiv.org/pdf/2608.11162v1
+
+Published Time: Wed, 12 Aug 2026 01:26:53 GMT
+
+Number of Pages: 16
+
+Markdown Content:
+# Hierarchical Empirical-Bayes Naive Bayes: Minimax Smoothing and Calibration with AODE Extension 
+
+Nguyen Thai Anh a, Truong Viet Vu a, Tran Thien Thanh b, Vo Nguyen Quoc Bao a, Ngo Hoang Tu a, ∗
+
+> aFaculty of Information Technology, Van Lang School of Technology, Van Lang University, Ho Chi Minh City, 70000, Vietnam
+> bInstitute of Information Technology and Electrical-Electronics Engineering, Ho Chi Minh City University of Transport, Ho Chi Minh City, 700000, Vietnam
+
+Abstract 
+
+The Naive Bayes (NB) classifier remains a standard choice for categorical data, yet its widely used smoothing rules, such as Laplace, Lidstone, Krichevsky–Trofimov, and the m-estimate, all prescribe a fixed smoothing strength that ignores feature cardi-nality, sample size, and class imbalance, inducing a non-vanishing bias on modern high-cardinality tabular data. We propose hierarchical empirical-Bayes Naive Bayes (HEB-NB), in which each class-feature conditional probability is smoothed by a Diri-chlet prior whose concentration is learned data-adaptively via Type-II maximum likelihood, enabling principled information sharing across classes while retaining closed-form inference. We further introduce HEB average one-dependence estimators (HEB-AODE), showing that the adaptive smoothing transfers cleanly to structural relaxations of NB. Theoretically, we establish a non-asymptotic 
+
+ℓ1 error bound for HEB-NB matching the empirical-distribution minimax rate plus a vanishing data-adaptive bias, together with a matching Laplace-tight lower bound that yields a finite-sample, risk-level strict separation from Laplace. We further derive a plug-in excess Bayes-risk bound via total-variation tensorization and a population top-1 expected calibration error (ECE) corollary. Empirically, across 31 UCI and OpenML benchmarks, HEB-NB attains the best average Friedman rank on probabilistic metrics, with up to 22.1% log-loss reductions on high-cardinality datasets and consistent improvements of HEB-AODE over vanilla AODE. Combining HEB-NB with mutual-information weighting reduces top-1 ECE by 41%–70%, demonstrating substantial gains in probabilistic accuracy and calibration. 
+
+Keywords: Naive Bayes, empirical Bayes, Dirichlet-multinomial, high-cardinality categorical features, average one-dependence estimators, critical-di ff erence diagram 
+
+1. Introduction 
+
+The Naive Bayes (NB) classifier approximates the joint dis-tribution of a label Y and a feature vector X = (X1, . . . , XF )through the conditional-independence factorization P(X | Y) =
+
+QFf =1 P(X f | Y). Despite the well-known inadequacy of this as-sumption (Hand and Yu, 2001; Zhang, 2004), NB remains a workhorse for categorical and binned tabular data due to its robustness in small-sample regimes and its transparent deci-sion rule. The recent NB literature has refined the classifier along two axes: (i) attribute and instance weighting, which rescales each log ˆ P(X f | Y) in the posterior (He et al., 2025; Jiang et al., 2019; Zhang et al., 2021; Zhang and Jiang, 2022; Zhou et al., 2022); and ( ii ) structural relaxation, which adds limited dependencies among features, as in tree augmented NB (Friedman et al., 1997), average one-dependence estima-tors (AODE) (Webb et al., 2005), and hidden NB (Jiang et al., 2009). Both refinement axes treat the conditional probability estima-tor ˆ P(X f | Y) as a fixed input. The estimator itself has received         
+
+> ∗Corresponding author.
+> Email addresses: anh.nt@vlu.edu.vn (Nguyen Thai Anh),
+> vu.2274802011045@vanlanguni.vn (Truong Viet Vu),
+> thanh.tran@ut.edu.vn (Tran Thien Thanh), bao.vnq@vlu.edu.vn (Vo Nguyen Quoc Bao), tu.nh@vlu.edu.vn (Ngo Hoang Tu)
+
+remarkably little attention since the 1990s. Every realistic NB implementation applies smoothing such that empirical counts are augmented with non-negative pseudo-counts before normal-ization, both to avoid zero-probability pathologies and to sta-bilize rare-category estimates. The dominant smoothers, such as Laplace’s add-one rule, Lidstone’s α-smoothing (Lidstone, 1920), Krichevsky–Trofimov (KT) (Krichevsky and Trofimov, 1981), and Cestnik’s m-estimate (Cestnik, 1990), all prescribe a smoothing strength fixed a priori, ignoring feature cardinality 
+
+K f , within-class sample size Nc, and the agreement between the implicit prior mean and the true class-conditional probabil-ity mass function (PMF). The single notable departure is the high-probability-binning (HPB) procedure of Jambeiro Filho and Wainer (Jambeiro Filho and Wainer, 2008), which antic-ipates the empirical-Bayes idea for general Bayesian-network nodes but predates the modern minimax PMF-estimation liter-ature and o ff ers no risk or calibration analysis. This neglect becomes consequential on modern tabular data with high-cardinality features, e.g., uniform-resource-locator hashes, zone-improvement-plan codes, product identifications, internet-protocol blocks, sparse one-hot text tokens, where 
+
+K f routinely reaches the thousands or tens of thousands per feature (Micci-Barreca, 2001). In such regimes K f ≳ Nc
+
+and pseudo-counts dominate empirical counts, so that Laplace smoothing incurs a deterministic, non-vanishing bias whose or- 
+
+> Preprint submitted to Knowledge-Based Systems August 12, 2026 arXiv:2608.11162v1 [cs.LG] 11 Aug 2026
+
+der matches the sampling-variance scale and saturates at Θ(1) once K f exceeds Nc. Read against the empirical-distribution upper bound of Han et al. (2015, Theorem 1), this is a strict, non-asymptotic e ffi ciency loss that Section 4 quantifies pre-cisely. We close this gap with a hierarchical empirical-Bayes (HEB) construction. For each class c and feature f , we model the class-conditional PMF as θc, f ∼ Dirichlet( mc, f ¯θ f ), exploit-ing Dirichlet-multinomial conjugacy for closed-form posteri-ors. The concentration mc, f > 0 controls shrinkage toward ¯ θ f
+
+(mc, f → 0 recovers the unsmoothed maximum-likelihood (ML) estimator) and is learned from data by Type-II ML (Minka, 2000), with no user-supplied hyperparameter. The prior mean ¯θ f is either uniform (HEB-U) or the pooled marginal ˆ P(X f )(HEB-M); the latter borrows information across classes in the spirit of target encoding (TE) (Micci-Barreca, 2001), but inside the classifier rather than as preprocessing. The main contribu-tions of this work are summarized as follows: 
+
+1) HEB-NB Estimator (Section 3.1) : A closed-form, hyperparameter-free smoothed categorical NB classifier whose per-(class, feature) Dirichlet concentration is learned by Type-II ML (Algorithm 1), with two natural prior-mean variants HEB-U and HEB-M. Limit cases recover Laplace smoothing and the full-shrinkage endpoint of Micci-Barreca TE, so HEB-NB uni-fies both within a single hierarchical-Bayes family while pre-serving the time and memory complexity of categorical NB up to a constant factor. 
+
+2) HEB-AODE Structural Extension (Section 3.2) : A hierar-chical Type-II ML smoother for AODE’s pairwise conditionals, in which the concentration is shared across the super-parent’s instantiations and learned by a multi-document extension of Minka’s single-document fixed-point iteration. HEB-AODE re-covers vanilla AODE as a limit case and demonstrates that the HEB smoothing improvement transfers cleanly across the struc-tural axis of NB refinement. 
+
+3) Non-Asymptotic Theoretical Analysis (Section 4) : We es-tablish ( i) a pathwise ℓ1 upper bound for HEB-NB (Theorem 1) that matches the empirical-distribution rate of Han et al. (2015, Theorem 1) plus a data-adaptive bias, in contrast to Laplace’s deterministic non-vanishing bias; ( ii ) a rigorous sanity bound on the HEB shrinkage factor (Lemma 1) via the determinis-tic clamp from Assumption 3, ensuring that the bias vanishes asymptotically as the within-class sample size grows; ( iii ) a matching lower bound for Laplace (Theorem 2) proving its bias is Laplace-tight at the simplex vertex; ( iv ) a rigorous, finite-sample, risk-level strict separation between HEB-NB and Laplace (Corollary 1) that cannot be attributed to bound loose-ness in either estimator; and ( v) an excess Bayes-risk bound via joint total-variation (TV) tensorization (Corollary 2), which does not require any uniform lower bound on P(X), a property essential in the high-cardinality regime, together with a cor-responding population top-1 expected calibration error (ECE) bound (Theorem 3). 
+
+4) Comprehensive Empirical Study (Section 5) : Across 31 UCI and OpenML datasets (including three high-cardinality benchmarks with up to 16 ,137 categories per feature), HEB-M attains the best mean Friedman rank on log-loss and Brier, and significantly dominates 13 of 24 baseline–metric pairs un-der the Nemenyi protocol at α = 0.05. HEB-AODE signifi-cantly improves over vanilla AODE on F1, log-loss, and Brier (paired Wilcoxon p ≤ 0.029 on each), with log-loss reductions of up to 22.1% on click-prediction. Combining HEB-M with sqrt-mutual-information (sqrt-MI) weighting cuts top-1 ECE by 41%–70% versus Laplace on the high-cardinality benchmarks, demonstrating that the smoothing improvement is orthogonal to both the weighting and structural axes of NB refinement. The remainder of the paper is organized as follows. Sec-tion 2 reviews related work; Section 3 develops the proposed estimators; Section 4 provides their theoretical analysis; Sec-tion 5 reports the empirical study and limitations; and Section 6 concludes the paper. 
+
+Notational Definitions : RK 
+
+> ≥0
+
+denotes the set of K-dimensional nonnegative real vectors. P(·) is the probability function. ∥·∥ 1
+
+and E(·) denote the ℓ1-norm and expectation operators, respec-tively. a ∧ b = min {a, b} denotes the truncation at level b. All logarithms are to the natural base e. We write K ≳ N if K ≥ cN 
+
+for some constant c > 0, and K ≍ N if c1 N ≤ K ≤ c2 N for some constants c1, c2 > 0, both for su ffi ciently large N. Moreover, 
+
+o(·), O(·), ˜O(·), Ω(·), and Θ(·) denote asymptotic negligibility, asymptotic upper bounds, asymptotic upper bounds up to loga-rithmic factors, asymptotic lower bounds, and tight asymptotic order, respectively. 
+
+2. Related Work 
+
+Smoothing for Categorical NB : The earliest smoothers for NB are Laplace’s add-one rule, Lidstone’s α-smoothing (Lid-stone, 1920), and the universal KT mixture (Krichevsky and Trofimov, 1981). Cestnik’s m-estimate (Cestnik, 1990) intro-duces a single concentration parameter and a fixed prior mean, but the concentration must be set manually. Good–Turing smoothing (Good, 1953) has been used for NB on text but, to our knowledge, without a finite-sample analysis. None of these methods adapt the smoothing strength per (class, fea-ture) inside the NB classifier. The closest precedent is the HPB procedure of Jambeiro Filho and Wainer (2008), which intro-duces Type-II hyperparameter selection for Bayesian-network nodes with high-cardinality parents. Our work di ff ers from HPB in two specific respects: ( i) HPB targets the more gen-eral high-cardinality-parent setting and reports no excess-risk or minimax-rate analysis, whereas we instantiate Type-II ML di-rectly in plain NB and provide non-asymptotic risk and calibra-tion bounds (Theorems 1–3); ( ii ) the HPB analysis predates the modern minimax-PMF-estimation literature (Han et al., 2015), from which our framing borrows. Empirical-Bayes TE (Micci-Barreca, 2001) pools categories toward the marginal mean but is used as a feature-engineering preprocess before logistic re-gression or trees, with no theoretical analysis. Outside NB, hi-erarchical Dirichlet smoothing is common in topic models (Blei et al., 2003) and language modelling (MacKay and Peto, 1995). 
+
+Attribute and Instance Weighting : A large recent literature reweights NB factors using mutual information, gain ratio, or class-conditional correlation: CFW (Zhang et al., 2016), CAWNB (Jiang et al., 2019), CAVWNB (Zhang et al., 2020), 2AIWNB (Zhang et al., 2021), FTAWNB (Zhang and Jiang, 2022), ATFNB (Zhou et al., 2022), A 2WNB (Zhang et al., 2022), FNB (Hue and Boull´ e, 2024), and AG-NBC (He et al., 2025). These methods are orthogonal to ours: they reweight log ˆ P(X f | Y) without changing how the true probability is esti-mated. 
+
+Structural Relaxation : AODE (Webb et al., 2005), tree aug-mented NB (Friedman et al., 1997), hidden NB (Jiang et al., 2009), and KDB (Sahami, 1996) relax the Naive independence assumption by adding parents to attributes. These methods re-tain Laplace-style smoothing internally and would also benefit from HEB. Recent vine-copula NB classifiers (S ¸ ahin and Joe, 2025) go further but at quadratic pair-copula cost and with-out consistency rates. Structural and smoothing improvements are orthogonal axes of NB refinement: HEB-NB advances the smoothing axis; AODE advances the structural axis. AODE has substantial memory overhead for high-cardinality features and is included in Section 5.3 as a reference baseline using a memory-capped variant. The combination of both axes is real-ized by our proposed HEB-AODE in Section 3.2. 
+
+Calibration of NB : NB is famously over-confident (Niculescu-Mizil and Caruana, 2005); the standard correction is post-hoc Platt scaling (Platt et al., 1999), isotonic regression (Zadrozny and Elkan, 2002), or temperature scaling (Guo et al., 2017). Moreover, P´ erez et al. (2024) propose a risk-based it-erative recalibrator. Our work is complementary: HEB-NB improves the upstream probability estimator, whereas calibra-tion corrects the downstream posterior. 
+
+3. Proposed HEB-NB and HEB-AODE Estimators 
+
+Figure 1 summarizes the training and prediction workflow of HEB-NB and its HEB-AODE extension. From the categorical training data, HEB-NB forms the class counts and the category-count vector for each class–feature pair, and constructs the feature-specific prior mean using either HEB-U (uniform) or HEB-M (pooled marginal). The concentration for each class– feature pair is learned by Type-II ML or set by the low-count fallback in Algorithm 1. The resulting empirical-Bayes poste-rior means are stored in log form with the estimated class pri-ors. At test time, NB log scores are normalized into posterior probabilities for evaluation, and prediction selects the class with the highest posterior probability. HEB-AODE applies the same smoother to AODE’s child-conditional factors, as detailed in Section 3.2. 
+
+3.1. The Proposed HEB-NB Estimator 3.1.1. Categorical NB Model 
+
+Let D = {(x(s), y(s))}Ss=1 denote a training dataset of S sam-ples, where y(s) ∈ { 1, . . . , C} is a categorical class label from a set of C classes, and x(s) = (x(s)1 , . . . , x(s) 
+
+> F
+
+) is a vector of F cat-egorical features. Let Nc := {s : y(s) = c} denote the number of training samples belonging to class c, and let Nc, f,v := {s :
+
+y(s) = c, x(s) 
+
+> f
+
+= v} denote the joint count for class c, feature f ,and category v. Each feature x(s) 
+
+> f
+
+takes values in a finite alphabet 
+
+{1, . . . , K f } of size K f . Unless otherwise stated, s ∈ { 1, . . . , S },
+
+c ∈ { 1, . . . , C}, f ∈ { 1, . . . , F}, and v ∈ { 1, . . . , K f } are as-sumed throughout this manuscript. By construction, for ev-ery ( c, f ) pair, PK f 
+
+> v=1
+
+Nc, f,v = Nc. To place the NB classifier in a decision-theoretic framework, let X := QFf =1{1, . . . , K f }
+
+denote the Cartesian product of the feature alphabets. Let 
+
+X = (X1, . . . , XF ) be a random feature vector taking values in 
+
+X, and let Y ∈ { 1, . . . , C} be the corresponding random class label. The categorical NB classifier predicts the class label of an input x = (x1, . . . , xF ) under the conditional-independence assumption P(x | Y) = QFf =1 P(X f = x f | Y), such that (Manning et al., 2008, Eq. (13.4)) ˆy(x) = arg max 
+
+> c
+
+log(ˆ πc) +
+
+X 
+
+> f
+
+log(ˆ θc, f,x f ), (1) where ˆ πc = (Nc +1) /(S +C) is the Laplace-smoothed class prior, and ˆ θc, f,v := ˆP(X f = v | Y = c) denotes the estimated class-conditional PMF for each v, evaluated at v = x f in (1). Notably, we use ˆ πc, ˆ θc, f,v, and ˆ P(·) to denote estimates of πc := P(Y = c), 
+
+θc, f,v := P(X f = v | Y = c), and P(·), respectively, since their true values are unknown and are instead estimated from the training data. For each pair ( c, f ), θc, f := [θc, f,1, . . . , θ c, f,K f ] takes values in the probability simplex ∆K f −1 ≜ {p = [p1, . . . , pK f ] ∈ RK f 
+
+> ≥0
+
+:
+
+PK f 
+
+> v=1
+
+pv = 1}. The zero-one misclassification risk of a classifier 
+
+g : X → { 1, . . . , C} is defined as R(g) : = P g(X) , Y. Accord-ingly, the Bayes risk and Bayes-optimal classifier are given by 
+
+R⋆ := inf g R(g) = R(g⋆) and g⋆(x) = arg max c P(Y = c | X =
+
+x), ∀x ∈ X , respectively. 
+
+3.1.2. The HEB-NB Estimator 
+
+To estimate θc, f,v in (1), we adopt a Bayesian generative modeling approach. Specifically, for each class-feature pair (c, f ), we model θc, f as a random variable drawn from a Dirichlet prior, i.e., θc, f ∼ Dirichlet( mc, f ¯θ f ), where ¯ θ f :=
+
+[¯ θ f,1, . . . , ¯θ f,K f ] ∈ ∆K f −1 is a prior mean shared across classes, and mc, f > 0 is a concentration parameter controlling the strength of shrinkage. Given the observed count vector nc, f =
+
+(Nc, f,1, . . . , Nc, f,K f ), which is Multinomial( Nc, θc, f ) conditional on θc, f by the categorical NB model, the Dirichlet-multinomial conjugacy yields the closed-form posterior θc, f | nc, f ∼
+
+Dirichlet( mc, f ¯θ f + nc, f ). The posterior mean of θc, f therefore admits the element-wise closed form of ˆθc, f,v = ˆPHEB (X f = v | Y = c) = Nc, f,v + mc, f ¯θ f,v
+
+Nc + mc, f
+
+. (2) Two natural choices of the prior mean ¯ θ f give rise to two vari-ants of HEB-NB in (2). Specifically, a uniform prior, referred to as HEB-U , is given by ¯θ f,v = 1/K f , ∀v, (3) whereas a pooled marginal prior, referred to as HEB-M , is de-fined as ¯θ f,v = ˆP(X f = v) =
+
+X 
+
+> c
+
+Nc, f,v/S . (4) 3Prior Mean Selection         
+
+> HEB-U or HEB-M
+> HEB-U HEB-M
+> Robust to unseen
+> /rare categories
+> Adapt to observed
+> category support
+> Output: prior mean for all
+> Initial Hyperparameters
+> Initialize concentration
+> (per class-feature)
+> Shared across categories
+> within each
+> Count C onstruction
+> Feature
+> NB Posterior Scoring
+> Additive in log-space →
+> Efficient scoring
+> Categorical Training Data
+> Feature Class
+> HEB-AODE Extension
+> Averaged One-Dependence Estimators
+> Test Input Prediction Posterior Probabilities & Evaluation
+> Convert scores to
+> Posterior Probabilities
+> Evaluation Metrics
+> Log-loss
+> Brier-score
+> Top-1 ECE
+> Posterior-Mean Smoothing
+> • Balances data and prior information
+> • Adapts to sample size and cardinality
+> • Reduces mismatch from fixed smoothing strengths
+> Data
+> (counts)
+> Smooth
+> probabilities
+> Hierarchical EB Prior
+> • Global prior mean shared across classes
+> • Data-adaptive concentration per
+> Global prior mean
+> Class Class Class
+> Prior
+> Empirical-Bayes estimate
+> Type-II ML
+> Learn by maximizing
+> • Maximizes marginal likelihood (evidence)
+> • Fixed-point updates, typically 10–30 iterations
+> • No closed-form solution in general
+> Evidence
+> HEB-NB Parameter Table
+> Fast lookup during
+> prediction
+
+HEB estimation module (core) 
+
+> Categorical feature
+> vector
+
+Figure 1: Training and prediction workflow of HEB-NB and its HEB-AODE extension. 
+
+Remark 1 (Empirical-Bayes Data Dependence) . The HEB-M prior mean ¯θ f in (4) is computed from the same training data D
+
+used to fit (Nc, f,v, ˆmc, f ), making the procedure empirical-Bayes rather than strictly Bayesian. The cross-class pooling drives HEB-M’s advantage in the high-cardinality regime. For analyt-ical tractability, Section 4 treats ¯θ f as conditionally fixed when bounding the per-class error (see Remark 3). 
+
+Subsequently, the concentration parameter mc, f can be cal-culated using the Type-II ML estimator. Specifically, for each class-feature pair ( c, f ), we estimate mc, f to maximize the marginal log-likelihood of the observed count vector under the Dirichlet-multinomial model. Integrating out θc, f yields the marginal log-likelihood 
+
+ℓ(mc, f ) = log Γ(mc, f )
+
+Γ(Nc + mc, f ) +
+
+K fX
+
+v=1
+
+log Γ(Nc, f,v + mc, f ¯θ f,v)
+
+Γ(mc, f ¯θ f,v) . (5) We maximize (5) using the Minka fixed-point iteration (Minka, 2000), which yields the estimate update ˆm(t+1) 
+
+c, f =
+
+Pv ¯θ f,v
+
+ψ(Nc, f,v + ˆm(t)
+
+c, f ¯θ f,v) − ψ( ˆ m(t)
+
+c, f ¯θ f,v)
+
+[ψ(Nc + ˆm(t)
+
+c, f ) − ψ( ˆ m(t)
+
+c, f )]  ˆm(t)
+
+c, f
+
+, (6) where Γ(·) and ψ(·) denote the gamma and digamma functions, respectively (Qi and Guo, 2004). The overall procedure of the proposed HEB-NB is summa-rized in Algorithm 1. The computational complexity of Al-gorithm 1 can be readily calculated by O C P f K f · T (1) Minka 
+
+,
+
+Algorithm 1 HEB-NB training 
+
+Require: Training data D, low-count threshold N0 = 10, and clamp [mmin , mmax ] = [10 −2, 10 4]. 
+
+1: for f = 1, . . . , F do 
+
+2: Compute the prior mean ¯ θf using HEB-U or HEB-M accord-ing to (3) or (4), respectively; 
+
+3: end for 
+
+4: for c = 1, . . . , C do 
+
+5: for f = 1, . . . , F do 
+
+6: Compute the count vector ( Nc, f,1, . . . , Nc, f,K f ); 
+
+7: if Nc < N0 then 
+
+8: Set ˆ mc, f = Kf ; ▷ Reduce to Laplace estimator 
+
+9: else 
+
+10: Estimate ˆ mc, f using (6), with initialization ˆ m(0)   
+
+> c,f
+
+= 1 and clamping to ˆ mc, f ∈ [mmin , mmax ]; 
+
+11: end if 
+
+12: Compute and store log(ˆ θc, f,v), ∀v, according to (2); 
+
+13: end for 
+
+14: Compute and store log(ˆ πc) = log (Nc + 1) /(S + C);
+
+15: end for 
+
+16: Predict ˆ y(x) according to (1) and return .
+
+where T (1) Minka denotes the number of iterations required for the Minka fixed-point iteration in (6) to converge. In practice, this fixed-point iteration typically converges within 10–30 iterations (Minka, 2000). Furthermore, the memory complexity of Algo-rithm 1 is calculated by O(C P f K f ). The following propositions show that HEB-NB unifies two well-known smoothing methods as limit cases. 4Proposition 1 (Laplace Recovery) . If the prior mean ¯θ f is uni-form and the concentration parameter m c, f is fixed to K f , then HEB estimator reduces to ˆθc, f,v = ˆPHEB (X f = v | Y = c) =
+
+(Nc, f,v + 1) /(Nc + K f ), which corresponds exactly to the Laplace (add-one) estimator. 
+
+Proposition 2 (HEB-M Endpoints) . For each class-feature pair (c, f ) with N c ≥ 1, the HEB estimator admits the follow-ing limit cases. As m c, f → 0, the HEB estimator converges to the unsmoothed class-conditional ML estimator, ˆθc, f,v →
+
+Nc, f,v/Nc. As m c, f → ∞ , the estimator converges to the pooled marginal, ˆθc, f,v → ¯θ f,v = ˆP(X f = v), which corresponds to the full–shrinkage endpoint of the Micci–Barreca-style hierarchi-cal pooling family (Micci-Barreca, 2001). If N c = 0, the first limit is undefined; Step 6 in Algorithm 1 instead handles this case via the Laplace fallback. 
+
+Both results follow immediately from the closed-form ex-pression of the posterior mean in (2). Section 4 will demonstrate that the Type-II ML procedure selects mc, f data-adaptively between these two endpoints. 
+
+3.2. The HEB-AODE Estimator 
+
+Notably, smoothing and structural relaxations constitute or-thogonal axes for improving NB classifiers. While HEB-NB addresses the smoothing axis by introducing HEB estimation of class-conditional PMFs, the AODE (Webb et al., 2005) ad-dresses the structural axis by relaxing the conditional indepen-dence assumption. In this subsection, we demonstrate that the proposed HEB smoothing framework extends naturally to AODE, yielding a hierarchical variant referred to as HEB-AODE .
+
+3.2.1. AODE Preliminaries 
+
+The AODE aggregates one-dependence estimators by select-ing a single attribute as a super-parent (Webb et al., 2005). In Section 3.2, deviating from the global convention in the foot-note of Section 3.1, we follow the standard AODE notation by using i, j ∈ { 1, . . . , F} with i , j to index the super-parent and child attributes, respectively. The indices i and j are fea-ture indices, playing the role of f elsewhere in the paper. Let 
+
+Ni(u) : = |{ s : x(s) 
+
+> i
+
+= u}| denote the marginal count of cate-gory u ∈ { 1, . . . , Ki} in feature i. For an input x = (x1, . . . , xF ), the AODE posterior for a realization label y is given by (Webb et al., 2005) ˆPAODE (y | x) ∝
+
+X
+
+> i:Ni(xi)≥1
+
+ˆP(Y = y, Xi = xi)
+
+·
+
+Y
+
+> j,i
+
+ˆP(X j = x j | Y = y, Xi = xi). (7) Vanilla AODE uses Laplace smoothing for both factors in (7). Specifically, ˆP(Y = y, Xi = xi) = (N(i) 
+
+> y,xi
+
++ 1) /(S + CK i), (8) ˆP(X j = x j | Y = y, Xi = xi) = N(i, j)  
+
+> y,xi,xj
+
++ 1
+
+N(i) 
+
+> y,xi
+
++ K j
+
+, (9) where N(i) 
+
+> y,xi
+
+:= |{ s : y(s) = y, x(s) 
+
+> i
+
+= xi}| and N(i, j)  
+
+> y,xi,xj
+
+:=
+
+|{ s : y(s) = y, x(s) 
+
+> i
+
+= xi, x(s) 
+
+> j
+
+= x j}| are the class–super-parent marginal count and the class–super-parent–child joint count, re-spectively. HEB-AODE replaces the conditional factor (9) with the hierarchical Dirichlet-multinomial estimator below, while keeping (8) unchanged. 
+
+3.2.2. The HEB-AODE Estimator 
+
+To estimate the class-conditional distribution P(X j = ϑ |
+
+Y = c, Xi = u) for each class c, super-parent i, and child j,we replace Laplace smoothing with a hierarchical Dirichlet-multinomial estimator, which yields ˆP(X j = ϑ | Y = c, Xi = u) = N(i, j) 
+
+> c,u,ϑ
+
++ ˆmc,i, j ¯θ j,ϑ 
+
+N(i) 
+
+> c,u
+
++ ˆmc,i, j
+
+. (10) For the HEB-AODE estimator, we employ the pooled marginal prior such that ¯ θ j,ϑ = ˆP(X j = ϑ) = Pc Nc, j,ϑ /S , where Nc, j,ϑ =
+
+Pu N(i, j)
+
+> c,u,ϑ
+
+, for any fixed super-parent i , j. Moreover, the con-centration parameter ˆ mc,i, j in (10) is shared across all instanti-ations u ∈ { 1, . . . , Ki} and learned by the Type-II ML estima-tor on the multi-document Dirichlet-multinomial marginal such that ˆmc,i, j = arg max  
+
+> mc,i,j>0
+
+XKi 
+
+> u=1
+
+log P n(i, j) 
+
+> c,u
+
+mc,i, j, ¯θ j
+
+, (11) where n(i, j) 
+
+> c,u
+
+:= (N(i, j)
+
+> c,u,1
+
+, . . . , N(i, j)  
+
+> c,u,Kj
+
+) is the per-u count vector, treated as one of Ki exchangeable “documents” sharing the same Dirichlet concentration mc,i, j. Furthermore, for a fixed u,the log marginal likelihood log P n(i, j) 
+
+> c,u
+
+mc,i, j, ¯θ j
+
+ corresponds to the Dirichlet-multinomial distribution obtained by integrating out the categorical parameter under a Dirichlet( mc,i, j ¯θ j) prior, analogously to (5). Maximization of (11) is carried out using a fixed-point itera-tion that extends Minka’s single-document update by summing the score terms over u, i.e., ˆm(t+1)   
+
+> c,i,j
+
+=
+
+P
+
+> u
+
+P
+
+> ϑ
+
+¯θ j,ϑ [ψ(N(i, j) 
+
+> c,u,ϑ
+
++ ˆm(t)  
+
+> c,i,j
+
+¯θ j,ϑ ) − ψ( ˆ m(t)  
+
+> c,i,j
+
+¯θ j,ϑ )] 
+
+Pu[ψ(N(i) 
+
+> c,u
+
++ ˆm(t) 
+
+> c,i,j
+
+) − ψ( ˆ m(t) 
+
+> c,i,j
+
+)] / ˆm(t) 
+
+> c,i,j
+
+. (12) The overall procedure of the proposed HEB-AODE is sum-marized in Algorithm 2. Notably, Steps 2–4 serve as compu-tational safeguards that prevent memory and time blow-ups, preserve correctness by falling back to a well-defined estima-tor, and enable the algorithm to scale to real high-cardinality datasets. Furthermore, similar to Proposition 1, if ˆ mc,i, j is fixed to K j and the prior mean is taken to be uniform ¯ θ j,ϑ = 1/K j,as per Step 7, the HEB-AODE estimator reduces exactly to the standard AODE classifier with Laplace smoothing. The computational complexity of Algorithm 2 is dominated by the hierarchical Type-II ML estimation and can be expressed as O T (2) Minka C PFi=1
+
+PFj=1, j,i Ki K j
+
+ ≤ O  T (2) Minka CF 2 K2max 
+
+, where 
+
+T (2) Minka denotes the number of iterations required for the Minka fixed-point iteration in (12) to converge, and Kmax = max i Ki =
+
+max j K j. Moreover, the memory complexity of Algorithm 2 is 
+
+O(F2 K2max C) due to the storage of joint counts and conditional probability tables. 5Algorithm 2 HEB-AODE training 
+
+Require: Training data D, low-count threshold N0 = 10, super-parent cap Kmax sp = 200, joint cap Γmax = 5×10 7, and clamp [ mmin , mmax ] =
+
+[10 −2, 10 4].  
+
+> 1:
+
+for each triple ( c, i, j), j , i do  
+
+> 2:
+
+if Ki > Kmax sp or Ki KjC > Γmax then  
+
+> 3:
+
+Mark ( i, j) for marginal fallback ˆ P(Xj | Y = c) and con-tinue ; ▷ Ensure tractable memory and runtime  
+
+> 4:
+
+end if  
+
+> 5:
+
+Compute the joint counts N(i, j)
+
+> c,u,ϑ
+
+, ∀u, ϑ ; 
+
+> 6:
+
+if max u N(i) 
+
+> c,u
+
+< N0 then  
+
+> 7:
+
+Set ˆ mc,i, j = Kj; ▷ m-estimate fallback with marginal prior ¯θj; reduce to Laplace only when ¯ θj,ϑ = 1/Kj 
+
+> 8:
+
+else  
+
+> 9:
+
+Estimate ˆ mc,i, j using (12), with initialization ˆ m(0)   
+
+> c,i,j
+
+= 1 and clamping to ˆ mc,i, j ∈ [mmin , mmax ];  
+
+> 10:
+
+end if  
+
+> 11:
+
+Perform and store ˆ P(Xj | Y = c, Xi = u) using (10);  
+
+> 12:
+
+Perform and store ˆ P(Y = c, Xi = u) according to (8);  
+
+> 13:
+
+end for  
+
+> 14:
+
+Predict ˆ PAODE (y | x) according to (7) and return .
+
+4. Theoretical Analysis 
+
+This section provides the theoretical analysis of the core pil-lars of the proposed HEB-NB estimator in Section 3.1, serving as a foundation for its extension to the proposed HEB-AODE estimator. Subsequently, both the proposed estimators are vali-dated through empirical experiments, as presented in Section 5. Without loss of generality, the analysis applies uniformly across classes c and features f , since the HEB-NB estimator is defined for each class-feature pair ( c, f ). Accordingly, we simplify the notation by letting K f = K, Nc = N, Nc, f,v = Nv, ˆ mc, f = ˆm,¯θ f,v = ¯θv, ¯ θ f = ¯θ, and θc, f,v = θv = p⋆ 
+
+> v
+
+, ∀c, f . All probabilities in this section are assumed to be conditional on the class label 
+
+c unless stated otherwise. 
+
+4.1. Assumptions 
+
+Before delving into the main theoretical analysis, we first make the following key assumptions. 
+
+Assumption 1 (Full-Support) . The class-conditional PMF 
+
+p⋆ = [p⋆ 
+
+> 1
+
+, . . . , p⋆ 
+
+> K
+
+] ∈ ∆K−1 and the prior mean ¯θ ∈ ∆K−1 both have full support: there exists c 0 > 0 such that min v p⋆ 
+
+> v
+
+≥ c0/Kand min v ¯θv ≥ c0/K, ∀v. 
+
+Remark 2 (Remark on the Empirical-Bayes Prior) . For HEB-M, the prior mean ¯θ f is the data-driven pooled marginal ˆP(X f ).The full-support condition min v ¯θ f,v ≥ c0/K f in Assumption 1 then holds with high probability whenever the true marginal satisfies P(X f = v) ≥ c′
+
+> 0
+
+/K f for some c ′ 
+
+> 0
+
+> 0. Indeed, by stan-dard Cherno ff –Bernstein concentration, ˆP(X f = v) ≥ c′
+
+> 0
+
+/(2 K f )
+
+with probability at least 1 − K f exp( −ΩS /K f ), so taking c 0 =
+
+c′
+
+> 0
+
+/2 recovers Assumption 1 in the regime S ≫ K f log K f . For HEB-U, the assumption holds deterministically with c 0 = 1.
+
+Assumption 2 (Asymptotic regime) . The feature cardinality K = KN may increase with the sample size N, but satisfies K = o(N), i.e., lim N→∞ KN /N = 0. Equivalently, the average number of samples per category, N /KN , diverges as N → ∞ ,ensuring that each category is observed su ffi ciently often for consistent estimation of a categorical PMF under ℓ1 loss. We note that this assumption governs asymptotic consistency, while the practical advantage of HEB-NB lies in the finite-sample high-cardinality regime K ≳ Nc.
+
+Assumption 3 (Clamping on ˆm). The Type-II ML estimate 
+
+ˆm is computed by Algorithm 1 and constrained to the inter-val ˆm ∈ [mmin , mmax ], where 0 < mmin = o( √N) and m max 
+
+is either constant or grows at most polynomially with N. In our implementation, m max = 10 4 is assumed. This clamping acts as a conservative upper bound on the estimated concen-tration. In particular, if the unconstrained maximizer ˆm⋆ ex-ceeds m max , the clamped estimator ˆm = min( ˆ m⋆, mmax ) satisfies 
+
+ˆm/(N + ˆm) ≤ min( ˆ m⋆/(N + ˆm⋆), mmax /N), for all realizations. 
+
+Assumption 1 imposes a mild boundary regularity condi-tion, ensuring that both the class-conditional PMF and the prior mean have full support. Assumption 2 restricts attention to the asymptotic regime in which information accumulates. Assump-tion 3 reflects the implementation described in Section 3, with 
+
+mmin = 10 −2 and mmax = 10 4. Empirically, the upper clamp is active on approximately 4 .9% of fitted class-feature pairs in our experiments; detailed diagnostics are reported in Section 5.5. 
+
+4.2. Main Results 
+
+Theorem 1 (Smoothing Risk and Pathwise Form) . Under the assumptions in Section 4.1, the HEB-NB PMF estima-tor ˆθHEB satisfies, in expectation over n = (N1, . . . , NK ) ∼
+
+Multinomial( N, p⋆), the universal bound 
+
+E∥ ˆθHEB − p⋆∥1 ≤ p(K − 1) /N + ρN ∥ ¯θ − p⋆∥1, (13) 
+
+where ˆθHEB = [ˆ θ1, . . . , ˆθK ] denotes the vector of the HEB-NB estimates, and ρN := E[ ˆ m/(N + ˆm)] ∈ [0 , 1] is the data-adaptive shrinkage factor induced by the Type-II ML concentration. The corresponding bound for Laplace smoothing, ˆθLap = [( N1 +
+
+1) , . . . , (NK + 1)] /(N + K), is deterministic and given by 
+
+E n∥ ˆθLap − p⋆∥1
+
+o ≤
+
+r K − 1
+
+N + 2 ( K − 1) 
+
+N + K . (14) 
+
+Both estimators match the empirical-distribution upper bound √(K − 1) /N of Han et al. (2015, Theorem 1) up to an addi-tive bias: data-adaptive ρN ∥ ¯θ − p⋆∥1 for HEB and determinis-tic 2( K − 1) /(N + K) for Laplace. Lemma 1 guarantees ρN → 0
+
+as N → ∞ ; with m max = κ √N log K, for any positive constant κ
+
+(independent of N), this gives ρN = ˜O(1 / √N), under which the HEB upper-bound bias is strictly smaller than Laplace’s bias whenever ∥ ¯θ − p⋆∥1 = o K √N /(N + K).Proof. The proof rests on a pathwise identity that avoids con-ditioning on the data-dependent concentration estimate ˆ m. It proceeds through five main steps, outlined as follows. 6Step 1.1 (Pathwise Decomposition) : Recall that the HEB-NB estimator is given by ˆ θv = (Nv + ˆm ¯θv)/(N + ˆm) and define the empirical MLE estimator ˆ θMLE  
+
+> v
+
+:= Nv/N. For every realization of the count vector ( N1, . . . , NK ) and ˆ m, direct algebra yields ˆθv − p⋆ 
+
+> v
+
+= NN + ˆm
+
+ ˆθMLE  
+
+> v
+
+− p⋆
+
+> v
+
+ + ˆmN + ˆm
+
+ ¯θv − p⋆
+
+> v
+
+. (15) Taking the ℓ1-norm coordinate-wise and using N/(N + ˆm) ≤ 1pathwise (since ˆ m ≥ 0), we obtain 
+
+∥ ˆθHEB − p⋆∥1 ≤ ∥ ˆθMLE − p⋆∥1 + ˆmN + ˆm ∥ ¯θ − p⋆∥1, (16) where ˆ θMLE = [ˆ θMLE 1 , . . . , ˆθMLE  
+
+> K
+
+]. 
+
+Step 1.2 (Empirical-Distribution Rate, Exact) : The first term in (16) satisfies the non-asymptotic bound sup p⋆∈∆K−1 E ∥ ˆθMLE − p⋆∥1 ≤ p(K − 1) /N, (17) which follows from E|ˆθMLE  
+
+> v
+
+−p⋆ 
+
+> v
+
+| ≤ pp⋆ 
+
+> v
+
+(1 − p⋆ 
+
+> v
+
+)/N, an applica-tion of the Cauchy–Schwarz inequality over v, and the simplex bound Pv p⋆ 
+
+> v
+
+(1 − p⋆ 
+
+> v
+
+) ≤ (K − 1) /K. This is the non–asymptotic version of the H´ ajek–LeCam minimax rate (Han et al., 2015, Theorem 1); the asymptotic constant is sharper by a factor √2/π ≈ 0.798. 
+
+Step 1.3 (Bias Term) : Taking expectation in (16), condi-tionally on ¯ θ, yields Eh ˆmN+ ˆm ∥ ¯θ − p⋆∥1
+
+i = ρN ∥ ¯θ − p⋆∥1, where 
+
+ρN ( ¯ θ) : = E[ ˆ m/(N+ ˆm) | ¯θ] ∈ [0 , 1]; the unconditional ρN is ρN =
+
+E¯θ[ρN ( ¯ θ)]. By Lemma 1, ρN ≤ mmax /N, and with the asymp-totic choice mmax = κ √N log K, this gives ρN = ˜O(1 / √N). Combining Steps 1–3 proves (13). 
+
+Step 4 (Laplace Special Case). Setting ˆ m = K and ¯ θv = 1/K
+
+in (15) gives the Laplace identity, with bias ( K/(N + K)) ∥1/K −
+
+p⋆∥1. Writing uv := K p ⋆ 
+
+> v
+
+and using Pv(uv ∧ 1) ≥ 1, we get 
+
+Pv |1/K − p⋆ 
+
+> v
+
+| = (2 /K)( K −Pv(uv ∧1)) ≤ 2( K −1) /K. Multiply-ing by K/(N+K) yields the Laplace bias bound 2( K−1) /(N+K), which combined with (17) establishes (14). The proof is con-cluded. 
+
+Remark 3. The factored form ρN ∥ ¯θ − p⋆∥1 in (13) is exact when the prior mean ¯θ is fixed (non-random). When ¯θ is data-dependent, e.g., the marginal-pooled estimator in Section 3, the rigorous bound is Eh ˆmN+ ˆm ∥ ¯θ − p⋆∥1
+
+i. For simplicity of exposi-tion, we write this bound in the factored form ρN ∥ ¯θ − p⋆∥1, with the understanding that all randomness is taken jointly. This no-tational simplification does not a ff ect the asymptotic rate. 
+
+Remark 4 (Caveat: Bound Comparison versus Actual Risk) .
+
+The comparison B HEB := √(K − 1) /N + ρN ∥ ¯θ − p⋆∥1 < BLap :=√(K − 1) /N + 2( K − 1) /(N + K) of upper bounds in Theorem 1 does not, by itself, imply E∥ ˆθHEB − p⋆∥1 < E∥ ˆθLap − p⋆∥1. Theo-rem 2 and Corollary 1 below resolve this caveat by establishing a matching lower bound on Laplace’s risk and a rigorous risk-level strict separation at the vertex e1 := (1 , 0, . . . , 0) ; the em-pirical comparison in Section 5.4 and Section 5.5 confirms the upper-bound ordering holds for actual risks across 31 bench-marks. 
+
+Theorem 2 (Laplace-Tight Worst-Case Bias) . For any N ≥ 1
+
+and K ≥ 2, we have 
+
+sup p⋆∈ ¯∆K−1 E ˆθLap − p⋆ 
+
+> 1
+
+≥ 2( K − 1) /(N + K), (18) 
+
+where ¯∆K−1 implies that the boundary is permitted, whereas 
+
+∆K−1 in Assumption 1 refers to the same set but under the addi-tional full-support constraint min v p⋆ 
+
+> v
+
+≥ c0/K, which restricts attention to the interior. The lower-bound value 2( K − 1) /(N +
+
+K) is realized as the deterministic ℓ1-error of ˆθLap at the degen-erate vertex p⋆ = e1, i.e., ˆθLap − e1 1 = 2( K − 1) /(N + K).The supremum itself may be strictly larger than 2( K − 1) /(N +
+
+K) when the empirical-distribution variance contributes, e.g., for K ≲ N at the uniform prior, where the variance term √(K − 1) /N in Theorem 1 dominates the bias term; in the high-cardinality regime K ≳ N targeted by this paper, the bias term 2( K − 1) /(N + K) becomes the dominant contribu-tion to the worst-case risk, and Theorem 2’s lower bound cap-tures this dominant term exactly. Consequently, the bias term 
+
+2( K − 1) /(N + K) appearing in Theorem 1’s Laplace upper bound is Laplace-tight: it cannot be reduced by any sharper analysis of Laplace smoothing. Proof. We prove the lower bound by an explicit calculation at the degenerate distribution p⋆ = e1. Specifically, since sup  
+
+> p⋆∈¯∆K−1
+
+E∥ ˆθLap − p⋆∥1 ≥ E∥ ˆθLap − e1∥1, (19) it su ffi ces to evaluate the right-hand side at the single distribu-tion e1. Under p⋆ = e1, the count vector is deterministic with 
+
+N1 = N and Nv = 0 for v ≥ 2, giving ˆ θLap ,1 = (N + 1) /(N + K)and ˆ θLap ,v = 1/(N + K) for v ≥ 2. Summing the coordinate-wise errors |ˆθLap ,1 − 1| = (K − 1) /(N + K) and Pv≥2 |ˆθLap ,v| =
+
+(K − 1) /(N + K) yields 
+
+∥ ˆθLap − e1∥1 = 2( K − 1) /(N + K), (20) which together with (19) proves (18). This completes the proof. 
+
+Corollary 1 (Strict Separation: HEB-NB Strictly Dominates Laplace at the Vertex Prior) . Given that p⋆ = e1 and condition on the prior mean ¯θ satisfying ¯θ1 ∈ (0 , 1) , the following three statements hold deterministically. 1) HEB-NB Identity: The HEB-NB error at p⋆ = e1 satisfies the exact identity 
+
+ˆθHEB − e1 1 = 2 ˆ m (1 − ¯θ1)/(N + ˆm), (21) 
+
+where ˆm is the deterministic Type-II ML estimate computed from the degenerate data n = (N, 0, . . . , 0) .2) Type-II ML Adaptivity at the Vertex e1: The marginal log-likelihood satisfies ℓ′(m) < 0, ∀m > 0, when ¯θ1 ∈ (0 , 1) and N ≥ 2 (see Step 2.3). For any N ≥ N0 at which Algorithm 1 proceeds to Type-II ML, the clamped Type-II ML maximizer is 
+
+ˆm = mmin , and (21) reduces to 
+
+ˆθHEB − e1 1 = 2 mmin (1 − ¯θ1)/(N + mmin )7= O(mmin /N). (22) 
+
+For N < N0, the algorithm’s fallback returns ˆm = K f , making HEB-NB coincide with Laplace at e1; strict separation does not apply in this small-class regime. All our experimental classes satisfy N c ≥ N0, so the Type-II ML branch (22) is what is ob-served. 3) Risk-Level Strict Separation: For N ≥ N0 (Type-II ML branch of Algorithm 1), the gap between Laplace’s and HEB-NB’s errors at p⋆ = e1 is the exact di ff erence 
+
+ˆθLap − e1 1 − ˆθHEB − e1 1 = 2( K − 1) /(N + K)
+
+− 2 mmin (1 − ¯θ1)/(N + mmin ). (23) 
+
+A direct comparison (Step 2.3) shows that this gap is strictly positive on {N ≥ N0, K ≥ 2, ¯θ1 ∈ (0 , 1) }, with explicit form  
+
+> 2( K−1)
+> N+K
+
+− O (mmin /N) = Ω (K/(N + K)) . Both sides of (23) are ex-act identities, so this risk-level separation cannot be attributed to bound looseness; it is mediated by Type-II ML detecting the prior-data disagreement at e1 and shrinking ˆm to m min .Proof. We derive the strict-separation corollary by comparing with the HEB-NB error at the same point, outlined as follows. 
+
+Step 2.1 (Robustness under Assumption 1) : Since p⋆ = e1
+
+lies on the boundary ∂ ¯∆K−1 and violates Assumption 1, we verify that the lower bound persists with O(c0) correction on the Assumption 1-compatible interior. Define the perturbed distribution p⋆ 
+
+> c0
+
+:= (1 − c0(K − 1) /K)e1 + (c0/K)1v≥2, which satisfies min v p⋆ 
+
+> c0,v
+
+= c0/K. Direct coordinate-wise calcula-tion gives E[ˆ θLap ,1] − p⋆ 
+
+> c0,1
+
+= −(K − 1)(1 − c0)/(N + K) and 
+
+E[ˆ θLap ,v] − p⋆ 
+
+> c0,v
+
+= (1 − c0)/(N + K), ∀v ≥ 2, so Pv |E[ˆ θLap ,v] −
+
+p⋆
+
+> c0,v
+
+| = 2( K − 1)(1 − c0)/(N + K). By Jensen’s inequality 
+
+E∥ ˆθLap − p⋆ 
+
+> c0
+
+∥1 ≥ ∥ E[ ˆ θLap − p⋆ 
+
+> c0
+
+]∥1, hence E∥ ˆθLap − p⋆ 
+
+> c0
+
+∥1 ≥ 
+
+> 2( K−1)
+> N+K
+
+− 2( K−1) c0 
+
+> N+K
+
+, recovering the vertex-bound (20) as c0 → 0, with O(c0) correction uniformly in K and N. The matching HEB-NB upper bound at p⋆ 
+
+> c0
+
+is not proven here; the strict-separation conclusion of Corollary 1 is established rigorously only at the vertex e1, with extension to the neighborhood ex-pected by continuity. 
+
+Step 2.2 (HEB-NB at the Same Point) : Under p⋆ = e1, the per-class count vector n = (N, 0, . . . , 0) is deterministic. The prior mean ¯ θ depends only on cross-class data at this prior, so we perform the analysis conditional on ¯ θ, e.g., the uncon-ditional version is recovered in Remark 5. Step 5 in this ap-pendix establishes that ℓ is strictly monotone on (0 , ∞) when ¯θ1 ∈ (0 , 1), so the clamped Type-II ML maximizer is unique and equal to mmin . Substituting N1 = N and Nv = 0, ∀v ≥ 2, into the HEB-NB formula ˆ θHEB ,v = (Nv + ˆm¯θv)/(N + ˆm) gives ˆθHEB ,1 = N+ ˆm¯θ1  
+
+> N+ˆm
+
+and ˆ θHEB ,v = ˆm¯θv  
+
+> N+ˆm
+
+, ∀v ≥ 2. The coordinate-wise errors are |ˆθHEB ,1 − 1| = N+ ˆm¯θ1−(N+ ˆm)  
+
+> N+ˆm
+
+= ˆm(1 −¯θ1)  
+
+> N+ˆm
+
+and 
+
+Pv≥2 |ˆθHEB ,v − 0| = ˆmN+ ˆm
+
+Pv≥2 ¯θv = ˆm(1 −¯θ1)  
+
+> N+ˆm
+
+, where the last equality uses Pv ¯θv = 1. Summing yields the deterministic identity (21). The loose clamping bound ˆm ≤ mmax from Lemma 1 (combined with monotonicity of x 7 → x/(N + x)) gives ∥ ˆθHEB − e1∥1 ≤ 2mmax (1 − ¯θ1)/N; however, the tighter rate is given by Step 5 below. 
+
+Step 2.3 (Type-II ML Returns ˆm = mmin at p⋆ = e1, Pro-vided ¯θ1 ∈ (0 , 1) ): It is required ¯ θ1 > 0 for the Dirichlet-multinomial marginal likelihood to be well-defined (else the data N1 = N > 0 has marginal likelihood 0); this case is precluded by Assumption 1, which gives ¯ θ1 ≥ c0/K > 0. For ¯θ1 ∈ (0 , 1), the Dirichlet-multinomial marginal likeli-hood at n = (N, 0, . . . , 0) admits the closed-form P(n | m) = NN1··· NK
+
+ Γ(m)
+
+> Γ(m+N)
+
+Qv:¯ θv>0 Γ(m¯θv+Nv) 
+
+> Γ(m¯θv)
+
+. Coordinates with ¯ θv = 0 and 
+
+Nv = 0 contribute factors interpreted as 1 (Minka, 2000), and for v ≥ 2, Nv = 0 contributes Γ(m¯θv)/Γ(m¯θv) = 1. Taking log and di ff erentiating and using the identity ψ(x + N) − ψ(x) =
+
+PN−1 
+
+> k=0
+
+1/(x + k), we get ℓ′(m) = ¯θ1
+
+PN−1  
+
+> k1=01
+> m¯θ1+k1
+
+− PN−1  
+
+> k2=01
+> m+k2
+
+.For each k ≥ 0 and ¯ θ1 ∈ (0 , 1), we have ¯ θ1/(m¯θ1 + k) =
+
+1/(m + k/¯θ1) ≤ 1/(m + k) (equality i ff k = 0 or ¯ θ1 = 1). Hence for ¯ θ1 ∈ (0 , 1), the di ff erence is 0 at k = 0 and strictly negative at k ≥ 1. Summing across k = 0, . . . , N − 1 gives ℓ′(m) < 0for all m > 0, provided N ≥ 2. Hence ℓ is strictly decreasing on (0 , ∞), and the clamped Type-II ML maximiser is ˆ m = mmin .Substituting into (21) gives (22). For the implementation parameters mmin = 10 −2 and N ≥
+
+N0 = 10, K ≥ 2, ¯ θ1 ∈ (0 , 1), the right-hand side of (23) satisfies 
+
+mmin (1 − ¯θ1)/(N + mmin ) ≤ 10 −2/N while the left-hand side ( K −
+
+1) /(N + K) ≥ 1/(N + 2); since 1 /(N + 2) > 10 −2/N for any 
+
+N ≥ 1, the gap (23) is strictly positive throughout the Type-II ML regime, completing the proof. The vertex worst-case violates Assumption 1, but acoordinate-wise calculation (Step 2.1) shows that the bound persists on the Assumption 1-compatible interior with O(c0)correction. Combined with the variance-term sharpness at the uniform prior (Han et al., 2015, Theorem 1), both components of Theorem 1’s Laplace upper bound are thus tight (at di ff er-ent worst-case priors). To our knowledge, this is the first ex-plicit lower bound for empirical-Bayes alternatives to Laplace smoothing in the high-cardinality regime. 
+
+Remark 5 (Remark on the Condition ¯ θ1 ∈ (0 , 1)) . The Corol-lary requires ¯θ1 > 0 (else the Dirichlet-multinomial marginal likelihood is degenerate; see Step 2.3) and ¯θ1 < 1 (else the prior coincides with the data and Type-II ML imposes no shrink-age). For HEB-U with uniform prior, ¯θ1 = 1/K ∈ (0 , 1/2] 
+
+for any K ≥ 2, so the condition is satisfied deterministically. For HEB-M, the lower bound fails only if value 1 is never observed in any training sample, and the upper bound fails only if feature f is constant on the training data; both failure modes correspond to degenerate features that any reasonable pre-processing would exclude. Hence ¯θ1 ∈ (0 , 1) holds with probability 1 in the non-degenerate case, and the unconditional risk satisfies E∥ ˆθHEB − e1∥1 ≤ 2mmin /N up to a zero-probability event, preserving the strict-separation conclusion. 
+
+Corollary 2 (Excess Bayes Risk via Joint Total Variation) .
+
+Under conditional independence and Assumptions 1–3 ap-plied to every (c, f ), the plug-in HEB-NB classifier ˆg(x) =
+
+arg max c
+
+log ˆ πc + P f log ˆ PHEB (x f | c) satisfies 
+
+E[R(ˆ g)] − R⋆ ≤ ∥ ˆπ − π∥1 +
+
+X 
+
+> f
+
+Ey∼ ˆπ∥ ˆpy, f − py, f ∥1, (24) 8where π = [π1, . . . , π C ] is the true class-prior vector with es-timate ˆπ, and for each pair (y, f ), py, f := [θy, f,1, . . . , θ y, f,K ] =
+
+[P(X f = 1 | Y = y), . . . , P(X f = K | Y = y)] is the class-conditional PMF of feature f given Y = y, with HEB-NB es-timate ˆpy, f . Replacing Ey∼ ˆπ by Ey∼π in (24) incurs an additive term 2F∥ ˆπ − π∥1, using the trivial bound ∥ ˆpy, f − py, f ∥1 ≤ 2.For the Laplace-smoothed class prior ˆπc = (Nc + 1) /(S + C),applying Han et al. (2015, Theorem 1) to the C-class prior, i.e., Cauchy–Schwarz on the simplex, yields E∥ ˆπ − π∥1 ≤√(C − 1) /S (1 + o(1)) , since the Laplace correction 1/(S + C)
+
+contributes only O(C/S ) = o( √C/S ). Applying Theorem 1 to each class-feature pair (c, f ) then gives 
+
+E[R(ˆ g)] − R⋆ ≤ ∥ ˆπ − π∥1
+
++
+
+X 
+
+> f
+
+Ey∼ ˆπ
+
+h q K f −1 
+
+> Ny
+
++ ρ(y, f ) 
+
+> Ny
+
+∥ ¯θ f − py, f ∥1
+
+i, (25) 
+
+where the per-pair shrinkage factor is ρ(c, f ) 
+
+> Nc
+
+:=
+
+Eh ˆmc, f /(Nc + ˆmc, f )i ∈ [0 , 1] . For Laplace smoothing, the cor-responding per-feature term replaces ρ(y, f ) 
+
+> Ny
+
+∥ ¯θ f − py, f ∥1 by the deterministic quantity 2( K f − 1) /(Ny + K f ).Proof. We use the joint TV route, which avoids any evi-dence lower bound on P(X). By Devroye–Gy¨ orfi–Lugosi (De-vroye et al., 2013, Theorem 2.2), the excess zero-one risk is bounded by twice the joint TV distance E[R(ˆ g)] − R⋆ ≤
+
+2 TV( ˆ PXY , PXY ), where TV( ·, ·) is the joint TV operator, ˆPXY (x, y) : = ˆπy
+
+Q f ˆθy, f,x f and PXY (x, y) : = πy
+
+Q f θy, f,x f are the joint PMFs implied by the plug-in and true NB models, re-spectively. By the chain-rule decomposition for TV, we have TV( ˆ PXY , PXY ) ≤ TV( ˆ π, π) + Pc ˆπc TV( ˆ PX|c, PX|c). For each class c, conditional independence makes ˆ PX|c = Q f ˆθc, f,x f and 
+
+PX|c = Q f θc, f,x f products. By the TV tensorization bound for product PMFs (Graczyk et al., 2022, Proposition 1.4), we get TV( ˆ PX|c, PX|c) ≤ P f TV( ˆ pc, f , pc, f ) = 12
+
+P f ∥ ˆpc, f −
+
+pc, f ∥1. Combining the two inequalities and using ∥ ˆπ − π∥1 =
+
+2 TV( ˆ π, π) together with Pc ˆπc = 1 yield E[R(ˆ g)] − R⋆ ≤∥ ˆπ − π∥1 + P f
+
+Pc ˆπc ∥ ˆpc, f − pc, f ∥1. Recognising the inner sum as 
+
+Ey∼ ˆπ∥ ˆpy, f − py, f ∥1 gives (24). Plugging Theorem 1’s per-feature bound (with the per-class sample size Ny being random under 
+
+y ∼ ˆπ) into each summand yields (25). The joint-TV route requires no uniform lower bound on 
+
+P(X), which is essential in the high-cardinality regime: for 
+
+K = 16 ,137, sup x 1/P(x) easily exceeds 10 4, ruling out the condition needed by (30). The class-prior assumption is cor-respondingly weaker than in standard plug-in analyses: we need only E∥ ˆπ − π∥1 = O( √C/S ), automatic for the Laplace-smoothed estimator ˆ πc = (Nc + 1) /(S + C). 
+
+Lemma 1 (Clamping-Induced Sanity Bound on the Shrinkage Factor) . Let ˆm be the Type-II ML estimator computed by Algo-rithm 1 and clamped to [mmin , mmax ] per Assumption 3. Then 
+
+ˆm/(N + ˆm) ≤ mmax /(N + mmax ) ≤ mmax /N, (26) 
+
+holds pathwise, and consequently the shrinkage factor satisfies 
+
+ρN := E[ ˆ m/(N + ˆm)] ≤ mmax /N. (27) 
+
+Choosing m max (N) = κ √N log K (a valid polynomial choice under Assumption 3) yields 
+
+ρN ≤ κ log K/ √N = ˜O(1 / √N). (28) 
+
+The implementation uses the constant m max = 10 4, which ex-ceeds κ √N log K for κ ≤ 7.3 across all experimental bench-marks (since √20 ,000 log 16 ,137 ≈ 1,370 ); the bound ρN ≤
+
+10 4/N is thus at least as tight as (28) . This is a worst-case sanity guarantee depending only on the clamp; the actual empirical-Bayes rate is driven by the unclamped maximizer (Section 5.5, Figure 5). Proof. By Assumption 3, Algorithm 1 returns the clamped estimator ˆm = min(max( ˆ m⋆, mmin ), mmax ) where ˆm⋆ :=
+
+arg max m>0 ℓ(m; n), so ˆ m ≤ mmax pathwise (i.e., for every re-alisation of n). Since the map x 7 → x/(N + x) is monotonically non-decreasing on x ≥ 0, (26) is deterministic. Taking expec-tation over n preserves the inequality and yields (27). Sub-stituting the asymptotic choice mmax (N) = κ √N log K gives 
+
+ρN ≤ κ log K/ √N = ˜O(1 / √N), which is (28). We sketch a heuristic argument explaining why the un-clamped maximiser ˆ m⋆ appears to scale as O( √N log K) em-pirically. Under a chi-squared regularity condition χ2 
+
+> p⋆
+
+( ¯ θ) : =
+
+Pv(p⋆ 
+
+> v
+
+− ¯θv)2/¯θv ≤ c0/N, the score ℓ′(m; n) : = ∂ℓ (m)/∂ m ad-mits an exact form via the digamma identity. A second-order Taylor expansion (valid for m ≫ N) combined with multino-mial factorial-moment identities and McDiarmid concentration suggests ˆ m⋆ ≤ κ(c0) √N log K with high probability. This ex-pansion is strictly valid only for m ≫ N, whereas ˆ m⋆ ≍ √N
+
+empirically, so the argument is an empirical-Bayes plausibility sketch rather than a formal proof; it is consistent with Figure 5 and a fully rigorous Type-II ML rate is left as an open problem. 
+
+Remark 6 (Scope of Lemma 1) . The proof uses only the deter-ministic clamp ˆm ≤ mmax and monotonicity of x 7 → x/(N + x);no property of Type-II ML is invoked. The same bound ρN ≤
+
+mmax /N thus holds for any estimator respecting the clamp, in-cluding the constant ˆm ≡ 1 (Laplace). The lemma is a sanity guarantee , not a theorem about Type-II ML’s adaptivity. The empirically observed advantage of HEB-NB at finite N is driven by the unclamped maximiser, which scales as O( √Nc log K f )
+
+across all benchmarks (see Figure 5), making the safety clamp binding on only 4.9% of fitted pairs. Since the pathwise bound is deterministic, Lemma 1 applies unconditionally on the joint distribution of n and ¯θ (including the data-driven HEB-M case), so Theorem 1 retains its global guarantee. 4.3. Calibration Corollary (Top-1 ECE Bound) 
+
+Section 5.4 reports substantial ECE reductions (41% to 70%) for HEB-M +GR over Laplace on the high-cardinality bench-marks. Theorem 3 below provides a theoretical justification by bounding the population top-1 ECE. Before going to the Theo-rem 3, we define the top-1 ECE below. For a probabilistic classifier ˆ g(x) = arg max y ˆP(y | x) with confidence ˆ q(x) : = max y ˆP(y | x), where we use ˆ q rather than the standard ˆ c to avoid clashing with the class-index c, the 9top-1 ECE with B equal-width confidence bins is expressed as ECE(ˆ g) = PBb=1 
+
+> |I b|
+> ntest
+
+acc( Ib) − conf( Ib) , where Ib = {i : ˆ q(xi) ∈
+
+[( b − 1) /B, b/B)} (Guo et al., 2017). The bin-free (population) calibration error is ECE ∞(ˆ g) = EX | ˆq(X) − P(ˆ g(X) = Y | ˆq(X)) |.
+
+Theorem 3 (HEB-NB Calibration Bound, Population Top-1 ECE) . Under Assumptions 1–3 applied to every (c, f ) and 
+
+E∥ ˆπ − π∥1 = O( √C/S ), the population top-1 calibration error satisfies the universal bound 
+
+E[ECE ∞(ˆ gHEB )] ≤ EX ˆPHEB (· | X) − P(· | X) 1. (29) 
+
+Under the additional regularity assumption that P (x) ≥ 1/MX
+
+for all x ∈ supp( X), equivalently, sup x 1/P(x) ≤ MX , where MX is not required to be bounded uniformly in K f or N, this is further bounded by 
+
+E[ECE ∞(ˆ gHEB )] 
+
+≤ 8MX
+
+
+
+E∥ ˆπ − π∥1 +
+
+X 
+
+> f
+
+Ey∼πE∥ ˆpy, f − py, f ∥1
+
+
+
+, (30) 
+
+where the outer E in both terms on the RHS is over the train-ing data D, while Ey∼π is over the deterministic true class prior. The per-feature term is bounded as in Corollary 2. The M X factor reflects the cost of Bayes’-rule normalization: for the click-prediction benchmark with K f ≈ 16 ,137 val-ues, M X scales with |supp( X)|, so (30) provides only a quali-tative bound there. The HEB-vs-Laplace ratio of upper bounds, 
+
+[RHS of (30)] HEB /[RHS of (30)] L, has the M X factor cancel and depends only on the per-feature smoothing rates of The-orem 1; the corresponding ratio of actual ECE values is em-pirically observed to follow the same trend (see Section 5.4, Table 4). Proof. By the tower property, P(ˆ g(X) = Y | ˆq(X)) = E[P(ˆ g(X) |
+
+X) | ˆq(X)]. Applying Jensen’s inequality and using ˆ q(X) =
+
+ˆP(ˆ g(X) | X) together with the standard ℓ∞ ≤ ℓ1 bound on the simplex yields ECE ∞(ˆ g) ≤ EX ˆP(ˆ g(X) | X) − P(ˆ g(X) | X) ≤
+
+EX ˆP(· | X) − P(· | X) 1, which proves (29). For the second bound, write ˆP(c|X) = ˆAc(X)/ ˆZ(X) and 
+
+P(c|X) = Ac(X)/Z(X) with ˆ Z(X) = Pc ˆAc(X), Z(X) = P(X). The quotient identity combined with Ac/Z ≤ 1 and |Z − ˆZ| ≤ 
+
+Pc | ˆAc − Ac| gives 
+
+∥ ˆP(·| X) − P(·| X)∥1 ≤ 2ˆZ(X)
+
+X
+
+> c
+
+| ˆAc(X) − Ac(X)|. (31) We bound EX of the LHS by splitting on the event E(X) : =
+
+{ ˆZ(X) ≥ Z(X)/2}. On E(X), 1 / ˆZ(X) ≤ 2MX , so (31) gives 
+
+∥ ˆP(·| X) − P(·| X)∥11E(X) ≤ 4MX
+
+Pc | ˆAc − Ac|. On the comple-mentary event, the trivial bound ∥ ˆP − P∥1 ≤ 2 combined with Markov’s inequality P(Ec(X)) ≤ 2MX E| ˆZ − Z| and | ˆZ − Z| ≤ 
+
+Pc | ˆAc − Ac| gives EX [2 1Ec(X)] ≤ 4MX EX
+
+Pc | ˆAc − Ac|. Combin-ing, 
+
+EX ˆP(· | X) − P(· | X) 1 ≤ 8MX EX
+
+X 
+
+> c
+
+| ˆAc(X) − Ac(X)|. (32) For the right-hand side, the algebraic decomposition | ˆAc −
+
+Ac| ≤ | ˆπc − πc| Q f ˆθc, f,x f + πc| Q f ˆθc, f,x f − Q f θc, f,x f |, the bound 
+
+EX [Q f ˆθc, f,x f ] ≤ 1, and the standard telescoping identity for products of bounded factors yield, after summing over c with prior weights πc,
+
+EX
+
+X 
+
+> c
+
+| ˆAc − Ac| ≤ ∥ ˆπ − π∥1 +
+
+X 
+
+> f
+
+Ey∼π∥ ˆpy, f − py, f ∥1. (33) Substituting (33) into (32) and combining with (29) yields (30) with absolute constant 8 MX in place of 4 MX . The improved constant 4 MX stated in (30) is recovered under the stronger uni-form consistency event ˆ Z(X) ≥ Z(X)/2 for EX -almost every X,which holds asymptotically as S → ∞ . This concludes (30), which completes the proof. The MX factor is the “cost of normalization,” growing with 
+
+|supp( X)| in high-cardinality settings but depending only on the data-generating distribution; the HEB-vs-Laplace ratio of upper bounds therefore has MX cancel, leaving only the per-feature smoothing rates of Theorem 1. The binned ECE estimator in Section 5.4 uses B = 10 (Guo et al., 2017); binning bias enters identically for HEB and Laplace on the same folds, so it does not a ff ect reported di ff erences. 
+
+Remark 7 (Connection to Minimax PMF Estimation) . Theo-rem 1 matches the empirical-distribution upper bound of (Han et al., 2015) to leading order; its contribution is a second-order bias comparison, with the HEB bias ˜O(∥ ¯θ − p⋆∥1/ √N) strictly smaller than Laplace’s 2( K − 1) /(N + K), reaching Θ(1) at K ≍ N. Theorem 3 propagates this gap to the ECE bound. 
+
+5. Experimental Results and Discussions 
+
+The empirical study addresses four research questions: (Q1) Does HEB-NB attain Theorem 1’s ℓ1-rate empirically (Sec-tion 5.2); (Q2) Does HEB-NB significantly improve over fixed-smoother baselines under the Friedman–Nemenyi protocol, and how does it compare to a structural baseline like AODE (Sec-tion 5.3); (Q3) Does the smoothing improvement translate to better-calibrated probabilities (Section 5.4); (Q4) Is the result robust to the choice of fixed-α baseline and discretization gran-ularity (Section 5.5). 
+
+5.1. Experimental Setup 5.1.1. Datasets 
+
+We use 31 categorical and mixed-type benchmarks fetched from OpenML via fetch openml , organized into four groups by cardinality: low-cardinality ( Kmax ≤ 30, 13 datasets), medium-numeric / multi-class (13 datasets), medium / mixed (2 datasets: adult and credit-g), and high-cardinality (3 datasets: nomao with F = 118 heterogeneous features but bounded per-feature K j; amazon-employee with Kmax = 5,760; and click-prediction with Kmax = 16 ,137). 1 For datasets with S > 20 000, we subsample to S = 20 000 stratified on the target. Numeric    
+
+> 1Full dataset list: Low : mushroom, nursery, kr-vs-kp, splice, car, tic-tac-toe, monks-2, vote, soybean, audiology, hayes-roth, primary-tumor, cmc. Medium-numeric :optdigits, pendigits, segment, letter, phoneme, page-blocks, sick, connect-4, wine-quality-white, bank-marketing, electricity, kropt, magic.
+
+10 features are discretized by quantile binning ( nbins = 10 in the main analysis; ablated in Section 5.5). Integer columns whose name contains id , hash , url , impression , etc., are forced to categorical even when stored as int64 . Missing values are imputed by mode (categorical) or median (numeric); columns that are entirely missing are dropped. 
+
+5.1.2. Baselines 
+
+We benchmark against seven comparators, of which six (the smoothing-only family) enter the main Friedman–Nemenyi analysis. The five fixed smoothers are: Laplace (α =
+
+1, uniform prior); Lidstone (α = 0.1, uniform prior); 
+
+KT (Krichevsky and Trofimov, 1981) ( α = 0.5, uniform prior); 
+
+m-estimate (Cestnik, 1990) ( m = 2, marginal prior); and TE 
+
+(Micci-Barreca, 2001) ( k0 = 10, marginal prior). The remain-ing two comparators alter orthogonal axes and are reported separately: CAWNB combines Laplace smoothing with per-feature mutual-information weighting w j = pMI( X j; Y) (Jiang et al., 2019; Zhang et al., 2016), we retain the CAWNB label for consistency with the literature, but our weighting is sqrt-MI rather than Quinlan’s gain-ratio statistic, and weights are not sum-normalised since this is empirically catastrophic on UCI datasets with homogeneously informative features (Hall’s filter (Hall, 2006) is methodologically distinct, decision-tree-depth based, and cited for historical context only), while 
+
+AODE (Webb et al., 2005) is a structural relaxation of the conditional-independence assumption with memory cap (super-parent skipped if Ki > Kmax sp = 200, joint cap 5 × 10 7). The main Friedman–Nemenyi analysis (Section 5.3) in-volves k = 7 methods: HEB-M, HEB-U, and the five fixed smoothers (1)–(5); the “13 of 24 baseline-metric pairs” fig-ure refers to HEB-M’s significant pairwise dominance over the six other methods, evaluated on each of the four primary met-rics. We also report the combined model HEB-M +GR (HEB-M smoothing × sqrt-MI weighting) in Section 5.4 to verify the orthogonality of the smoothing and weighting axes, and the pro-posed HEB-AODE (Section 3.2). 
+
+5.1.3. Protocol 
+
+Stratified 10-fold cross-validation with fixed random seed (42). Per-fold metrics averaged: accuracy, F1-macro, log-loss, Brier (macro one-vs-rest), AUC (macro one-vs-rest), and fit time. Statistical analysis follows Demˇ sar (2006): Friedman om-nibus test on the rank matrix (datasets × methods), followed by Nemenyi post-hoc at α = 0.05, visualised as critical-di ff erence (CD) diagrams. With N = 31 datasets and k = 7 methods in the main smoothing comparison, the Nemenyi critical di ff erence is CD = q0.05 
+
+√k(k + 1) /(6 N) = 1.62. AODE and HEB-AODE are compared by the paired Wilcoxon signed-rank test, which is more powerful for two-method comparison (Demˇ sar, 2006). 
+
+5.2. Synthetic Verification of Theorem 1 
+
+We sample p⋆ ∼ Dirichlet( αdir · 1K ) for K ∈{10 , 50 , 100 , 500 }, draw n ∼ Multinomial( N, p⋆) for N ∈{50 , 200 , 1 000 , 5 000 }, and compute the ℓ1 error of each smoother. We report results for two regimes: αdir = 1 (uniform-like ground truth) and αdir = 0.3 (sparse ground truth).                                                   
+
+> Table 1: Mean Friedman ranks across the 31 datasets and Friedman omnibus
+> p-values for the seven smoothing methods.
+> Method Accuracy F1-macro Log-loss Brier HEB-M (this work) 3.00 3.39 2.26 2.26
+> HEB-U (this work) 3.68 3.44 3.06 3.23 Lidstone ( α=0.1) 2.92 2.61 4.65 3.77
+> m-estimate ( m=2) 3.92 4.10 5.10 4.45 KT ( α=0.5) 4.29 4.18 4.39 4.39 Laplace ( α=1) 5.05 5.19 3.94 4.87 TE ( k0=10) 5.15 5.10 4.61 5.03 Friedman p4.96 e−61.77 e−64.08 e−77.34 e−7Lower rank is better; bold marks the best per column.
+
+In Figure 2(a), where αdir = 1, all four estimators (Laplace, KT, m-estimate, HEB) overlap and bracket the √K/N curve, so Theorem 1’s upper-bound claim is verified. In Figure 2(b), where αdir = 0.3, HEB tracks Laplace at small K/N but sep-arates clearly from K/N ≥ 0.1. The HEB-vs-Laplace ℓ1-error reduction is 6% at K/N = 0.05, 12% at K/N = 0.1, 16% at 
+
+K/N = 0.25, and 18%–20% at K/N ∈ { 0.5, 1.0, 2.5}, which is exactly the monotone separation in K/N that Theorem 1 pre-dicts via the dominant Θ(K/(N + K)) Laplace bias. The m-estimate with m = 2 over-shrinks at large K/N and visibly di-verges from the √K/N reference. 
+
+5.3. Main Comparison 5.3.1. Smoothing Comparison 
+
+Table 1 reports the mean Friedman ranks for HEB-NB and the six fixed-smoother baselines. The Friedman omnibus is sig-nificant at p < 10 −5 on every metric, and the Nemenyi critical di ff erence at α = 0.05 is CD = 1.62. Figure 3 is the four-panel CD diagram. HEB-M attains the best mean rank on log-loss (¯ r = 2.26) and Brier (¯ r = 2.26), the two metrics most directly tied to Theorem 1’s ℓ1-PMF bound and Theorem 3’s calibra-tion corollary. On accuracy and F1, Lidstone( α = 0.1) attains slightly better rank (2 .92 and 2 .61), but the gap is not signifi-cant under Nemenyi (0 .08 on accuracy, 0 .77 on F1; both below CD = 1.62). The α = 0.1 that wins F1 here is not the best on log-loss or Brier (see Section 5.5), so no single fixed-α Lidstone matches HEB-M’s Pareto profile across calibration metrics. Moreover, HEB-M significantly dominates 13 of 24 (HEB-M, baseline) × metric pairs: accuracy (2 /6) versus Laplace and TE; F1-macro (2 /6) versus Laplace and TE; log-loss (5 /6) ver-sus all baselines except HEB-U; and Brier (4 /6) versus Laplace, KT, m-estimate, and TE. The dominance pattern matches The-orem 1’s prediction: HEB-M’s edge is sharpest on calibration metrics (5 /6 significant wins on log-loss, 4 /6 on Brier) and softer on accuracy (2 /6). 
+
+5.3.2. Structural Reference 
+
+AODE (Webb et al., 2005) is a structural improvement over NB and is therefore not directly comparable to HEB-NB on rank-based grounds. We include it as a reference baseline using the paired Wilcoxon signed-rank test, and additionally compare 11 10 -2 10 -1 10 0 10 1                    
+
+> 10 -1
+> 10 00.2 0.21 0.22 0.23 0.24 0.25 0.25 0.3 0.35 (a) Uniform-like ground truth: p⋆∼Dirichlet(1) 10 -2 10 -1 10 010 1
+> 10 -1
+> 10 00.2 0.21 0.22 0.23 0.24 0.25 0.22 0.24 0.26 0.28 0.3 0.32 0.34 (b) Sparse ground truth: p⋆∼Dirichlet(0 .3)
+
+Figure 2: Synthetic verification of Theorem 1. Mean ℓ1 error against K/N on log–log axes for the seven smoothers, plotted with the theoretical √K/N reference. 1 2 3 4 5 6 7
+
+> Average rank (lower = better)
+
+Lidstone (2.92) 
+
+HEB-M (3.00) 
+
+HEB-U (3.68) m-est (3.92) KT (4.29) Laplace (5.05) TE (5.15) 
+
+CD = 1.62 
+
+Accuracy p = 5 e ¡ 06 , N = 31 
+
+1 2 3 4 5 6 7
+
+> Average rank (lower = better)
+
+Lidstone (2.61) 
+
+HEB-M (3.39) 
+
+HEB-U (3.44) m-est (4.10) KT (4.18) TE (5.10) Laplace (5.19) 
+
+CD = 1.62 
+
+F1-macro p = 1 :8e ¡ 06 , N = 31 
+
+1 2 3 4 5 6 7
+
+> Average rank (lower = better)
+
+HEB-M (2.26) 
+
+HEB-U (3.06) Laplace (3.94) KT (4.39) TE (4.61) Lidstone (4.65) m-est (5.10) 
+
+CD = 1.62 
+
+Log-loss p = 4 :1e ¡ 07 , N = 31 
+
+1 2 3 4 5 6 7
+
+> Average rank (lower = better)
+
+HEB-M (2.26) 
+
+HEB-U (3.23) Lidstone (3.77) KT (4.39) m-est (4.45) Laplace (4.87) TE (5.03) 
+
+CD = 1.62 
+
+Brier p = 7 :3e ¡ 07 , N = 31 
+
+Figure 3: CD diagrams of mean Friedman ranks across the 31 datasets for the seven smoothing methods, computed separately for each of the four metrics (accuracy, F1-macro, log-loss, Brier). Methods connected by a horizontal bar are not significantly di ff erent at α = 0.05. 
+
+both against HEB-AODE (Section 3.2). The memory-cap fall-back applies to both AODE and HEB-AODE for equal-footing comparison. Table 2 reports both comparisons. The left block reveals that AODE’s structural relaxation gives it a clear advantage over HEB-M on every metric, as expected from its richer one-dependence parameterisation: smoothing alone cannot re-
+
+Table 2: Paired Wilcoxon signed-rank tests on the 31 datasets: HEB-M versus vanilla AODE (left) and HEB-AODE versus vanilla AODE (right). Tied folds are dropped following (Demˇ sar, 2006), accounting for row sums on Accuracy and F1 in the right block (30 = 31 − 1 tie) being lower than on Log-loss and Brier (31, no ties). 
+
+HEB-M vs. AODE HEB-AODE vs. AODE Metric HEB-M AODE p HEB-AODE AODE p
+
+Accuracy 3 28 1.05 e−5⋆ 18 12 0.082 ◦
+
+F1-macro 6 25 2.00 e−3⋆ 23 7 1.29 e−3†
+
+Log-loss 3 28 1.45 e−4⋆ 23 8 1.57 e−2†
+
+Brier 2 29 1.30 e−8⋆ 23 8 2.89 e−2†
+
+Verdict: ⋆AODE significant wins. †HEB-AODE significant wins. 
+
+> ◦
+
+Not significant. Table 3: Per-dataset log-loss for HEB-AODE versus vanilla AODE on the three high-cardinality benchmarks (10-fold mean). 
+
+Dataset AODE HEB-AODE Reduction 
+
+amazon-employee 0.4532 0.4093 −9.7% click-prediction 0.6794 0.5293 −22 .1% nomao 0.4661 0.4716 +1.2% (negligible) 
+
+cover the gain from relaxing conditional independence. The right block tests whether HEB’s smoothing improvement trans-fers across the structural axis: HEB-AODE significantly im-proves over vanilla AODE on F1, log-loss, and Brier, with only marginal gains on top-1 accuracy. This matches Theo-rem 1, which bounds the ℓ1-PMF error and (via Theorem 3) propagates to calibration metrics rather than to top-1 accuracy. Furthermore, Table 3 reveals that the largest per-dataset log-loss reductions occur on the high-cardinality benchmarks where the AODE memory cap most heavily forces marginal-fallback factors: HEB-AODE reduces log-loss by 9 .7% on amazon-employee (0 .4532 → 0.4093) and by 22 .1% on click-prediction (0 .6794 → 0.5293). The slight regression on nomao ( +1.2%) is consistent with Theorem 1’s prediction: nomao’s per-feature 
+
+K j is moderate, leaving little room for adaptive smoothing to improve over Laplace. AODE and HEB-AODE require O(F2 K2max C) memory, while HEB-NB requires only O(FK max C). On amazon-employee, AODE’s full pairwise tables aggregate to ∼ 5 × 10 9 float cells 12 Table 4: Top-1 ECE (10-fold mean ± std) on the three high-cardinality bench-marks.                                                            
+
+> Method amazon-employee click-prediction nomao
+> Laplace 0.0597 ±0.0063 0.1078 ±0.0031 0.1194 ±0.0074 HEB-M 0.0406 ±0.0052 0.0683 ±0.0037 0.1193 ±0.0074 HEB-M +GR 0.0194 ±0.0045 0.0323 ±0.0034 0.0707 ±0.0056
+> Reduction −67% −70% −41% The quantitative reduction is measured between Laplace and HEB-M +GR. Table 5: Smoothing ×weighting orthogonality: four-way mean rank per metric for the 2 ×2 factorial design.
+> Method Accuracy F1-macro Log-loss Brier
+> Laplace 2.84 2.45 3.06 3.00 CAWNB 2.60 2.95 2.45 2.55 HEB-M (this work) 2.26 1.90 2.42 2.26 HEB-M +GR (this work) 2.31 2.69 2.06 2.19
+> Lower rank is better; bold marks the best per column.
+
+across 9 ×9 ordered pairs (exceeding typical workstation RAM), whereas HEB-NB fits in fewer than 10 7 cells. 
+
+5.4. Calibration and Orthogonality 5.4.1. Calibration Analysis 
+
+Brier score and log-loss are proper scoring rules summariz-ing probabilistic accuracy; we additionally report the top-1 ECE with 10 equal-width bins (Guo et al., 2017) on the three high-cardinality benchmarks. Table 4 shows that the HEB-M +GR-vs-Laplace ECE reduction of 41%–70% is several times larger than the per-fold standard deviation on all three datasets; ex-plicitly, the 1-sigma intervals (mean ± std across 10 folds) of HEB-M +GR are non-overlapping with those of Laplace at ev-ery dataset. Figure 4 shows the corresponding reliability dia-grams. On nomao, HEB-M smoothing alone produces essen-tially no ECE reduction relative to Laplace (0 .1194 → 0.1193); the 41% reduction for HEB-M +GR on this dataset is there-fore attributable to sqrt-MI weighting, consistent with Theo-rem 1’s prediction that the HEB-vs-Laplace gap is small in the moderate-cardinality regime ( Kmax on nomao is bounded per feature, with F = 118 heterogeneous features). On amazon-employee and click-prediction, HEB-M alone delivers 32% and 37% ECE reductions respectively, with HEB-M +GR improving these to 67% and 70%. 
+
+5.4.2. Smoothing–Weighting Orthogonality 
+
+Table 5 reveals near-additive marginal e ff ects in rank space: the smoothing main e ff ect (Laplace → HEB-M) consistently reduces rank by 0 .40–0 .55 across metrics (slightly stronger on calibration as predicted by Theorem 1); the weighting main ef-fect (uniform → sqrt-MI) helps log-loss /Brier ( −0.48 /−0.26) but hurts F1 ( +0.65), consistent with the well-known sensitivity of macro-F1 to feature down-weighting on multi-class minority labels; the interaction is small-positive on all four metrics. On absolute ECE, the two e ff ects compose multiplicatively: HEB-M alone reduces ECE by 32% on amazon-employee, and the full combination reduces it by 67%.                                                                       
+
+> Table 6: Lidstone-αsweep within the seven-method ablation set: mean rank across the 31 datasets.
+> Method Accuracy F1-macro Log-loss Brier
+> Lidstone ( α=10 −3)3.11 2.90 5.19 3.58 Lidstone ( α=10 −2)3.16 2.90 4.55 3.68 Lidstone ( α=0.1) 3.44 3.15 4.23 3.97 Lidstone ( α=0.5) 4.44 4.19 4.19 4.42 Lidstone ( α=1.0) 4.90 4.90 3.81 4.68 Lidstone ( α=2.0) 5.53 6.18 3.45 5.03 HEB-M (this work) 3.42 3.77 2.58 2.65
+> Lower rank is better; bold marks the best per column. The best-performing αvaries sharply by metric, while HEB-M’s parameter-free concentration achieves the best mean rank on log-loss and Brier. Table 7: Mean accuracy averaged over the representative subset, for nbins ∈{5,10 ,20 }.
+> nbins Laplace CAWNB AODE HEB-M
+> 50.836 0.836 0.878 0.834 10 0.841 0.840 0.880 0.839 20 0.843 0.842 0.881 0.841
+
+5.5. Robustness, Diagnostics, and Compute Cost 5.5.1. Lidstone-α Sensitivity 
+
+We assess whether a tuned Lidstone( α) baseline matches HEB-M without the empirical-Bayes machinery. We sweep 
+
+α ∈ { 0.001 , 0.01 , 0.1, 0.5, 1.0, 2.0} on every dataset and com-pare to HEB-M. Table 6 shows the best-performing α varies sharply by met-ric, spanning three orders of magnitude ( α = 0.001 on accu-racy /F1 /Brier, α = 2.0 on log-loss). HEB-M’s parameter-free concentration achieves the best mean rank on log-loss (2.58 vs. best Lidstone α = 2.0 at 3.45) and Brier (2.65 vs. best Lidstone 
+
+α = 0.001 at 3.58). On accuracy and F1, α = 0.001 Lidstone narrowly beats HEB-M (acc gap 0 .31 ranks, F1 gap 0 .87 ranks), but α = 0.001 is not the best on log-loss. On a per-dataset basis, the gap between HEB-M and the per-dataset oracle Lidstone-α
+
+(the post-hoc best α chosen with knowledge of the test fold ac-curacy) is at most 0 .5 percentage points on 23 of 31 datasets and at most 1 .5 percentage points on 28 of 31, supporting the “no tuning needed” framing. 
+
+5.5.2. Discretization Robustness 
+
+We refit Laplace, CAWNB, AODE, and HEB-M with nbins ∈{5, 10 , 20 } on a representative subset (adult, bank-marketing, nomao, click-prediction, optdigits, pendigits, connect-4). Table 7 reveals that the ranking AODE > {Laplace, CAWNB, HEB-M } is preserved across all three bin counts; the three smoothing-only methods track each other within ±0.002 accu-racy. HEB-M tracks Laplace closely on these mostly-numeric datasets, where K j is set by nbins and never large relative to 
+
+n, again confirming Theorem 1’s prediction that HEB-M ≈
+
+Laplace in the low-cardinality regime. 13 0 0.2 0.4 0.6 0.8 1
+
+Predicted confidence 
+
+00.2 0.4 0.6 0.8 1   
+
+> Empirical accuracy
+> '0.05 band Perfect calibration Laplace (ECE=0.060 '0.007) HEB-M (ECE=0.041 '0.005) HEB-M+GR (ECE=0.019 '0.005)
+> 0.82 0.84 0.86 0.88 0.7 0.72 0.74 0.76 0.78
+
+0 0.2 0.4 0.6 0.8 1
+
+Predicted confidence 
+
+00.2 0.4 0.6 0.8 1   
+
+> Empirical accuracy
+> '0.05 band Perfect calibration Laplace (ECE=0.108 '0.003) HEB-M (ECE=0.068 '0.004) HEB-M+GR (ECE=0.032 '0.004)
+> 0.82 0.84 0.86 0.88 0.76 0.78 0.8 0.82 0.84 0.86
+
+0 0.2 0.4 0.6 0.8 1
+
+Predicted confidence 
+
+00.2 0.4 0.6 0.8 1   
+
+> Empirical accuracy
+> '0.05 band Perfect calibration Laplace (ECE=0.119 '0.008) HEB-M (ECE=0.119 '0.008) HEB-M+GR (ECE=0.071 '0.006)
+> 0.82 0.84 0.86 0.88 0.45 0.5 0.55 0.6 0.65
+
+(a) amazon-employee 0 0.2 0.4 0.6 0.8 1
+
+Predicted confidence 
+
+00.2 0.4 0.6 0.8 1   
+
+> Empirical accuracy
+> '0.05 band Perfect calibration Laplace (ECE=0.060 '0.007) HEB-M (ECE=0.041 '0.005) HEB-M+GR (ECE=0.019 '0.005)
+> 0.82 0.84 0.86 0.88 0.7 0.72 0.74 0.76 0.78
+
+0 0.2 0.4 0.6 0.8 1
+
+Predicted confidence 
+
+00.2 0.4 0.6 0.8 1   
+
+> Empirical accuracy
+> '0.05 band Perfect calibration Laplace (ECE=0.108 '0.003) HEB-M (ECE=0.068 '0.004) HEB-M+GR (ECE=0.032 '0.004)
+> 0.82 0.84 0.86 0.88 0.76 0.78 0.8 0.82 0.84 0.86
+
+0 0.2 0.4 0.6 0.8 1
+
+Predicted confidence 
+
+00.2 0.4 0.6 0.8 1    
+
+> Empirical accuracy
+> '0.05 band Perfect calibration Laplace (ECE=0.119 '0.008) HEB-M (ECE=0.119 '0.008) HEB-M+GR (ECE=0.071 '0.006)
+> 0.82 0.84 0.86 0.88 0.45 0.5 0.55 0.6 0.65
+
+(b) click-prediction 0 0.2 0.4 0.6 0.8 1
+
+Predicted confidence 
+
+00.2 0.4 0.6 0.8 1   
+
+> Empirical accuracy
+> '0.05 band Perfect calibration Laplace (ECE=0.060 '0.007) HEB-M (ECE=0.041 '0.005) HEB-M+GR (ECE=0.019 '0.005)
+> 0.82 0.84 0.86 0.88 0.7 0.72 0.74 0.76 0.78
+
+0 0.2 0.4 0.6 0.8 1
+
+Predicted confidence 
+
+00.2 0.4 0.6 0.8 1   
+
+> Empirical accuracy
+> '0.05 band Perfect calibration Laplace (ECE=0.108 '0.003) HEB-M (ECE=0.068 '0.004) HEB-M+GR (ECE=0.032 '0.004)
+> 0.82 0.84 0.86 0.88 0.76 0.78 0.8 0.82 0.84 0.86
+
+0 0.2 0.4 0.6 0.8 1
+
+Predicted confidence 
+
+00.2 0.4 0.6 0.8 1    
+
+> Empirical accuracy
+> '0.05 band Perfect calibration Laplace (ECE=0.119 '0.008) HEB-M (ECE=0.119 '0.008) HEB-M+GR (ECE=0.071 '0.006)
+> 0.82 0.84 0.86 0.88 0.45 0.5 0.55 0.6 0.65
+
+(c) nomao 
+
+Figure 4: Reliability diagrams for Laplace, HEB-M, and HEB-M +GR on the three high-cardinality benchmarks. The diagonal indicates perfect calibration; Laplace is uniformly biased high (overconfident), HEB-M’s curve hugs the diagonal closely on amazon-employee and click-prediction, and HEB-M +GR is essentially calibrated on all three. −2 0 2 4
+
+log 10 ^mc; f 
+
+010 20 30 40 50 60 70 80  
+
+> Count
+> mmin mmax
+> med 8.1
+
+(a) Histogram of ^m
+
+40 70 100 130 
+
+p Nc
+
+10 0
+
+10 1
+
+10 2
+
+10 3
+
+10 4
+
+> ^mc; f
+
+(b) ^mc; f vs p Nc
+
+10 1 10 3
+
+Kf
+
+10 0
+
+10 1
+
+10 2
+
+10 3
+
+10 4
+
+> ^mc; f
+
+(c) ^mc; f vs Kf
+
+0.01 0.02 0.03 
+
+1=p Nc
+
+0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 
+
+> ½c; f
+
+(d) ½c; f vs 1=p Nc
+
+amazon-employee click-prediction nomao adult mushroom 
+
+p Nc 0:1p Nc 1=p Nc 5=p Nc
+
+Figure 5: Empirical evidence for the unclamped Type-II ML maximiser’s √Nc log K f scaling, supporting the heuristic discussion below Lemma 1, on five datasets, 348 dumped (class, feature) pairs. The plots primarily verify the heuristic note’s empirical-Bayes prediction; Lemma 1’s rigorous bound ρc, f ≤ mmax /Nc is far looser than the realised values. 
+
+5.5.3. Empirical Evidence for the Unclamped Type-II ML Be-havior 
+
+Lemma 1’s worst-case bound ρc, f ≤ mmax /Nc gives ρc, f ≤
+
+0.5 at our experimental Nc ≤ 20 ,000, too loose to explain the empirical superiority of HEB-NB. The realised values are driven by the unclamped maximiser ˆ m⋆, conjectured to scale as O( √Nc log K f ) (heuristic below Lemma 1). Figure 5 veri-fies this on five datasets (348 recorded ( c, f ) pairs): (a) log 10 ˆm
+
+spans four orders of magnitude with the upper clamp bind-ing on only 4 .9% of pairs; (b) ˆ m falls within the √Nc log K f
+
+envelope; (c) ˆ m shows no positive trend in K f , the key non-trivial empirical-Bayes prediction; (d) the ρc, f scatter respects the linear envelope in 1 / √Nc, with the per-dataset mean of 
+
+ρc, f
+
+√Nc ranging from 0 .09 (nomao) to 34 (click-prediction) with a global mean of 3 .22, of the same order as the O(log K f )prefactor predicted by the heuristic argument below Lemma 1, i.e., log(16 ,137) ≈ 9.7 for the largest-cardinality benchmark. 
+
+5.5.4. Computational Cost 
+
+Table 8 compares the mean per-fold fit time across the con-sidered methods. The per-fold overhead of HEB-M relative 
+
+Table 8: Mean per-fold fit time across the 31 datasets (single CPU core). 
+
+Method Mean fit time (s) Method Mean fit time (s) 
+
+Laplace 0.072 HEB-U 0.160 Lidstone 0.073 HEB-M 0.165 TE 0.074 HEB-M +GR 0.175 
+
+m-estimate 0.074 AODE 0.293 KT 0.074 HEB-AODE 7.27 CAWNB 0.111 
+
+to Laplace is ∼ 2.3× and is dominated by the per-(class, fea-ture) Minka loop; it remains well under interactive latency on every benchmark. On the largest high-cardinality benchmark (amazon-employee, S = 20 000, F = 9, Kmax = 5 760), HEB-M fits in 0 .17 s per fold (vs. 0 .12 s for Laplace, 0 .14 s for AODE). Furthermore, HEB-AODE is materially more expen-sive than the smoothing-only methods because the hierarchical Type-II ML iteration is solved separately for each (class, super-parent, child) triple. On amazon-employee a single fold takes 9.66 s, with a dataset-mean of 7 .27 s ( ∼ 25 × vanilla AODE). This reflects the O T (2) Minka C PFi=1
+
+PFj=1, j,i Ki K j
+
+ fitting cost and 14 is the main practical limit on HEB-AODE: minute-scale on the high-cardinality benchmarks, but well within the o ffl ine batch-training budget typical of AODE-family deployments. 
+
+5.6. Discussion and Limitations 5.6.1. Continuous Features 
+
+HEB-NB targets categorical NB. Continuous features are discretized by 10-bin quantile binning, as is standard in the NB-improvement literature (Yang and Webb, 2009); the discretiza-tion ablation in Section 5.5 confirms that the relative ordering of methods is stable across nbins ∈ { 5, 10 , 20 }. An extension to a Gaussian–Dirichlet mixture along the lines of John and Lang-ley (1995), in which continuous features keep a parametric fam-ily with hierarchically-pooled hyperparameters, is left to future work. 
+
+5.6.2. Failure Modes and Accuracy-vs-Calibration Trade-o ff 
+
+Type-II ML on the Dirichlet-multinomial marginal becomes unstable for classes with Nc < N0 = 10, where Algorithm 1 falls back to Laplace. A second failure mode is extreme out-of-vocabulary regimes (e.g., click-prediction), where HEB-NB’s calibration improvement persists but raw accuracy can lag Laplace’s depending on the imbalance structure. On click-prediction specifically, Laplace’s heavy uniform smoothing bi-ases predictions toward the majority class and achieves slightly higher accuracy than HEB-M alone (0 .808 versus 0 .792); HEB-M reduces log-loss by 17%, and the full HEB-M +GR com-bination recovers both (accuracy 0 .813, log-loss −29%, ECE 
+
+−70%). 
+
+5.6.3. Theoretical Scope and Future Directions 
+
+Lemma 1 establishes a worst-case sanity bound, while the empirical advantage of HEB-NB at finite N stems from the unclamped Type-II ML maximiser’s √Nc log K f scaling (Fig-ure 5); a fully rigorous Type-II ML rate remains open. A central novelty, which is the matching lower bound for Laplace (The-orem 2) and the resulting risk-level strict separation (Corol-lary 1), addresses the long-standing question of whether adap-tive smoothing’s empirical improvements admit rigorous the-oretical justification, going beyond prior upper-bound com-parisons of Laplace /Lidstone /m-estimate /KT. When categories carry external hierarchical structure (ZIP codes, taxonomies, DNS hierarchy), the prior ¯ θ could borrow strength along the hierarchy rather than from a flat marginal pool, closely related to nested-Dirichlet language models (MacKay and Peto, 1995). 
+
+6. Conclusion 
+
+We introduced HEB-NB, a hierarchical empirical-Bayes smoothed Naive Bayes classifier whose per-(class, feature) Dirichlet concentration is learned by Type-II ML. Theoreti-cally, we proved a non-asymptotic ℓ1 upper bound (Theorem 1) matching the empirical-distribution minimax rate plus a vanish-ing data-adaptive bias, a matching Laplace-tight lower bound (Theorem 2), and a finite-sample risk-level strict separation (Corollary 1). A clamping-induced sanity bound (Lemma 1) guarantees asymptotic bias vanishing, with empirical diagnos-tics confirming the unclamped maximiser scales as √Nc log K f
+
+(clamp binding on only 4.9% of pairs). We further derived a TV-tensorization excess-risk bound (Corollary 2) avoiding any lower bound on P(X), and a top-1 ECE bound (Theorem 3). The further introduction of HEB-AODE shows that the adap-tive smoothing transfers cleanly to structural NB relaxations. Empirically, on 31 UCI and OpenML datasets, HEB-NB attains the best mean Friedman rank on log-loss and Brier and signif-icantly dominates 13 of 24 baseline–metric pairs at α = 0.05. HEB-AODE significantly improves over vanilla AODE on F1, log-loss, and Brier ( p ≤ 0.029), and combining HEB-M with sqrt-MI weighting reduces top-1 ECE by 41%–70% on high-cardinality benchmarks, without any hyperparameter tuning. This work suggests several promising research directions for future work. First, extending the HEB hierarchical Type-II ML smoothing to other structural NB variants beyond AODE, e.g., tree augmented NB (Friedman et al., 1997), hidden NB (Jiang et al., 2009). Second, hierarchical-tree priors that exploit exter-nal category hierarchies. Furthermore, deriving finite-sample bounds on top-1 ECE for the HEB-NB plug-in classifier. Fi-nally, Gaussian–Dirichlet hierarchical mixtures for natively continuous features. 
+
+CRediT authorship contribution statement 
+
+Nguyen Thai Anh: Methodology, Software, Validation, Writing – original draft. Truong Viet Vu: Software, Validation, Visualization, Writing – original draft. Tran Thien Thanh: In-vestigation, Validation, Writing – review & editing. Vo Nguyen Quoc Bao: Supervision, Methodology, Writing – review & edit-ing. Ngo Hoang Tu: Conceptualization, Methodology, Project administration, Supervision, Writing – review & editing. 
+
+Declaration of competing interest 
+
+The authors declare that they have no known competing fi-nancial interests or personal relationships that could have ap-peared to influence the work reported in this paper. 
+
+References  
+
+> Blei, D.M., Ng, A.Y., Jordan, M.I., 2003. Latent dirichlet allocation. J. Mach. Learn. Res. 3, 993–1022. Cestnik, B., 1990. Estimating probabilities: A crucial task in machine learning, in: Proc. 9th Eur. Conf. Artif. Intell. (ECAI), pp. 147–149. Demˇ sar, J., 2006. Statistical comparisons of classifiers over multiple data sets. J. Mach. Learn. Res. 7, 1–30. Devroye, L., Gy¨ orfi, L., Lugosi, G., 2013. A probabilistic theory of pattern recognition. volume 31. Springer Science & Business Media. Friedman, N., Geiger, D., Goldszmidt, M., 1997. Bayesian network classifiers. Mach. Learn. 29, 131–163. Good, I.J., 1953. The population frequencies of species and the estimation of population parameters. Biometrika 40, 237–264. Graczyk, R., Lapidoth, A., Wigger, M., 2022. Conditional and relevant com-mon information. Inf. Inference, A J. IMA 11, 679–737. Guo, C., Pleiss, G., Sun, Y., Weinberger, K.Q., 2017. On calibration of mod-ern neural networks, in: Proc. Int. Conf. Mach. Learn. (ICML), PMLR. pp. 1321–1330.
+
+15 Hall, M., 2006. A decision tree-based attribute weighting filter for naive Bayes, in: Proc. Int. Conf. Innov. Techn. Appl. Artif. Intell., Springer. pp. 59–70. Han, Y., Jiao, J., Weissman, T., 2015. Minimax estimation of discrete distri-butions under ℓ1 loss. IEEE Transactions on Information Theory 61, 6343– 6354. Hand, D.J., Yu, K., 2001. Idiot’s Bayes—not so stupid after all? Int. Statist. Rev. 69, 385–398. He, Y., Ou, G., Fournier-Viger, P., Huang, J.Z., 2025. Attribute grouping-based naive Bayesian classifier. Sci. China Inf. Sci. 68, 132106. Hue, C., Boull´ e, M., 2024. Fractional naive Bayes (FNB): non-convex opti-mization for a parsimonious weighted selective naive Bayes classifier. arXiv preprint arXiv:2409.11100 . Jambeiro Filho, J., Wainer, J., 2008. HPB: A model for handling BN nodes with high cardinality parents. J. Mach. Learn. Res. 9, 2141–2170. Jiang, L., Zhang, H., Cai, Z., 2009. A novel Bayes model: Hidden naive Bayes. IEEE Trans. Knowl. Data Eng. 21, 1361–1371. Jiang, L., Zhang, L., Yu, L., Wang, D., 2019. Class-specific attribute weighted naive Bayes. Pattern Recognit. 88, 321–330. John, G.H., Langley, P., 1995. Estimating continuous distributions in Bayesian classifiers, in: Proceedings of the Eleventh Conference on Uncertainty in Artificial Intelligence (UAI 1995), Morgan Kaufmann, San Francisco, CA, USA. pp. 338–345. Krichevsky, R., Trofimov, V., 1981. The performance of universal encoding. IEEE Trans. Inf. Theory 27, 199–207. Lidstone, G.J., 1920. Note on the general case of the Bayes-Laplace formula for inductive or a posteriori probabilities. Transactions of the Faculty of Actuaries 8, 182–192. MacKay, D.J., Peto, L.C.B., 1995. A hierarchical Dirichlet language model. Natural Lang. Eng. 1, 289–308. Manning, C.D., Raghavan, P., Sch¨ utze, H., 2008. Introduction to Information Retrieval. Cambridge University Press, Cambridge, UK. Micci-Barreca, D., 2001. A preprocessing scheme for high-cardinality cate-gorical attributes in classification and prediction problems. ACM SIGKDD Explor. Newslett. 3, 27–32. Minka, T.P., 2000. Estimating a Dirichlet Distribution. Technical Report. Mas-sachusetts Institute of Technology. Cambridge, MA, USA. URL: https: //tminka.github.io/papers/dirichlet/ . revised 2003, 2009, and 2012. Niculescu-Mizil, A., Caruana, R., 2005. Predicting good probabilities with supervised learning, in: Proc. 22nd Int. Conf. Mach. Learn. (ICML), pp. 625–632. P´ erez, A., Echegoyen, C., Santaf´ e, G., 2024. Risk-based calibration for gener-ative classifiers. arXiv preprint arXiv:2409.03542 . Platt, J., et al., 1999. Probabilistic outputs for support vector machines and comparisons to regularized likelihood methods. Adv. Large Margin Classi-fiers 10, 61–74. Qi, F., Guo, B.N., 2004. Complete monotonicities of functions involving the gamma and digamma functions. Res. Rep. Collection 7. Sahami, M., 1996. Learning limited dependence Bayesian classifiers., in: KDD, pp. 335–338. S¸ ahin, ¨ O., Joe, H., 2025. Vine copula-based classifiers with applications. J. Classif. 42, 335–363. Webb, G.I., Boughton, J.R., Wang, Z., 2005. Not so naive Bayes: aggregating one-dependence estimators. Mach. Learn. 58, 5–24. Yang, Y., Webb, G.I., 2009. Discretization for naive-Bayes learning: managing discretization bias and variance. Mach. Learn. 74, 39–74. Zadrozny, B., Elkan, C., 2002. Transforming classifier scores into accurate multiclass probability estimates, in: Proc. 8th ACM SIGKDD Int. Conf. Knowl. Discovery Data Mining (KDD), pp. 694–699. Zhang, H., 2004. The optimality of naive Bayes, in: Proceedings of the Seven-teenth International Florida Artificial Intelligence Research Society Confer-ence (FLAIRS 2004), AAAI Press, Menlo Park, CA, USA. pp. 562–567. Zhang, H., Jiang, L., 2022. Fine tuning attribute weighted naive Bayes. Neuro-computing 488, 402–411. Zhang, H., Jiang, L., Li, C., 2022. Attribute augmented and weighted naive Bayes. Sci. China Inf. Sci. 65, 222101. Zhang, H., Jiang, L., Yu, L., 2020. Class-specific attribute value weighting for naive Bayes. Inf. Sci. 508, 260–274. Zhang, H., Jiang, L., Yu, L., 2021. Attribute and instance weighted naive Bayes. Pattern Recognit. 111, 107674. Zhang, L., Jiang, L., Li, C., Kong, G., 2016. Two feature weighting approaches for naive Bayes text classifiers. Knowl.-Based Syst. 100, 137–144. Zhou, X., Wu, D., You, Z., Wu, D., Ye, N., Zhang, L., 2022. Adaptive two-index fusion attribute-weighted naive Bayes. Electronics 11, 3126. 
+
+16
